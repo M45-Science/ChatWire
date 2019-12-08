@@ -28,7 +28,10 @@ func Chat() {
 						TmpList := strings.Split(line.Text, " ")
 
 						//Send join/leave to Discord
-						glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+						if err != nil {
+							ErrorLog(err)
+						}
 
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
@@ -79,7 +82,10 @@ func Chat() {
 
 						}
 
-						glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], strings.Join(TmpList[4:], " ")))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], strings.Join(TmpList[4:], " ")))
+						if err != nil {
+							ErrorLog(err)
+						}
 
 					} //End Chat
 
@@ -87,7 +93,10 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {
 						TmpList := strings.Split(line.Text, " ")
 
-						glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[4:7], " ")))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[4:7], " ")))
+						if err != nil {
+							ErrorLog(err)
+						}
 					}
 
 					//Loading mod
@@ -101,13 +110,19 @@ func Chat() {
 					//Close message
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Goodbye") {
 						time.Sleep(2 * time.Second)
-						glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now offline.")
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now offline.")
+						if err != nil {
+							ErrorLog(err)
+						}
 						glob.Running = false
 					}
 
 					//Ready message
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Matching server game ") && strings.Contains(line.Text, " has been created.") {
-						glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now online!")
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now online!")
+						if err != nil {
+							ErrorLog(err)
+						}
 						glob.Running = true
 					}
 

@@ -10,7 +10,10 @@ import (
 
 // StopServer saves and stops the server.
 func StopServer(s *discordgo.Session, m *discordgo.MessageCreate) {
-	s.ChannelMessageSend(support.Config.FactorioChannelID, "Server shutting down.")
+	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Server shutting down.")
+	if err != nil {
+		support.ErrorLog(err)
+	}
 	io.WriteString(glob.Pipe, "/quit\n")
 	glob.Shutdown = true
 }

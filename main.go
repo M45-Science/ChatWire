@@ -27,7 +27,6 @@ var players_online string
 var noresponsecount int
 
 // Session is a discordgo session
-var Session *discordgo.Session
 
 func main() {
 	glob.Sav_timer = time.Now()
@@ -47,8 +46,8 @@ func main() {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
 	}
 
+	start_bot()
 	support.Chat()
-	discord()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
 	var wg sync.WaitGroup
@@ -63,11 +62,17 @@ func main() {
 				if err != nil {
 					noresponsecount = noresponsecount + 1
 					if noresponsecount == 30 {
-						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 					}
 					if noresponsecount == 60 {
 						noresponsecount = 0
-						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						//Exit, to remove zombies
 						os.Exit(1)
 					}
@@ -94,7 +99,10 @@ func main() {
 				glob.Gametime = "na"
 				glob.Sav_timer = time.Now()
 				noresponsecount = 0
-				Session.ChannelMessageSend(support.Config.FactorioChannelID, "Bot online, server booting...")
+				_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot online, server booting...")
+				if err != nil {
+					support.ErrorLog(err)
+				}
 
 			}
 		}
@@ -119,7 +127,7 @@ func main() {
 	go func() {
 		time.Sleep(60 * time.Second)
 		for {
-			support.CacheDiscordMembers(Session)
+			support.CacheDiscordMembers(glob.DS)
 			time.Sleep(15 * time.Minute)
 		}
 	}()
@@ -138,7 +146,10 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Updating Factorio!")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Updating Factorio!")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for a version upgrade![/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for a version upgrade!![/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for a version upgrade!!![/color]\n")
@@ -160,7 +171,10 @@ func main() {
 						fmt.Println(".offline missing...")
 					}
 					glob.Shutdown = false
-					Session.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio starting!")
+					_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio starting!")
+					if err != nil {
+						support.ErrorLog(err)
+					}
 				}
 			} else if _, err := os.Stat(".restart"); !os.IsNotExist(err) {
 				noresponsecount = 0
@@ -171,7 +185,10 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio restarting!")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio restarting!")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						io.WriteString(glob.Pipe, "[color=1,1,0]Server restarting in 30 seconds.[/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,0]Server restarting in 30 seconds..[/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Server restarting in 30 seconds...[/color]\n")
@@ -191,7 +208,10 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Quick restarting!")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Quick restarting!")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						io.WriteString(glob.Pipe, "[color=1,1,0]Server quick restarting.[/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,1]Server quick restarting..[/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Server quick restarting...[/color]\n")
@@ -208,7 +228,10 @@ func main() {
 				if glob.Running {
 					glob.Shutdown = true
 					go func() {
-						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio is shutting down for maintenance!")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio is shutting down for maintenance!")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for system maintenance![/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for system maintenance!![/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for system maintenance!!![/color]\n")
@@ -225,7 +248,7 @@ func main() {
 	quithandle()
 }
 
-func discord() {
+func start_bot() {
 	glob.Sav_timer = time.Now()
 	noresponsecount = 0
 
@@ -273,7 +296,6 @@ func discord() {
 
 func quithandle() {
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
-	//Session.ChannelMessageSend(support.Config.FactorioChannelID,"Bot online, server booting...")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -284,7 +306,10 @@ func quithandle() {
 	io.WriteString(glob.Pipe, "/quit\n")
 	noresponsecount = 0
 	glob.Shutdown = true
-	Session.ChannelMessageSend(support.Config.FactorioChannelID, "Service killed, shutting down.")
+	_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Service killed, shutting down.")
+	if err != nil {
+		support.ErrorLog(err)
+	}
 	//Wait for save to finish if possible, 30 seconds max
 	for x := 0; x < 30 && glob.Running; x++ {
 		time.Sleep(100 * time.Millisecond)
