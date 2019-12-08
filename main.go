@@ -22,14 +22,9 @@ import (
 )
 
 // Running is the boolean that tells if the server is running or not
-//var Running bool
-//var Shutdown bool
 var last_players_online string
 var players_online string
 var noresponsecount int
-
-// Pipe is an WriteCloser interface
-// var Pipe io.WriteCloser
 
 // Session is a discordgo session
 var Session *discordgo.Session
@@ -38,6 +33,7 @@ func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false
+	glob.Shutdown = false
 	support.Config.LoadEnv()
 
 	// Do not exit the app on this error.
@@ -51,6 +47,9 @@ func main() {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
 	}
 
+	support.Chat()
+	discord()
+
 	mwriter := io.MultiWriter(logging, os.Stdout)
 	var wg sync.WaitGroup
 	wg.Add(4)
@@ -63,10 +62,10 @@ func main() {
 				_, err = io.WriteString(glob.Pipe, "/time\n")
 				if err != nil {
 					noresponsecount = noresponsecount + 1
-					if ( noresponsecount == 30 ) {
-						Session.ChannelMessageSend(support.Config.FactorioChannelID,"Server has not responded for 30 seconds...")
+					if noresponsecount == 30 {
+						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
 					}
-					if ( noresponsecount == 60 )  {
+					if noresponsecount == 60 {
 						noresponsecount = 0
 						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
 						//Exit, to remove zombies
@@ -95,7 +94,7 @@ func main() {
 				glob.Gametime = "na"
 				glob.Sav_timer = time.Now()
 				noresponsecount = 0
-				Session.ChannelMessageSend(support.Config.FactorioChannelID,"Bot online, server booting...")
+				Session.ChannelMessageSend(support.Config.FactorioChannelID, "Bot online, server booting...")
 
 			}
 		}
@@ -143,7 +142,7 @@ func main() {
 						io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for a version upgrade![/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for a version upgrade!![/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for a version upgrade!!![/color]\n")
-					        time.Sleep(30 * time.Second)
+						time.Sleep(30 * time.Second)
 						io.WriteString(glob.Pipe, "/quit\n")
 					}()
 				}
@@ -177,7 +176,7 @@ func main() {
 						io.WriteString(glob.Pipe, "[color=1,0,0]Server restarting in 30 seconds..[/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Server restarting in 30 seconds...[/color]\n")
 
-					        time.Sleep(30 * time.Second)
+						time.Sleep(30 * time.Second)
 						io.WriteString(glob.Pipe, "/quit\n")
 					}()
 				}
@@ -192,7 +191,7 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-					        Session.ChannelMessageSend(support.Config.FactorioChannelID, "Quick restarting!")
+						Session.ChannelMessageSend(support.Config.FactorioChannelID, "Quick restarting!")
 						io.WriteString(glob.Pipe, "[color=1,1,0]Server quick restarting.[/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,1]Server quick restarting..[/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Server quick restarting...[/color]\n")
@@ -213,7 +212,7 @@ func main() {
 						io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for system maintenance![/color]\n")
 						io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for system maintenance!![/color]\n")
 						io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for system maintenance!!![/color]\n")
-					        time.Sleep(30 * time.Second)
+						time.Sleep(30 * time.Second)
 						io.WriteString(glob.Pipe, "/quit\n")
 					}()
 				}
@@ -222,13 +221,12 @@ func main() {
 			}
 		}
 
-
-
 	}()
-	discord()
+	quithandle()
 }
 
 func discord() {
+	glob.Sav_timer = time.Now()
 	noresponsecount = 0
 
 	// No hard coding the token }:<
@@ -266,13 +264,16 @@ func discord() {
 		return
 	}
 
+	time.Sleep(2 * time.Second)
+
 	bot.AddHandler(messageCreate)
-	bot.AddHandlerOnce(support.Chat)
+	//bot.AddHandlerOnce(support.Chat)
 	bot.UpdateStatus(0, support.Config.GameName)
+}
+
+func quithandle() {
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	//Session.ChannelMessageSend(support.Config.FactorioChannelID,"Bot online, server booting...")
-	glob.Sav_timer = time.Now()
-	noresponsecount = 0
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -286,7 +287,7 @@ func discord() {
 	Session.ChannelMessageSend(support.Config.FactorioChannelID, "Service killed, shutting down.")
 	//Wait for save to finish if possible, 30 seconds max
 	for x := 0; x < 30 && glob.Running; x++ {
-		time.Sleep ( 100 * time.Millisecond )
+		time.Sleep(100 * time.Millisecond)
 	}
 	// Cleanly close down the Discord session.
 	bot.Close()
@@ -306,14 +307,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			command := strings.Split(m.Content[1:len(m.Content)], " ")
 			name := strings.ToLower(command[0])
-			if ( len(command) >= 2 ) {
+			if len(command) >= 2 {
 				myarg = command[1]
 				glob.CharName = myarg
 			}
 			commands.RunCommand(name, s, m)
 			return
 		}
-		if !strings.Contains(strings.ToLower(m.Content),"!clear" ) {
+		if !strings.Contains(strings.ToLower(m.Content), "!clear") {
 			_, err := io.WriteString(glob.Pipe, fmt.Sprintf("[color=0,1,1][DISCORD-CHAT][/color] [color=1,1,0]%s:[/color] [color=0,1,1]%s[/color]\n", m.Author.Username, m.ContentWithMentionsReplaced()))
 			if err != nil {
 				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
