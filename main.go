@@ -249,7 +249,7 @@ func discord() {
 	}
 
 	bot, err := discordgo.New("Bot " + discordToken)
-	Session = bot
+	glob.DS = bot
 	if err != nil {
 		fmt.Println("Error creating Discord session: ", err)
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to create the Discord session\nDetails: %s", time.Now(), err))

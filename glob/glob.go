@@ -3,6 +3,8 @@ package glob
 import (
 	"io"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 // Pipe is an WriteCloser interface
@@ -12,3 +14,5 @@ var Sav_timer time.Time
 var CharName = ""
 var Running = true
 var Shutdown = false
+
+var DS *discordgo.Session
