@@ -290,7 +290,7 @@ func quithandle() {
 		time.Sleep(100 * time.Millisecond)
 	}
 	// Cleanly close down the Discord session.
-	bot.Close()
+	glob.DS.Close()
 	os.Exit(1)
 }
 
