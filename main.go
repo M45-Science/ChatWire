@@ -111,7 +111,7 @@ func main() {
 			}
 			_, err = io.WriteString(glob.Pipe, fmt.Sprintf("%s\n", line))
 			if err != nil {
-				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err)
+				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err))
 				glob.Running = false
 			}
 			time.Sleep(100 * time.Millisecond)
