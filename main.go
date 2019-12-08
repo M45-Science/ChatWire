@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -21,12 +20,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// Running is the boolean that tells if the server is running or not
-var last_players_online string
-var players_online string
 var noresponsecount int
-
-// Session is a discordgo session
 
 func main() {
 	glob.Sav_timer = time.Now()
@@ -50,11 +44,8 @@ func main() {
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
-	var wg sync.WaitGroup
-	wg.Add(4)
 
 	go func() {
-		defer wg.Done()
 		for {
 			time.Sleep(1 * time.Second)
 			if glob.Running && !glob.Shutdown {
@@ -87,12 +78,14 @@ func main() {
 
 				if err != nil {
 					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to execute cmd.StdinPipe()\nDetails: %s", time.Now(), err))
+					glob.Running = false
 				}
 
 				err := cmd.Start()
 
 				if err != nil {
 					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to start the server\nDetails: %s", time.Now(), err))
+					glob.Running = false
 				}
 				//This is okay, because if server doesn't respond it will be auto-rebooted.
 				glob.Running = true
@@ -109,16 +102,17 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(1 * time.Second)
 		Console := bufio.NewReader(os.Stdin)
 		for {
 			line, _, err := Console.ReadLine()
 			if err != nil {
 				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to read the input to pass as input to the console\nDetails: %s", time.Now(), err))
+				glob.Running = false
 			}
 			_, err = io.WriteString(glob.Pipe, fmt.Sprintf("%s\n", line))
 			if err != nil {
-				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err))
+				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err)
+				glob.Running = false
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
@@ -276,6 +270,7 @@ func start_bot() {
 	if err != nil {
 		fmt.Println("Error creating Discord session: ", err)
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to create the Discord session\nDetails: %s", time.Now(), err))
+		os.Exit(1)
 		return
 	}
 
@@ -284,6 +279,7 @@ func start_bot() {
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to connect to Discord\nDetails: %s", time.Now(), err))
+		os.Exit(1)
 		return
 	}
 
@@ -343,6 +339,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			_, err := io.WriteString(glob.Pipe, fmt.Sprintf("[color=0,1,1][DISCORD-CHAT][/color] [color=1,1,0]%s:[/color] [color=0,1,1]%s[/color]\n", m.Author.Username, m.ContentWithMentionsReplaced()))
 			if err != nil {
 				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+				glob.Running = false
 			}
 		}
 		return
