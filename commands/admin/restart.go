@@ -2,11 +2,11 @@ package admin
 
 import (
 	"io"
-//	"time"
+	//	"time"
 
-	"github.com/bwmarrin/discordgo"
-	"../../support"
 	"../../glob"
+	"../../support"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Restart saves and restarts the server

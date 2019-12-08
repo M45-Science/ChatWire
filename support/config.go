@@ -39,6 +39,6 @@ func (conf *config) LoadEnv() {
 		ModListLocation:   os.Getenv("ModListLocation"),
 		GameName:          os.Getenv("GameName"),
 	}
-	fmt.Println ( Config.AdminIDs[0] )
+	fmt.Println(Config.AdminIDs[0])
 
 }

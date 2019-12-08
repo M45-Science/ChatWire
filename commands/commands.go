@@ -33,14 +33,14 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, Admin: true})
 
 	// Util Commands
-//	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
+	//	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
 }
 
 // RunCommand runs a specified command.
 func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	for _, command := range CL.CommandList {
-		fmt.Println ( command.Name, name )
+		fmt.Println(command.Name, name)
 		if strings.ToLower(command.Name) == strings.ToLower(name) {
 			if command.Admin && CheckAdmin(m.Author.ID) {
 				command.Command(s, m)

@@ -17,6 +17,6 @@ func ErrorLog(err error) {
 	errorlog.WriteString(fmt.Sprintf("%s\n", err))
 	fmt.Println("Opps, it looks like an error happened!")
 	//Uh, no don't just die and take down server.
-//	Exit(1)
+	//	Exit(1)
 	return
 }

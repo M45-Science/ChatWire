@@ -1,12 +1,12 @@
 package utils
 
 import (
-        "../../support"
-        "github.com/bwmarrin/discordgo"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
+	"../../support"
+	"github.com/bwmarrin/discordgo"
 )
 
 // ModJson is struct containing a slice of Mod.
@@ -44,11 +44,11 @@ func modListEmbed(ModList *ModJson) *discordgo.MessageEmbed {
 		})
 	}
 	embed := &discordgo.MessageEmbed{
-		Type:  "rich",
-		Color: 52,
+		Type:        "rich",
+		Color:       52,
 		Description: fmt.Sprintf("%d total %s (%d enabled, %d disabled)", len(ModList.Mods), S, enabled, disabled),
-		Title:  "Mods",
-		Fields: fields,
+		Title:       "Mods",
+		Fields:      fields,
 	}
 	return embed
 
@@ -71,7 +71,7 @@ func ModsList(s *discordgo.Session, m *discordgo.MessageCreate) {
 			fmt.Sprintf("Sorry, there was an error reading your mods list. Error details: %s", err))
 		return
 	}
-	s.ChannelMessageSend(support.Config.FactorioChannelID, "Test" )
+	s.ChannelMessageSend(support.Config.FactorioChannelID, "Test")
 	_, err = s.ChannelMessageSendEmbed(support.Config.FactorioChannelID, modListEmbed(ModList))
 	if err != nil {
 		s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Sorry, there was an error with the discord embed message Error details: %s", err))
