@@ -7,12 +7,11 @@ import (
 	"time"
 
 	"../glob/"
-	"github.com/bwmarrin/discordgo"
 	"github.com/hpcloud/tail"
 )
 
 // Chat pipes in-game chat to Discord.
-func Chat(s *discordgo.Session, m *discordgo.MessageCreate) {
+func Chat() {
 	go func() {
 		for {
 
