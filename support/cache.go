@@ -19,6 +19,9 @@ var Users []UserList
 
 // CacheDiscordMembers caches the users list to be searched.
 func CacheDiscordMembers(s *discordgo.Session) {
+	return
+	//Rewrite
+
 	// Clear the users list
 	Users = nil
 
