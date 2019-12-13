@@ -4,7 +4,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/Distortions81/discordgo"
 )
 
 // Pipe is an WriteCloser interface

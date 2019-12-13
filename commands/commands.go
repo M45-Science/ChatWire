@@ -7,7 +7,7 @@ import (
 	"../commands/admin"
 	"../commands/utils"
 	"../support"
-	"github.com/bwmarrin/discordgo"
+	"github.com/Distortions81/discordgo"
 )
 
 // Commands is a struct containing a slice of Command.

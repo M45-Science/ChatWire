@@ -16,7 +16,7 @@ import (
 	//"./commands/admin"
 	"./glob"
 	"./support"
-	"github.com/bwmarrin/discordgo"
+	"github.com/Distortions81/discordgo"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -77,6 +77,9 @@ func main() {
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = mwriter
 				glob.Pipe, err = cmd.StdinPipe()
+				if err != nil {
+					support.ErrorLog(err)
+				}
 				defer cmd.Wait() //Zombie Fix
 
 				if err != nil {
@@ -112,10 +115,12 @@ func main() {
 				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to read the input to pass as input to the console\nDetails: %s", time.Now(), err))
 				glob.Running = false
 			}
-			_, err = io.WriteString(glob.Pipe, fmt.Sprintf("%s\n", line))
-			if err != nil {
-				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err))
-				glob.Running = false
+			if len(line) > 1 {
+				_, err = io.WriteString(glob.Pipe, fmt.Sprintf("%s\n", line))
+				if err != nil {
+					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err))
+					glob.Running = false
+				}
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
@@ -139,11 +144,23 @@ func main() {
 						if err != nil {
 							support.ErrorLog(err)
 						}
-						io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for a version upgrade![/color]\n")
-						io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for a version upgrade!![/color]\n")
-						io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for a version upgrade!!![/color]\n")
+						_, err = io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for a version upgrade![/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for a version upgrade!![/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for a version upgrade!!![/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						time.Sleep(30 * time.Second)
-						io.WriteString(glob.Pipe, "/quit\n")
+						_, err = io.WriteString(glob.Pipe, "/quit\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 					}()
 				}
 
@@ -178,12 +195,24 @@ func main() {
 						if err != nil {
 							support.ErrorLog(err)
 						}
-						io.WriteString(glob.Pipe, "[color=1,1,0]Server restarting in 30 seconds.[/color]\n")
-						io.WriteString(glob.Pipe, "[color=1,0,0]Server restarting in 30 seconds..[/color]\n")
-						io.WriteString(glob.Pipe, "[color=0,1,1]Server restarting in 30 seconds...[/color]\n")
+						_, err = io.WriteString(glob.Pipe, "[color=1,1,0]Server restarting in 30 seconds.[/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=1,0,0]Server restarting in 30 seconds..[/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=0,1,1]Server restarting in 30 seconds...[/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 
 						time.Sleep(30 * time.Second)
-						io.WriteString(glob.Pipe, "/quit\n")
+						_, err = io.WriteString(glob.Pipe, "/quit\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 					}()
 				}
 
@@ -201,11 +230,23 @@ func main() {
 						if err != nil {
 							support.ErrorLog(err)
 						}
-						io.WriteString(glob.Pipe, "[color=1,1,0]Server quick restarting.[/color]\n")
-						io.WriteString(glob.Pipe, "[color=1,0,1]Server quick restarting..[/color]\n")
-						io.WriteString(glob.Pipe, "[color=0,1,1]Server quick restarting...[/color]\n")
+						_, err = io.WriteString(glob.Pipe, "[color=1,1,0]Server quick restarting.[/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=1,0,1]Server quick restarting..[/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=0,1,1]Server quick restarting...[/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						time.Sleep(5 * time.Second)
-						io.WriteString(glob.Pipe, "/quit\n")
+						_, err = io.WriteString(glob.Pipe, "/quit\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 					}()
 				}
 				glob.Shutdown = false
@@ -221,11 +262,23 @@ func main() {
 						if err != nil {
 							support.ErrorLog(err)
 						}
-						io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for system maintenance![/color]\n")
-						io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for system maintenance!![/color]\n")
-						io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for system maintenance!!![/color]\n")
+						_, err = io.WriteString(glob.Pipe, "[color=1,1,0]Factorio is shutting down in 30 seconds for system maintenance![/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=1,0,0]Factorio is shutting down in 30 seconds for system maintenance!![/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+						_, err = io.WriteString(glob.Pipe, "[color=0,1,1]Factorio is shutting down in 30 seconds for system maintenance!!![/color]\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 						time.Sleep(30 * time.Second)
-						io.WriteString(glob.Pipe, "/quit\n")
+						_, err = io.WriteString(glob.Pipe, "/quit\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 					}()
 				}
 
@@ -290,13 +343,25 @@ func quithandle() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	io.WriteString(glob.Pipe, "Server killed.\n")
-	io.WriteString(glob.Pipe, "Server killed..\n")
-	io.WriteString(glob.Pipe, "Server killed...\n")
-	io.WriteString(glob.Pipe, "/quit\n")
+	_, err := io.WriteString(glob.Pipe, "Server killed.\n")
+	if err != nil {
+		support.ErrorLog(err)
+	}
+	_, err = io.WriteString(glob.Pipe, "Server killed..\n")
+	if err != nil {
+		support.ErrorLog(err)
+	}
+	_, err = io.WriteString(glob.Pipe, "Server killed...\n")
+	if err != nil {
+		support.ErrorLog(err)
+	}
+	_, err = io.WriteString(glob.Pipe, "/quit\n")
+	if err != nil {
+		support.ErrorLog(err)
+	}
 	noresponsecount = 0
 	glob.Shutdown = true
-	_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Service killed, shutting down.")
+	_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Service killed, shutting down.")
 	if err != nil {
 		support.ErrorLog(err)
 	}

@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"../../support"
-	"github.com/bwmarrin/discordgo"
+	"github.com/Distortions81/discordgo"
 )
 
 // ModJson is struct containing a slice of Mod.

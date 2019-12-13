@@ -55,8 +55,11 @@ func Chat() {
 								// Don't save if we saved recently
 								if t.Sub(glob.Sav_timer).Seconds() > 15 {
 
-									//io.WriteString(glob.Pipe, fmt.Sprintf("/server-save sav-%d-%02d-%02d--%02d.%02d.%02d\n",  t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second() ) )
-									io.WriteString(glob.Pipe, fmt.Sprintf("/server-save sav-%s\n", glob.Gametime))
+									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/server-save sav-%s\n", glob.Gametime))
+									if err != nil {
+										ErrorLog(fmt.Errorf("%s: Error when commanding LEAVE save.\nDetails: %s", time.Now(), err))
+										glob.Running = false
+									}
 									glob.Sav_timer = time.Now()
 								}
 

@@ -5,7 +5,7 @@ import (
 
 	"../../glob"
 	"../../support"
-	"github.com/bwmarrin/discordgo"
+	"github.com/Distortions81/discordgo"
 	//b64 "encoding/base64"
 )
 

@@ -2,11 +2,10 @@ package admin
 
 import (
 	"io"
-	//	"time"
 
 	"../../glob"
 	"../../support"
-	"github.com/bwmarrin/discordgo"
+	"github.com/Distortions81/discordgo"
 )
 
 // Restart saves and restarts the server
@@ -16,7 +15,10 @@ func Restart(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		support.ErrorLog(err)
 	}
-	io.WriteString(glob.Pipe, "/quit\n")
+	_, err = io.WriteString(glob.Pipe, "/quit\n")
+	if err != nil {
+		support.ErrorLog(err)
+	}
 	glob.Shutdown = false
 	return
 }
