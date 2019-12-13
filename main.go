@@ -41,7 +41,10 @@ func main() {
 	}
 
 	start_bot()
+	time.Sleep(5*time.Second)
+
 	support.Chat()
+	time.Sleep(10*time.Second)
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
 
@@ -52,15 +55,15 @@ func main() {
 				_, err = io.WriteString(glob.Pipe, "/time\n")
 				if err != nil {
 					noresponsecount = noresponsecount + 1
-					if noresponsecount == 30 {
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
+					if noresponsecount == 60 {
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 60 seconds...")
 						if err != nil {
 							support.ErrorLog(err)
 						}
 					}
-					if noresponsecount == 60 {
+					if noresponsecount == 120 {
 						noresponsecount = 0
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 120 seconds... restarting it.")
 						if err != nil {
 							support.ErrorLog(err)
 						}
@@ -119,16 +122,8 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(60 * time.Second)
 		for {
-			support.CacheDiscordMembers(glob.DS)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
-
-	go func() {
-		for {
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 
 			// Look for signal files
 			if _, err := os.Stat(".upgrade"); !os.IsNotExist(err) {
@@ -283,10 +278,9 @@ func start_bot() {
 		return
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	bot.AddHandler(messageCreate)
-	//bot.AddHandlerOnce(support.Chat)
 	bot.UpdateStatus(0, support.Config.GameName)
 }
 

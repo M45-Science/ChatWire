@@ -68,19 +68,6 @@ func Chat() {
 
 						TmpList := strings.Split(line.Text, " ")
 						TmpList[3] = strings.Replace(TmpList[3], ":", "", -1)
-						if strings.Contains(strings.Join(TmpList, " "), "@") {
-							index := LocateMentionPosition(TmpList)
-
-							for _, position := range index {
-								User := SearchForUser(TmpList[position])
-
-								if User == nil {
-									continue
-								}
-								TmpList[position] = User.Mention()
-							}
-
-						}
 
 						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], strings.Join(TmpList[4:], " ")))
 						if err != nil {
