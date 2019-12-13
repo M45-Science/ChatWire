@@ -2,6 +2,7 @@ package glob
 
 import (
 	"io"
+	"os/exec"
 	"time"
 
 	"github.com/Distortions81/discordgo"
@@ -16,3 +17,4 @@ var Running = true
 var Shutdown = false
 
 var DS *discordgo.Session
+var GCMD *exec.Cmd
