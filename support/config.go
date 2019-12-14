@@ -39,6 +39,7 @@ func (conf *config) LoadEnv() {
 		Prefix:            os.Getenv("Prefix"),
 		ModListLocation:   os.Getenv("ModListLocation"),
 		GameName:          os.Getenv("GameName"),
+		ChannelName:       os.Getenv("ChannelName"),
 	}
 	fmt.Println(Config.AdminIDs[0])
 
