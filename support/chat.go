@@ -24,7 +24,7 @@ func Chat() {
 				time.Sleep(100 * time.Millisecond)
 				//Ignore console messages
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
-					if !strings.Contains(line.Text, "[CHAT]") && (strings.Contains(line.Text, "[JOIN]") || strings.Contains(line.Text, "[LEAVE]")) {
+					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
 
 						//Send join/leave to Discord
