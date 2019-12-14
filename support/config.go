@@ -19,6 +19,7 @@ type config struct {
 	Prefix            string
 	ModListLocation   string
 	GameName          string
+	ChannelName       string
 }
 
 func (conf *config) LoadEnv() {

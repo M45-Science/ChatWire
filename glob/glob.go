@@ -18,3 +18,4 @@ var Shutdown = false
 
 var DS *discordgo.Session
 var GCMD *exec.Cmd
+var Players = ""
