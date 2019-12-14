@@ -27,8 +27,15 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
 
+						_, err = io.WriteString(glob.Pipe, "/p o\r\n")
+
+						if err != nil {
+							ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+						}
+
 						//Send join/leave to Discord
 						if strings.Contains(line.Text, "Online players") {
+
 							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", strings.Join(TmpList[3:], " ")))
 
 							if err != nil {
