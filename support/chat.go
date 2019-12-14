@@ -35,18 +35,18 @@ func Chat() {
 						if strings.Contains(line.Text, "Online players") {
 
 							poc := strings.Join(TmpList[2:], " ")
-							poc := strings.Replace(poc, "(", "", -1)
-							poc := strings.Replace(poc, "", "", -1)
-							poc := strings.Replace(poc, ":", "", -1)
+							poc = strings.Replace(poc, "(", "", -1)
+							poc = strings.Replace(poc, "", "", -1)
+							poc = strings.Replace(poc, ":", "", -1)
 							newchname := fmt.Sprintf("players online %s", poc)
-							startchan, err := Session.Channel(support.Config.FactorioChannelID)
-							mych, err := Session.ChannelEdit(support.Config.FactorioChannelID, startchan.Name)
+							startchan, _ := glob.DS.Channel(Config.FactorioChannelID)
+							mych, _ := glob.DS.ChannelEdit(Config.FactorioChannelID, startchan.Name)
 
 							var chedit discordgo.ChannelEdit
 							chedit.Name = mych.Name
 							chedit.Topic = newchname
 
-							_, _ = Session.ChannelEditComplex(support.Config.FactorioChannelID, &chedit)
+							_, _ = glob.DS.ChannelEditComplex(Config.FactorioChannelID, &chedit)
 
 						}
 						//Join message, with delay
