@@ -38,7 +38,12 @@ func Chat() {
 							poc = strings.ReplaceAll(poc, ")", "")
 							poc = strings.ReplaceAll(poc, ":", "")
 
-							newchname := fmt.Sprintf("%s %s online", Config.ChannelName, poc)
+							newchname := ""
+							if poc == "0" {
+								newchname = fmt.Sprintf("%s", Config.ChannelName)
+							} else {
+								newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
+							}
 							_, _ = glob.DS.Channel(Config.FactorioChannelID)
 							_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
 
