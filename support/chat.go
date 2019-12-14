@@ -53,7 +53,7 @@ func Chat() {
 							_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 
 							if err != nil {
-								ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+								ErrorLog(fmt.Errorf("%s: error when getting player count\nDetails: %s", time.Now(), err))
 							}
 							go func() {
 								time.Sleep(20 * time.Second)
@@ -64,7 +64,7 @@ func Chat() {
 								_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Please report griefers on the Discord, so we can ban them![/color]\r\n", TmpList[3]))
 
 								if err != nil {
-									ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+									ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
 								}
 							}()
 
@@ -74,7 +74,7 @@ func Chat() {
 							_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 
 							if err != nil {
-								ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+								ErrorLog(fmt.Errorf("%s: error getting player count\nDetails: %s", time.Now(), err))
 							}
 							go func() {
 								t := time.Now()
