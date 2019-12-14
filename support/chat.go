@@ -28,11 +28,6 @@ func Chat() {
 						TmpList := strings.Split(line.Text, " ")
 
 						//Send join/leave to Discord
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
-						if err != nil {
-							ErrorLog(err)
-						}
-
 						if strings.Contains(line.Text, "Online players (") {
 							parts := strings.Split(line.Text, " ")
 							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", parts[3]))
@@ -55,6 +50,10 @@ func Chat() {
 									ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
 								}
 							}()
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							if err != nil {
+								ErrorLog(err)
+							}
 						}
 						//Save on leave
 						if strings.Contains(line.Text, "[LEAVE]") {
@@ -72,6 +71,10 @@ func Chat() {
 								}
 
 							}()
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							if err != nil {
+								ErrorLog(err)
+							}
 						}
 					} //End join/leave
 					//Send chat to Discord
