@@ -3,7 +3,7 @@ package admin
 import (
 	"../../glob"
 	"../../support"
-	"github.com/Distortions81/discordgo"
+	"github.com/bwmarrin/discordgo"
 	"io"
 )
 

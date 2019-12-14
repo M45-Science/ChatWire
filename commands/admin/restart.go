@@ -5,7 +5,7 @@ import (
 
 	"../../glob"
 	"../../support"
-	"github.com/Distortions81/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Restart saves and restarts the server

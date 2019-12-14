@@ -16,7 +16,7 @@ import (
 	//"./commands/admin"
 	"./glob"
 	"./support"
-	"github.com/Distortions81/discordgo"
+	"github.com/bwmarrin/discordgo"
 	_ "github.com/joho/godotenv/autoload"
 )
 
