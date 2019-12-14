@@ -23,7 +23,7 @@ func Chat() {
 			for line := range t.Lines {
 				time.Sleep(100 * time.Millisecond)
 				//Ignore console messages
-				if line.Text = "" {
+				if line.Text == "" {
 					return
 				}
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
