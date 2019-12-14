@@ -23,6 +23,9 @@ func Chat() {
 			for line := range t.Lines {
 				time.Sleep(100 * time.Millisecond)
 				//Ignore console messages
+				if line.Text = "" {
+					return
+				}
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
@@ -30,7 +33,7 @@ func Chat() {
 						//Send join/leave to Discord
 						if strings.Contains(line.Text, "Online players") {
 
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", strings.Join(TmpList[2:], " ")))
 
 							if err != nil {
 								ErrorLog(err)
@@ -38,7 +41,7 @@ func Chat() {
 						}
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
-							_, err = io.WriteString(glob.Pipe, "/p o\r\n")
+							_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 
 							if err != nil {
 								ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
@@ -62,7 +65,7 @@ func Chat() {
 						}
 						//Save on leave
 						if strings.Contains(line.Text, "[LEAVE]") {
-							_, err = io.WriteString(glob.Pipe, "/p o\r\n")
+							_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 
 							if err != nil {
 								ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
