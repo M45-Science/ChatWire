@@ -38,7 +38,7 @@ func Chat() {
 							poc = strings.Replace(poc, "(", "", -1)
 							poc = strings.Replace(poc, ")", "", -1)
 							poc = strings.Replace(poc, ":", "", -1)
-							newchname := fmt.Sprintf("players online %s", poc)
+							newchname := fmt.Sprintf("%s: (%s online)", poc)
 							startchan, _ := glob.DS.Channel(Config.FactorioChannelID)
 							mych, _ := glob.DS.ChannelEdit(Config.FactorioChannelID, startchan.Name)
 
