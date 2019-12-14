@@ -33,9 +33,7 @@ func Chat() {
 							ErrorLog(err)
 						}
 
-						topic := fmt.Sprintf("%S: %d online", support.Config.ChannelName, glob.players)
-
-						if string.Contains(line.Text, "Online players (") {
+						if strings.Contains(line.Text, "Online players (") {
 							parts := strings.Split(line.Text, " ")
 							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", parts[3]))
 
