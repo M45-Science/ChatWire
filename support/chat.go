@@ -44,9 +44,9 @@ func Chat() {
 							} else {
 								newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
 							}
-							_, _ = glob.DS.Channel(Config.FactorioChannelID)
 							_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
 
+							//_, _ = glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s players online", poc))
 						}
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
@@ -67,10 +67,7 @@ func Chat() {
 									ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
 								}
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
-							if err != nil {
-								ErrorLog(err)
-							}
+
 						}
 						//Save on leave
 						if strings.Contains(line.Text, "[LEAVE]") {
