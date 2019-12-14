@@ -67,6 +67,10 @@ func Chat() {
 									ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
 								}
 							}()
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							if err != nil {
+								ErrorLog(err)
+							}
 
 						}
 						//Save on leave
