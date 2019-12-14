@@ -27,12 +27,6 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
 
-						_, err = io.WriteString(glob.Pipe, "/p o\r\n")
-
-						if err != nil {
-							ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
-						}
-
 						//Send join/leave to Discord
 						if strings.Contains(line.Text, "Online players") {
 
@@ -44,6 +38,11 @@ func Chat() {
 						}
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
+							_, err = io.WriteString(glob.Pipe, "/p o\r\n")
+
+							if err != nil {
+								ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+							}
 							go func() {
 								time.Sleep(20 * time.Second)
 								_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", TmpList[3]))
@@ -63,6 +62,11 @@ func Chat() {
 						}
 						//Save on leave
 						if strings.Contains(line.Text, "[LEAVE]") {
+							_, err = io.WriteString(glob.Pipe, "/p o\r\n")
+
+							if err != nil {
+								ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
+							}
 							go func() {
 								t := time.Now()
 								// Don't save if we saved recently
