@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"../glob/"
+	"github.com/bwmarrin/discordgo"
 	"github.com/hpcloud/tail"
 )
 
@@ -33,11 +34,20 @@ func Chat() {
 						//Send join/leave to Discord
 						if strings.Contains(line.Text, "Online players") {
 
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", strings.Join(TmpList[2:], " ")))
+							poc := strings.Join(TmpList[2:], " ")
+							poc := strings.Replace(poc, "(", "", -1)
+							poc := strings.Replace(poc, "", "", -1)
+							poc := strings.Replace(poc, ":", "", -1)
+							newchname := fmt.Sprintf("players online %s", poc)
+							startchan, err := Session.Channel(support.Config.FactorioChannelID)
+							mych, err := Session.ChannelEdit(support.Config.FactorioChannelID, startchan.Name)
 
-							if err != nil {
-								ErrorLog(err)
-							}
+							var chedit discordgo.ChannelEdit
+							chedit.Name = mych.Name
+							chedit.Topic = newchname
+
+							_, _ = Session.ChannelEditComplex(support.Config.FactorioChannelID, &chedit)
+
 						}
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
