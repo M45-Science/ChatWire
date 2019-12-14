@@ -28,9 +28,8 @@ func Chat() {
 						TmpList := strings.Split(line.Text, " ")
 
 						//Send join/leave to Discord
-						if strings.Contains(line.Text, "Online players (") {
-							parts := strings.Split(line.Text, " ")
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", parts[3]))
+						if strings.Contains(line.Text, "Online players") {
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("players online %s", strings.Join(TmpList[3:], " ")))
 
 							if err != nil {
 								ErrorLog(err)
