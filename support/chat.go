@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"../glob/"
-	"github.com/bwmarrin/discordgo"
 	"github.com/hpcloud/tail"
 )
 
@@ -35,18 +34,13 @@ func Chat() {
 						if strings.Contains(line.Text, "Online players") {
 
 							poc := strings.Join(TmpList[2:], " ")
-							poc = strings.Replace(poc, "(", "", -1)
-							poc = strings.Replace(poc, ")", "", -1)
-							poc = strings.Replace(poc, ":", "", -1)
-							newchname := fmt.Sprintf("%s: (%s online)", poc)
-							startchan, _ := glob.DS.Channel(Config.FactorioChannelID)
-							mych, _ := glob.DS.ChannelEdit(Config.FactorioChannelID, startchan.Name)
+							poc = strings.ReplaceAll(poc, "(", "")
+							poc = strings.ReplaceAll(poc, ")", "")
+							poc = strings.ReplaceAll(poc, ":", "")
 
-							var chedit discordgo.ChannelEdit
-							chedit.Name = mych.Name
-							chedit.Topic = newchname
-
-							_, _ = glob.DS.ChannelEditComplex(Config.FactorioChannelID, &chedit)
+							newchname := fmt.Sprintf("%s: (%s online)", Config.ChannelName, poc)
+							_, _ = glob.DS.Channel(Config.FactorioChannelID)
+							_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
 
 						}
 						//Join message, with delay
