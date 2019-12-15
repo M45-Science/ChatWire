@@ -27,8 +27,9 @@ func Chat() {
 				if line.Text == "" {
 					return
 				}
-				if len(line.Text) > 150 {
-					line.Text = fmt.Sprintf("%150s... (message cut, too long)", line.Text)
+				if len(line.Text) > 1900 {
+					//Message too long
+					return
 				}
 
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
@@ -72,7 +73,7 @@ func Chat() {
 									ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
 								}
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.12s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -99,7 +100,7 @@ func Chat() {
 								}
 
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%.12s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.12s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -119,7 +120,11 @@ func Chat() {
 						cmess = rega.ReplaceAllString(cmess, "${1}")
 						cmess = regb.ReplaceAllString(cmess, "${1}")
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], cmess))
+						if len(cmess) > 300 {
+							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
+						}
+
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
 						if err != nil {
 							ErrorLog(err)
 						}
@@ -130,7 +135,7 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {
 						TmpList := strings.Split(line.Text, " ")
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%13s) %s", glob.Gametime, strings.Join(TmpList[4:7], " ")))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s", strings.Join(TmpList[4:7], " ")))
 						if err != nil {
 							ErrorLog(err)
 						}
