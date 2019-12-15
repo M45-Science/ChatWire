@@ -31,13 +31,6 @@ func Chat() {
 					line.Text = fmt.Sprintf("%125s... (message cut, too long)", line.Text)
 				}
 
-				//Remove factorio tags
-				rega := regexp.MustCompile(`\[.*?=.*?\]`)
-				regb := regexp.MustCompile(`\[/.*?\]`)
-				res := rega.ReplaceAllString(line.Text, "${1}")
-				res = regb.ReplaceAllString(res, "${1}")
-				line.Text = res
-
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
@@ -119,6 +112,13 @@ func Chat() {
 						TmpList[3] = strings.Replace(TmpList[3], ":", "", -1)
 
 						cmess := strings.Join(TmpList[4:], " ")
+
+						//Remove factorio tags
+						rega := regexp.MustCompile(`\[.*?=.*?\]`)
+						regb := regexp.MustCompile(`\[/.*?\]`)
+						cmess = rega.ReplaceAllString(cmess, "${1}")
+						cmess = regb.ReplaceAllString(cmess, "${1}")
+
 						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], cmess))
 						if err != nil {
 							ErrorLog(err)
