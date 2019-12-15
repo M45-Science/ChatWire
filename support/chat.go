@@ -27,8 +27,8 @@ func Chat() {
 				if line.Text == "" {
 					return
 				}
-				if len(line.Text) > 125 {
-					line.Text = fmt.Sprintf("%125s... (message cut, too long)", line.Text)
+				if len(line.Text) > 150 {
+					line.Text = fmt.Sprintf("%150s... (message cut, too long)", line.Text)
 				}
 
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
@@ -99,7 +99,7 @@ func Chat() {
 								}
 
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%.12s) %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
