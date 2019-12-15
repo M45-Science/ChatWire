@@ -115,11 +115,10 @@ func Chat() {
 						cmess := strings.Join(TmpList[4:], " ")
 
 						//Remove factorio tags
-						rega := regexp.MustCompile(`\[.*?=.*?\]`)
-						regb := regexp.MustCompile(`\[/.*?\]`)
+						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
+						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
 						cmess = rega.ReplaceAllString(cmess, "${1}")
 						cmess = regb.ReplaceAllString(cmess, "${1}")
-
 						if len(cmess) > 300 {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
 						}
