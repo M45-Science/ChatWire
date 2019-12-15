@@ -3,6 +3,7 @@ package support
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 	"time"
 
@@ -26,6 +27,17 @@ func Chat() {
 				if line.Text == "" {
 					return
 				}
+				if len(line.Text) > 125 {
+					line.Text = fmt.Sprintf("%125s... (message cut, too long)", line.Text)
+				}
+
+				//Remove factorio tags
+				rega := regexp.MustCompile(`\[.*?=.*?\]`)
+				regb := regexp.MustCompile(`\[/.*?\]`)
+				res := rega.ReplaceAllString(line.Text, "${1}")
+				res = regb.ReplaceAllString(res, "${1}")
+				line.Text = res
+
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
@@ -106,7 +118,8 @@ func Chat() {
 						TmpList := strings.Split(line.Text, " ")
 						TmpList[3] = strings.Replace(TmpList[3], ":", "", -1)
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], strings.Join(TmpList[4:], " ")))
+						cmess := strings.Join(TmpList[4:], " ")
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) <%s>: %s", glob.Gametime, TmpList[3], cmess))
 						if err != nil {
 							ErrorLog(err)
 						}
@@ -117,7 +130,7 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {
 						TmpList := strings.Split(line.Text, " ")
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[4:7], " ")))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%13s) %s", glob.Gametime, strings.Join(TmpList[4:7], " ")))
 						if err != nil {
 							ErrorLog(err)
 						}
