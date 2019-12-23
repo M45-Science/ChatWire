@@ -118,7 +118,7 @@ func Chat() {
 						//Remove factorio tags
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
-						regc := regexp.MustCompile(`\[gps=?.*\]`)
+						regc := regexp.MustCompile(`\[gps=?.*\]`)       //replace [gps=x,y] with [Map Location]
 						cmess = regc.ReplaceAllString(cmess, "[Map Location]")
 						cmess = rega.ReplaceAllString(cmess, "${1}")
 						cmess = regb.ReplaceAllString(cmess, "${1}")
@@ -126,7 +126,7 @@ func Chat() {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
 						}
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
 						if err != nil {
 							ErrorLog(err)
 						}
