@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"../commands/admin"
-	"../commands/utils"
+	//"../commands/utils"
 	"../support"
 	"github.com/bwmarrin/discordgo"
 )
@@ -30,11 +30,12 @@ func RegisterCommands() {
 	// Admin Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Stop", Command: admin.StopServer, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Restart", Command: admin.Restart, Admin: true})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Reload", Command: admin.Reload, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, Admin: true})
 
 	// Util Commands
-	//	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
+	//CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
+	//CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
 }
 
 // RunCommand runs a specified command.

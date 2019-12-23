@@ -3,6 +3,7 @@ package support
 import (
 	"fmt"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -158,6 +159,9 @@ func Chat() {
 							ErrorLog(err)
 						}
 						glob.Running = false
+						if glob.Reboot == true {
+							os.Exit(1)
+						}
 					}
 
 					//Ready message
