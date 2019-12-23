@@ -118,9 +118,9 @@ func Chat() {
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
 						regc := regexp.MustCompile(`\[gps=?.*\]`)
+						cmess = regc.ReplaceAllString(cmess, "[Map Location]")
 						cmess = rega.ReplaceAllString(cmess, "${1}")
 						cmess = regb.ReplaceAllString(cmess, "${1}")
-						cmess = regc.ReplaceAllString(cmess, "[Map Location]")
 						if len(cmess) > 300 {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
 						}
