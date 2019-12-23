@@ -74,7 +74,7 @@ func Chat() {
 									ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
 								}
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.12s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -101,7 +101,7 @@ func Chat() {
 								}
 
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.12s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -126,7 +126,7 @@ func Chat() {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
 						}
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
 						if err != nil {
 							ErrorLog(err)
 						}
