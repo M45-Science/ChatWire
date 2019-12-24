@@ -139,15 +139,6 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(15 * time.Second)
-			if glob.Running {
-				_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
-			}
-		}
-	}()
-
-	go func() {
-		for {
 			time.Sleep(2 * time.Second)
 
 			// Look for signal files
