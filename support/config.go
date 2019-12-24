@@ -20,6 +20,7 @@ type config struct {
 	ModListLocation   string
 	GameName          string
 	ChannelName       string
+	DBFile            string
 }
 
 func (conf *config) LoadEnv() {
@@ -40,6 +41,7 @@ func (conf *config) LoadEnv() {
 		ModListLocation:   os.Getenv("ModListLocation"),
 		GameName:          os.Getenv("GameName"),
 		ChannelName:       os.Getenv("ChannelName"),
+		DBFile:            os.Getenv("DBFile"),
 	}
 	fmt.Println(Config.AdminIDs[0])
 

@@ -3,6 +3,7 @@ package support
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -13,7 +14,8 @@ import (
 )
 
 func PlayerFound(pname string) bool {
-	glob.NumLogins++
+	glob.PlayerListLock.Lock()
+	defer glob.PlayerListLock.Unlock()
 
 	for i := 0; i < glob.PlayerListMax; i++ {
 		if glob.PlayerList[i] == pname {
@@ -28,7 +30,38 @@ func PlayerFound(pname string) bool {
 		glob.PlayerList[glob.PlayerListMax] = pname
 		glob.PlayerListMax++
 	}
+
+	writeplayers()
 	return false
+}
+
+func writeplayers() {
+		//Write to file
+		glob.PlayerListWriteLock.Lock()
+		defer glob.PlayerListWriteLock.Unlock()
+		buffer := ""
+	
+		fo, err := os.Create(Config.DBFile)
+		if err != nil {
+			fmt.Println("Couldn't open db file.")
+		}
+		// close fo on exit and check for its returned error
+		defer func() {
+			if err := fo.Close(); err != nil {
+				panic(err)
+			}
+		}()
+	
+		buffer = fmt.Sprintf("%s:", glob.NumLogins)
+		for i := 0; i < glob.PlayerListMax; i++ {
+			buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
+		}
+	
+		err = ioutil.WriteFile(Config.DBFile, []byte(buffer), 0644)
+	
+		if err != nil {
+			fmt.Println("Couldn't write db file.")
+		}
 }
 
 // Chat pipes in-game chat to Discord.
@@ -91,7 +124,10 @@ func Chat() {
 								ErrorLog(fmt.Errorf("%s: error when getting player count\nDetails: %s", time.Now(), err))
 							}
 							pname := TmpList[3]
+							glob.NumLogins++
+							newusername := ""
 							if PlayerFound(pname) == false {
+								newusername = "**(New Player)** "
 								go func() {
 									time.Sleep(20 * time.Second)
 									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", pname))
@@ -105,7 +141,7 @@ func Chat() {
 									}
 								}()
 							}
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` *%s (%d/%d)*", glob.Gametime, strings.Join(TmpList[3:], " "), glob.NumLogins, glob.PlayerListMax))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` *%s %s(%d/%d)*", glob.Gametime, strings.Join(TmpList[3:], " "), newusername, glob.NumLogins, glob.PlayerListMax))
 							if err != nil {
 								ErrorLog(err)
 							}

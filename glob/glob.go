@@ -3,6 +3,7 @@ package glob
 import (
 	"io"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,8 +12,8 @@ import (
 // Pipe is an WriteCloser interface
 var Pipe io.WriteCloser
 var Gametime = "gx-x-x-x"
-var Sav_timer time.Time
 var CharName = ""
+var Sav_timer time.Time
 var Running = true
 var Shutdown = false
 var Reboot = false
@@ -25,3 +26,6 @@ const MaxPlayers = 65535
 var PlayerListMax = 0
 var PlayerList [MaxPlayers + 1]string
 var NumLogins = 0
+
+var PlayerListWriteLock sync.Mutex
+var PlayerListLock sync.Mutex
