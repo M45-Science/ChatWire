@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 )
 
 func PlayerFound(pname string) bool {
+	LoadPlayers()
+
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
@@ -31,37 +34,78 @@ func PlayerFound(pname string) bool {
 		glob.PlayerListMax++
 	}
 
-	writeplayers()
+	WritePlayers()
 	return false
 }
 
-func writeplayers() {
-		//Write to file
-		glob.PlayerListWriteLock.Lock()
-		defer glob.PlayerListWriteLock.Unlock()
-		buffer := ""
-	
-		fo, err := os.Create(Config.DBFile)
-		if err != nil {
-			fmt.Println("Couldn't open db file.")
+func LoadPlayers() {
+	glob.PlayerListWriteLock.Lock()
+	defer glob.PlayerListWriteLock.Unlock()
+
+	glob.PlayerListLock.Lock()
+	defer glob.PlayerListLock.Unlock()
+
+	filedata, err := ioutil.ReadFile(Config.DBFile)
+	if err != nil {
+		fmt.Println("Couldn't read dbfile, skipping...")
+		return
+	}
+
+	if filedata != nil {
+		glob.NumLogins = 0
+		glob.PlayerListMax = 0
+
+		dblines := strings.Split(string(filedata), ",")
+		numlines := len(dblines) - 1
+
+		number, err := strconv.Atoi(dblines[0])
+
+		if err == nil {
+			glob.NumLogins = number
 		}
-		// close fo on exit and check for its returned error
-		defer func() {
-			if err := fo.Close(); err != nil {
-				panic(err)
+
+		for pos := 1; pos < numlines; pos++ {
+			items := strings.Split(string(dblines[pos]), ",")
+			numitems := len(items)
+
+			for x := 0; x < numitems; x++ {
+				glob.PlayerList[x] = items[x]
+				glob.PlayerListMax++
 			}
-		}()
-	
-		buffer = fmt.Sprintf("%d:", glob.NumLogins)
-		for i := 0; i < glob.PlayerListMax; i++ {
-			buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
+
 		}
-	
-		err = ioutil.WriteFile(Config.DBFile, []byte(buffer), 0644)
-	
-		if err != nil {
-			fmt.Println("Couldn't write db file.")
+		fmt.Println("Player list loaded...")
+	}
+}
+
+func WritePlayers() {
+	//Write to file
+	glob.PlayerListWriteLock.Lock()
+	defer glob.PlayerListWriteLock.Unlock()
+	buffer := ""
+
+	fo, err := os.Create(Config.DBFile)
+	if err != nil {
+		fmt.Println("Couldn't open db file, skipping...")
+		return
+	}
+	// close fo on exit and check for its returned error
+	defer func() {
+		if err := fo.Close(); err != nil {
+			panic(err)
 		}
+	}()
+
+	buffer = fmt.Sprintf("%d:", glob.NumLogins)
+	for i := 0; i < glob.PlayerListMax; i++ {
+		buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
+	}
+
+	err = ioutil.WriteFile(Config.DBFile, []byte(buffer), 0644)
+
+	if err != nil {
+		fmt.Println("Couldn't write db file.")
+	}
 }
 
 // Chat pipes in-game chat to Discord.

@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -24,50 +22,6 @@ import (
 
 var noresponsecount int
 
-func loadplayers() {
-	glob.PlayerListWriteLock.Lock()
-	defer glob.PlayerListWriteLock.Unlock()
-
-	glob.PlayerListLock.Lock()
-	defer glob.PlayerListLock.Unlock()
-
-	filedata, err := ioutil.ReadFile(support.Config.DBFile)
-	if err != nil {
-		fmt.Println("Couldn't read dbfile.")
-		return
-	}
-
-	if filedata != nil {
-		glob.NumLogins = 0
-		glob.PlayerListMax = 0
-
-		dblines := strings.Split(string(filedata), ",")
-		numlines := len(dblines) - 1
-
-		for pos := 0; pos < numlines; pos++ {
-			items := strings.Split(string(dblines[pos]), ",")
-			if pos == 0 {
-				number, err := strconv.Atoi(items[0])
-
-				if err == nil {
-					glob.NumLogins = number
-				} else {
-					glob.NumLogins = 0
-				}
-
-			} else {
-				numitems := len(items)
-				for pos := 0; pos < numitems; pos++ {
-					glob.PlayerList[pos] = items[pos]
-					glob.PlayerListMax++
-				}
-			}
-
-		}
-		fmt.Println("Player list loaded...")
-	}
-}
-
 func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
@@ -75,7 +29,7 @@ func main() {
 	glob.Shutdown = false
 	support.Config.LoadEnv()
 
-	loadplayers()
+	support.LoadPlayers()
 
 	// Do not exit the app on this error.
 	if err := os.Remove("factorio.log"); err != nil {
