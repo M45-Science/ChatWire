@@ -45,18 +45,20 @@ func Chat() {
 							poc = strings.ReplaceAll(poc, ")", "")
 							poc = strings.ReplaceAll(poc, ":", "")
 
-							oldch, err := glob.DS.Channel(Config.FactorioChannelID)
+							oldch, errch := glob.DS.Channel(Config.FactorioChannelID)
 
-							if err != nil {
+							if errch != nil {
 								newchname := ""
 								oldchname := oldch.Name
 
 								if poc == "0" {
 									newchname = fmt.Sprintf("%s", Config.ChannelName)
-								} else if newchname != oldchname && err == nil { //Don't update if not needed.
+								} else { //Don't update if not needed.
 									newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
 								}
-								_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
+								if newchname != oldchname {
+									_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
+								}
 
 								//_, _ = glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s players online", poc))
 							}
