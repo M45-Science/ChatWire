@@ -164,6 +164,7 @@ func Chat() {
 						if err != nil {
 							ErrorLog(err)
 						}
+						_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 						glob.Running = true
 					}
 

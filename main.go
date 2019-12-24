@@ -41,7 +41,7 @@ func main() {
 	}
 
 	start_bot()
-	time.Sleep(5*time.Second)
+	time.Sleep(5 * time.Second)
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
@@ -74,7 +74,7 @@ func main() {
 					glob.GCMD.Process.Kill()
 					glob.GCMD.Process.Release()
 				}
-				time.Sleep(5*time.Second)
+				time.Sleep(5 * time.Second)
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 				cmd.Stderr = os.Stderr
@@ -128,6 +128,11 @@ func main() {
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
+	}()
+
+	go func() {
+		time.Sleep(15 * time.Second)
+		_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 	}()
 
 	go func() {
