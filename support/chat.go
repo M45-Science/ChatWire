@@ -3,6 +3,7 @@ package support
 import (
 	"fmt"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -73,7 +74,7 @@ func Chat() {
 									ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
 								}
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.12s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -100,7 +101,7 @@ func Chat() {
 								}
 
 							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.12s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -117,13 +118,15 @@ func Chat() {
 						//Remove factorio tags
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
+						regc := regexp.MustCompile(`\[gps=?.*\]`)       //replace [gps=x,y] with [Map Location]
+						cmess = regc.ReplaceAllString(cmess, "[Map Location]")
 						cmess = rega.ReplaceAllString(cmess, "${1}")
 						cmess = regb.ReplaceAllString(cmess, "${1}")
 						if len(cmess) > 300 {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
 						}
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%.13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s:** %s", glob.Gametime, TmpList[3], cmess))
 						if err != nil {
 							ErrorLog(err)
 						}
@@ -156,6 +159,9 @@ func Chat() {
 							ErrorLog(err)
 						}
 						glob.Running = false
+						if glob.Reboot == true {
+							os.Exit(1)
+						}
 					}
 
 					//Ready message
