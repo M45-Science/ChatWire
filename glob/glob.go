@@ -24,5 +24,5 @@ var PlayerListMax = 0
 
 const MaxPlayers = 65535
 
-var PlayerList [MaxPlayers]string
+var PlayerList [MaxPlayers + 1]string
 var NumLogins = 0
