@@ -45,15 +45,24 @@ func Chat() {
 							poc = strings.ReplaceAll(poc, ")", "")
 							poc = strings.ReplaceAll(poc, ":", "")
 
-							newchname := ""
-							if poc == "0" {
-								newchname = fmt.Sprintf("%s", Config.ChannelName)
-							} else {
-								newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
-							}
-							_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
+							oldch, errch := glob.DS.Channel(Config.FactorioChannelID)
 
-							//_, _ = glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s players online", poc))
+							if errch == nil {
+								newchname := ""
+								oldchname := oldch.Name
+
+								if poc == "0" {
+									newchname = fmt.Sprintf("%s", Config.ChannelName)
+								} else {
+									newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
+								}
+
+								if newchname != oldchname {
+									_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
+								}
+
+								//_, _ = glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s players online", poc))
+							}
 						}
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
@@ -170,6 +179,7 @@ func Chat() {
 						if err != nil {
 							ErrorLog(err)
 						}
+						_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
 						glob.Running = true
 					}
 

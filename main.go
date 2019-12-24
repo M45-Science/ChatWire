@@ -131,6 +131,11 @@ func main() {
 	}()
 
 	go func() {
+		time.Sleep(15 * time.Second)
+		_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
+	}()
+
+	go func() {
 		for {
 			time.Sleep(15 * time.Second)
 			if glob.Running {
