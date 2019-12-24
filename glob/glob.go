@@ -21,5 +21,5 @@ var DS *discordgo.Session
 var GCMD *exec.Cmd
 
 var PlayerListMax = 0
-var PlayerList []string
+var PlayerList [65536]string
 var NumLogins = 0
