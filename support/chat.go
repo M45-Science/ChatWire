@@ -52,7 +52,7 @@ func writeplayers() {
 			}
 		}()
 	
-		buffer = fmt.Sprintf("%s:", glob.NumLogins)
+		buffer = fmt.Sprintf("%d:", glob.NumLogins)
 		for i := 0; i < glob.PlayerListMax; i++ {
 			buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
 		}
