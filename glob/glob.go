@@ -19,4 +19,7 @@ var Reboot = false
 
 var DS *discordgo.Session
 var GCMD *exec.Cmd
-var Players = ""
+
+var PlayerListMax = 0
+var PlayerList []string
+var NumLogins = 0

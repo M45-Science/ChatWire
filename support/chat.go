@@ -12,6 +12,23 @@ import (
 	"github.com/hpcloud/tail"
 )
 
+func PlayerFound(pname string) bool {
+	glob.NumLogins++
+
+	for i := 0; i < glob.PlayerListMax; i++ {
+		if glob.PlayerList[i] == pname {
+
+			//Found in list
+			return true
+		}
+	}
+
+	//Not in list, add them
+	glob.PlayerList[glob.PlayerListMax] = pname
+	glob.PlayerListMax++
+	return false
+}
+
 // Chat pipes in-game chat to Discord.
 func Chat() {
 	go func() {
@@ -71,19 +88,22 @@ func Chat() {
 							if err != nil {
 								ErrorLog(fmt.Errorf("%s: error when getting player count\nDetails: %s", time.Now(), err))
 							}
-							go func() {
-								time.Sleep(20 * time.Second)
-								_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", TmpList[3]))
-								time.Sleep(10 * time.Second)
-								_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: BHMM.NET![/color]\r\n", TmpList[3]))
-								time.Sleep(10 * time.Second)
-								_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Please report griefers on the Discord, so we can ban them![/color]\r\n", TmpList[3]))
+							pname := TmpList[3]
+							if PlayerFound(pname) {
+								go func() {
+									time.Sleep(20 * time.Second)
+									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", pname))
+									time.Sleep(10 * time.Second)
+									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: BHMM.NET![/color]\r\n", pname))
+									time.Sleep(10 * time.Second)
+									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Please report griefers on the Discord, so we can ban them![/color]\r\n", pname))
 
-								if err != nil {
-									ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
-								}
-							}()
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s**", glob.Gametime, strings.Join(TmpList[3:], " ")))
+									if err != nil {
+										ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
+									}
+								}()
+							}
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` *%s (%d/%d)*", glob.Gametime, strings.Join(TmpList[3:], " "), glob.NumLogins, glob.PlayerListMax))
 							if err != nil {
 								ErrorLog(err)
 							}
