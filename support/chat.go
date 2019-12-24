@@ -24,8 +24,10 @@ func PlayerFound(pname string) bool {
 	}
 
 	//Not in list, add them
-	glob.PlayerList[glob.PlayerListMax] = pname
-	glob.PlayerListMax++
+	if glob.PlayerListMax < glob.MaxPlayers { //Don't go over max
+		glob.PlayerList[glob.PlayerListMax] = pname
+		glob.PlayerListMax++
+	}
 	return false
 }
 
