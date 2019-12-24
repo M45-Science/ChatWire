@@ -91,7 +91,7 @@ func Chat() {
 								ErrorLog(fmt.Errorf("%s: error when getting player count\nDetails: %s", time.Now(), err))
 							}
 							pname := TmpList[3]
-							if PlayerFound(pname) {
+							if PlayerFound(pname) == false {
 								go func() {
 									time.Sleep(20 * time.Second)
 									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", pname))

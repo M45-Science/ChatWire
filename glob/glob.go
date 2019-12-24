@@ -20,9 +20,8 @@ var Reboot = false
 var DS *discordgo.Session
 var GCMD *exec.Cmd
 
-var PlayerListMax = 0
-
 const MaxPlayers = 65535
 
+var PlayerListMax = 0
 var PlayerList [MaxPlayers + 1]string
 var NumLogins = 0
