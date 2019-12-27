@@ -59,9 +59,9 @@ func LoadPlayers() {
 		glob.PlayerListMax = 0
 
 		dblines := strings.Split(string(filedata), ":")
-		numlines := len(dblines)
+		numlines := len(dblines) - 1
 
-		number, err := strconv.ParseInt(dblines[0], 10, 64)
+		number, err := strconv.Atoi(string(dblines[0]))
 
 		if err == nil {
 			glob.NumLogins = number
