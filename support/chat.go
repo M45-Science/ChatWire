@@ -71,8 +71,8 @@ func LoadPlayers() {
 					glob.PlayerList[glob.PlayerListMax] = items[x]
 					glob.PlayerListMax++
 
-					buf = fmt.Sprintf("Adding player: %s\n", items[x])
-					Log(buf)
+					//buf = fmt.Sprintf("Adding player: %s\n", items[x])
+					//Log(buf)
 				}
 			}
 
@@ -99,7 +99,6 @@ func WritePlayers() {
 		}
 	}()
 
-	buffer := ""
 	for i := 0; i < glob.PlayerListMax; i++ {
 		buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
 	}
