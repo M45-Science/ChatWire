@@ -74,10 +74,13 @@ func LoadPlayers() {
 			numitems := len(items) - 1
 
 			for x := 0; x < numitems; x++ {
+				buf := fmt.Sprintf("Line: %d, Item: %d, Contents: %s", pos, x, items[x])
+				Log(buf)
+
 				glob.PlayerList[glob.PlayerListMax] = items[x]
 				glob.PlayerListMax++
 
-				buf := fmt.Sprintf("Adding player: %s\n", items[x])
+				buf = fmt.Sprintf("Adding player: %s\n", items[x])
 				Log(buf)
 			}
 
