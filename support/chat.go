@@ -53,7 +53,7 @@ func LoadPlayers() {
 	}
 
 	if filedata != nil {
-		Log("File data not nil.")
+		//Log("File data not nil.")
 		glob.PlayerListMax = 0
 
 		dblines := strings.Split(string(filedata), ":")
@@ -64,8 +64,8 @@ func LoadPlayers() {
 			numitems := len(items) - 1
 
 			for x := 0; x < numitems; x++ {
-				buf := fmt.Sprintf("Line: %d, Item: %d, Contents: %s", pos, x, items[x])
-				Log(buf)
+				//buf := fmt.Sprintf("Line: %d, Item: %d, Contents: %s", pos, x, items[x])
+				//Log(buf)
 
 				if items[x] != "" {
 					glob.PlayerList[glob.PlayerListMax] = items[x]
@@ -77,7 +77,7 @@ func LoadPlayers() {
 			}
 
 		}
-		Log("Player list loaded...")
+		//Log("Player list loaded...")
 	}
 }
 
