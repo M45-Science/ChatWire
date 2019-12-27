@@ -59,7 +59,7 @@ func LoadPlayers() {
 		glob.PlayerListMax = 0
 
 		dblines := strings.Split(string(filedata), ":")
-		numlines := len(dblines) - 1
+		numlines := len(dblines)
 
 		number, err := strconv.Atoi(dblines[0])
 
@@ -69,9 +69,9 @@ func LoadPlayers() {
 			Log(buf)
 		}
 
-		for pos := 0; pos <= numlines; pos++ {
+		for pos := 0; pos < numlines; pos++ {
 			items := strings.Split(string(dblines[pos]), ",")
-			numitems := len(items) - 1
+			numitems := len(items)
 
 			for x := 0; x < numitems; x++ {
 				buf := fmt.Sprintf("Line: %d, Item: %d, Contents: %s", pos, x, items[x])
