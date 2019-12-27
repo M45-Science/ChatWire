@@ -151,6 +151,18 @@ func Chat() {
 
 								if poc == "0" {
 									newchname = fmt.Sprintf("%s", Config.ChannelName)
+									if glob.QueueReload == true {
+										_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "No user online, performing scheduled reload.")
+										if err != nil {
+											ErrorLog(err)
+										}
+										_, err = io.WriteString(glob.Pipe, "/quit\n")
+										if err != nil {
+											ErrorLog(err)
+										}
+										glob.Reboot = true
+
+									}
 								} else {
 									newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
 								}

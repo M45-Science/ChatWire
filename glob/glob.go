@@ -17,6 +17,7 @@ var Sav_timer time.Time
 var Running = true
 var Shutdown = false
 var Reboot = false
+var QueueReload = false
 
 var DS *discordgo.Session
 var GCMD *exec.Cmd

@@ -19,7 +19,6 @@ func Reload(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		support.ErrorLog(err)
 	}
-	glob.Shutdown = false
 	glob.Reboot = true
 	return
 }
