@@ -100,7 +100,9 @@ func WritePlayers() {
 	}()
 
 	for i := 0; i < glob.PlayerListMax; i++ {
-		buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
+		//Filter comma from names
+		name := strings.ReplaceAll(glob.PlayerList[i], ",", "")
+		buffer = buffer + fmt.Sprintf("%s,", name)
 	}
 
 	err = ioutil.WriteFile(Config.DBFile, []byte(buffer), 0644)
