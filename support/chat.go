@@ -77,11 +77,13 @@ func LoadPlayers() {
 				buf := fmt.Sprintf("Line: %d, Item: %d, Contents: %s", pos, x, items[x])
 				Log(buf)
 
-				glob.PlayerList[glob.PlayerListMax] = items[x]
-				glob.PlayerListMax++
+				if items[x] != "" {
+					glob.PlayerList[glob.PlayerListMax] = items[x]
+					glob.PlayerListMax++
 
-				buf = fmt.Sprintf("Adding player: %s\n", items[x])
-				Log(buf)
+					buf = fmt.Sprintf("Adding player: %s\n", items[x])
+					Log(buf)
+				}
 			}
 
 		}
