@@ -58,7 +58,7 @@ func LoadPlayers() {
 		glob.PlayerListMax = 0
 
 		dblines := strings.Split(string(filedata), ",")
-		numlines := len(dblines) - 1
+		numlines := len(dblines)
 
 		number, err := strconv.Atoi(dblines[0])
 
