@@ -33,7 +33,7 @@ func main() {
 
 	// Do not exit the app on this error.
 	if err := os.Remove("factorio.log"); err != nil {
-		fmt.Println("Factorio.log doesn't exist, continuing anyway")
+		support.Log("Factorio.log doesn't exist, continuing anyway")
 	}
 
 	logging, err := os.OpenFile("factorio.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -149,7 +149,7 @@ func main() {
 				glob.Shutdown = true
 
 				if err := os.Remove(".upgrade"); err != nil {
-					fmt.Println(".upgrade disappeared?")
+					support.Log(".upgrade disappeared?")
 				}
 				if glob.Running {
 					go func() {
@@ -183,11 +183,11 @@ func main() {
 				noresponsecount = 0
 
 				if err := os.Remove(".start"); err != nil {
-					fmt.Println(".start file disappeared?")
+					support.Log(".start file disappeared?")
 				}
 				if !glob.Running {
 					if err := os.Remove(".offline"); err != nil {
-						fmt.Println(".offline missing...")
+						support.Log(".offline missing...")
 					}
 					glob.Shutdown = false
 					_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio starting!")
@@ -200,7 +200,7 @@ func main() {
 				glob.Shutdown = true
 
 				if err := os.Remove(".restart"); err != nil {
-					fmt.Println(".restart file disappeared?")
+					support.Log(".restart file disappeared?")
 				}
 				if glob.Running {
 					go func() {
@@ -235,7 +235,7 @@ func main() {
 				glob.Shutdown = true
 
 				if err := os.Remove(".qrestart"); err != nil {
-					fmt.Println(".qrestart file disappeared?")
+					support.Log(".qrestart file disappeared?")
 				}
 				if glob.Running {
 					go func() {
@@ -266,7 +266,7 @@ func main() {
 			} else if _, err := os.Stat(".shutdown"); !os.IsNotExist(err) {
 				noresponsecount = 0
 				if err := os.Remove(".shutdown"); err != nil {
-					fmt.Println(".shutdown disappeared?")
+					support.Log(".shutdown disappeared?")
 				}
 				if glob.Running {
 					glob.Shutdown = true
@@ -310,26 +310,26 @@ func start_bot() {
 	// No hard coding the token }:<
 	discordToken := support.Config.DiscordToken
 	commands.RegisterCommands()
-	fmt.Println("Starting bot...")
+	support.Log("Starting bot...")
 
 	//Delete old signal files
 	if err := os.Remove(".restart"); err != nil {
-		fmt.Println(".restart not found... ", err)
+		support.Log(".restart not found... ")
 	}
 	if err := os.Remove(".qrestart"); err != nil {
-		fmt.Println(".qrestart not found... ", err)
+		support.Log(".qrestart not found... ")
 	}
 	if err := os.Remove(".shutdown"); err != nil {
-		fmt.Println(".shutdown not found... ", err)
+		support.Log(".shutdown not found... ")
 	}
 	if err := os.Remove(".upgrade"); err != nil {
-		fmt.Println(".upgrade not found... ", err)
+		support.Log(".upgrade not found... ")
 	}
 
 	bot, err := discordgo.New("Bot " + discordToken)
 	glob.DS = bot
 	if err != nil {
-		fmt.Println("Error creating Discord session: ", err)
+		support.Log("Error creating Discord session. ")
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to create the Discord session\nDetails: %s", time.Now(), err))
 		os.Exit(1)
 		return
@@ -338,7 +338,7 @@ func start_bot() {
 	err = bot.Open()
 
 	if err != nil {
-		fmt.Println("error opening connection,", err)
+		support.Log("error opening connection" )
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to connect to Discord\nDetails: %s", time.Now(), err))
 		os.Exit(1)
 		return
@@ -351,7 +351,7 @@ func start_bot() {
 }
 
 func quithandle() {
-	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+	support.Log("Bot is now running.  Press CTRL-C to exit.")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

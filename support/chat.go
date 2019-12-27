@@ -24,8 +24,8 @@ func PlayerFound(pname string) bool {
 		if glob.PlayerList[i] == pname {
 
 			//Found in list
+			Log("Player found!")
 			return true
-			fmt.Println("Player found!")
 		}
 	}
 
@@ -36,7 +36,7 @@ func PlayerFound(pname string) bool {
 	}
 
 	WritePlayers()
-	fmt.Println("Player not found!")
+	Log("Player not found!")
 	return false
 }
 
@@ -49,7 +49,7 @@ func LoadPlayers() {
 
 	filedata, err := ioutil.ReadFile(Config.DBFile)
 	if err != nil {
-		fmt.Println("Couldn't read dbfile, skipping...")
+		Log("Couldn't read dbfile, skipping...")
 		return
 	}
 
@@ -76,7 +76,7 @@ func LoadPlayers() {
 			}
 
 		}
-		fmt.Println("Player list loaded...")
+		Log("Player list loaded...")
 	}
 }
 
@@ -88,7 +88,7 @@ func WritePlayers() {
 
 	fo, err := os.Create(Config.DBFile)
 	if err != nil {
-		fmt.Println("Couldn't open db file, skipping...")
+		Log("Couldn't open db file, skipping...")
 		return
 	}
 	// close fo on exit and check for its returned error
@@ -106,7 +106,7 @@ func WritePlayers() {
 	err = ioutil.WriteFile(Config.DBFile, []byte(buffer), 0644)
 
 	if err != nil {
-		fmt.Println("Couldn't write db file.")
+		Log("Couldn't write db file.")
 	}
 }
 
