@@ -152,7 +152,7 @@ func Chat() {
 								if poc == "0" {
 									newchname = fmt.Sprintf("%s", Config.ChannelName)
 									if glob.QueueReload == true {
-										_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "No user online, performing scheduled reload.")
+										_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "No players online, performing scheduled reload.")
 										if err != nil {
 											ErrorLog(err)
 										}
