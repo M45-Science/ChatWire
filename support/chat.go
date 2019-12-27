@@ -61,7 +61,7 @@ func LoadPlayers() {
 		dblines := strings.Split(string(filedata), ":")
 		numlines := len(dblines)
 
-		number, err := strconv.Atoi(dblines[1])
+		number, err := strconv.Atoi(dblines[0])
 
 		if err == nil {
 			glob.NumLogins = number
@@ -69,20 +69,17 @@ func LoadPlayers() {
 			Log(buf)
 		}
 
-		for pos := 2; pos < numlines; pos++ {
-			items := strings.Split(string(dblines[pos]), ",")
-			numitems := len(items)
+		items := strings.Split(string(dblines[1]), ",")
+		numitems := len(items)
 
-			for x := 0; x < numitems; x++ {
-				if items[x] != "" {
-					glob.PlayerList[glob.PlayerListMax] = items[x]
-					glob.PlayerListMax++
+		for x := 0; x < numitems; x++ {
+			if items[x] != "" {
+				glob.PlayerList[glob.PlayerListMax] = items[x]
+				glob.PlayerListMax++
 
-					buf := fmt.Sprintf("Adding player: %s\n", items[x])
-					Log(buf)
-				}
+				buf := fmt.Sprintf("Adding player: %s\n", items[x])
+				Log(buf)
 			}
-
 		}
 		Log("Player list loaded...")
 	}
