@@ -64,6 +64,8 @@ func LoadPlayers() {
 
 		if err != nil {
 			glob.NumLogins = number
+			fmt.Sprintf("Tota logins: %d\n", number)
+			Log(buf)
 		}
 
 		for pos := 1; pos < numlines; pos++ {
@@ -73,6 +75,9 @@ func LoadPlayers() {
 			for x := 0; x < numitems; x++ {
 				glob.PlayerList[x] = items[x]
 				glob.PlayerListMax++
+
+				fmt.Sprintf("Adding player: %s\n", items[x])
+				Log(buf)
 			}
 
 		}

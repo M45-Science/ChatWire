@@ -22,7 +22,7 @@ var QueueReload = false
 var DS *discordgo.Session
 var GCMD *exec.Cmd
 
-const MaxPlayers = 65535
+const MaxPlayers = 16777215
 
 var PlayerListMax = 0
 var PlayerList [MaxPlayers + 1]string
