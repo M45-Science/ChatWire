@@ -60,7 +60,7 @@ func LoadPlayers() {
 
 		number, err := strconv.Atoi(dblines[0])
 
-		if err == nil {
+		if err != nil {
 			glob.NumLogins = number
 		}
 
