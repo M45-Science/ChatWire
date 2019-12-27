@@ -177,7 +177,17 @@ func main() {
 				}
 
 				glob.Shutdown = true
+			} else if _, err := os.Stat(".queue"); !os.IsNotExist(err) {
+				noresponsecount = 0
 
+				if err := os.Remove(".queue"); err != nil {
+					support.Log(".queue file disappeared?")
+				}
+				glob.QueueReload = true
+				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "**bot reload queued!**")
+				if err != nil {
+					support.ErrorLog(err)
+				}
 			} else if _, err := os.Stat(".start"); !os.IsNotExist(err) {
 				noresponsecount = 0
 
@@ -324,6 +334,9 @@ func start_bot() {
 	if err := os.Remove(".upgrade"); err != nil {
 		support.Log(".upgrade not found... ")
 	}
+	if err := os.Remove(".queue"); err != nil {
+		support.Log(".upgrade not found... ")
+	}
 
 	bot, err := discordgo.New("Bot " + discordToken)
 	glob.DS = bot
@@ -337,7 +350,7 @@ func start_bot() {
 	err = bot.Open()
 
 	if err != nil {
-		support.Log("error opening connection" )
+		support.Log("error opening connection")
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to connect to Discord\nDetails: %s", time.Now(), err))
 		os.Exit(1)
 		return

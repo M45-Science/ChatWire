@@ -285,7 +285,7 @@ func Chat() {
 							ErrorLog(err)
 						}
 						glob.Running = false
-						if glob.Reboot == true {
+						if glob.Reboot == true || glob.QueueReload == true {
 							os.Exit(1)
 						}
 					}
