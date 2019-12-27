@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -55,21 +54,12 @@ func LoadPlayers() {
 
 	if filedata != nil {
 		Log("File data not nil.")
-		glob.NumLogins = 0
 		glob.PlayerListMax = 0
 
 		dblines := strings.Split(string(filedata), ":")
 		numlines := len(dblines)
 
-		number, err := strconv.Atoi(string(dblines[0]))
-
-		if err == nil {
-			glob.NumLogins = number
-			buf := fmt.Sprintf("Total logins: %d\n", number)
-			Log(buf)
-		}
-
-		for pos := 1; pos < numlines; pos++ {
+		for pos := 0; pos < numlines; pos++ {
 			items := strings.Split(string(dblines[pos]), ",")
 			numitems := len(items) - 1
 
@@ -109,7 +99,7 @@ func WritePlayers() {
 		}
 	}()
 
-	buffer = fmt.Sprintf("%d:", glob.NumLogins)
+	buffer := ""
 	for i := 0; i < glob.PlayerListMax; i++ {
 		buffer = buffer + fmt.Sprintf("%s,", glob.PlayerList[i])
 	}
