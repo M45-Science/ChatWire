@@ -61,7 +61,7 @@ func LoadPlayers() {
 		dblines := strings.Split(string(filedata), ":")
 		numlines := len(dblines) - 1
 
-		number, err := strconv.Atoi(dblines[2])
+		number, err := strconv.Atoi(dblines[0])
 
 		if err == nil {
 			glob.NumLogins = number
