@@ -193,7 +193,7 @@ func Chat() {
 								ErrorLog(fmt.Errorf("%s: error when getting player count\nDetails: %s", time.Now(), err))
 							}
 							pname := TmpList[3]
-							glob.NumLogins++
+							glob.NumLogins = glob.NumLogins + 1
 							newusername := ""
 							if PlayerFound(pname) == false {
 								newusername = "**(New Player)** "
