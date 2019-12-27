@@ -20,11 +20,12 @@ func PlayerFound(pname string) bool {
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
-	for i := 0; i < glob.PlayerListMax; i++ {
+	for i := 0; i <= glob.PlayerListMax; i++ {
 		if glob.PlayerList[i] == pname {
 
 			//Found in list
 			return true
+			fmt.Println("Player found!")
 		}
 	}
 
@@ -35,6 +36,7 @@ func PlayerFound(pname string) bool {
 	}
 
 	WritePlayers()
+	fmt.Println("Player not found!")
 	return false
 }
 
