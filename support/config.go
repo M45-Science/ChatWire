@@ -42,6 +42,6 @@ func (conf *config) LoadEnv() {
 		ChannelName:       os.Getenv("ChannelName"),
 		DBFile:            os.Getenv("DBFile"),
 	}
-	Log(Config.AdminIDs[0])
+	//Log(Config.AdminIDs[0])
 
 }

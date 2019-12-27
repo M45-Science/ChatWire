@@ -41,7 +41,7 @@ func RegisterCommands() {
 // RunCommand runs a specified command.
 func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	for _, command := range CL.CommandList {
-		support.Log(command.Name + name)
+		//support.Log(command.Name + " " + name)
 		if strings.ToLower(command.Name) == strings.ToLower(name) {
 			if command.Admin && CheckAdmin(m.Author.ID) {
 				command.Command(s, m)
