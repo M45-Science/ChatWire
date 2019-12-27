@@ -54,17 +54,18 @@ func LoadPlayers() {
 	}
 
 	if filedata != nil {
+		Log("File data not nil.")
 		glob.NumLogins = 0
 		glob.PlayerListMax = 0
 
-		dblines := strings.Split(string(filedata), ",")
+		dblines := strings.Split(string(filedata), ":")
 		numlines := len(dblines)
 
 		number, err := strconv.Atoi(dblines[0])
 
-		if err != nil {
+		if err == nil {
 			glob.NumLogins = number
-			fmt.Sprintf("Tota logins: %d\n", number)
+			fmt.Sprintf("Tota; logins: %d\n", number)
 			Log(buf)
 		}
 

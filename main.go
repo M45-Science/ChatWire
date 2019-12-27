@@ -29,8 +29,6 @@ func main() {
 	glob.Shutdown = false
 	support.Config.LoadEnv()
 
-	support.LoadPlayers()
-
 	// Do not exit the app on this error.
 	if err := os.Remove("factorio.log"); err != nil {
 		support.Log("Factorio.log doesn't exist, continuing anyway")
@@ -47,6 +45,7 @@ func main() {
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
+	support.LoadPlayers()
 
 	go func() {
 		for {
