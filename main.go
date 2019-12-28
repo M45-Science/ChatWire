@@ -322,6 +322,9 @@ func start_bot() {
 	support.Log("Starting bot...")
 
 	//Delete old signal files
+	if err := os.Remove(".start"); err != nil {
+		support.Log(".restart not found... ")
+	}
 	if err := os.Remove(".restart"); err != nil {
 		support.Log(".restart not found... ")
 	}
