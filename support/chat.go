@@ -318,7 +318,7 @@ func Chat() {
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
 
-						regc := regexp.MustCompile(`\\[gps=(.*)\]`)       //replace [gps=x,y] with [Map Location]
+						regc := regexp.MustCompile(`\[gps=(.*)\]`)        //replace [gps=x,y] with [Map Location]
 						regd := regexp.MustCompile(`\[train=(.*)\]`)      //replace [gps=x,y] with [Train Number]
 						rege := regexp.MustCompile(`\[train-stop=(.*)\]`) //replace [gps=x,y] with [Train Stop]
 						regf := regexp.MustCompile(`\[armor=(.*)\]`)      //replace [gps=x,y] with [Armor Contents]
