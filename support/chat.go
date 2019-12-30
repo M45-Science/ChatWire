@@ -323,16 +323,18 @@ func Chat() {
 
 						rege := regexp.MustCompile(`\[(.*)=(.*)\]`) //Sub others
 
-						//Remove colors/fonts
-						cmess = regc.ReplaceAllString(cmess, "")
-						cmess = regd.ReplaceAllString(cmess, "")
+						for rega.MatchString(cmess) {
+							//Remove colors/fonts
+							cmess = regc.ReplaceAllString(cmess, "")
+							cmess = regd.ReplaceAllString(cmess, "")
 
-						//Sub
-						cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}]")
+							//Sub
+							cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}]")
 
-						//Filter leftovers
-						cmess = rega.ReplaceAllString(cmess, "")
-						cmess = regb.ReplaceAllString(cmess, "")
+							//Filter leftovers
+							cmess = rega.ReplaceAllString(cmess, "")
+							cmess = regb.ReplaceAllString(cmess, "")
+						}
 
 						if len(cmess) > 300 {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
