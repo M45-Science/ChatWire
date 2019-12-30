@@ -321,7 +321,7 @@ func Chat() {
 
 						rege := regexp.MustCompile(`\[(.*)=(.*)\]`) //Sub others
 
-						for rega.MatchString(cmess) {
+						for rega.MatchString(cmess) || regb.MatchString(cmess) {
 							//Remove colors/fonts
 							cmess = regc.ReplaceAllString(cmess, "")
 							cmess = regd.ReplaceAllString(cmess, "")
@@ -332,6 +332,8 @@ func Chat() {
 							//Filter leftovers
 							cmess = rega.ReplaceAllString(cmess, "")
 							cmess = regb.ReplaceAllString(cmess, "")
+
+							Log("Looping...")
 						}
 
 						if len(cmess) > 300 {
