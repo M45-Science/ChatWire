@@ -320,6 +320,10 @@ func Chat() {
 
 						rege := regexp.MustCompile(`\[(.*?)=(.*?)\]`) //Sub others
 
+						regf := regexp.MustCompile(`\*+`) //Remove discord markdown
+						regg := regexp.MustCompile(`\~+`)
+						regh := regexp.MustCompile(`\_+`)
+
 						for regc.MatchString(cmess) || regd.MatchString(cmess) {
 							//Remove colors/fonts
 							cmess = regc.ReplaceAllString(cmess, "")
@@ -327,11 +331,18 @@ func Chat() {
 						}
 						for rege.MatchString(cmess) {
 							//Sub
-							cmess = rege.ReplaceAllString(cmess, " [${1\\U}: ${2}] ")
+							cmess = rege.ReplaceAllString(cmess, " [${1}: ${2}] ")
 						}
 						for rega.MatchString(cmess) {
 							//Filter close tags
 							cmess = rega.ReplaceAllString(cmess, "")
+						}
+
+						for regf.MatchString(cmess) || regg.MatchString(cmess) || regh.MatchString(cmess) {
+							//Filter discord tags
+							cmess = regf.ReplaceAllString(cmess, "")
+							cmess = regg.ReplaceAllString(cmess, "")
+							cmess = regh.ReplaceAllString(cmess, "")
 						}
 
 						if len(cmess) > 300 {
