@@ -208,7 +208,7 @@ func Chat() {
 								glob.RecordPlayersLock.Unlock()
 								writerecord()
 
-								buf := fmt.Sprintf("**New record!** Players online: %s", glob.RecordPlayers)
+								buf := fmt.Sprintf("**New record!** Players online: %v", glob.RecordPlayers)
 								_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, buf)
 								if err != nil {
 									ErrorLog(err)
@@ -257,7 +257,7 @@ func Chat() {
 							glob.NumLogins = glob.NumLogins + 1
 							newusername := ""
 							if PlayerFound(pname) == false {
-								newusername = "**(New Player)** "
+								newusername = " *(New Player)* "
 								go func() {
 									time.Sleep(20 * time.Second)
 									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", pname))
@@ -271,7 +271,7 @@ func Chat() {
 									}
 								}()
 							}
-							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` *%s %s(%d/%d)*", glob.Gametime, strings.Join(TmpList[3:], " "), newusername, glob.NumLogins, glob.PlayerListMax))
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **%s**%s\n*Logins today: %d, Players known: %d*", glob.Gametime, strings.Join(TmpList[3:], " "), newusername, glob.NumLogins, glob.PlayerListMax))
 							if err != nil {
 								ErrorLog(err)
 							}
@@ -325,15 +325,15 @@ func Chat() {
 							//Remove colors/fonts
 							cmess = regc.ReplaceAllString(cmess, "")
 							cmess = regd.ReplaceAllString(cmess, "")
-
+						}
+						for rega.MatchString(cmess) || regb.MatchString(cmess) {
 							//Sub
 							cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}]")
-
+						}
+						for rega.MatchString(cmess) || regb.MatchString(cmess) {
 							//Filter leftovers
 							cmess = rega.ReplaceAllString(cmess, "")
 							cmess = regb.ReplaceAllString(cmess, "")
-
-							Log("Looping...")
 						}
 
 						if len(cmess) > 300 {
