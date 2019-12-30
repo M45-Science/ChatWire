@@ -324,22 +324,22 @@ func start_bot() {
 
 	//Delete old signal files
 	if err := os.Remove(".start"); err != nil {
-		support.Log(".restart not found... ")
+		//support.Log(".restart not found... ")
 	}
 	if err := os.Remove(".restart"); err != nil {
-		support.Log(".restart not found... ")
+		//support.Log(".restart not found... ")
 	}
 	if err := os.Remove(".qrestart"); err != nil {
-		support.Log(".qrestart not found... ")
+		//support.Log(".qrestart not found... ")
 	}
 	if err := os.Remove(".shutdown"); err != nil {
-		support.Log(".shutdown not found... ")
+		//support.Log(".shutdown not found... ")
 	}
 	if err := os.Remove(".upgrade"); err != nil {
-		support.Log(".upgrade not found... ")
+		//support.Log(".upgrade not found... ")
 	}
 	if err := os.Remove(".queue"); err != nil {
-		support.Log(".upgrade not found... ")
+		//support.Log(".upgrade not found... ")
 	}
 
 	bot, err := discordgo.New("Bot " + discordToken)
