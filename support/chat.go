@@ -238,7 +238,7 @@ func Chat() {
 
 									}
 								} else {
-									newchname = fmt.Sprintf("%s (%d/%d)", Config.ChannelName, glob.NumPlayers, glob.MaxPlayers)
+									newchname = fmt.Sprintf("%s %d %d", Config.ChannelName, glob.NumPlayers, glob.RecordPlayers)
 								}
 
 								if newchname != oldchname {
