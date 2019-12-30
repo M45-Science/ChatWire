@@ -18,6 +18,8 @@ var Running = true
 var Shutdown = false
 var Reboot = false
 var QueueReload = false
+var NumPlayers = 0
+var RecordPlayers = 0
 
 var DS *discordgo.Session
 var GCMD *exec.Cmd
@@ -30,3 +32,6 @@ var NumLogins = 0
 
 var PlayerListWriteLock sync.Mutex
 var PlayerListLock sync.Mutex
+
+var RecordPlayersWriteLock sync.Mutex
+var RecordPlayersLock sync.Mutex

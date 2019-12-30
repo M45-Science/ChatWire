@@ -20,6 +20,7 @@ type config struct {
 	GameName          string
 	ChannelName       string
 	DBFile            string
+	MaxFile           string
 }
 
 func (conf *config) LoadEnv() {
@@ -41,6 +42,7 @@ func (conf *config) LoadEnv() {
 		GameName:          os.Getenv("GameName"),
 		ChannelName:       os.Getenv("ChannelName"),
 		DBFile:            os.Getenv("DBFile"),
+		MaxFile:           os.Getenv("MaxFile"),
 	}
 	//Log(Config.AdminIDs[0])
 

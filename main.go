@@ -46,6 +46,7 @@ func main() {
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
 	support.LoadPlayers()
+	support.LoadRecord()
 
 	go func() {
 		for {

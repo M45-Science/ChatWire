@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,6 +114,59 @@ func WritePlayers() {
 	}
 }
 
+func writerecord() {
+	//Write to file
+	glob.RecordPlayersWriteLock.Lock()
+	defer glob.RecordPlayersWriteLock.Unlock()
+
+	glob.RecordPlayersLock.Lock()
+	defer glob.RecordPlayersLock.Unlock()
+
+	fo, err := os.Create(Config.MaxFile)
+	if err != nil {
+		Log("Couldn't open max file, skipping...")
+		return
+	}
+	// close fo on exit and check for its returned error
+	defer func() {
+		if err := fo.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	buffer := fmt.Sprintf("%d", glob.RecordPlayers)
+
+	err = ioutil.WriteFile(Config.MaxFile, []byte(buffer), 0644)
+
+	if err != nil {
+		Log("Couldn't write max file.")
+	}
+}
+
+func LoadRecord() {
+	glob.RecordPlayersWriteLock.Lock()
+	defer glob.RecordPlayersWriteLock.Unlock()
+
+	glob.RecordPlayersLock.Lock()
+	defer glob.RecordPlayersLock.Unlock()
+
+	filedata, err := ioutil.ReadFile(Config.MaxFile)
+	if err != nil {
+		Log("Couldn't read max file, skipping...")
+		return
+	}
+
+	if filedata != nil {
+		readstrnum := string(filedata)
+		readnum, _ := strconv.Atoi(readstrnum)
+
+		if readnum > glob.RecordPlayers {
+			glob.RecordPlayers = readnum
+		}
+		Log("MaxFile read.")
+	}
+}
+
 // Chat pipes in-game chat to Discord.
 func Chat() {
 	go func() {
@@ -146,6 +200,20 @@ func Chat() {
 							poc = strings.ReplaceAll(poc, ")", "")
 							poc = strings.ReplaceAll(poc, ":", "")
 
+							go func() {
+								glob.NumPlayers, _ = strconv.Atoi(poc)
+								if glob.NumPlayers > glob.RecordPlayers {
+									glob.RecordPlayers = glob.NumPlayers
+									writerecord()
+
+									buf := fmt.Sprintf("**New record!** Players online: %s", glob.RecordPlayers)
+									_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, buf)
+									if err != nil {
+										ErrorLog(err)
+									}
+								}
+							}()
+
 							oldch, errch := glob.DS.Channel(Config.FactorioChannelID)
 
 							if errch == nil {
@@ -167,7 +235,7 @@ func Chat() {
 
 									}
 								} else {
-									newchname = fmt.Sprintf("%s %s online", Config.ChannelName, poc)
+									newchname = fmt.Sprintf("%s (%d/%d)", Config.ChannelName, glob.NumPlayers, glob.MaxPlayers)
 								}
 
 								if newchname != oldchname {
