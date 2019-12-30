@@ -321,17 +321,17 @@ func Chat() {
 
 						rege := regexp.MustCompile(`\[(.*)=(.*)\]`) //Sub others
 
-						for rega.MatchString(cmess) || regb.MatchString(cmess) {
+						for regc.MatchString(cmess) || regd.MatchString(cmess) {
 							//Remove colors/fonts
 							cmess = regc.ReplaceAllString(cmess, "")
 							cmess = regd.ReplaceAllString(cmess, "")
 						}
-						for rega.MatchString(cmess) || regb.MatchString(cmess) {
+						for rege.MatchString(cmess) {
 							//Sub
 							cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}]")
 						}
 						for rega.MatchString(cmess) || regb.MatchString(cmess) {
-							//Filter leftovers
+							//Filter leftovers & close tags
 							cmess = rega.ReplaceAllString(cmess, "")
 							cmess = regb.ReplaceAllString(cmess, "")
 						}
