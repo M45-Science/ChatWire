@@ -318,39 +318,19 @@ func Chat() {
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
 
-						regc := regexp.MustCompile(`\[img=(.*)\]`)
-						regd := regexp.MustCompile(`\[item=(.*)\]`)
-						rege := regexp.MustCompile(`\[entity=(.*)\]`)
-						regf := regexp.MustCompile(`\[technology=(.*)\]`)
-						regg := regexp.MustCompile(`\[recipe=(.*)\]`)
-						regh := regexp.MustCompile(`\[item-group=(.*)\]`)
-						regi := regexp.MustCompile(`\[fluid=(.*)\]`)
-						regj := regexp.MustCompile(`\[tile=(.*)\]`)
-						regk := regexp.MustCompile(`\[virtual-signal=(.*)\]`)
-						regl := regexp.MustCompile(`\[achievement=(.*)\]`)
-						regm := regexp.MustCompile(`\[gps=(.*)\]`)
-						regn := regexp.MustCompile(`\[special-item=(.*)\]`)
-						rego := regexp.MustCompile(`\[armor=(.*)\]`)
-						regp := regexp.MustCompile(`\[train=(.*)\]`)
-						regq := regexp.MustCompile(`\[train-stop=(.*)\]`)
+						regc := regexp.MustCompile(`\[color=(.*)\]`) //remove [color]
+						regd := regexp.MustCompile(`\[font=(.*)\]`)  //remove [font]
 
-						cmess = regc.ReplaceAllString(cmess, "[Image: ${1}]")
-						cmess = regd.ReplaceAllString(cmess, "[Item: ${1}]")
-						cmess = rege.ReplaceAllString(cmess, "[Entity: ${1}]")
-						cmess = regf.ReplaceAllString(cmess, "[Tech: ${1}]")
-						cmess = regg.ReplaceAllString(cmess, "[Recipe: ${1}]")
-						cmess = regh.ReplaceAllString(cmess, "[Item-group: ${1}]")
-						cmess = regi.ReplaceAllString(cmess, "[Fluid: ${1}]")
-						cmess = regj.ReplaceAllString(cmess, "[Tile: ${1}]")
-						cmess = regk.ReplaceAllString(cmess, "[Signal: ${1}]")
-						cmess = regl.ReplaceAllString(cmess, "[Achievement: ${1}]")
-						cmess = regm.ReplaceAllString(cmess, "[Map location: ${1}]")
-						cmess = regn.ReplaceAllString(cmess, "[Blueprint: ${1}]")
-						cmess = rego.ReplaceAllString(cmess, "[Armor: ${1}]")
-						cmess = regp.ReplaceAllString(cmess, "[Train number: ${1}]")
-						cmess = regq.ReplaceAllString(cmess, "[Train stop: ${1}]")
+						rege := regexp.MustCompile(`\[(.*)=(.*)\]`) //Sub others
 
-						//Do last
+						//Remove colors/fonts
+						cmess = regc.ReplaceAllString(cmess, "")
+						cmess = regd.ReplaceAllString(cmess, "")
+
+						//Sub
+						cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}]")
+
+						//Filter leftovers
 						cmess = rega.ReplaceAllString(cmess, "")
 						cmess = regb.ReplaceAllString(cmess, "")
 
