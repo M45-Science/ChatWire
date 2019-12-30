@@ -313,8 +313,7 @@ func Chat() {
 						cmess := strings.Join(TmpList[4:], " ")
 
 						//Remove factorio tags
-						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
-						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
+						regb := regexp.MustCompile(`\[/[^][]+\]`) //remove [/blah]
 
 						regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color]
 						regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font]
@@ -325,18 +324,17 @@ func Chat() {
 							//Remove colors/fonts
 							cmess = regc.ReplaceAllString(cmess, " ")
 							cmess = regd.ReplaceAllString(cmess, " ")
-							Log("Filtering colors/fonts")
+							Log("Filtering colors/fonts...")
 						}
 						for rege.MatchString(cmess) {
 							//Sub
 							cmess = rege.ReplaceAllString(cmess, " [${1}: ${2}] ")
-							Log("Sub others")
+							Log("Subsistuting Factorio tags...")
 						}
-						for rega.MatchString(cmess) || regb.MatchString(cmess) {
+						for regb.MatchString(cmess) {
 							//Filter leftovers & close tags
 							cmess = rega.ReplaceAllString(cmess, " ")
-							cmess = regb.ReplaceAllString(cmess, " ")
-							Log("Others/Closes")
+							Log("Filtering out close tags...")
 						}
 
 						if len(cmess) > 300 {
