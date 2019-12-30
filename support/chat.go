@@ -327,7 +327,7 @@ func Chat() {
 						}
 						for rege.MatchString(cmess) {
 							//Sub
-							cmess = rege.ReplaceAllString(cmess, strings.ToUpper(" [${1}: ${2}] "))
+							cmess = rege.ReplaceAllString(cmess, " [${\U1}: ${2}] ")
 						}
 						for rega.MatchString(cmess) {
 							//Filter close tags
