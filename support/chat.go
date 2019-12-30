@@ -316,8 +316,8 @@ func Chat() {
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
 
-						regc := regexp.MustCompile(`\[color=(.*)\]`) //remove [color]
-						regd := regexp.MustCompile(`\[font=(.*)\]`)  //remove [font]
+						regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color]
+						regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font]
 
 						rege := regexp.MustCompile(`\[(.*)=(.*)\]`) //Sub others
 
@@ -329,7 +329,7 @@ func Chat() {
 						}
 						for rege.MatchString(cmess) {
 							//Sub
-							cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}] ")
+							cmess = rege.ReplaceAllString(cmess, " [${1}: ${2}] ")
 							Log("Sub others")
 						}
 						for rega.MatchString(cmess) || regb.MatchString(cmess) {
