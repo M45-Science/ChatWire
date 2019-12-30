@@ -202,8 +202,11 @@ func Chat() {
 
 							go func() {
 								glob.NumPlayers, _ = strconv.Atoi(poc)
+
+								glob.RecordPlayersLock.Lock()
 								if glob.NumPlayers > glob.RecordPlayers {
 									glob.RecordPlayers = glob.NumPlayers
+									glob.RecordPlayersLock.Unlock()
 									writerecord()
 
 									buf := fmt.Sprintf("**New record!** Players online: %s", glob.RecordPlayers)
@@ -314,10 +317,21 @@ func Chat() {
 						//Remove factorio tags
 						rega := regexp.MustCompile(`\[[^][]+=[^][]+\]`) //remove [blah=blah]
 						regb := regexp.MustCompile(`\[/[^][]+\]`)       //remove [/blah]
-						regc := regexp.MustCompile(`\[gps=?.*\]`)       //replace [gps=x,y] with [Map Location]
-						cmess = regc.ReplaceAllString(cmess, "[Map Location]")
-						cmess = rega.ReplaceAllString(cmess, "${1}")
-						cmess = regb.ReplaceAllString(cmess, "${1}")
+
+						regc := regexp.MustCompile(`\\[gps=(.*)\]`)       //replace [gps=x,y] with [Map Location]
+						regd := regexp.MustCompile(`\[train=(.*)\]`)      //replace [gps=x,y] with [Train Number]
+						rege := regexp.MustCompile(`\[train-stop=(.*)\]`) //replace [gps=x,y] with [Train Stop]
+						regf := regexp.MustCompile(`\[armor=(.*)\]`)      //replace [gps=x,y] with [Armor Contents]
+
+						cmess = regc.ReplaceAllString(cmess, "[Map Location: {$1}]")
+						cmess = regd.ReplaceAllString(cmess, "[Train Number: {$1}]")
+						cmess = rege.ReplaceAllString(cmess, "[Train Stop: {$1}]")
+						cmess = regf.ReplaceAllString(cmess, "[Armor Contents]")
+
+						//Do last
+						cmess = rega.ReplaceAllString(cmess, "")
+						cmess = regb.ReplaceAllString(cmess, "")
+
 						if len(cmess) > 300 {
 							cmess = fmt.Sprintf("%300s**... (message cut, too long!)**", cmess)
 						}
