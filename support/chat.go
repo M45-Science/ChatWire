@@ -222,7 +222,7 @@ func Chat() {
 								oldchname := oldch.Name
 
 								if poc == "0" {
-									newchname = fmt.Sprintf("%s", Config.ChannelName)
+									newchname = fmt.Sprintf("⚫%s", Config.ChannelName)
 									if glob.QueueReload == true {
 										_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "No players online, performing scheduled reload.")
 										if err != nil {
@@ -236,7 +236,7 @@ func Chat() {
 
 									}
 								} else {
-									newchname = fmt.Sprintf("%s %v %v", Config.ChannelName, glob.NumPlayers, glob.RecordPlayers)
+									newchname = fmt.Sprintf("🔴%s╱%v_%v", Config.ChannelName, glob.NumPlayers, glob.RecordPlayers)
 								}
 
 								if newchname != oldchname {
