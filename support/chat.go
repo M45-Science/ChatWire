@@ -200,22 +200,20 @@ func Chat() {
 							poc = strings.ReplaceAll(poc, ")", "")
 							poc = strings.ReplaceAll(poc, ":", "")
 
-							go func() {
-								glob.NumPlayers, _ = strconv.Atoi(poc)
+							glob.NumPlayers, _ = strconv.Atoi(poc)
 
+							if glob.NumPlayers > glob.RecordPlayers {
 								glob.RecordPlayersLock.Lock()
-								if glob.NumPlayers > glob.RecordPlayers {
-									glob.RecordPlayers = glob.NumPlayers
-									glob.RecordPlayersLock.Unlock()
-									writerecord()
+								glob.RecordPlayers = glob.NumPlayers
+								glob.RecordPlayersLock.Unlock()
+								writerecord()
 
-									buf := fmt.Sprintf("**New record!** Players online: %s", glob.RecordPlayers)
-									_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, buf)
-									if err != nil {
-										ErrorLog(err)
-									}
+								buf := fmt.Sprintf("**New record!** Players online: %s", glob.RecordPlayers)
+								_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, buf)
+								if err != nil {
+									ErrorLog(err)
 								}
-							}()
+							}
 
 							oldch, errch := glob.DS.Channel(Config.FactorioChannelID)
 
