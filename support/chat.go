@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"../glob/"
+	"github.com/bwmarrin/discordgo"
 	"github.com/hpcloud/tail"
 )
 
@@ -240,7 +241,12 @@ func Chat() {
 								}
 
 								if newchname != oldchname {
-									_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
+									//_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
+									chpos, _ := strconv.Atoi(Config.ChannelPos)
+									_, aerr := glob.DS.ChannelEditComplex(Config.FactorioChannelID, &discordgo.ChannelEdit{Name: newchname, Position: chpos})
+									if aerr != nil {
+										ErrorLog(aerr)
+									}
 								}
 
 								//_, _ = glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s players online", poc))
