@@ -325,15 +325,18 @@ func Chat() {
 							//Remove colors/fonts
 							cmess = regc.ReplaceAllString(cmess, "")
 							cmess = regd.ReplaceAllString(cmess, "")
+							Log("Filtering colors/fonts")
 						}
 						for rege.MatchString(cmess) {
 							//Sub
 							cmess = rege.ReplaceAllString(cmess, "[${1}: ${2}]")
+							Log("Sub others")
 						}
 						for rega.MatchString(cmess) || regb.MatchString(cmess) {
 							//Filter leftovers & close tags
 							cmess = rega.ReplaceAllString(cmess, "")
 							cmess = regb.ReplaceAllString(cmess, "")
+							Log("Others/Closes")
 						}
 
 						if len(cmess) > 300 {
