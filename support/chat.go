@@ -423,7 +423,7 @@ func Chat() {
 									second, _ = strconv.Atoi(TmpList[x-1])
 								}
 							}
-							glob.Gametime = fmt.Sprintf("g%3d-%2d-%2-%2d", day, hour, minute, second)
+							glob.Gametime = fmt.Sprintf("g%.3d-%.2d-%.2d-%.2d", day, hour, minute, second)
 						}
 
 					}
