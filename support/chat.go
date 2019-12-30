@@ -323,9 +323,9 @@ func Chat() {
 						rege := regexp.MustCompile(`\[train-stop=(.*)\]`) //replace [gps=x,y] with [Train Stop]
 						regf := regexp.MustCompile(`\[armor=(.*)\]`)      //replace [gps=x,y] with [Armor Contents]
 
-						cmess = regc.ReplaceAllString(cmess, "[Map Location: {$1}]")
-						cmess = regd.ReplaceAllString(cmess, "[Train Number: {$1}]")
-						cmess = rege.ReplaceAllString(cmess, "[Train Stop: {$1}]")
+						cmess = regc.ReplaceAllString(cmess, "[Map Location: ${1}]")
+						cmess = regd.ReplaceAllString(cmess, "[Train Number: ${1}]")
+						cmess = rege.ReplaceAllString(cmess, "[Train Stop: ${1}]")
 						cmess = regf.ReplaceAllString(cmess, "[Armor Contents]")
 
 						//Do last
