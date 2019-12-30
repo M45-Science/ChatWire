@@ -319,7 +319,7 @@ func Chat() {
 						regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color]
 						regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font]
 
-						rege := regexp.MustCompile(`\[(.*)=(.*)\]`) //Sub others
+						rege := regexp.MustCompile(`\[(.*?)=(.*?)\]`) //Sub others
 
 						for regc.MatchString(cmess) || regd.MatchString(cmess) {
 							//Remove colors/fonts
