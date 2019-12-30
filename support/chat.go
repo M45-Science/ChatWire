@@ -393,26 +393,26 @@ func Chat() {
 						glob.Gametime = "gx-x-x-x"
 
 						TmpList := strings.Split(ltl, " ")
-						day := "0"
-						hour := "0"
-						minute := "0"
-						second := "0"
+						day := 0
+						hour := 0
+						minute := 0
+						second := 0
 						tmplen := len(TmpList)
 
 						if tmplen > 1 {
 
 							for x := 0; x < tmplen; x++ {
 								if strings.Contains(TmpList[x], "day") {
-									day = TmpList[x-1]
+									day, _ = strconv.Atoi(TmpList[x-1])
 								} else if strings.Contains(TmpList[x], "hour") {
-									hour = TmpList[x-1]
+									hour, _ = strconv.Atoi(TmpList[x-1])
 								} else if strings.Contains(TmpList[x], "minute") {
-									minute = TmpList[x-1]
+									minute, _ = strconv.Atoi(TmpList[x-1])
 								} else if strings.Contains(TmpList[x], "second") {
-									second = TmpList[x-1]
+									second, _ = strconv.Atoi(TmpList[x-1])
 								}
 							}
-							glob.Gametime = fmt.Sprintf("g%s-%s-%s-%s", day, hour, minute, second)
+							glob.Gametime = fmt.Sprintf("g%3d-%2d-%2-%2d", day, hour, minute, second)
 						}
 
 					}
