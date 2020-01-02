@@ -374,8 +374,8 @@ func Chat() {
 						TmpList := strings.Split(line.Text, " ")
 
 						fullpath := strings.Join(TmpList[4:7], " ")
-						regaa := regexp.MustCompile(`\/*.?saves\/(.*?):`)
-						filename := regaa.ReplaceAllString(fullpath, "${1}")
+						regaa := regexp.MustCompile(`(?m)\/*.?saves\/(.*?):`)
+						filename := regaa.ReplaceAllString(fullpath, "")
 
 						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s", filename))
 						if err != nil {
