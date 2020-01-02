@@ -300,7 +300,7 @@ func Chat() {
 							go func() {
 								t := time.Now()
 								// Don't save if we saved recently
-								if t.Sub(glob.Sav_timer).Seconds() > 15 {
+								if t.Sub(glob.Sav_timer).Seconds() > 60 {
 
 									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/server-save sav-%s\n", glob.Gametime))
 									if err != nil {
@@ -373,6 +373,7 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {
 						TmpList := strings.Split(line.Text, " ")
 
+						//Strip file path
 						fullpath := strings.Join(TmpList[4:7], " ")
 						regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 						filename := regaa.ReplaceAllString(fullpath, "")
