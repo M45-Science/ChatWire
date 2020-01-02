@@ -247,6 +247,7 @@ func Chat() {
 									newchname = fmt.Sprintf("🔴%s_%v╱%v", Config.ChannelName, glob.NumPlayers, glob.RecordPlayers)
 								}
 
+								//Dont clutter audit log if name didn't change
 								if newchname != oldchname {
 									//_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
 									chpos, _ := strconv.Atoi(Config.ChannelPos)
@@ -271,6 +272,8 @@ func Chat() {
 							newusername := ""
 							if PlayerFound(pname) == false {
 								newusername = " *(New Player)* "
+
+								//Don't block, make new thread
 								go func() {
 									time.Sleep(20 * time.Second)
 									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", pname))
