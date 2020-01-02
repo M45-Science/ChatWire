@@ -25,7 +25,7 @@ func PlayerFound(pname string) bool {
 		if glob.PlayerList[i] == pname {
 
 			//Found in list
-			Log("Player found!")
+			//Log("Player found!")
 			return true
 		}
 	}
@@ -37,7 +37,7 @@ func PlayerFound(pname string) bool {
 	}
 
 	WritePlayers()
-	Log("Player not found!")
+	//Log("Player not found!")
 	return false
 }
 
