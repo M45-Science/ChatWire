@@ -214,6 +214,13 @@ func Chat() {
 								if err != nil {
 									ErrorLog(err)
 								}
+								//write to factorio as well
+								buf = strings.ReplaceAll(buf, "*", "")
+								_, err = io.WriteString(glob.Pipe, buf)
+								if err != nil {
+									ErrorLog(err)
+								}
+
 							}
 
 							oldch, errch := glob.DS.Channel(Config.FactorioChannelID)
@@ -366,7 +373,11 @@ func Chat() {
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {
 						TmpList := strings.Split(line.Text, " ")
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s", strings.Join(TmpList[4:7], " ")))
+						fullpath := strings.Join(TmpList[4:7], " ")
+						regaa := regexp.MustCompile(`\/*.?saves\/(.*?):`)
+						filename := regaa.ReplaceAllString(fullpath, "${1}")
+
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s", filename))
 						if err != nil {
 							ErrorLog(err)
 						}
