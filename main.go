@@ -51,7 +51,13 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			if glob.Running && !glob.Shutdown {
+			if ( ( !glob.Running || glob.Shutdown ) && ( glob.Reboot || glob.QueueReload ) ) {
+				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
+				if err != nil {
+					support.ErrorLog(err)
+				}
+				os.Exit(1)
+			} else if glob.Running && !glob.Shutdown {
 				_, err = io.WriteString(glob.Pipe, "/time\n")
 				if err != nil {
 					noresponsecount = noresponsecount + 1
