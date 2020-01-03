@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -51,7 +52,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			if ( ( !glob.Running || glob.Shutdown ) && ( glob.Reboot || glob.QueueReload ) ) {
+			if (!glob.Running || glob.Shutdown) && (glob.Reboot || glob.QueueReload) {
 				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
 				if err != nil {
 					support.ErrorLog(err)
@@ -82,6 +83,12 @@ func main() {
 					glob.GCMD.Process.Kill()
 					glob.GCMD.Process.Release()
 				}
+
+				number := 0
+				number, _ = strconv.Atoi(support.Config.ChannelPos)
+				foo := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+				_ = exec.Command("/bin/bash", "/home/fact/softmod-up.sh "+string(foo[number]))
+
 				time.Sleep(5 * time.Second)
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
