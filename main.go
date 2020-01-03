@@ -155,7 +155,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(15 * time.Second)
-			_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
+			_, err = io.WriteString(glob.Pipe, "/p o c\n")
 		}
 	}()
 

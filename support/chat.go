@@ -262,7 +262,7 @@ func Chat() {
 						}
 						//Join message, with delay
 						if strings.Contains(line.Text, "[JOIN]") {
-							_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
+							_, err = io.WriteString(glob.Pipe, "/p o c\n")
 
 							if err != nil {
 								ErrorLog(fmt.Errorf("%s: error when getting player count\nDetails: %s", time.Now(), err))
@@ -276,11 +276,11 @@ func Chat() {
 								//Don't block, make new thread
 								go func() {
 									time.Sleep(20 * time.Second)
-									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\r\n", pname))
+									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\n", pname))
 									time.Sleep(10 * time.Second)
-									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: BHMM.NET![/color]\r\n", pname))
+									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: BHMM.NET![/color]\n", pname))
 									time.Sleep(10 * time.Second)
-									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Please report griefers on the Discord, so we can ban them![/color]\r\n", pname))
+									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Please report griefers on the Discord, so we can ban them![/color]\n", pname))
 
 									if err != nil {
 										ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))
@@ -295,7 +295,7 @@ func Chat() {
 						}
 						//Save on leave
 						if strings.Contains(line.Text, "[LEAVE]") {
-							_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
+							_, err = io.WriteString(glob.Pipe, "/p o c\n")
 
 							if err != nil {
 								ErrorLog(fmt.Errorf("%s: error getting player count\nDetails: %s", time.Now(), err))
@@ -426,7 +426,7 @@ func Chat() {
 						if err != nil {
 							ErrorLog(err)
 						}
-						_, err = io.WriteString(glob.Pipe, "/p o c\r\n")
+						_, err = io.WriteString(glob.Pipe, "/p o c\n")
 						glob.Running = true
 					}
 
