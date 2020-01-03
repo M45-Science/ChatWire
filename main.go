@@ -87,9 +87,12 @@ func main() {
 				number := 0
 				number, _ = strconv.Atoi(support.Config.ChannelPos)
 				foo := "abcdefghijklmnopqrstuvwxyz"
-				arguments := "/home/fact/softmod-up.sh " + string(foo[number])
-				support.Log(arguments)
-				cmd := exec.Command(arguments)
+				arguments := "/bin/bash /home/fact/softmod-up.sh " + string(foo[number])
+				out, err := exec.Command(arguments).Output()
+				if err != nil {
+					support.ErrorLog(err)
+				}
+				support.Log("running: %s\n", out)
 
 				time.Sleep(5 * time.Second)
 				cmd = exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
