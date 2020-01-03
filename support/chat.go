@@ -209,7 +209,7 @@ func Chat() {
 								glob.RecordPlayersLock.Unlock()
 								writerecord()
 
-								buf := fmt.Sprintf("**New record!** Players online: %v", glob.RecordPlayers)
+								buf := fmt.Sprintf("**New record!** Players online: %v\n", glob.RecordPlayers)
 								_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, buf)
 								if err != nil {
 									ErrorLog(err)
