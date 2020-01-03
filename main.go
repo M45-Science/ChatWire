@@ -95,7 +95,7 @@ func main() {
 				support.Log("running: %s\n", out)
 
 				time.Sleep(5 * time.Second)
-				cmd = exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
+				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = mwriter
