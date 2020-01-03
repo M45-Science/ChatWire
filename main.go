@@ -89,7 +89,7 @@ func main() {
 				foo := "abcdefghijklmnopqrstuvwxyz"
 				arguments := "/home/fact/softmod-up.sh " + string(foo[number])
 				support.Log(arguments)
-				cmd := exec.Command("/bin/bash", arguments)
+				cmd := exec.Command(arguments)
 
 				time.Sleep(5 * time.Second)
 				cmd = exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
