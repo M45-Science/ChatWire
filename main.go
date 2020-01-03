@@ -93,7 +93,7 @@ func main() {
 				if errs != nil {
 					support.ErrorLog(errs)
 				}
-				buf := fmt.Sprintf("ran: %s, out: %s\n", arguments, out)
+				buf := fmt.Sprintf("ran: %s args: %s out: %s\n", command, arguments, out)
 				support.Log(buf)
 
 				time.Sleep(5 * time.Second)
