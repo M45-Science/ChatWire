@@ -377,7 +377,7 @@ func Chat() {
 
 						TmpList := strings.Split(line.Text, " ")
 
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **(INFO)** %s", glob.Gametime, TmpList[3:]))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **(INFO)** %s", glob.Gametime, TmpList[1:]))
 						if err != nil {
 							ErrorLog(err)
 						}
