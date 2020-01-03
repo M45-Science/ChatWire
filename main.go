@@ -87,8 +87,9 @@ func main() {
 				number := 0
 				number, _ = strconv.Atoi(support.Config.ChannelPos)
 				foo := "abcdefghijklmnopqrstuvwxyz"
-				arguments := "/home/fact/softmod-up.sh", string(foo[number])
-				out, errs := exec.Command(arguments).Output()
+				command := "/home/fact/softmod-up.sh"
+				arguments := string(foo[number])
+				out, errs := exec.Command(command, arguments).Output()
 				if errs != nil {
 					support.ErrorLog(errs)
 				}
