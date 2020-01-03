@@ -388,6 +388,12 @@ func Chat() {
 						}
 					}
 
+					//Lua console messages
+					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "[MSG]]") {
+						TmpList := strings.Split(line.Text, " ")
+
+						glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` %s", glob.Gametime, strings.Join(TmpList[3:], " ")))
+					}
 					//Loading mod
 					//                                        if !strings.Contains(line.Text,"[CHAT]") && !strings.Contains(line.Text,"<server>") && strings.Contains(line.Text,"Loading mod") &&
 					//					!strings.Contains(line.Text,"settings") && !strings.Contains(line.Text,"base") && !strings.Contains(line.Text, "core") {
