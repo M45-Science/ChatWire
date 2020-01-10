@@ -250,8 +250,10 @@ func Chat() {
 								//Dont clutter audit log if name didn't change
 								if newchname != oldchname {
 									//_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
-									//chpos, _ := strconv.Atoi(Config.ChannelPos)
-									_, aerr := glob.DS.ChannelEditComplex(Config.FactorioChannelID, &discordgo.ChannelEdit{Name: newchname})
+
+									chpos, _ := strconv.Atoi(Config.ChannelPos)
+									chpos = chpos + 500
+									_, aerr := glob.DS.ChannelEditComplex(Config.FactorioChannelID, &discordgo.ChannelEdit{Name: newchname, Position: chpos})
 									if aerr != nil {
 										ErrorLog(aerr)
 									}
