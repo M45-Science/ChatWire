@@ -248,7 +248,8 @@ func Chat() {
 								}
 
 								//Dont clutter audit log if name didn't change
-								if newchname != oldchname {
+								if newchname != oldchname || glob.Refresh {
+									glob.Refresh = false
 									//_, _ = glob.DS.ChannelEdit(Config.FactorioChannelID, newchname)
 
 									chpos, _ := strconv.Atoi(Config.ChannelPos)

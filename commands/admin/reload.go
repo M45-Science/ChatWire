@@ -11,6 +11,8 @@ import (
 // Restart saves and restarts the server
 func Reload(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	glob.Refresh = true
+
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Now reloading!")
 	if err != nil {
 		support.ErrorLog(err)
