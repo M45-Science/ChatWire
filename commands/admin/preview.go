@@ -12,8 +12,8 @@ import (
 
 func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-out, aerr := exec.Command(support.Config.Executable, "--generate-map-preview /var/www/html/map-prev/").Output()
 	var filename = ""
+	out, aerr := exec.Command(support.Config.Executable, " --generate-map-preview /var/www/html/map-prev/").Output()
 
 	if aerr != nil {
 		support.ErrorLog(aerr)
