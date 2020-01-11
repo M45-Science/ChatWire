@@ -17,7 +17,6 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if aerr != nil {
 		support.ErrorLog(aerr)
-		return
 	}
 
 	lines := strings.Split(string(out), "\n")
