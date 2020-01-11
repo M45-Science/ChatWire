@@ -23,6 +23,7 @@ type config struct {
 	MaxFile           string
 	ChannelPos        string
 	MapPreset         string
+	MapGenExec        string
 }
 
 func (conf *config) LoadEnv() {
@@ -47,6 +48,7 @@ func (conf *config) LoadEnv() {
 		MaxFile:           os.Getenv("MaxFile"),
 		ChannelPos:        os.Getenv("ChannelPos"),
 		MapPreset:         os.Getenv("MapPreset"),
+		MapGenExec:        os.Getenv("MapGenExec"),
 	}
 	//Log(Config.AdminIDs[0])
 
