@@ -39,7 +39,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("MapName: %s-%s.zip, Seed: %s, Preview: %s", support.Config.MapPreset, ourseed, ourseed, filename)
+		buffer = fmt.Sprintf("MapName: %s-%s.zip, Seed: %s\nPreview: %s", support.Config.MapPreset, ourseed, ourseed, filename)
 	}
 
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
