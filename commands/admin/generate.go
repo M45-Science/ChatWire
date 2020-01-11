@@ -11,16 +11,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
+func Generate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
 	t := time.Now()
 	ourseed := fmt.Sprintf("%v", t.Unix())
-	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourseed)
-	args := []string{"--generate-map-preview", path, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
+	path := fmt.Sprintf("%s%s.zip", support.Config.NewMapPath, ourseed)
+	args := []string{"--create", path, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
-	//support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
+	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
@@ -35,11 +35,6 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 			result := regexp.MustCompile(`(?m).*Wrote map preview image file: \/home\/fact\/(.*)`)
 			filename = result.ReplaceAllString(l, "http://bhmm.net/${1}")
 		}
-	}
-
-	buffer := "Preview failed."
-	if filename != "" {
-		buffer = fmt.Sprintf("MapName: %s-%s.zip, Seed: %s, Preview: %s", support.Config.MapPreset, ourseed, ourseed, filename)
 	}
 
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)

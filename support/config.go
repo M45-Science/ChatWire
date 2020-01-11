@@ -25,6 +25,8 @@ type config struct {
 	MapPreset         string
 	MapGenExec        string
 	PreviewArgs       string
+	PreviewPath       string
+	NewMapPath        string
 }
 
 func (conf *config) LoadEnv() {
@@ -51,6 +53,8 @@ func (conf *config) LoadEnv() {
 		MapPreset:         os.Getenv("MapPreset"),
 		MapGenExec:        os.Getenv("MapGenExec"),
 		PreviewArgs:       os.Getenv("PreviewArgs"),
+		PreviewPath:       os.Getenv("PreviewPath"),
+		NewMapPath:        os.Getenv("NewMapPath"),
 	}
 	//Log(Config.AdminIDs[0])
 
