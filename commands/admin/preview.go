@@ -17,7 +17,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	t := time.Now()
 	ourseed := fmt.Sprintf("%v", t.UnixNano())
 	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourseed)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
+	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
 	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
