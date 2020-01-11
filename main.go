@@ -27,7 +27,7 @@ func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false
-	glob.Shutdown = false
+	glob.Shutdown = true //debug
 	support.Config.LoadEnv()
 
 	// Do not exit the app on this error.
