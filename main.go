@@ -49,6 +49,12 @@ func main() {
 	support.LoadPlayers()
 	support.LoadRecord()
 
+	_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot now running.")
+						if err != nil {
+							support.ErrorLog(err)
+						}
+
+
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
