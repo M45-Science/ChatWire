@@ -45,7 +45,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	//convert 1578776871716251163.png -quality 70 -scale 768x768 test.jpg
 
-	cmd = exec.Command("convert", path, "-quality 70", "-scale 1024x1024", jpgpath)
+	cmd = exec.Command("/usr/bin/convert", path, "-quality 70", "-scale 1024x1024", jpgpath)
 	out, aerr = cmd.CombinedOutput()
 
 	buffer := "Preview failed."
