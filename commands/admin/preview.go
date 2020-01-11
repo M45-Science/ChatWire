@@ -15,7 +15,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
 	t := time.Now()
-	ourseed := fmt.Sprintf("%s", t.Unix())
+	ourseed := fmt.Sprintf("%ld", t.Unix())
 
 	path := fmt.Sprintf("/home/fact/map-prev/%s.png", ourseed)
 	strseed := fmt.Sprintf("%d", ourseed)
