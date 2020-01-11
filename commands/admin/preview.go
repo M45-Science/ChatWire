@@ -15,7 +15,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
 	t := time.Now()
-	ourseed := fmt.Sprintf("%d", t.Unix())
+	ourseed := fmt.Sprintf("%s", t.Unix())
 
 	path := fmt.Sprintf("/home/fact/map-prev/%s.png", ourseed)
 	strseed := fmt.Sprintf("%d", ourseed)
@@ -25,7 +25,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	cmd := exec.Command(support.Config.MapGenExec, args...)
 
 	//Debug
-	support.Log(fmt.Sprintf("%s", strings.Join(args, ", ")))
+	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, ", ")))
 
 	out, aerr := cmd.CombinedOutput()
 
