@@ -19,7 +19,8 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		support.ErrorLog(aerr)
 	}
 
-	lines := strings.Split(string(out), "\n")
+	lines := strings.Split(string(out), "\r")
+	support.Log("Looking for preview line...")
 	for _, l := range lines {
 		if strings.Contains(l, "Wrote map preview image file:") {
 			result := regexp.MustCompile(`(?m)Wrote map preview image file: \/home\/fact\/(.*)`)
