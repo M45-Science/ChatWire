@@ -1,10 +1,10 @@
 package admin
 
 import (
-	"os/exec"
-	"strings"
-	"regexp"
 	"fmt"
+	"os/exec"
+	"regexp"
+	"strings"
 
 	"../../support"
 	"github.com/bwmarrin/discordgo"
@@ -27,7 +27,11 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	buffer := fmt.Sprintf("Preview: %s", filename)
+	buffer := "Preview failed."
+	if filename != "" {
+		buffer = fmt.Sprintf("Preview: %s", filename)
+	}
+
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
 	if err != nil {
 		support.ErrorLog(err)
