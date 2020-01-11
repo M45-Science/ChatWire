@@ -49,7 +49,7 @@ func main() {
 	support.LoadPlayers()
 	support.LoadRecord()
 
-	_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot now running.")
+	_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot now running.")
 						if err != nil {
 							support.ErrorLog(err)
 						}
