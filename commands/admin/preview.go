@@ -13,13 +13,13 @@ import (
 func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
-	out, aerr := exec.Command(support.Config.Executable, " --generate-map-preview /home/fact/map-prev/").Output()
+	out, aerr := exec.Command(support.Config.Executable, " --generate-map-preview /home/fact/map-prev/").CombinedOutput()
 
 	if aerr != nil {
 		support.ErrorLog(aerr)
 	}
 
-	lines := strings.Split(string(out), "\r")
+	lines := strings.Split(string(out), "\n")
 	support.Log("Looking for preview line...")
 	buf := fmt.Sprintf("Found %d lines...", len(lines))
 	support.Log(buf)
