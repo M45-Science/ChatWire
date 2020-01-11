@@ -19,6 +19,9 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		support.ErrorLog(aerr)
 	}
 
+	support.Log("Output:")
+	support.Log(string(out))
+
 	lines := strings.Split(string(out), "\n")
 	support.Log("Looking for preview line...")
 	buf := fmt.Sprintf("Found %d lines...", len(lines))
