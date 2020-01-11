@@ -16,15 +16,13 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var filename = ""
 	t := time.Now()
 	ourseed := fmt.Sprintf("%v", t.Unix())
-
 	path := fmt.Sprintf("/home/fact/map-prev/%s.png", ourseed)
-
-	args := []string{"--generate-map-preview", path, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed}
+	args := []string{"--generate-map-preview", path, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
 
 	//Debug
-	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, ", ")))
+	//support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
 
 	out, aerr := cmd.CombinedOutput()
 
@@ -33,7 +31,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	lines := strings.Split(string(out), "\n")
-	support.Log(lines[0])
+	//support.Log(lines[0])
 
 	for _, l := range lines {
 		if strings.Contains(l, "Wrote map preview image file:") {

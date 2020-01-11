@@ -24,6 +24,7 @@ type config struct {
 	ChannelPos        string
 	MapPreset         string
 	MapGenExec        string
+	PreviewArgs       string
 }
 
 func (conf *config) LoadEnv() {
@@ -49,6 +50,7 @@ func (conf *config) LoadEnv() {
 		ChannelPos:        os.Getenv("ChannelPos"),
 		MapPreset:         os.Getenv("MapPreset"),
 		MapGenExec:        os.Getenv("MapGenExec"),
+		PreviewArgs:       os.Getenv("PreviewArgs"),
 	}
 	//Log(Config.AdminIDs[0])
 
