@@ -15,7 +15,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
 	t := time.Now()
-	ourseed := fmt.Sprintf("%v", t.Unix())
+	ourseed := fmt.Sprintf("%v", t.UnixNano())
 	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourseed)
 	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
 
