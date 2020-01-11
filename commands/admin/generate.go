@@ -13,6 +13,8 @@ import (
 
 func Generate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	return
+
 	var filename = ""
 	t := time.Now()
 	ourseed := fmt.Sprintf("%v", t.Unix())
