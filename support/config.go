@@ -27,6 +27,7 @@ type config struct {
 	PreviewArgs       string
 	PreviewPath       string
 	NewMapPath        string
+	PreviewRes        string
 }
 
 func (conf *config) LoadEnv() {
@@ -55,6 +56,7 @@ func (conf *config) LoadEnv() {
 		PreviewArgs:       os.Getenv("PreviewArgs"),
 		PreviewPath:       os.Getenv("PreviewPath"),
 		NewMapPath:        os.Getenv("NewMapPath"),
+		PreviewRes:        os.Getenv("PreviewRes"),
 	}
 	//Log(Config.AdminIDs[0])
 
