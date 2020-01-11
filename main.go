@@ -27,7 +27,7 @@ func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false
-	glob.Shutdown = true //debug
+	glob.Shutdown = false //debug
 	support.Config.LoadEnv()
 
 	// Do not exit the app on this error.
@@ -50,10 +50,9 @@ func main() {
 	support.LoadRecord()
 
 	_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot now running.")
-						if err != nil {
-							support.ErrorLog(err)
-						}
-
+	if err != nil {
+		support.ErrorLog(err)
+	}
 
 	go func() {
 		for {
