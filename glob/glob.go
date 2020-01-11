@@ -16,7 +16,7 @@ var Gametime = "gx-x-x-x"
 var CharName = ""
 var Sav_timer time.Time
 var Running = true
-var Shutdown = false
+var Shutdown = true
 var Reboot = false
 var QueueReload = false
 var NumPlayers = 0
