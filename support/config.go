@@ -29,6 +29,8 @@ type config struct {
 	NewMapPath        string
 	PreviewRes        string
 	PreviewScale      string
+	JpgQuality        string
+	JpgScale          string
 }
 
 func (conf *config) LoadEnv() {
@@ -59,6 +61,8 @@ func (conf *config) LoadEnv() {
 		NewMapPath:        os.Getenv("NewMapPath"),
 		PreviewRes:        os.Getenv("PreviewRes"),
 		PreviewScale:      os.Getenv("PreviewScale"),
+		JpgQuality:        os.Getenv("JpgQuality"),
+		JpgScale:          os.Getenv("JpgScale"),
 	}
 	//Log(Config.AdminIDs[0])
 
