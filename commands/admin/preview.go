@@ -44,10 +44,9 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	//convert 1578776871716251163.png -quality 70 -scale 768x768 test.jpg
-
-	imgargs := []string{path, "-quality" + support.Config.JpgQuality, "-scale" + support.Config.JpgScale, jpgpath}
-	cmdb := exec.Command("/usr/bin/convert", imgargs...)
-	_, berr := cmdb.CombinedOutput()
+	imgargs := []string{path, "-quality " + support.Config.JpgQuality, "-scale " + support.Config.JpgScale, jpgpath}
+	cmdb := exec.Command(support.Config.ConvertExec, imgargs...)
+	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.ConvertExec, strings.Join(args, " ")))
 
 	if berr != nil {
 		support.ErrorLog(berr)
