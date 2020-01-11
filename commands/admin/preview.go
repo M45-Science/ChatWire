@@ -13,7 +13,7 @@ import (
 func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
-	out, aerr := exec.Command(support.Config.Executable, " --generate-map-preview /var/www/html/map-prev/").Output()
+	out, aerr := exec.Command(support.Config.Executable, " --generate-map-preview /home/fact/map-prev/").Output()
 
 	if aerr != nil {
 		support.ErrorLog(aerr)
