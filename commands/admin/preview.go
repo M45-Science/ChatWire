@@ -15,12 +15,12 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
 	t := time.Now()
-	ourseed := fmt.Sprintf("%s", t.Unix())
+	ourseed := fmt.Sprintf("%d", t.Unix())
 
-	path := fmt.Sprintf("/home/fact/map-prev/%d.png", ourseed)
+	path := fmt.Sprintf("/home/fact/map-prev/%s.png", ourseed)
 	strseed := fmt.Sprintf("%d", ourseed)
 
-	cmd := exec.Command("/home/fact/fact-prev/bin/x64/factorio", "--generate-map-preview", path, "--preset", "rail-world", "--map-gen-seed", strseed)
+	cmd := exec.Command("/home/fact/fact-prev/bin/x64/factorio", "--generate-map-preview", path, "--preset", support.Config.MapPreset, "--map-gen-seed", strseed)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
