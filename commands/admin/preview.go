@@ -20,7 +20,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	args := []string{"--generate-map-preview", path, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
-	//support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
+	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
