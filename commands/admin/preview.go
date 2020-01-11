@@ -17,6 +17,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	t := time.Now()
 	ourseed := fmt.Sprintf("%v", t.UnixNano())
 	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourseed)
+	jpgpath := fmt.Sprintf("http://bhmm.net/%s%s.jpg", support.Config.PreviewPath, ourseed)
 	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
@@ -37,9 +38,14 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+	//convert 1578776871716251163.png -quality 70 -scale 768x768 test.jpg
+
+	cmd = exec.Command("convert", path, "-quality 70", "-scale 1024x1024", jpgpath)
+	out, aerr = cmd.CombinedOutput()
+
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("MapName: %s-%s.zip, Seed: %s\nPreview: %s", support.Config.MapPreset, ourseed, ourseed, filename)
+		buffer = fmt.Sprintf("MapName: %s-%s.zip, Seed: %s\nPreview: %s", support.Config.MapPreset, ourseed, ourseed, jpgpath)
 	}
 
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
