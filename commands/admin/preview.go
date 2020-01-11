@@ -1,0 +1,37 @@
+package admin
+
+import (
+	"os/exec"
+	"strings"
+	"regexp"
+	"fmt"
+
+	"../../support"
+	"github.com/bwmarrin/discordgo"
+)
+
+func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
+
+out, aerr := exec.Command(support.Config.Executable, "--generate-map-preview /var/www/html/map-prev/").Output()
+	var filename = ""
+
+	if aerr != nil {
+		support.ErrorLog(aerr)
+		return
+	}
+
+	lines := strings.Split(string(out), "\n")
+	for _, l := range lines {
+		if strings.Contains(l, "Wrote map preview image file:") {
+			result := regexp.MustCompile(`(?m)Wrote map preview image file: \/var\/www\/html\/(.*)`)
+			filename = result.ReplaceAllString(l, "http://bhmm.net/${1}")
+		}
+	}
+
+	buffer := fmt.Sprintf("Preview: %s", filename)
+	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
+	if err != nil {
+		support.ErrorLog(err)
+	}
+	return
+}
