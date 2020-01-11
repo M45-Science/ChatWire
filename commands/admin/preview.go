@@ -22,7 +22,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	lines := strings.Split(string(out), "\n")
 	for _, l := range lines {
 		if strings.Contains(l, "Wrote map preview image file:") {
-			result := regexp.MustCompile(`(?m)Wrote map preview image file: \/var\/www\/html\/(.*)`)
+			result := regexp.MustCompile(`(?m)Wrote map preview image file: \/home\/fact\/(.*)`)
 			filename = result.ReplaceAllString(l, "http://bhmm.net/${1}")
 			support.Log("Found preview line.")
 		}
