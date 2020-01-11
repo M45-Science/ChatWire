@@ -26,7 +26,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
-	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
+	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
@@ -46,7 +46,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	//convert 1578776871716251163.png -quality 70 -scale 768x768 test.jpg
 	imgargs := []string{path, "-quality " + support.Config.JpgQuality, "-scale " + support.Config.JpgScale, jpgpath}
 	_ = exec.Command(support.Config.ConvertExec, imgargs...)
-	support.Log(fmt.Sprintf("Ran: %s %s", support.Config.ConvertExec, strings.Join(args, " ")))
+	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.ConvertExec, strings.Join(imgargs, " ")))
 
 	buffer := "Preview failed."
 	if filename != "" {
