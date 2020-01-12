@@ -47,6 +47,13 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	imgargs := []string{path, "-quality " + support.Config.JpgQuality, "-scale " + support.Config.JpgScale, jpgpath}
 	_ = exec.Command(support.Config.ConvertExec, imgargs...)
 	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.ConvertExec, strings.Join(imgargs, " ")))
+	bout, berr := cmd.CombinedOutput()
+
+	if berr != nil {
+		support.ErrorLog(aerr)
+	}
+
+	support.Log("result: " + string(bout))
 
 	buffer := "Preview failed."
 	if filename != "" {
