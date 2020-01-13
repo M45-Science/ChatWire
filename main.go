@@ -50,6 +50,13 @@ func main() {
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
+	//Pre-init
+	cmd := exec.Command("time", "")
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = mwriter
+	glob.Pipe, err = cmd.StdinPipe()
+
 	support.LoadPlayers()
 	support.LoadRecord()
 
