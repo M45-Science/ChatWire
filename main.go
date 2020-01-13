@@ -84,6 +84,9 @@ func main() {
 
 				if glob.Running {
 					_, err := io.WriteString(glob.Pipe, "/time\n")
+					if err != nil {
+						support.ErrorLog(err)
+					}
 					//glob.NoResponseCount = glob.NoResponseCount + 1
 					if glob.NoResponseCount == 30 {
 						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
