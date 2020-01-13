@@ -170,6 +170,7 @@ func LoadRecord() {
 
 // Chat pipes in-game chat to Discord.
 func Chat() {
+	time.Sleep(5 * time.Second)
 	go func() {
 		for {
 			time.Sleep(100 * time.Millisecond)

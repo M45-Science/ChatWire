@@ -64,8 +64,16 @@ func main() {
 		support.ErrorLog(err)
 	}
 
-	go func() {
+	//Wait for discord before trying
+	time.Sleep(5 * time.Second)
+
+	go func() { 
 		for {
+			time.Sleep(time.Second)
+			if glob.DS == nil {
+				continue //Wait if bot isn't ready yet
+			}
+
 			if (!glob.Running || glob.Shutdown) && (glob.Reboot || glob.QueueReload) { //Reboot whole bot if set to
 				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
 				if err != nil {
@@ -362,7 +370,6 @@ func start_bot() {
 	glob.NoResponseCount = 0
 
 	// No hard coding the token }:<
-	discordToken := support.Config.DiscordToken
 	commands.RegisterCommands()
 	support.Log("Starting bot...")
 
@@ -386,7 +393,7 @@ func start_bot() {
 		//support.Log(".upgrade not found... ")
 	}
 
-	bot, err := discordgo.New("Bot " + discordToken)
+	bot, err := discordgo.New("Bot " + support.Config.DiscordToken)
 	glob.DS = bot
 	if err != nil {
 		support.Log("Error creating Discord session. ")
