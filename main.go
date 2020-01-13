@@ -34,6 +34,10 @@ func main() {
 		glob.Running = false
 		glob.Pipe = nil
 		support.Log("Autostart disabled, not loading factorio.")
+		_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot online.")
+		if err != nil {
+			support.ErrorLog(err)
+		}
 	}
 
 	// Do not exit the app on this error.
@@ -140,7 +144,7 @@ func main() {
 				glob.Gametime = "na"
 				glob.Sav_timer = time.Now()
 				glob.NoResponseCount = 0
-				_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot online, server booting...")
+				_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio booting...")
 				if err != nil {
 					support.ErrorLog(err)
 				}
