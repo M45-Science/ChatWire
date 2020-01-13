@@ -21,8 +21,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var noresponsecount int
-
 func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
@@ -33,6 +31,7 @@ func main() {
 	if support.Config.Autostart == "false" {
 		glob.Shutdown = true
 		glob.Running = false
+		support.Log("Autostart disabled, not loading factorio.")
 	}
 
 	// Do not exit the app on this error.
@@ -57,25 +56,27 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			if (!glob.Running || glob.Shutdown) && (glob.Reboot || glob.QueueReload) {
+			if (!glob.Running || glob.Shutdown) && (glob.Reboot || glob.QueueReload) { //Reboot whole bot if set to
 				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
 				if err != nil {
 					support.ErrorLog(err)
 				}
 				os.Exit(1)
-			} else if glob.Running && !glob.Shutdown {
+			} else if glob.Running && !glob.Shutdown { //Currently running normally
+				glob.NoResponseCount = glob.NoResponseCount + 1
+
 				_, err = io.WriteString(glob.Pipe, "/time\n")
 				if err != nil {
-					noresponsecount = noresponsecount + 1
-					if noresponsecount == 60 {
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 60 seconds...")
+					//glob.NoResponseCount = glob.NoResponseCount + 1
+					if glob.NoResponseCount == 30 {
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
 						if err != nil {
 							support.ErrorLog(err)
 						}
 					}
-					if noresponsecount == 120 {
-						noresponsecount = 0
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 120 seconds... restarting it.")
+					if glob.NoResponseCount == 45 {
+						glob.NoResponseCount = 0
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 45 seconds... restarting it.")
 						if err != nil {
 							support.ErrorLog(err)
 						}
@@ -83,7 +84,7 @@ func main() {
 						os.Exit(1)
 					}
 				}
-			} else if !glob.Running && !glob.Shutdown {
+			} else if !glob.Running && !glob.Shutdown { //Isn't running, but we aren't supposed to be shutdown.
 				if glob.GCMD != nil {
 					glob.GCMD.Process.Kill()
 					glob.GCMD.Process.Release()
@@ -128,7 +129,7 @@ func main() {
 				glob.Running = true
 				glob.Gametime = "na"
 				glob.Sav_timer = time.Now()
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 				_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Bot online, server booting...")
 				if err != nil {
 					support.ErrorLog(err)
@@ -170,7 +171,7 @@ func main() {
 
 			// Look for signal files
 			if _, err := os.Stat(".upgrade"); !os.IsNotExist(err) {
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 				glob.Shutdown = true
 
 				if err := os.Remove(".upgrade"); err != nil {
@@ -204,7 +205,7 @@ func main() {
 
 				glob.Shutdown = true
 			} else if _, err := os.Stat(".queue"); !os.IsNotExist(err) {
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 
 				if err := os.Remove(".queue"); err != nil {
 					support.Log(".queue file disappeared?")
@@ -215,7 +216,7 @@ func main() {
 					support.ErrorLog(err)
 				}
 			} else if _, err := os.Stat(".start"); !os.IsNotExist(err) {
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 
 				if err := os.Remove(".start"); err != nil {
 					support.Log(".start file disappeared?")
@@ -231,7 +232,7 @@ func main() {
 					}
 				}
 			} else if _, err := os.Stat(".restart"); !os.IsNotExist(err) {
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 				glob.Shutdown = true
 
 				if err := os.Remove(".restart"); err != nil {
@@ -266,7 +267,7 @@ func main() {
 
 				glob.Shutdown = false
 			} else if _, err := os.Stat(".qrestart"); !os.IsNotExist(err) {
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 				glob.Shutdown = true
 
 				if err := os.Remove(".qrestart"); err != nil {
@@ -299,7 +300,7 @@ func main() {
 				}
 				glob.Shutdown = false
 			} else if _, err := os.Stat(".shutdown"); !os.IsNotExist(err) {
-				noresponsecount = 0
+				glob.NoResponseCount = 0
 				if err := os.Remove(".shutdown"); err != nil {
 					support.Log(".shutdown disappeared?")
 				}
@@ -340,7 +341,7 @@ func main() {
 
 func start_bot() {
 	glob.Sav_timer = time.Now()
-	noresponsecount = 0
+	glob.NoResponseCount = 0
 
 	// No hard coding the token }:<
 	discordToken := support.Config.DiscordToken
@@ -413,7 +414,7 @@ func quithandle() {
 	if err != nil {
 		support.ErrorLog(err)
 	}
-	noresponsecount = 0
+	glob.NoResponseCount = 0
 	glob.Shutdown = true
 	_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Service killed, shutting down.")
 	if err != nil {

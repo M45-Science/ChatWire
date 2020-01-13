@@ -190,6 +190,8 @@ func Chat() {
 				}
 
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
+					glob.NoResponseCount = 0 //Server is alive
+
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
 

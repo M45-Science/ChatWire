@@ -37,3 +37,5 @@ var PlayerListLock sync.Mutex
 var RecordPlayersWriteLock sync.Mutex
 var RecordPlayersLock sync.Mutex
 var Refresh = true
+
+var NoResponseCount = 0
