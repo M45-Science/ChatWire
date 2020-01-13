@@ -34,7 +34,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Queue", Command: admin.Queue, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Prev", Command: admin.Preview, Admin: true})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Gen", Command: admin.Preview, Admin: true})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Gen", Command: admin.Generate, Admin: true})
 
 	// Util Commands
 	//CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
