@@ -27,8 +27,13 @@ func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false
-	glob.Shutdown = false //debug
+	glob.Shutdown = false
 	support.Config.LoadEnv()
+
+	if support.Config.Autostart == "false" {
+		glob.Shutdown = true
+		glob.Running = false
+	}
 
 	// Do not exit the app on this error.
 	if err := os.Remove("factorio.log"); err != nil {
@@ -42,7 +47,7 @@ func main() {
 	}
 
 	start_bot()
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
@@ -96,7 +101,7 @@ func main() {
 				buf := fmt.Sprintf("ran: %s args: %s out: %s\n", command, arguments, out)
 				support.Log(buf)
 
-				time.Sleep(5 * time.Second)
+				time.Sleep(1 * time.Second)
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 				cmd.Stderr = os.Stderr
@@ -161,7 +166,7 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(2 * time.Second)
+			time.Sleep(1 * time.Second)
 
 			// Look for signal files
 			if _, err := os.Stat(".upgrade"); !os.IsNotExist(err) {
@@ -380,7 +385,7 @@ func start_bot() {
 		return
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	bot.AddHandler(messageCreate)
 	bot.UpdateStatus(0, support.Config.GameName)

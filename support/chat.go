@@ -412,7 +412,7 @@ func Chat() {
 
 					//Close message
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Goodbye") {
-						time.Sleep(2 * time.Second)
+						time.Sleep(1 * time.Second)
 						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now offline.")
 						if err != nil {
 							ErrorLog(err)
