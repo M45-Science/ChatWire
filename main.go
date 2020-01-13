@@ -99,8 +99,8 @@ func main() {
 				if errs != nil {
 					support.ErrorLog(errs)
 				}
-				buf := fmt.Sprintf("ran: %s args: %s out: %s\n", command, arguments, out)
-				support.Log(buf)
+				//buf := fmt.Sprintf("ran: %s args: %s out: %s\n", command, arguments, out)
+				//support.Log(buf)
 
 				time.Sleep(1 * time.Second)
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)

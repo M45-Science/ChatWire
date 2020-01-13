@@ -49,14 +49,12 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.ConvertExec, strings.Join(imgargs, " ")))
 	bout, berr := cmdb.CombinedOutput()
 	if bout != nil {
-		support.Log(string(bout))
+		//support.Log(string(bout))
 	}
 
 	if berr != nil {
 		support.ErrorLog(aerr)
 	}
-
-	support.Log("result: " + string(bout))
 
 	buffer := "Preview failed."
 	if filename != "" {
