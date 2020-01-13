@@ -172,6 +172,10 @@ func LoadRecord() {
 func Chat() {
 	go func() {
 		for {
+			time.Sleep(100 * time.Millisecond)
+			if glob.Pipe == nil || !glob.Running {
+				continue //If we aren't running, don't bother
+			}
 
 			//Might not need to re-tail?
 			t, err := tail.TailFile("factorio.log", tail.Config{Follow: true})
@@ -179,7 +183,6 @@ func Chat() {
 				ErrorLog(fmt.Errorf("%s: An error occurred when attempting to tail factorio.log\nDetails: %s", time.Now(), err))
 			}
 			for line := range t.Lines {
-				time.Sleep(100 * time.Millisecond)
 				//Ignore console messages
 				if line.Text == "" {
 					return
@@ -191,6 +194,7 @@ func Chat() {
 
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
 					glob.NoResponseCount = 0 //Server is alive
+					glob.Running = true
 
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
@@ -314,6 +318,7 @@ func Chat() {
 									if err != nil {
 										ErrorLog(fmt.Errorf("%s: Error when commanding LEAVE save.\nDetails: %s", time.Now(), err))
 										glob.Running = false
+										glob.Pipe = nil
 									}
 									glob.Sav_timer = time.Now()
 								}
@@ -420,6 +425,7 @@ func Chat() {
 							ErrorLog(err)
 						}
 						glob.Running = false
+						glob.Pipe = nil
 						if glob.Reboot == true || glob.QueueReload == true {
 							os.Exit(1)
 						}

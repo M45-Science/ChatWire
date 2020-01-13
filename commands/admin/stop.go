@@ -15,10 +15,11 @@ func StopServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		support.ErrorLog(err)
 	}
-
-	_, err = io.WriteString(glob.Pipe, "/quit\n")
-	if err != nil {
-		support.ErrorLog(err)
+	if glob.Pipe != nil {
+		_, err = io.WriteString(glob.Pipe, "/quit\n")
+		if err != nil {
+			support.ErrorLog(err)
+		}
 	}
 	glob.Shutdown = true
 }
