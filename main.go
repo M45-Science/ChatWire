@@ -72,7 +72,7 @@ func main() {
 			} else if glob.Running && !glob.Shutdown { //Currently running normally
 				glob.NoResponseCount = glob.NoResponseCount + 1
 
-				if glob.Pipe != nil {
+				if glob.Pipe != nil && glob.Running {
 					_, err = io.WriteString(glob.Pipe, "/time\n")
 					if err != nil {
 						//glob.NoResponseCount = glob.NoResponseCount + 1
@@ -163,7 +163,7 @@ func main() {
 				glob.Pipe = nil
 			}
 			if len(line) > 1 {
-				if glob.Pipe != nil {
+				if glob.Pipe != nil && glob.Running {
 					_, err = io.WriteString(glob.Pipe, fmt.Sprintf("%s\n", line))
 					if err != nil {
 						support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err))
@@ -178,7 +178,7 @@ func main() {
 
 	go func() {
 		for {
-			if glob.Pipe != nil {
+			if glob.Pipe != nil && glob.Running {
 				time.Sleep(15 * time.Second)
 				_, err = io.WriteString(glob.Pipe, "/p o c\n")
 			}
@@ -199,7 +199,7 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-						if glob.Pipe != nil {
+						if glob.Pipe != nil && glob.Running {
 							_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Updating Factorio!")
 							if err != nil {
 								support.ErrorLog(err)
@@ -262,7 +262,7 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-						if glob.Pipe != nil {
+						if glob.Pipe != nil && glob.Running {
 							_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio restarting!")
 							if err != nil {
 								support.ErrorLog(err)
@@ -299,7 +299,7 @@ func main() {
 				}
 				if glob.Running {
 					go func() {
-						if glob.Pipe != nil {
+						if glob.Pipe != nil && glob.Running {
 							_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Quick restarting!")
 							if err != nil {
 								support.ErrorLog(err)
@@ -333,7 +333,7 @@ func main() {
 				if glob.Running {
 					glob.Shutdown = true
 					go func() {
-						if glob.Pipe != nil {
+						if glob.Pipe != nil && glob.Running {
 							_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio is shutting down for maintenance!")
 							if err != nil {
 								support.ErrorLog(err)
@@ -426,7 +426,7 @@ func quithandle() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	if glob.Pipe != nil {
+	if glob.Pipe != nil && glob.Running {
 		_, err := io.WriteString(glob.Pipe, "Server killed.\n")
 		if err != nil {
 			support.ErrorLog(err)
