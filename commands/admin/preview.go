@@ -52,6 +52,11 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		//support.Log(string(bout))
 	}
 
+	//Delete PNG, we don't need it now
+	if err := os.Remove(path); err != nil {
+		support.Log("png preview file not found...")
+	}
+
 	if berr != nil {
 		support.ErrorLog(aerr)
 	}
