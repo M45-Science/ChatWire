@@ -173,8 +173,6 @@ func Chat() {
 	go func() {
 		for {
 			time.Sleep(100 * time.Millisecond)
-			if glob.Pipe != nil && glob.Running {
-
 				//Might not need to re-tail?
 				t, err := tail.TailFile("factorio.log", tail.Config{Follow: true})
 				if err != nil {
@@ -240,7 +238,7 @@ func Chat() {
 											if err != nil {
 												ErrorLog(err)
 											}
-											if glob.Pipe != nil && glob.Running {
+											if glob.Running {
 												_, err = io.WriteString(glob.Pipe, "/quit\n")
 												if err != nil {
 													ErrorLog(err)
@@ -479,6 +477,5 @@ func Chat() {
 					} //End console filtered
 				} //End Loop
 			}
-		}
 	}()
 }

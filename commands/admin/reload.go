@@ -16,7 +16,7 @@ func Reload(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		support.ErrorLog(err)
 	}
-	if glob.Pipe != nil && glob.Running {
+	if glob.Running {
 		_, err = io.WriteString(glob.Pipe, "/quit\n")
 		if err != nil {
 			support.ErrorLog(err)

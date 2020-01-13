@@ -13,7 +13,7 @@ func SaveServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if glob.Running {
 		glob.Refresh = true
-		if glob.Pipe != nil && glob.Running {
+		if glob.Running {
 			io.WriteString(glob.Pipe, "/save\n")
 			_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Game saved successfully!")
 			if err != nil {
