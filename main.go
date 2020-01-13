@@ -46,7 +46,6 @@ func main() {
 	}
 
 	start_bot()
-	time.Sleep(5 * time.Second)
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
@@ -67,7 +66,6 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(1 * time.Second)
 			if (!glob.Running || glob.Shutdown) && (glob.Reboot || glob.QueueReload) { //Reboot whole bot if set to
 				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
 				if err != nil {
@@ -112,8 +110,6 @@ func main() {
 					//buf := fmt.Sprintf("ran: %s args: %s out: %s\n", command, arguments, out)
 					//support.Log(buf)
 				}
-
-				time.Sleep(1 * time.Second)
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 				cmd.Stderr = os.Stderr
