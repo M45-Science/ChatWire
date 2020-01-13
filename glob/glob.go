@@ -2,7 +2,6 @@ package glob
 
 import (
 	"io"
-	"os/exec"
 	"sync"
 	"time"
 
@@ -23,7 +22,6 @@ var NumPlayers = 0
 var RecordPlayers = 0
 
 var DS *discordgo.Session
-var GCMD *exec.Cmd
 
 const MaxPlayers = 16777215
 

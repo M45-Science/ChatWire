@@ -92,11 +92,6 @@ func main() {
 					}
 				}
 			} else if !glob.Running && !glob.Shutdown { //Isn't running, but we aren't supposed to be shutdown.
-				if glob.GCMD != nil {
-					glob.GCMD.Process.Kill()
-					glob.GCMD.Process.Release()
-				}
-
 				number := 0
 				number, _ = strconv.Atoi(support.Config.ChannelPos)
 				foo := "abcdefghijklmnopqrstuvwxyz"
@@ -117,7 +112,6 @@ func main() {
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = mwriter
 				glob.Pipe, err = cmd.StdinPipe()
-				glob.GCMD = cmd
 				if err != nil {
 					support.ErrorLog(err)
 				}
