@@ -32,7 +32,7 @@ type config struct {
 	PreviewScale      string
 	JpgQuality        string
 	JpgScale          string
-	Autostart         string
+	AutoStart         string
 }
 
 func (conf *config) LoadEnv() {
@@ -66,7 +66,7 @@ func (conf *config) LoadEnv() {
 		PreviewScale:      os.Getenv("PreviewScale"),
 		JpgQuality:        os.Getenv("JpgQuality"),
 		JpgScale:          os.Getenv("JpgScale"),
-		Autostart:         os.Getenv("Autostart"),
+		AutoStart:         os.Getenv("AutoStart"),
 	}
 	//Log(Config.AdminIDs[0])
 
