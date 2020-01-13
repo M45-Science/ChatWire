@@ -50,7 +50,7 @@ func main() {
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
 	//Pre-init
-	cmd := exec.Command("time", "")
+	cmd := exec.Command("/usr/bin/time", "")
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = mwriter
