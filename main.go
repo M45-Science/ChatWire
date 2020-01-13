@@ -48,9 +48,6 @@ func main() {
 	mwriter := io.MultiWriter(logging, os.Stdout)
 	//Pre-init
 	cmd := exec.Command("/usr/bin/time", "")
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = mwriter
 	glob.Pipe, err = cmd.StdinPipe()
 
 	start_bot()
@@ -119,8 +116,8 @@ func main() {
 					//support.Log(buf)
 				}
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
-				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-				cmd.Stderr = os.Stderr
+				//cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+				//cmd.Stderr = os.Stderr
 				cmd.Stdout = mwriter
 				glob.Pipe, err = cmd.StdinPipe()
 				if err != nil {
