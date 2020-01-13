@@ -28,7 +28,7 @@ func main() {
 	glob.Shutdown = false
 	support.Config.LoadEnv()
 
-	if support.Config.Autostart == "false" {
+	if support.Config.AutoStart == "false" {
 		glob.Shutdown = true
 		glob.Running = false
 		support.Log("Autostart disabled, not loading factorio.")
@@ -74,9 +74,9 @@ func main() {
 							support.ErrorLog(err)
 						}
 					}
-					if glob.NoResponseCount == 45 {
+					if glob.NoResponseCount == 60 {
 						glob.NoResponseCount = 0
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 45 seconds... restarting it.")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
 						if err != nil {
 							support.ErrorLog(err)
 						}
