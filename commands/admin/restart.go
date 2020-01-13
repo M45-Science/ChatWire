@@ -12,11 +12,11 @@ import (
 func Restart(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	glob.Refresh = true
-	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Now restarting!")
+	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Now starting!")
 	if err != nil {
 		support.ErrorLog(err)
 	}
-	if glob.Pipe != nil {
+	if glob.Pipe != nil && glob.Running {
 		_, err = io.WriteString(glob.Pipe, "/quit\n")
 		if err != nil {
 			support.ErrorLog(err)
