@@ -155,6 +155,7 @@ func main() {
 	go func() {
 		Console := bufio.NewReader(os.Stdin)
 		for {
+			time.Sleep(100 * time.Millisecond)
 			line, _, err := Console.ReadLine()
 			if err != nil {
 				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to read the input to pass as input to the console\nDetails: %s", time.Now(), err))
@@ -169,14 +170,13 @@ func main() {
 					}
 				}
 			}
-			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
 	go func() {
 		for {
+			time.Sleep(15 * time.Second)
 			if glob.Running {
-				time.Sleep(15 * time.Second)
 				_, err = io.WriteString(glob.Pipe, "/p o c\n")
 			}
 		}
