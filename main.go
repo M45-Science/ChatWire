@@ -25,14 +25,12 @@ func main() {
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false
-	glob.Pipe = nil
 	glob.Shutdown = false
 	support.Config.LoadEnv()
 
 	if support.Config.AutoStart == "false" {
 		glob.Shutdown = true
 		glob.Running = false
-		glob.Pipe = nil
 		support.Log("Autostart disabled, not loading factorio.")
 	}
 
@@ -48,7 +46,7 @@ func main() {
 	}
 
 	start_bot()
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 	support.Chat()
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
@@ -118,7 +116,6 @@ func main() {
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = mwriter
-				glob.Pipe = nil
 				glob.Pipe, err = cmd.StdinPipe()
 				glob.GCMD = cmd
 				if err != nil {
@@ -129,7 +126,6 @@ func main() {
 				if err != nil {
 					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to execute cmd.StdinPipe()\nDetails: %s", time.Now(), err))
 					glob.Running = false
-					glob.Pipe = nil
 				}
 
 				err := cmd.Start()
@@ -137,7 +133,6 @@ func main() {
 				if err != nil {
 					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to start the server\nDetails: %s", time.Now(), err))
 					glob.Running = false
-					glob.Pipe = nil
 				}
 				//This is okay, because if server doesn't respond it will be auto-rebooted.
 				glob.Running = true
@@ -160,7 +155,6 @@ func main() {
 			if err != nil {
 				support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to read the input to pass as input to the console\nDetails: %s", time.Now(), err))
 				glob.Running = false
-				glob.Pipe = nil
 			}
 			if len(line) > 1 {
 				if glob.Pipe != nil && glob.Running {
@@ -168,7 +162,6 @@ func main() {
 					if err != nil {
 						support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass input to the console\nDetails: %s", time.Now(), err))
 						glob.Running = false
-						glob.Pipe = nil
 					}
 				}
 			}
@@ -488,7 +481,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				if err != nil {
 					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
 					glob.Running = false
-					glob.Pipe = nil
 				}
 			}
 		}

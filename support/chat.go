@@ -318,7 +318,6 @@ func Chat() {
 									if err != nil {
 										ErrorLog(fmt.Errorf("%s: Error when commanding LEAVE save.\nDetails: %s", time.Now(), err))
 										glob.Running = false
-										glob.Pipe = nil
 									}
 									glob.Sav_timer = time.Now()
 								}
@@ -425,7 +424,6 @@ func Chat() {
 							ErrorLog(err)
 						}
 						glob.Running = false
-						glob.Pipe = nil
 						if glob.Reboot == true || glob.QueueReload == true {
 							os.Exit(1)
 						}
