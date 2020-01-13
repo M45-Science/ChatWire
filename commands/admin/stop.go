@@ -12,7 +12,7 @@ func StopServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if glob.Running {
 		glob.Refresh = true
-		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Server shutting down.")
+		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Stopping Factorio...")
 		if err != nil {
 			support.ErrorLog(err)
 		}
@@ -24,7 +24,7 @@ func StopServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		glob.Shutdown = true
 	} else {
-		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Server isn't running.")
+		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio isn't running.")
 		if err != nil {
 			support.ErrorLog(err)
 		}
