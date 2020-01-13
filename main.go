@@ -66,7 +66,7 @@ func main() {
 	//Wait for discord before trying
 	time.Sleep(5 * time.Second)
 
-	go func() { 
+	go func() {
 		for {
 			time.Sleep(time.Second)
 			if glob.DS == nil {
@@ -83,24 +83,22 @@ func main() {
 				glob.NoResponseCount = glob.NoResponseCount + 1
 
 				if glob.Running {
-					_, err = io.WriteString(glob.Pipe, "/time\n")
-					if err != nil {
-						//glob.NoResponseCount = glob.NoResponseCount + 1
-						if glob.NoResponseCount == 30 {
-							_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
-							if err != nil {
-								support.ErrorLog(err)
-							}
+					_, err := io.WriteString(glob.Pipe, "/time\n")
+					//glob.NoResponseCount = glob.NoResponseCount + 1
+					if glob.NoResponseCount == 30 {
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
+						if err != nil {
+							support.ErrorLog(err)
 						}
-						if glob.NoResponseCount == 60 {
-							glob.NoResponseCount = 0
-							_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
-							if err != nil {
-								support.ErrorLog(err)
-							}
-							//Exit, to remove zombies
-							os.Exit(1)
+					}
+					if glob.NoResponseCount == 60 {
+						glob.NoResponseCount = 0
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
+						if err != nil {
+							support.ErrorLog(err)
 						}
+						//Exit, to remove zombies
+						os.Exit(1)
 					}
 				}
 			} else if !glob.Running && !glob.Shutdown { //Isn't running, but we aren't supposed to be shutdown.
