@@ -45,9 +45,6 @@ func main() {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
 	}
 
-	start_bot()
-	support.Chat()
-
 	mwriter := io.MultiWriter(logging, os.Stdout)
 	//Pre-init
 	cmd := exec.Command("/usr/bin/time", "")
@@ -55,6 +52,9 @@ func main() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = mwriter
 	glob.Pipe, err = cmd.StdinPipe()
+
+	start_bot()
+	support.Chat()
 
 	support.LoadPlayers()
 	support.LoadRecord()
