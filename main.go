@@ -407,8 +407,6 @@ func start_bot() {
 		return
 	}
 
-	time.Sleep(5 * time.Second)
-
 	bot.AddHandler(messageCreate)
 	bot.UpdateStatus(0, support.Config.GameName)
 }
