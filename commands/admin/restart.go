@@ -23,5 +23,6 @@ func Restart(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 	glob.Shutdown = false
+	
 	return
 }

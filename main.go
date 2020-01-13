@@ -360,7 +360,6 @@ func main() {
 				}
 
 				glob.Shutdown = true
-				glob.Pipe = nil
 			}
 		}
 
