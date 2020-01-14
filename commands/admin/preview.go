@@ -28,7 +28,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	ourseed := t.UnixNano()
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.LittleEndian, ourseed)
-	ourcode := fmt.Sprint("%v", base64.StdEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprint("%s%v", support.Config.MapPreset, base64.StdEncoding.EncodeToString(buf.Bytes()))
 
 	if errb != nil {
 		support.ErrorLog(err)
@@ -85,7 +85,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("Map number: %v, Seed: %s\nMap preset: %s\nPreview: http://bhmm.net/map-prev/%s.jpg\n", glob.NewMapLast, ourcode, support.Config.MapPreset, ourcode)
+		buffer = fmt.Sprintf("Map code: %v, Seed: %s\nMap preset: %s\nPreview: http://bhmm.net/map-prev/%s.jpg\n", glob.NewMapLast, ourcode, support.Config.MapPreset, ourcode)
 	}
 
 	_, err = s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
