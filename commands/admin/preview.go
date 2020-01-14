@@ -1,6 +1,9 @@
 package admin
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"os/exec"
@@ -22,8 +25,16 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	var filename = ""
 	t := time.Now()
-	ourseed := fmt.Sprintf("%v", t.UnixNano())
-	glob.NewMaps[glob.NewMapLast] = ourseed
+	ourseed := t.UnixNano()
+	buf := new(bytes.Buffer)
+	errb := binary.Write(buf, binary.LittleEndian, ourseed)
+	ourcode := fmt.Sprint("%v", base64.StdEncoding.EncodeToString(buf.Bytes()))
+
+	if errb != nil {
+		support.ErrorLog(err)
+	}
+
+	glob.NewMaps[glob.NewMapLast] = ourcode
 
 	//Handle max maps
 	if glob.NewMapLast > glob.MaxMaps {
@@ -32,9 +43,9 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		glob.NewMapLast = glob.NewMapLast + 1
 	}
 
-	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourseed)
-	jpgpath := fmt.Sprintf("%s%s.jpg", support.Config.PreviewPath, ourseed)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
+	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourcode)
+	jpgpath := fmt.Sprintf("%s%s.jpg", support.Config.PreviewPath, ourcode)
+	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourcode, support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
 	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
@@ -74,7 +85,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("Map number: %v, Seed: %s\nMap preset: %s\nPreview: http://bhmm.net/map-prev/%s.jpg\n", glob.NewMapLast, ourseed, support.Config.MapPreset, ourseed)
+		buffer = fmt.Sprintf("Map number: %v, Seed: %s\nMap preset: %s\nPreview: http://bhmm.net/map-prev/%s.jpg\n", glob.NewMapLast, ourcode, support.Config.MapPreset, ourcode)
 	}
 
 	_, err = s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
