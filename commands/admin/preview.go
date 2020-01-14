@@ -29,6 +29,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.LittleEndian, ourseed)
 	ourcode := fmt.Sprint("%s%v", support.Config.MapPreset, base64.StdEncoding.EncodeToString(buf.Bytes()))
+	support.Log(ourcode)
 
 	if errb != nil {
 		support.ErrorLog(err)
