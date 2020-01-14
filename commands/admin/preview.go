@@ -37,7 +37,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var filename = ""
 	t := time.Now()
 	ourseed := t.UnixNano()
-	ourseed = 1
+	//ourseed = 1
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.LittleEndian, ourseed)
 	ourcode := fmt.Sprintf("%v%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()) )
