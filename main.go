@@ -22,6 +22,8 @@ import (
 )
 
 func main() {
+	glob.MaxMapTypes = len(glob.MapTypes) //Just to make it easier
+	
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false

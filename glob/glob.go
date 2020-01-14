@@ -42,3 +42,6 @@ const MaxMaps = 254
 
 var NewMaps [MaxMaps]string
 var NewMapLast = 0
+
+var MaxMapTypes = 0
+var MapTypes = [...]string{"placeholder", "default", "rich-resources", "marathon", "death-world", "death-world-marathon", "rail-world", "ribbon-world", "island"}

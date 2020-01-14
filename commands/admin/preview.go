@@ -16,6 +16,17 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func GetMapType( mapt string ) int {
+	i := 0
+
+	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
+		if glob.MapTypes[i] == mapt {
+			return i
+		}
+	}
+	return -1
+}
+
 func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Generating map preview...")
@@ -28,7 +39,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	ourseed := t.UnixNano()
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.LittleEndian, ourseed)
-	ourcode := fmt.Sprint("%s%v", support.Config.MapPreset, base64.StdEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%v-%v", GetMapType(support.Config.MapPreset), base64.StdEncoding.EncodeToString(buf.Bytes()) )
 	support.Log(ourcode)
 
 	if errb != nil {
