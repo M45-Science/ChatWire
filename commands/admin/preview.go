@@ -39,8 +39,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	ourseed := t.UnixNano()
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.LittleEndian, ourseed)
-	ourcode := fmt.Sprintf("%v-%v", GetMapType(support.Config.MapPreset), base64.URLEncoding.EncodeToString(buf.Bytes()) )
-	support.Log(ourcode)
+	ourcode := fmt.Sprintf("%v-%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()) )
 
 	if errb != nil {
 		support.ErrorLog(err)
