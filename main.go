@@ -74,9 +74,11 @@ func main() {
 			}
 
 			if (!glob.Running || glob.Shutdown) && (glob.Reboot || glob.QueueReload) { //Reboot whole bot if set to
-				_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
-				if err != nil {
-					support.ErrorLog(err)
+				if glob.QueueReload {
+					_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server offline, performing scheduled reload.")
+					if err != nil {
+						support.ErrorLog(err)
+					}
 				}
 				os.Exit(1)
 			} else if glob.Running && !glob.Shutdown { //Currently running normally
