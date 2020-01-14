@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"../../glob"
 	"../../support"
 	"github.com/bwmarrin/discordgo"
 )
@@ -22,6 +23,15 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var filename = ""
 	t := time.Now()
 	ourseed := fmt.Sprintf("%v", t.UnixNano())
+	glob.NewMaps[glob.NewMapLast] = ourseed
+
+	//Handle max maps
+	if glob.NewMapLast > glob.MaxMaps {
+		glob.NewMapLast = 0
+	} else {
+		glob.NewMapLast = glob.NewMapLast + 1
+	}
+
 	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourseed)
 	jpgpath := fmt.Sprintf("%s%s.jpg", support.Config.PreviewPath, ourseed)
 	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourseed, support.Config.PreviewArgs}
@@ -64,7 +74,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("MapName: %s-%s.zip\nSeed: %s\nPreview: http://bhmm.net/map-prev/%s.jpg", support.Config.MapPreset, ourseed, ourseed, ourseed)
+		buffer = fmt.Sprintf("Map number: %s\nSeed: %s\nPreview: http://bhmm.net/map-prev/%s.jpg\n", glob.NewMapLast, ourseed, ourseed)
 	}
 
 	_, err = s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)

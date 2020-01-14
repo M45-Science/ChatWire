@@ -37,3 +37,8 @@ var RecordPlayersLock sync.Mutex
 var Refresh = true
 
 var NoResponseCount = 0
+
+const MaxMaps = 254
+
+var NewMaps [MaxMaps]string
+var NewMapLast = 0
