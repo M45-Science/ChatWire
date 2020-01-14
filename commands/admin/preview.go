@@ -88,7 +88,8 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("**Map code:** `%v`\nSeed: `%v`, Map preset: `%s`\nPreview: http://bhmm.net/map-prev/%s.jpg\n", ourcode, ourseed, support.Config.MapPreset, ourcode)
+		//buffer = fmt.Sprintf("**Map code:** `%v`\nSeed: `%v`, Map preset: `%s`\nPreview: http://bhmm.net/map-prev/%s.jpg\n", ourcode, ourseed, support.Config.MapPreset, ourcode)
+		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: http://bhmm.net/map-prev/%s.jpg\n", ourcode, ourcode)
 	}
 
 	_, err = s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
