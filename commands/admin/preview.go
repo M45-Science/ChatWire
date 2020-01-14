@@ -57,7 +57,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourcode)
 	jpgpath := fmt.Sprintf("%s%s.jpg", support.Config.PreviewPath, ourcode)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", ourcode, support.Config.PreviewArgs}
+	args := []string{"--generate-map-preview", path, "--map-preview-size=" + support.Config.PreviewRes, "--map-preview-scale=" + support.Config.PreviewScale, "--preset", support.Config.MapPreset, "--map-gen-seed", string(ourseed), support.Config.PreviewArgs}
 
 	cmd := exec.Command(support.Config.MapGenExec, args...)
 	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.MapGenExec, strings.Join(args, " ")))
