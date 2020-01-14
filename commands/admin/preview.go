@@ -28,6 +28,8 @@ func GetMapType( mapt string ) int {
 }
 
 func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
+	glob.MapPrevLock.Lock()
+	defer glob.MapPrevLock.Unlock()
 
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Generating map preview...")
 	if err != nil {
