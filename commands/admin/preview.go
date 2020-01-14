@@ -27,7 +27,7 @@ func GetMapType( mapt string ) int {
 	return -1
 }
 
-func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
+func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate) {
 	glob.MapPrevLock.Lock()
 	defer glob.MapPrevLock.Unlock()
 
@@ -41,7 +41,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	ourseed := t.UnixNano()
 	//ourseed = 1
 	buf := new(bytes.Buffer)
-	errb := binary.Write(buf, binary.LittleEndian, ourseed)
+	errb := binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%v%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()) )
 
 	if errb != nil {
@@ -70,7 +70,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	//convert 1578776871716251163.png -quality 70 -scale 768x768 test.jpg
+	//convert X.png -quality X -scale xXy test.jpg
 	imgargs := []string{path, "-quality", support.Config.JpgQuality, "-scale", support.Config.JpgScale, jpgpath}
 	cmdb := exec.Command(support.Config.ConvertExec, imgargs...)
 	support.Log(fmt.Sprintf("\nRan: %s %s", support.Config.ConvertExec, strings.Join(imgargs, " ")))
