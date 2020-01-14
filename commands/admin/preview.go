@@ -20,7 +20,7 @@ func GetMapType( mapt string ) int {
 	i := 0
 
 	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
-		if glob.MapTypes[i] == mapt {
+		if strings.ToLower(glob.MapTypes[i]) == strings.ToLower(mapt) {
 			return i
 		}
 	}
@@ -39,19 +39,10 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 	ourseed := t.UnixNano()
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.LittleEndian, ourseed)
-	ourcode := fmt.Sprintf("%v-%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()) )
+	ourcode := fmt.Sprintf("%v%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()) )
 
 	if errb != nil {
 		support.ErrorLog(err)
-	}
-
-	glob.NewMaps[glob.NewMapLast] = ourcode
-
-	//Handle max maps
-	if glob.NewMapLast > glob.MaxMaps {
-		glob.NewMapLast = 0
-	} else {
-		glob.NewMapLast = glob.NewMapLast + 1
 	}
 
 	path := fmt.Sprintf("%s%s.png", support.Config.PreviewPath, ourcode)
@@ -96,7 +87,7 @@ func Preview(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	buffer := "Preview failed."
 	if filename != "" {
-		buffer = fmt.Sprintf("Map code: %v, Seed: %s\nMap preset: %s\nPreview: http://bhmm.net/map-prev/%s.jpg\n", glob.NewMapLast, ourcode, support.Config.MapPreset, ourcode)
+		buffer = fmt.Sprintf("**Map code:** `%v`\n, Seed: `%s`, Map preset: `%s`\nPreview: http://bhmm.net/map-prev/%s.jpg\n", ourcode, ourseed, support.Config.MapPreset, ourcode)
 	}
 
 	_, err = s.ChannelMessageSend(support.Config.FactorioChannelID, buffer)
