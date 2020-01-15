@@ -292,7 +292,7 @@ func Chat() {
 
 									if newusername != "" {
 										time.Sleep(10 * time.Second)
-										_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]You are currently a new player on this map, and some options will be disabled for you.\n", pname))
+										_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]You are currently a new player on this map, and some options will be disabled for you.[/color]\n", pname))
 									}
 
 									if err != nil {
