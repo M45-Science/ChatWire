@@ -284,11 +284,15 @@ func Chat() {
 								//Don't block, make new thread
 								go func() {
 									time.Sleep(20 * time.Second)
-									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat![/color]\n", pname))
 									time.Sleep(10 * time.Second)
-									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: BHMM.NET![/color]\n", pname))
+									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: https://discord.gg/Ps2jnm7[/color]\n", pname))
 									time.Sleep(10 * time.Second)
 									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Please report griefers on the Discord, so we can ban them![/color]\n", pname))
+
+									if newusername != "" {
+										time.Sleep(10 * time.Second)
+										_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]You are currently a new player on this map, and some options will be disabled for you.\n", pname))
+									}
 
 									if err != nil {
 										ErrorLog(fmt.Errorf("%s: error sending greeting\nDetails: %s", time.Now(), err))

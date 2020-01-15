@@ -16,7 +16,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func GetMapType( mapt string ) int {
+func GetMapType(mapt string) int {
 	i := 0
 
 	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
@@ -42,7 +42,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate) {
 	//ourseed = 1
 	buf := new(bytes.Buffer)
 	errb := binary.Write(buf, binary.BigEndian, ourseed)
-	ourcode := fmt.Sprintf("%v%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()) )
+	ourcode := fmt.Sprintf("%v%v", GetMapType(support.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 
 	if errb != nil {
 		support.ErrorLog(err)
