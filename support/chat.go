@@ -284,6 +284,7 @@ func Chat() {
 								//Don't block, make new thread
 								go func() {
 									time.Sleep(20 * time.Second)
+									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat! and chat /online to see players online.[/color]\n", pname))
 									time.Sleep(10 * time.Second)
 									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: https://discord.gg/Ps2jnm7[/color]\n", pname))
 									time.Sleep(10 * time.Second)
