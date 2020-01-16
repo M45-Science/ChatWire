@@ -31,6 +31,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Restart", Command: admin.Restart, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Start", Command: admin.Restart, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Reload", Command: admin.Reload, Admin: true})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Reboot", Command: admin.Reboot, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Queue", Command: admin.Queue, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rand", Command: admin.RandomMap, Admin: true})
