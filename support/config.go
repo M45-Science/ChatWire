@@ -22,6 +22,7 @@ type config struct {
 	DBFile            string
 	MaxFile           string
 	ChannelPos        string
+	ServerLetter      string
 	MapPreset         string
 	MapGenExec        string
 	PreviewArgs       string
@@ -33,6 +34,7 @@ type config struct {
 	JpgQuality        string
 	JpgScale          string
 	AutoStart         string
+	ZipScript         string
 }
 
 func (conf *config) LoadEnv() {
@@ -56,6 +58,7 @@ func (conf *config) LoadEnv() {
 		DBFile:            os.Getenv("DBFile"),
 		MaxFile:           os.Getenv("MaxFile"),
 		ChannelPos:        os.Getenv("ChannelPos"),
+		ServerLetter:      os.Getenv("ServerLetter"),
 		MapPreset:         os.Getenv("MapPreset"),
 		MapGenExec:        os.Getenv("MapGenExec"),
 		PreviewArgs:       os.Getenv("PreviewArgs"),
@@ -67,6 +70,7 @@ func (conf *config) LoadEnv() {
 		JpgQuality:        os.Getenv("JpgQuality"),
 		JpgScale:          os.Getenv("JpgScale"),
 		AutoStart:         os.Getenv("AutoStart"),
+		ZipScript:         os.Getenv("ZipScript"),
 	}
 	//Log(Config.AdminIDs[0])
 

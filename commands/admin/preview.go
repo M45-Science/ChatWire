@@ -27,6 +27,7 @@ func GetMapType(mapt string) int {
 	return -1
 }
 
+//When complete, remove hard-coded data.
 func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate) {
 	glob.MapPrevLock.Lock()
 	defer glob.MapPrevLock.Unlock()

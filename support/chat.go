@@ -102,7 +102,7 @@ func WritePlayers() {
 	}()
 
 	for i := 0; i < glob.PlayerListMax; i++ {
-		//Filter comma from names
+		//Filter comma from names, just in case
 		name := strings.ReplaceAll(glob.PlayerList[i], ",", "")
 		nameb := strings.ReplaceAll(name, ":", "")
 		buffer = buffer + fmt.Sprintf("%s,", nameb)
@@ -174,13 +174,13 @@ func Chat() {
 	go func() {
 		for {
 			time.Sleep(100 * time.Millisecond)
-			//Might not need to re-tail?
+
 			t, err := tail.TailFile("factorio.log", tail.Config{Follow: true})
 			if err != nil {
 				ErrorLog(fmt.Errorf("%s: An error occurred when attempting to tail factorio.log\nDetails: %s", time.Now(), err))
 			}
 			for line := range t.Lines {
-				//Ignore console messages
+				//Ignore blanks
 				if line.Text == "" {
 					return
 				}
@@ -218,7 +218,7 @@ func Chat() {
 									ErrorLog(err)
 								}
 								//write to factorio as well
-								buf = strings.ReplaceAll(buf, "*", "")
+								buf = strings.ReplaceAll(buf, "*", "") //Remove bold
 								_, err = io.WriteString(glob.Pipe, buf)
 								if err != nil {
 									ErrorLog(err)
@@ -284,7 +284,7 @@ func Chat() {
 								//Don't block, make new thread
 								go func() {
 									time.Sleep(20 * time.Second)
-									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat! and chat /online to see players online.[/color]\n", pname))
+									_, err := io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Welcome! use tilde/tick ( ` or ~ key ) to chat! Chat /online to see players online.[/color]\n", pname))
 									time.Sleep(10 * time.Second)
 									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/w %s [color=0,1,1]Check out our Discord server at: https://discord.gg/Ps2jnm7[/color]\n", pname))
 									time.Sleep(10 * time.Second)
@@ -313,6 +313,7 @@ func Chat() {
 							if err != nil {
 								ErrorLog(fmt.Errorf("%s: error getting player count\nDetails: %s", time.Now(), err))
 							}
+
 							go func() {
 								t := time.Now()
 								// Don't save if we saved recently

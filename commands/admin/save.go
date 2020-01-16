@@ -20,6 +20,11 @@ func SaveServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 				support.ErrorLog(err)
 			}
 		}
+	} else {
+		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Factorio isn't running.")
+		if err != nil {
+			support.ErrorLog(err)
+		}
 	}
 	return
 }

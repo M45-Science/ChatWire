@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -23,7 +22,7 @@ import (
 
 func main() {
 	glob.MaxMapTypes = len(glob.MapTypes) //Just to make it easier
-	
+
 	glob.Sav_timer = time.Now()
 	glob.Gametime = "na"
 	glob.Running = false
@@ -92,15 +91,15 @@ func main() {
 						support.ErrorLog(err)
 					}
 					//glob.NoResponseCount = glob.NoResponseCount + 1
-					if glob.NoResponseCount == 30 {
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 30 seconds...")
+					if glob.NoResponseCount == 60 {
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 60 seconds...")
 						if err != nil {
 							support.ErrorLog(err)
 						}
 					}
-					if glob.NoResponseCount == 60 {
+					if glob.NoResponseCount == 120 {
 						glob.NoResponseCount = 0
-						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 60 seconds... restarting it.")
+						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server was unresponsive for 120 seconds... restarting it.")
 						if err != nil {
 							support.ErrorLog(err)
 						}
@@ -109,12 +108,9 @@ func main() {
 					}
 				}
 			} else if !glob.Running && !glob.Shutdown { //Isn't running, but we aren't supposed to be shutdown.
-				number := 0
-				number, _ = strconv.Atoi(support.Config.ChannelPos)
-				foo := "abcdefghijklmnopqrstuvwxyz"
-				command := "/home/fact/softmod-up.sh"
-				arguments := string(foo[number])
-				out, errs := exec.Command(command, arguments).Output()
+
+				command := support.Config.ZipScript
+				out, errs := exec.Command(command, support.Config.ServerLetter).Output()
 				if errs != nil {
 					support.ErrorLog(errs)
 				}
