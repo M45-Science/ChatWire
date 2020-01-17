@@ -18,7 +18,7 @@ func ErrorLog(err error) {
 	return
 }
 
-func Log(text string) {
+func Log(text string)  {
 	log, rip := os.OpenFile("cord.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 	// If we encounter an error here, something is seriously wrong.

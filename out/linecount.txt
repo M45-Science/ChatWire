@@ -1,0 +1,36 @@
+===============================================================================
+EXTENSION NAME : linecount
+EXTENSION VERSION : 0.1.7
+-------------------------------------------------------------------------------
+count time : 2020-01-17 06:12:19
+count workspace : c:\Users\carlo\Documents\GitHub\FactoCord
+total files : 24
+total code lines : 1318
+total comment lines : 147
+total blank lines : 364
+
+.gitattributes, code is 2, comment is 0, blank is 0.
+.gitignore, code is 13, comment is 0, blank is 3.
+commands\admin\generate.go, code is 6, comment is 0, blank is 4.
+commands\admin\preview.go, code is 66, comment is 7, blank is 31.
+commands\admin\queue.go, code is 11, comment is 1, blank is 6.
+commands\admin\reboot.go, code is 18, comment is 1, blank is 8.
+commands\admin\reload.go, code is 18, comment is 1, blank is 8.
+commands\admin\restart.go, code is 18, comment is 1, blank is 9.
+commands\admin\save.go, code is 21, comment is 1, blank is 8.
+commands\admin\stop.go, code is 24, comment is 1, blank is 8.
+commands\commands.go, code is 44, comment is 12, blank is 14.
+commands\utils\access.go, code is 20, comment is 6, blank is 8.
+commands\utils\mods.go, code is 66, comment is 4, blank is 16.
+copyall.sh, code is 7, comment is 1, blank is 0.
+glob\glob.go, code is 28, comment is 1, blank is 14.
+LICENSE, code is 17, comment is 0, blank is 4.
+linux\service.sh, code is 47, comment is 11, blank is 14.
+main.go, code is 406, comment is 29, blank is 63.
+README.md, code is 33, comment is 3, blank is 23.
+start.sh, code is 9, comment is 3, blank is 1.
+support\chat.go, code is 349, comment is 59, blank is 100.
+support\config.go, code is 66, comment is 2, blank is 9.
+support\error.go, code is 21, comment is 2, blank is 9.
+support\exit.go, code is 8, comment is 1, blank is 4.
+===============================================================================
