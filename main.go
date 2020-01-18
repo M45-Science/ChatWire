@@ -479,7 +479,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		//Chat message handling
 		if glob.Running { // Don't bother if we arne't running...
 			if !strings.Contains(strings.ToLower(m.Content), "!clear") {
-				_, err := io.WriteString(glob.Pipe, fmt.Sprintf("[color=0,1,1][DISCORD-CHAT][/color] [color=1,1,0]%s:[/color] [color=0,1,1]%s[/color]\n", m.Author.Username, m.ContentWithMentionsReplaced()))
+				cleanedstr := m.Content
+				cleanedstr = strings.Replace(cleanedstr, "\n", "", -1)
+				cleanedstr = strings.Replace(cleanedstr, "\r", "", -1)
+				cleanedstr = strings.Replace(cleanedstr, "\t", "", -1)
+
+				_, err := io.WriteString(glob.Pipe, fmt.Sprintf("[color=0,1,1][DISCORD-CHAT][/color] [color=1,1,0]%s:[/color] [color=0,1,1]%s[/color]\n", m.Author.Username, cleanedstr))
 				if err != nil {
 					support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to pass Discord chat to in-game\nDetails: %s", time.Now(), err))
 					glob.Running = false
