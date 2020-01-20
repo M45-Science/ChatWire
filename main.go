@@ -36,11 +36,11 @@ func main() {
 	}
 
 	// Do not exit the app on this error.
-	//if err := os.Remove("factorio.log"); err != nil {
-	//	support.Log("Factorio.log doesn't exist, continuing anyway")
-	//}
+	if err := os.Remove("factorio.log"); err != nil {
+		support.Log("Factorio.log doesn't exist, continuing anyway")
+	}
 
-	logging, err := os.OpenFile("factorio.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	logging, err := os.OpenFile("factorio.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
