@@ -36,7 +36,7 @@ func main() {
 	}
 
 	t := time.Now()
-	glob.OurLogname := fmt.Sprintf("logs/log-%v.log", t.UnixNano())
+	glob.OurLogname = fmt.Sprintf("logs/log-%v.log", t.UnixNano())
 
 	os.MkdirAll("logs", os.ModePerm)
 
