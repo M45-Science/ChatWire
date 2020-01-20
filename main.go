@@ -35,15 +35,21 @@ func main() {
 		support.Log("Autostart disabled, not loading factorio.")
 	}
 
+	t := time.Now()
+	filename := fmt.Sprintf("logs/log-%v.log", t.UnixNano())
+
+	os.MkdirAll("logs", os.ModePerm)
+
 	// Do not exit the app on this error.
-	if err := os.Remove("factorio.log"); err != nil {
+	if err := os.Remove(filename); err != nil {
 		support.Log("Factorio.log doesn't exist, continuing anyway")
 	}
 
-	logging, err := os.OpenFile("factorio.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logging, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
+		os.Exit(1)
 	}
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
@@ -53,7 +59,7 @@ func main() {
 	cmd.Stdout = mwriter
 	glob.Pipe, err = cmd.StdinPipe()
 
-	start_bot()
+	startbot()
 	support.Chat()
 
 	support.LoadPlayers()
@@ -365,7 +371,7 @@ func main() {
 	quithandle()
 }
 
-func start_bot() {
+func startbot() {
 	glob.Sav_timer = time.Now()
 	glob.NoResponseCount = 0
 
