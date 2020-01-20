@@ -35,7 +35,7 @@ func main() {
 		support.Log("Autostart disabled, not loading factorio.")
 	}
 
-	logging, err := os.OpenFile("factorio.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logging, err := os.OpenFile("factorio.log", os.O_RDWR|os.O_APPEND, 0666)
 
 	if err != nil {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
