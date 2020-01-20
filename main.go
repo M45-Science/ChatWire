@@ -36,16 +36,14 @@ func main() {
 	}
 
 	// Do not exit the app on this error.
-	if _, err := os.Create("factorio.log"); err != nil {
-		support.Log("Couldn't create log file...")
-		os.Exit(1)
+	if err := os.Remove("factorio.log"); err != nil {
+		support.Log("Factorio.log doesn't exist, continuing anyway")
 	}
 
-	logging, err := os.OpenFile("factorio.log", os.O_WRONLY|os.O_APPEND, 0666)
+	logging, err := os.OpenFile("factorio.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))
-		os.Exit(1)
 	}
 
 	mwriter := io.MultiWriter(logging, os.Stdout)
