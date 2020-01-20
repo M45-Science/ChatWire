@@ -36,16 +36,16 @@ func main() {
 	}
 
 	t := time.Now()
-	filename := fmt.Sprintf("logs/log-%v.log", t.UnixNano())
+	glob.OurLogname := fmt.Sprintf("logs/log-%v.log", t.UnixNano())
 
 	os.MkdirAll("logs", os.ModePerm)
 
 	// Do not exit the app on this error.
-	if err := os.Remove(filename); err != nil {
+	if err := os.Remove(glob.OurLogname); err != nil {
 		support.Log("Factorio.log doesn't exist, continuing anyway")
 	}
 
-	logging, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logging, err := os.OpenFile(glob.OurLogname, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
 		support.ErrorLog(fmt.Errorf("%s: An error occurred when attempting to open factorio.log\nDetails: %s", time.Now(), err))

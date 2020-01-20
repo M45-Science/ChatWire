@@ -11,6 +11,7 @@ import (
 // Pipe is an WriteCloser interface
 var Version = "0.0.2"
 var Pipe io.WriteCloser
+var OurLogname = ""
 var Gametime = "gx-x-x-x"
 var CharName = ""
 var Sav_timer time.Time

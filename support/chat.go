@@ -175,9 +175,10 @@ func Chat() {
 		for {
 			time.Sleep(100 * time.Millisecond)
 
-			t, err := tail.TailFile("factorio.log", tail.Config{Follow: true})
+			t, err := tail.TailFile(glob.OurLogname, tail.Config{Follow: true})
 			if err != nil {
 				ErrorLog(fmt.Errorf("%s: An error occurred when attempting to tail factorio.log\nDetails: %s", time.Now(), err))
+				os.Exit(1)
 			}
 			for line := range t.Lines {
 				//Ignore blanks
