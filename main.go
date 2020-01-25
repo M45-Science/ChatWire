@@ -463,7 +463,7 @@ func quithandle() {
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	log.Print("[" + m.Author.Username + "] " + m.Content)
 
-	if m.Author.ID == s.State.User.ID {
+	if m.Author.ID == s.State.User.ID || m.Author.Bot {
 		return
 	}
 
