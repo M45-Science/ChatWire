@@ -393,6 +393,11 @@ func Chat() {
 						TmpList := strings.Split(line.Text, " ")
 
 						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **(INFO)** %s", glob.Gametime, TmpList[1:]))
+						if strings.Contains(line.Text, " was moved to trusted users.") {
+							trustname := TmpList[1]
+							trustname = strings.Replace(trustname, "[", "", -1)
+							support.Log(trustname + " was promoted to trusted user.")
+						}
 						if err != nil {
 							ErrorLog(err)
 						}
