@@ -396,7 +396,7 @@ func Chat() {
 						if strings.Contains(line.Text, " was moved to trusted users.") {
 							trustname := TmpList[1]
 							trustname = strings.Replace(trustname, "[", "", -1)
-							support.Log(trustname + " was promoted to trusted user.")
+							Log(trustname + " was promoted to trusted user.")
 						}
 						if err != nil {
 							ErrorLog(err)
