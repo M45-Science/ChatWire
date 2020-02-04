@@ -318,7 +318,7 @@ func Chat() {
 							go func() {
 								t := time.Now()
 								// Don't save if we saved recently
-								if t.Sub(glob.Sav_timer).Seconds() > 60 {
+								if t.Sub(glob.Sav_timer).Seconds() > 300 {
 
 									_, err = io.WriteString(glob.Pipe, fmt.Sprintf("/server-save sav-%s\n", glob.Gametime))
 									if err != nil {
