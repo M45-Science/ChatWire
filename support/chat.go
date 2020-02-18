@@ -414,7 +414,7 @@ func Chat() {
 
 					}
 					//For $online
-					if (strings.Contains(line.Text, "(online)")) && !strings.Contains(line.Text, "<server>") {)
+					if strings.Contains(line.Text, "(online)") && !strings.Contains(line.Text, "<server>") {
 
 						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, line.Text)
 						if err != nil {
