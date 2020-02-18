@@ -21,6 +21,7 @@ var Reboot = false
 var QueueReload = false
 var NumPlayers = 0
 var RecordPlayers = 0
+var RelaunchThrottle = 0
 
 var DS *discordgo.Session
 

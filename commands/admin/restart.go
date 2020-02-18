@@ -12,6 +12,8 @@ import (
 func Restart(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	glob.Refresh = true
+	glob.RelaunchThrottle = 0
+	
 	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Now starting!")
 	if err != nil {
 		support.ErrorLog(err)
