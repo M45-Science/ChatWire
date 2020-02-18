@@ -414,11 +414,9 @@ func Chat() {
 
 					}
 					//For $online
-					if (strings.Contains(line.Text, "(online)")) && !strings.Contains(line.Text, "<server>") {
+					if (strings.Contains(line.Text, "(online)")) && !strings.Contains(line.Text, "<server>") {)
 
-						TmpList := strings.Split(line.Text, " ")
-
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` %s", glob.Gametime, TmpList[1:]))
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, line.Text)
 						if err != nil {
 							ErrorLog(err)
 						}
