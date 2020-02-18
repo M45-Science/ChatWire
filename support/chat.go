@@ -183,11 +183,11 @@ func Chat() {
 			for line := range t.Lines {
 				//Ignore blanks
 				if line.Text == "" {
-					return
+					break
 				}
 				if len(line.Text) > 1900 {
 					//Message too long
-					return
+					break
 				}
 
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
@@ -334,9 +334,45 @@ func Chat() {
 								ErrorLog(err)
 							}
 						}
-					} //End join/leave
+						//Send luamsg to Discord
+						if strings.Contains(line.Text, "[MSG]") {
+
+							TmpList := strings.Split(line.Text, " ")
+
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **(INFO)** %s", glob.Gametime, TmpList[1:]))
+							if strings.Contains(line.Text, " was moved to trusted users.") {
+								trustname := TmpList[1]
+								trustname = strings.Replace(trustname, "[", "", -1)
+								Log(trustname + " was promoted to trusted user.")
+							}
+							if err != nil {
+								ErrorLog(err)
+							}
+
+						}
+						if strings.Contains(line.Text, "[NFO]") {
+
+							TmpList := strings.Split(line.Text, " ")
+
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` %s", glob.Gametime, TmpList[1:]))
+							if err != nil {
+								ErrorLog(err)
+							}
+
+						}
+						//For $online
+						if strings.Contains(line.Text, "(online)") {
+
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, line.Text)
+							if err != nil {
+								ErrorLog(err)
+							}
+
+						}
+					} //End NO [CHAT]
+
 					//Send chat to Discord
-					if strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") {
+					if strings.Contains(line.Text, "[CHAT]") {
 
 						TmpList := strings.Split(line.Text, " ")
 						TmpList[3] = strings.Replace(TmpList[3], ":", "", -1)
@@ -386,124 +422,6 @@ func Chat() {
 						}
 
 					} //End Chat
-
-					//Send luamsg to Discord
-					if strings.Contains(line.Text, "[MSG]") && !strings.Contains(line.Text, "<server>") {
-
-						TmpList := strings.Split(line.Text, " ")
-
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` **(INFO)** %s", glob.Gametime, TmpList[1:]))
-						if strings.Contains(line.Text, " was moved to trusted users.") {
-							trustname := TmpList[1]
-							trustname = strings.Replace(trustname, "[", "", -1)
-							Log(trustname + " was promoted to trusted user.")
-						}
-						if err != nil {
-							ErrorLog(err)
-						}
-
-					}
-					if strings.Contains(line.Text, "[NFO]") && !strings.Contains(line.Text, "<server>") {
-
-						TmpList := strings.Split(line.Text, " ")
-
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` %s", glob.Gametime, TmpList[1:]))
-						if err != nil {
-							ErrorLog(err)
-						}
-
-					}
-					//For $online
-					if strings.Contains(line.Text, "(online)") && !strings.Contains(line.Text, "<server>") {
-
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, line.Text)
-						if err != nil {
-							ErrorLog(err)
-						}
-
-					}
-
-					//Loading map
-					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {
-						TmpList := strings.Split(line.Text, " ")
-
-						//Strip file path
-						fullpath := strings.Join(TmpList[4:7], " ")
-						regaa := regexp.MustCompile(`\/.*?\/saves\/`)
-						filename := regaa.ReplaceAllString(fullpath, "")
-						filename = strings.Replace(filename, ":", "", -1)
-
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s", filename))
-						if err != nil {
-							ErrorLog(err)
-						}
-					}
-					//Loading mod
-					//                                        if !strings.Contains(line.Text,"[CHAT]") && !strings.Contains(line.Text,"<server>") && strings.Contains(line.Text,"Loading mod") &&
-					//					!strings.Contains(line.Text,"settings") && !strings.Contains(line.Text,"base") && !strings.Contains(line.Text, "core") {
-					//                                                TmpList := strings.Split(line.Text, " ")
-					//
-					//                                                glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[4:8], " ")))
-					//                                        }
-
-					//Close message
-					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Goodbye") {
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now offline.")
-						if err != nil {
-							ErrorLog(err)
-						}
-						glob.Running = false
-						if glob.Reboot == true || glob.QueueReload == true {
-							os.Exit(1)
-						}
-					}
-
-					//Ready message
-					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Matching server game ") && strings.Contains(line.Text, " has been created.") {
-						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now online!")
-						if err != nil {
-							ErrorLog(err)
-						}
-						_, err = io.WriteString(glob.Pipe, "/p o c\n")
-						glob.Running = true
-					}
-
-					//Get in-game time
-					ltl := strings.ToLower(line.Text)
-
-					if (strings.Contains(ltl, " second") || strings.Contains(ltl, " minute") || strings.Contains(ltl, " hour") || strings.Contains(ltl, " day")) && !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") {
-						glob.Gametime = "gx-x-x-x"
-
-						TmpList := strings.Split(ltl, " ")
-						day := 0
-						hour := 0
-						minute := 0
-						second := 0
-						tmplen := len(TmpList)
-
-						if tmplen > 1 {
-
-							for x := 0; x < tmplen; x++ {
-								if strings.Contains(TmpList[x], "day") {
-									day, _ = strconv.Atoi(TmpList[x-1])
-								} else if strings.Contains(TmpList[x], "hour") {
-									hour, _ = strconv.Atoi(TmpList[x-1])
-								} else if strings.Contains(TmpList[x], "minute") {
-									minute, _ = strconv.Atoi(TmpList[x-1])
-								} else if strings.Contains(TmpList[x], "second") {
-									second, _ = strconv.Atoi(TmpList[x-1])
-								}
-							}
-							glob.Gametime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
-						}
-
-					}
-					//Reset save timer
-					if strings.Contains(line.Text, "Auto saving") || strings.Contains(line.Text, "Saving game") || strings.Contains(line.Text, "Saving Finished") || strings.Contains(line.Text, "[LEAVE]") {
-						if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") {
-							glob.Sav_timer = time.Now()
-						}
-					}
 				} //End console filtered
 			} //End Loop
 		}
