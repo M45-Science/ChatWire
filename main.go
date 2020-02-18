@@ -501,6 +501,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		//Chat message handling
 		if glob.Running { // Don't bother if we arne't running...
 			if !strings.Contains(strings.ToLower(m.Content), "!clear") {
+
+				//Clean strings
 				cleanedstr := m.Content
 				cleanedstr = strings.Replace(cleanedstr, "\n", " ", -1)
 				cleanedstr = strings.Replace(cleanedstr, "\r", " ", -1)

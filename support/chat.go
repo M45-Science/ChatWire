@@ -413,6 +413,17 @@ func Chat() {
 						}
 
 					}
+					//For $online
+					if (strings.Contains(line.Text, "(online)")) && !strings.Contains(line.Text, "<server>") {
+
+						TmpList := strings.Split(line.Text, " ")
+
+						_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("`%-13s` %s", glob.Gametime, TmpList[1:]))
+						if err != nil {
+							ErrorLog(err)
+						}
+
+					}
 
 					//Loading map
 					if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, "Loading map") {

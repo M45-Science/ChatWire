@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"../commands/admin"
-	//"../commands/utils"
+	"../commands/utils"
 	"../support"
 	"github.com/bwmarrin/discordgo"
 )
@@ -38,6 +38,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Gen", Command: admin.Generate, Admin: true})
 
 	// Util Commands
+	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: utils.PlayersOnline, Admin: false})
 	//CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
 	//CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
 }
