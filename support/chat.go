@@ -369,10 +369,92 @@ func Chat() {
 							}
 
 						}
-					} //End NO [CHAT]
 
+						//Loading map
+						if strings.Contains(line.Text, "Loading map") {
+							TmpList := strings.Split(line.Text, " ")
+
+							//Strip file path
+							fullpath := strings.Join(TmpList[4:7], " ")
+							regaa := regexp.MustCompile(`\/.*?\/saves\/`)
+							filename := regaa.ReplaceAllString(fullpath, "")
+							filename = strings.Replace(filename, ":", "", -1)
+
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("%s", filename))
+							if err != nil {
+								ErrorLog(err)
+							}
+						}
+						//Loading mod
+						//                                        if !strings.Contains(line.Text,"[CHAT]") && !strings.Contains(line.Text,"<server>") && strings.Contains(line.Text,"Loading mod") &&
+						//					!strings.Contains(line.Text,"settings") && !strings.Contains(line.Text,"base") && !strings.Contains(line.Text, "core") {
+						//                                                TmpList := strings.Split(line.Text, " ")
+						//
+						//                                                glob.DS.ChannelMessageSend(Config.FactorioChannelID, fmt.Sprintf("(%s) %s", glob.Gametime, strings.Join(TmpList[4:8], " ")))
+						//                                        }
+
+						//Close message
+						if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Goodbye") {
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now offline.")
+							if err != nil {
+								ErrorLog(err)
+							}
+							glob.Running = false
+							if glob.Reboot == true || glob.QueueReload == true {
+								os.Exit(1)
+							}
+						}
+
+						//Ready message
+						if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") && strings.Contains(line.Text, " Matching server game ") && strings.Contains(line.Text, " has been created.") {
+							_, err := glob.DS.ChannelMessageSend(Config.FactorioChannelID, "Factorio is now online!")
+							if err != nil {
+								ErrorLog(err)
+							}
+							_, err = io.WriteString(glob.Pipe, "/p o c\n")
+							glob.Running = true
+						}
+
+						//Get in-game time
+						ltl := strings.ToLower(line.Text)
+
+						if (strings.Contains(ltl, " second") || strings.Contains(ltl, " minute") || strings.Contains(ltl, " hour") || strings.Contains(ltl, " day")) && !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") {
+							glob.Gametime = "gx-x-x-x"
+
+							TmpList := strings.Split(ltl, " ")
+							day := 0
+							hour := 0
+							minute := 0
+							second := 0
+							tmplen := len(TmpList)
+
+							if tmplen > 1 {
+
+								for x := 0; x < tmplen; x++ {
+									if strings.Contains(TmpList[x], "day") {
+										day, _ = strconv.Atoi(TmpList[x-1])
+									} else if strings.Contains(TmpList[x], "hour") {
+										hour, _ = strconv.Atoi(TmpList[x-1])
+									} else if strings.Contains(TmpList[x], "minute") {
+										minute, _ = strconv.Atoi(TmpList[x-1])
+									} else if strings.Contains(TmpList[x], "second") {
+										second, _ = strconv.Atoi(TmpList[x-1])
+									}
+								}
+								glob.Gametime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
+							}
+
+						}
+						//Reset save timer
+						if strings.Contains(line.Text, "Auto saving") || strings.Contains(line.Text, "Saving game") || strings.Contains(line.Text, "Saving Finished") || strings.Contains(line.Text, "[LEAVE]") {
+							if !strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") {
+								glob.Sav_timer = time.Now()
+							}
+						}
+
+					} //End join/leave
 					//Send chat to Discord
-					if strings.Contains(line.Text, "[CHAT]") {
+					if strings.Contains(line.Text, "[CHAT]") && !strings.Contains(line.Text, "<server>") {
 
 						TmpList := strings.Split(line.Text, " ")
 						TmpList[3] = strings.Replace(TmpList[3], ":", "", -1)
