@@ -124,11 +124,11 @@ func main() {
 					//buf := fmt.Sprintf("ran: %s args: %s out: %s\n", command, arguments, out)
 					//support.Log(buf)
 				}
+
 				//Relaunch Throttle
 				if glob.RelaunchThrottle > 0 {
 
 					delay := glob.RelaunchThrottle * glob.RelaunchThrottle * 10
-					glob.RelaunchThrottle = glob.RelaunchThrottle + 1
 
 					buf := fmt.Sprintf("Sleeping for %d seconds, before auto-relaunch.", delay)
 					_, err = glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, buf)
@@ -139,6 +139,7 @@ func main() {
 					time.Sleep(time.Duration(delay) * time.Second)
 
 				}
+				glob.RelaunchThrottle = glob.RelaunchThrottle + 1
 
 				cmd := exec.Command(support.Config.Executable, support.Config.LaunchParameters...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
