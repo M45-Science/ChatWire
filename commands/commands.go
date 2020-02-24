@@ -75,7 +75,7 @@ func CheckAdmin(ID string) bool {
 
 func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	buf := ""
+	buf := "```"
 
 	for _, command := range CL.CommandList {
 		admin := ""
@@ -84,6 +84,7 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		buf = buf + (strings.ToLower(command.Name) + admin + "\n")
 	}
+	buf = buf + "```"
 
 	_, errb := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, buf)
 	if errb != nil {
