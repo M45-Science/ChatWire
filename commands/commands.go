@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"strings"
 
 	"../commands/admin"
@@ -80,9 +81,9 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
 	for _, command := range CL.CommandList {
 		admin := ""
 		if command.Admin {
-			admin = " (Admin)"
+			admin = "(Admin)"
 		}
-		buf = buf + (strings.ToLower(command.Name) + admin + "\n")
+		buf = buf + fmt.Sprintf("%s%.32f %s %s\n", support.Config.Prefix, strings.ToLower(command.Name), admin)
 	}
 	buf = buf + "```"
 
