@@ -187,6 +187,10 @@ func Chat() {
 				}
 				if len(line.Text) > 1900 {
 					//Message too long
+					_, err = io.WriteString(glob.Pipe, "Message was too long to post to discord.")
+					if err != nil {
+						ErrorLog(err)
+					}
 					continue
 				}
 
