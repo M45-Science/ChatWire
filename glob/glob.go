@@ -29,6 +29,13 @@ const MaxPlayers = 16777215
 
 var PlayerListMax = 0
 var PlayerList [MaxPlayers + 1]string
+
+const MaxPasswords = 128
+
+var PasswordList [MaxPasswords + 1]string
+var PasswordName [MaxPasswords + 1]string
+var PasswordPos = 0
+
 var NumLogins = 0
 
 var PlayerListWriteLock sync.Mutex
