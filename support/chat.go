@@ -182,9 +182,14 @@ func Chat() {
 			}
 			for line := range t.Lines {
 				//Ignore blanks
-				if line.Text == "" {
+				if line.Text == "" && len(line.Text) <= 0 {
 					continue
 				}
+
+				glob.NoResponseCount = 0 //Server is alive
+				glob.Paused = false
+				glob.Running = true
+
 				if len(line.Text) > 1900 {
 					//Message too long
 					_, err = io.WriteString(glob.Pipe, "Message was too long to post to discord.")
@@ -194,9 +199,7 @@ func Chat() {
 					continue
 				}
 
-				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
-					glob.NoResponseCount = 0 //Server is alive
-					glob.Running = true
+				if !strings.Contains(line.Text, "<server>") {
 
 					if !strings.Contains(line.Text, "[CHAT]") {
 						TmpList := strings.Split(line.Text, " ")
@@ -445,7 +448,14 @@ func Chat() {
 										second, _ = strconv.Atoi(TmpList[x-1])
 									}
 								}
-								glob.Gametime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
+								newtime := fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
+								if newtime != glob.Gametime && glob.NumPlayers <= 0 {
+									glob.Paused = true
+									Log("Server appears paused... pausing watchdog.")
+								} else {
+									glob.Paused = false
+								}
+								glob.Gametime = newtime
 							}
 
 						}

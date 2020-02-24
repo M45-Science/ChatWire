@@ -89,14 +89,16 @@ func main() {
 				}
 				os.Exit(1)
 			} else if glob.Running && !glob.Shutdown { //Currently running normally
-				glob.NoResponseCount = glob.NoResponseCount + 1
 
 				if glob.Running {
-					_, err := io.WriteString(glob.Pipe, "/time\n")
-					if err != nil {
-						support.ErrorLog(err)
+					if glob.Paused == false {
+						glob.NoResponseCount = glob.NoResponseCount + 1
+
+						_, err := io.WriteString(glob.Pipe, "/time\n")
+						if err != nil {
+							support.ErrorLog(err)
+						}
 					}
-					//glob.NoResponseCount = glob.NoResponseCount + 1
 					if glob.NoResponseCount == 60 {
 						_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Server has not responded for 60 seconds...")
 						if err != nil {
