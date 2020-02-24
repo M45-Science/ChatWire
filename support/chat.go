@@ -183,11 +183,11 @@ func Chat() {
 			for line := range t.Lines {
 				//Ignore blanks
 				if line.Text == "" {
-					break
+					continue
 				}
 				if len(line.Text) > 1900 {
 					//Message too long
-					break
+					continue
 				}
 
 				if len(line.Text) > 0 && !strings.Contains(line.Text, "<server>") {
