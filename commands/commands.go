@@ -84,7 +84,7 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if command.Admin {
 			admin = "(Admin-Only)"
 		}
-		buf = buf + fmt.Sprintf("%s%-18s %s %s\n", support.Config.Prefix, strings.ToLower(command.Name), admin, command.Help)
+		buf = buf + fmt.Sprintf("%s%-12s %s %s\n", support.Config.Prefix, strings.ToLower(command.Name), admin, command.Help)
 	}
 	buf = buf + "\n```"
 
