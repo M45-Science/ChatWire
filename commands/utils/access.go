@@ -28,7 +28,7 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 	})
 	str := string(buf)
 
-	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Access Code: `%s`\n \nPress ~ or to ` to access chat,\nthen type /access `%s`, and press enter.\nYou can do this on any of our factorio servers to be verified!", str, str))
+	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Access Code: `%s`\n \nPress ~ or to ` to access chat,\nthen type /access `%s`, and press enter.\nYou can do this on any of our factorio servers to be verified!\nYou can copy-paste (control-c, control-v) the code from discord and into factorio.", str, str))
 	if err != nil {
 		support.ErrorLog(err)
 	}
