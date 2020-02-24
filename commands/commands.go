@@ -5,6 +5,7 @@ import (
 
 	"../commands/admin"
 	"../commands/utils"
+	"../glob"
 	"../support"
 	"github.com/bwmarrin/discordgo"
 )
@@ -42,6 +43,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: utils.PlayersOnline, Admin: false})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, Admin: false})
 }
 
 // RunCommand runs a specified command.
@@ -69,4 +71,23 @@ func CheckAdmin(ID string) bool {
 		}
 	}
 	return false
+}
+
+func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
+
+	buf := ""
+
+	for _, command := range CL.CommandList {
+		admin := ""
+		if command.Admin {
+			admin = " (Admin)"
+		}
+		buf = buf + (strings.ToLower(command.Name) + admin + "\n")
+	}
+
+	_, errb := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, buf)
+	if errb != nil {
+		support.ErrorLog(errb)
+	}
+	return
 }
