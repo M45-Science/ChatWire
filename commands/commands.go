@@ -36,11 +36,12 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Queue", Command: admin.Queue, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rand", Command: admin.RandomMap, Admin: true})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Gen", Command: admin.Generate, Admin: true})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Stat", Command: admin.StatServer, Admin: true})
 
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: utils.PlayersOnline, Admin: false})
-	//CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
-	//CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false})
 }
 
 // RunCommand runs a specified command.
