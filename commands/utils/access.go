@@ -1,34 +1,23 @@
 package utils
 
 import (
-	//"fmt"
-
 	"fmt"
-	"math/rand"
-	"time"
+	//"math/rand"
+	//"time"
 
 	"../../support"
 	"github.com/bwmarrin/discordgo"
-	//b64 "encoding/base64"
+	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
 
 func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	rand.Seed(time.Now().UnixNano())
-	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-		"abcdefghijklmnopqrstuvwxyz" +
-		"0123456789"
-	length := 16
-	buf := make([]byte, length)
-	for i := 0; i < length; i++ {
-		buf[i] = all[rand.Intn(len(all))]
-	}
-	rand.Shuffle(len(buf), func(i, j int) {
-		buf[i], buf[j] = buf[j], buf[i]
-	})
-	str := string(buf)
+	g := xkcdpwgen.NewGenerator()
+	g.SetNumWords(5)
+	g.SetCapitalize(true)
+	password := g.GeneratePasswordString()
 
-	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Access Code: `%s`\n \nPress ~ or to ` to access chat,\nthen type /access `%s`, and press enter.\nYou can do this on any of our factorio servers to be verified!\nYou can copy-paste (control-c, control-v) the code from discord and into factorio.", str, str))
+	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Access Code: `%s`\n \nPress ~ or to ` to access chat,\nthen type /access `%s`, and press enter.\nYou can do this on any of our factorio servers to be verified!\nYou can copy-paste (control-c, control-v) the code from discord and into factorio.", password, password))
 	if err != nil {
 		support.ErrorLog(err)
 	}
