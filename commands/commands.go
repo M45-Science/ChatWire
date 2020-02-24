@@ -44,7 +44,7 @@ func RegisterCommands() {
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: utils.PlayersOnline, Admin: false, Help: "Show players online"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: utils.ModsList, Admin: false, Help: "Show installed mods"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false, Help: "Get an access code to get regular status on discord (WIP"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Access", Command: utils.AccessServer, Admin: false, Help: "Get promoted to regular on Discord, from Factorio (Incomplete)"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, Admin: false, Help: "You are here"})
 }
 
