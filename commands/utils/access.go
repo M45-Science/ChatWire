@@ -28,9 +28,14 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 	glob.PasswordPos++
 
 	dmChannel, _ := glob.DS.UserChannelCreate(m.Author.ID)
-	_, err := s.ChannelMessageSend(dmChannel.ID, fmt.Sprintf("Access Code: `%s`\n \nPress ~ or to \\` to access chat,\nthen type `/access %s`, and press enter.\nYou can do this on any of our factorio servers to be verified!\nYou can copy-paste (control-c, control-v) the code from discord and into factorio.", password, password))
+	_, err := s.ChannelMessageSend(dmChannel.ID, fmt.Sprintf("Access Code: `%s`\n \nIn factorio, press ~ or to \\` to access chat,\nthen paste or type `/access %s`, and press enter.\nYou can do this on any of our factorio servers to be verified!\nYou can copy-paste (control-c, control-v) the code from Discord and into Factorio.\n \nTHIS PASSWORD ONLY WORKS ONCE, SO DON'T SHARE IT!", password, password))
 	if err != nil {
 		support.ErrorLog(err)
+	}
+
+	_, errb := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "Access code sent privately.")
+	if errb != nil {
+		support.ErrorLog(errb)
 	}
 	return
 }
