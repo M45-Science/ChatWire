@@ -3,7 +3,10 @@ package utils
 import (
 	//"fmt"
 
-	"../../glob"
+	"fmt"
+	"math/rand"
+	"time"
+
 	"../../support"
 	"github.com/bwmarrin/discordgo"
 	//b64 "encoding/base64"
@@ -11,24 +14,23 @@ import (
 
 func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	if len(glob.CharName) < 5 {
-		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Name too short...\n")
-		if err != nil {
-			support.ErrorLog(err)
-		}
-		return
+	rand.Seed(time.Now().UnixNano())
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		"0123456789"
+	length := 16
+	buf := make([]byte, length)
+	for i := 0; i < length; i++ {
+		buf[i] = all[rand.Intn(len(all))]
 	}
-	if len(glob.CharName) < 64 {
-		_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, "Name too long...\n")
-		if err != nil {
-			support.ErrorLog(err)
-		}
-		return
-	}
+	rand.Shuffle(len(buf), func(i, j int) {
+		buf[i], buf[j] = buf[j], buf[i]
+	})
+	str := string(buf)
 
-	//_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Access Code: %s\n", m) )
-	//if err != nil {
-	//	support.ErrorLog(err)
-	//}
+	_, err := s.ChannelMessageSend(support.Config.FactorioChannelID, fmt.Sprintf("Access Code: %s\n", str))
+	if err != nil {
+		support.ErrorLog(err)
+	}
 	return
 }
