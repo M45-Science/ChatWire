@@ -14,7 +14,7 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	g := xkcdpwgen.NewGenerator()
 	g.SetNumWords(5)
-	g.SetCapitalize(true)
+	g.SetCapitalize(false)
 	g.SetDelimiter("-")
 	password := g.GeneratePasswordString()
 
