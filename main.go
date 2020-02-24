@@ -202,7 +202,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(30 * time.Second)
-			if glob.Running {
+			if glob.Running && glob.Paused == false {
 				_, err = io.WriteString(glob.Pipe, "/p o c\n")
 			}
 		}
