@@ -173,7 +173,7 @@ func Chat() {
 	time.Sleep(5 * time.Second)
 	go func() {
 		for {
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 
 			t, err := tail.TailFile(glob.OurLogname, tail.Config{Follow: true})
 			if err != nil {
