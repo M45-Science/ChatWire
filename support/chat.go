@@ -257,7 +257,7 @@ func Chat() {
 
 									}
 								} else {
-									newchname = fmt.Sprintf("🔴%s_%v╱%v", Config.ChannelName, glob.NumPlayers, glob.RecordPlayers)
+									newchname = fmt.Sprintf("🟢%s_%v╱%v", Config.ChannelName, glob.NumPlayers, glob.RecordPlayers)
 								}
 
 								//Dont clutter audit log if name didn't change
