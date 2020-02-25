@@ -9,7 +9,7 @@ import (
 )
 
 // Pipe is an WriteCloser interface
-var Version = "0.0.3-2-24-2020-4-16-PM"
+var Version = "0.0.3-2-24-2020-11-40-PM"
 var Paused = false
 var Pipe io.WriteCloser
 var OurLogname = ""
