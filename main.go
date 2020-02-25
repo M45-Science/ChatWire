@@ -199,6 +199,7 @@ func main() {
 		}
 	}()
 
+	//If we are running and not paused, get players online in case factorio doesn't report log in/out
 	go func() {
 		for {
 			time.Sleep(30 * time.Second)
@@ -208,6 +209,26 @@ func main() {
 		}
 	}()
 
+	//Check for no players online, and reload if queued.
+	go func() {
+		time.Sleep(5 * time.Second)
+		if glob.QueueReload == true && glob.NumPlayers == 0 && glob.Reboot == false {
+			_, err := glob.DS.ChannelMessageSend(support.Config.FactorioChannelID, "No players online, performing scheduled reload.")
+			if err != nil {
+				support.ErrorLog(err)
+			}
+			if glob.Running {
+				_, err = io.WriteString(glob.Pipe, "/quit\n")
+				if err != nil {
+					support.ErrorLog(err)
+				}
+			}
+			glob.Reboot = true
+
+		}
+	}()
+
+	//Check signal files
 	go func() {
 		for {
 			time.Sleep(2 * time.Second)
