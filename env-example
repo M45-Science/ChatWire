@@ -1,0 +1,99 @@
+#You can get this from https://discord.com/developers/applications/
+DiscordToken = ""
+
+#Enable developer mode, right click channel and "Copy ID"
+FactorioChannelID = ""
+
+#https://wiki.factorio.com/Command_line_parameters
+LaunchParameters = "--start-server-load-latest --server-settings ../factorio/server-settings.json --port 2345
+
+#Same as other discord ids, right click and copy
+#You can have many ids here, just need a space between the IDs
+AdminIDs = "1234 5678"
+
+#Prefix for discord commands
+Prefix = "$"
+
+#Used for bot's discord status
+GameName = "Factorio"
+
+#We use this as the base name for the discord channel
+#So we can put server status and number of players online in channel name
+ChannelName = "MyFactorio"
+
+#List of players, and their levels, and registration is kept here
+#Multiple servers can read/write to this
+DBFile = "../playerlist.dat"
+
+#Just a record of maximum number of players online at once, for one server only
+MaxFile = "maxplay.dat"
+
+#Used as a work-around to keep channels sorted properly, if you have many
+ChannelPos = "0"
+
+#Factorio directory suffix, used for zipscript and playerdb temp-file name
+ServerLetter = "a"
+
+#https://github.com/wube/factorio-data/blob/master/map-gen-settings.example.json
+MapPreset = "rail-world"
+
+#location for ImageMagick, used for $rand command to preview a new random map
+#(png to jpg)
+ConvertExec = "/usr/bin/convert"
+
+#https://lua-api.factorio.com/latest/Concepts.html#MapGenSettings
+#Slope shading adds some 3d effect to the map preview
+PreviewArgs = "--slope-shading=0.05"
+
+#Location to place map preview jpg files
+PreviewPath = "/var/www/html/map-prev/"
+PreviewRes = "1024"
+PreviewScale = "1"
+JpgQuality = "85"
+JpgScale = "1024x1024"
+SiteURL = "http://myfactoriohost.zxy/map-prev/"
+
+#Automatically start factorio when bot boots
+AutoStart = "true"
+
+#Optionally run a script for injecting a custom soft mod into the newest save file
+ZipScript = "/home/fact/softmod-up.sh"
+
+#Factorio directory location
+FactorioLocation = "/home/user/factorio"
+
+#Append --use-server-whitelist argument, and whitelist all users level 2 and above on factorio boot
+DoWhitelist = "no"
+
+#Discord guildid, used to look up guild name, users, etc (required for $register command)
+GuildID = "287490983875051520"
+
+#Roles used for $register command
+RegularsRole = "The Regulars"
+MembersRole = "Members"
+AdminsRole = "Factorio Admin"
+
+#Eventually might be used for compressing log files
+CompressBin = "/usr/bin/lbzip2"
+
+#Where to send maps after $archive command, uses a directory with factorio version number.
+#Example: /home/user/DropBox/Old Server Maps/0.18 maps/ The version number is grabbed from the factorio logs
+MapArchivePath = "/home/user/Dropbox/Old Server Maps"
+
+#Optional channel for factorio log info
+AuxChannel = ""
+
+#Factorio updater#
+#Updater location
+UpdaterPath = "...update_factorio.py"
+#Cache directory
+UpdaterCache = "../update-cache"
+#Shell/program to launch from
+UpdaterShell = "/usr/bin/python"
+#Update to experimental versions
+UpdateToExperimental = "false"
+#For checking zipped update integrity
+ZipBinary = "/usr/bin/unzip"
+
+#Custom --map-gen-settings, "" for none
+MapGenJson = ""
