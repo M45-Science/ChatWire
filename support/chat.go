@@ -583,11 +583,16 @@ func Chat() {
 
 							//Send whitelist
 							if glob.WhitelistMode {
+								fact.SetNoResponseCount(0)
 								glob.PlayerListLock.RLock()
 								for i := 0; i <= glob.PlayerListMax; i++ {
-									fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
+									if glob.PlayerList[i].Name != "" {
+										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
+										time.Sleep(1 * time.Millisecond)
+									}
 								}
 								glob.PlayerListLock.RUnlock()
+								fact.SetNoResponseCount(0)
 							}
 							continue
 						}
