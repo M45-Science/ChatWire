@@ -595,7 +595,7 @@ func Chat() {
 								}
 								glob.PlayerListLock.RUnlock()
 								fact.SetNoResponseCount(0)
-								if i > 0 {
+								if pcount > 0 {
 									buf := fmt.Sprintf("Whitelist of %d players sent.", pcount)
 									fact.LogCMS(config.Config.FactorioChannelID, buf)
 								}
