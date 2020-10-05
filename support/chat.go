@@ -588,7 +588,8 @@ func Chat() {
 								for i := 0; i <= glob.PlayerListMax; i++ {
 									if glob.PlayerList[i].Name != "" {
 										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
-										time.Sleep(1 * time.Millisecond)
+										time.Sleep(10 * time.Millisecond)
+										fact.SetNoResponseCount(0)
 									}
 								}
 								glob.PlayerListLock.RUnlock()
