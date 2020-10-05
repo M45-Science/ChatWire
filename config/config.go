@@ -48,7 +48,7 @@ type config struct {
 	ZipBinary            string
 	ModerationChannel    string
 	MapGenJson           string
-	CompressBin          string
+	CompressScript       string
 }
 
 func (conf *config) LoadEnv() {
@@ -98,7 +98,7 @@ func (conf *config) LoadEnv() {
 		ZipBinary:            os.Getenv("ZipBinary"),
 		ModerationChannel:    os.Getenv("ModerationChannel"),
 		MapGenJson:           os.Getenv("MapGenJson"),
-		CompressBin:          os.Getenv("CompressBin"),
+		CompressScript:       os.Getenv("CompressScript"),
 	}
 
 }

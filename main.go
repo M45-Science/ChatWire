@@ -26,7 +26,7 @@ import (
 
 func ZipLogs() {
 
-	folderPath, err := osext.ExecutableFolder()
+	_, err := osext.ExecutableFolder()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,8 +34,7 @@ func ZipLogs() {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ZipIntegrityLimit)
 	defer cancel()
 
-	cmdargs := []string{"--best", folderPath + "/log/*.log"}
-	cmd := exec.CommandContext(ctx, config.Config.CompressBin, cmdargs...)
+	cmd := exec.CommandContext(ctx, config.Config.CompressScript)
 	o, err := cmd.CombinedOutput()
 
 	if ctx.Err() == context.DeadlineExceeded {
