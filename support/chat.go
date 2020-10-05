@@ -585,7 +585,8 @@ func Chat() {
 							if glob.WhitelistMode {
 								fact.SetNoResponseCount(0)
 								glob.PlayerListLock.RLock()
-								for i := 0; i <= glob.PlayerListMax; i++ {
+								var i = 0
+								for i = 0; i <= glob.PlayerListMax; i++ {
 									if glob.PlayerList[i].Name != "" {
 										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
 										time.Sleep(10 * time.Millisecond)
@@ -594,6 +595,10 @@ func Chat() {
 								}
 								glob.PlayerListLock.RUnlock()
 								fact.SetNoResponseCount(0)
+								if i > 0 {
+									buf := fmt.Sprintf("Whitelist sent, %d members total.", i)
+									fact.LogCMS(config.Config.FactorioChannelID, buf)
+								}
 							}
 							continue
 						}
