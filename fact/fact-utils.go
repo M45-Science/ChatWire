@@ -41,6 +41,7 @@ func WhitelistPlayer(pname string, level int) {
 
 func QuitFactorio() {
 	SetRelaunchThrottle(0)
+	SetNoResponseCount(0)
 	if IsFactorioBooted() && GetNumPlayers() > 0 {
 		WriteFact(fmt.Sprintf("%sServer closing.[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("%sServer closing..[/color]", RandomColor(false)))
