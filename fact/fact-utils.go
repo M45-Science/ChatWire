@@ -64,9 +64,6 @@ func SaveFactorio() {
 
 		SetSaveTimer()
 	}
-
-	return
-
 }
 
 func WriteFact(buf string) {
@@ -102,8 +99,6 @@ func WriteFact(buf string) {
 			return
 		}
 	}
-	return
-
 }
 
 func AutoPromote(pname string) string {
@@ -158,7 +153,7 @@ func AutoPromote(pname string) string {
 			}
 		} else {
 
-			//logs.Log("No guild data.")
+			logs.Log("No guild data.")
 		}
 	}
 
@@ -225,7 +220,7 @@ func UpdateChannelName(dorefresh bool, booting bool) {
 }
 
 func RandomColor(justnumbers bool) string {
-	buf := "[color=1,1,1]"
+	var buf string
 
 	if glob.LastColor < (constants.NumColors - 1) {
 		glob.LastColor++

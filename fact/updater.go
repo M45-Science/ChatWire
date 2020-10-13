@@ -51,7 +51,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 	os.MkdirAll(config.Config.UpdaterCache, os.ModePerm)
 
 	cmdargs := []string{config.Config.UpdaterPath, "-O", config.Config.UpdaterCache, "-a", config.Config.Executable, "-d"}
-	if config.Config.UpdateToExperimental == "true" || config.Config.UpdateToExperimental == "yes" {
+	if strings.ToLower(config.Config.UpdateToExperimental) == "true" ||
+		strings.ToLower(config.Config.UpdateToExperimental) == "yes" {
 		cmdargs = append(cmdargs, "-x")
 	}
 
@@ -69,8 +70,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 		clines := strings.Split(out, "\n")
 		for _, line := range clines {
 			linelen := len(line)
-			newversion := constants.Unknown
-			oldversion := constants.Unknown
+			var newversion string
+			var oldversion string
 
 			if linelen > 0 {
 
@@ -132,8 +133,6 @@ func CheckFactUpdate(logNoUpdate bool) {
 	}
 
 	logs.Log(fmt.Sprintf("fact update dry: (error) update_fact.py:\n%v", out))
-	return
-
 }
 
 func FactUpdate() {
@@ -151,7 +150,8 @@ func FactUpdate() {
 		defer glob.FactorioLaunchLock.Unlock()
 
 		cmdargs := []string{config.Config.UpdaterPath, "-O", config.Config.UpdaterCache, "-a", config.Config.Executable}
-		if config.Config.UpdateToExperimental == "true" || config.Config.UpdateToExperimental == "yes" {
+		if strings.ToLower(config.Config.UpdateToExperimental) == "true" ||
+			strings.ToLower(config.Config.UpdateToExperimental) == "yes" {
 			cmdargs = append(cmdargs, "-x")
 		}
 
@@ -195,7 +195,4 @@ func FactUpdate() {
 		logs.Log("fact update: (error) Factorio is currently running, unable to update.")
 		return
 	}
-
-	logs.Log("fact update: (unknown error)")
-	return
 }

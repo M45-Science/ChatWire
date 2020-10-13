@@ -139,3 +139,5 @@ var ManMinutesLock sync.Mutex
 var WhitelistMode = false
 
 var LastColor = 0
+var ConnectPauseTimer int64 = 0
+var ConnectPauseCount = 0

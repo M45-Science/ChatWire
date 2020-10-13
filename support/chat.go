@@ -478,6 +478,38 @@ func Chat() {
 						}
 
 						//*****************
+						//Pause on catch-up
+						//*****************
+						if strings.ToLower(config.Config.PauseOnConnect) == "yes" ||
+							strings.ToLower(config.Config.PauseOnConnect) == "true" {
+
+							tn := time.Now()
+
+							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
+
+								if strings.Contains(line.Text, "newState(TryingToCatchUp)") {
+									fact.WriteFact("/gspeed 0.166666666667")
+									glob.ConnectPauseTimer = tn.Unix()
+									glob.ConnectPauseCount++
+
+								} else if strings.Contains(line.Text, "newState(InGame)") {
+
+									glob.ConnectPauseCount--
+									if glob.ConnectPauseCount <= 0 {
+										glob.ConnectPauseCount = 0
+
+										if config.Config.DefaultGSpeed != "" {
+											fact.WriteFact("/gspeed " + config.Config.DefaultGSpeed)
+										} else {
+											fact.WriteFact("/gspeed 1.0")
+										}
+									}
+								}
+
+							}
+						}
+
+						//*****************
 						//MAP LOAD
 						//*****************
 						if strings.HasPrefix(NoTC, "Loading map") {

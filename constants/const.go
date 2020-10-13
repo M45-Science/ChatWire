@@ -2,11 +2,11 @@ package constants
 
 import "time"
 
-const Version = "0.0.425-10-10-2020-06-43-am"
+const Version = "0.0.426-10-13-2020-06-29-am"
 const Unknown = "Unknown"
 
 //Max player database size, pre-allocated
-const MaxPlayers = 20000
+const MaxPlayers = 25000
 
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 15
@@ -40,7 +40,7 @@ const MainLoopsOffset = 100 * time.Millisecond
 //Discord throttle 5/5
 const CMSRate = 2000 * time.Millisecond
 const CMSRestTime = 5 * time.Second
-const CMSPollRate = 100 * time.Millisecond
+const CMSPollRate = 500 * time.Millisecond
 
 const NumColors = 17
 

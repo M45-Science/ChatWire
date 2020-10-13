@@ -49,6 +49,8 @@ type config struct {
 	ModerationChannel    string
 	MapGenJson           string
 	CompressScript       string
+	PauseOnConnect       string
+	DefaultGSpeed        string
 }
 
 func (conf *config) LoadEnv() {
@@ -99,6 +101,8 @@ func (conf *config) LoadEnv() {
 		ModerationChannel:    os.Getenv("ModerationChannel"),
 		MapGenJson:           os.Getenv("MapGenJson"),
 		CompressScript:       os.Getenv("CompressScript"),
+		PauseOnConnect:       os.Getenv("PauseOnConnect"),
+		DefaultGSpeed:        os.Getenv("DefaultGSpeed"),
 	}
 
 }

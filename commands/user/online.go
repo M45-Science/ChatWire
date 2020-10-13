@@ -20,5 +20,4 @@ func PlayersOnline(s *discordgo.Session, m *discordgo.MessageCreate, args []stri
 	} else {
 		fact.CMS(m.ChannelID, "Factorio is currently offline.")
 	}
-	return
 }
