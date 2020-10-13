@@ -487,7 +487,7 @@ func Chat() {
 
 							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
-								if strings.Contains(line.Text, "newState(TryingToCatchUp)") {
+								if strings.Contains(line.Text, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
 									if config.Config.SlowGSpeed == "" {
 										fact.WriteFact("/gspeed 0.166666666667")
 									} else {
@@ -499,7 +499,7 @@ func Chat() {
 									glob.ConnectPauseCount++
 									glob.ConnectPauseLock.Unlock()
 
-								} else if strings.Contains(line.Text, "newState(InGame)") {
+								} else if strings.Contains(line.Text, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
 
 									glob.ConnectPauseLock.Lock()
 
