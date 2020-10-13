@@ -51,6 +51,7 @@ type config struct {
 	CompressScript       string
 	PauseOnConnect       string
 	DefaultGSpeed        string
+	SlowGSpeed           string
 }
 
 func (conf *config) LoadEnv() {
@@ -103,6 +104,7 @@ func (conf *config) LoadEnv() {
 		CompressScript:       os.Getenv("CompressScript"),
 		PauseOnConnect:       os.Getenv("PauseOnConnect"),
 		DefaultGSpeed:        os.Getenv("DefaultGSpeed"),
+		SlowGSpeed:           os.Getenv("SlowGSpeed"),
 	}
 
 }

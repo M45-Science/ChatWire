@@ -488,7 +488,11 @@ func Chat() {
 							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
 								if strings.Contains(line.Text, "newState(TryingToCatchUp)") {
-									fact.WriteFact("/gspeed 0.166666666667")
+									if config.Config.SlowGSpeed == "" {
+										fact.WriteFact("/gspeed 0.166666666667")
+									} else {
+										fact.WriteFact("/gspeed " + config.Config.SlowGSpeed)
+									}
 
 									glob.ConnectPauseLock.Lock()
 									glob.ConnectPauseTimer = tn.Unix()
