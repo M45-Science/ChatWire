@@ -327,6 +327,8 @@ func MainLoops() {
 				if strings.ToLower(config.Config.PauseOnConnect) == "yes" ||
 					strings.ToLower(config.Config.PauseOnConnect) == "true" {
 
+					glob.ConnectPauseLock.Lock()
+
 					if glob.ConnectPauseTimer > 0 {
 						if tn.Unix()-glob.ConnectPauseTimer >= 120 {
 							glob.ConnectPauseTimer = 0
@@ -343,6 +345,9 @@ func MainLoops() {
 							}
 						}
 					}
+
+					glob.ConnectPauseLock.Unlock()
+
 				}
 			}
 		}()

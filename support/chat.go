@@ -489,14 +489,20 @@ func Chat() {
 
 								if strings.Contains(line.Text, "newState(TryingToCatchUp)") {
 									fact.WriteFact("/gspeed 0.166666666667")
+
+									glob.ConnectPauseLock.Lock()
 									glob.ConnectPauseTimer = tn.Unix()
 									glob.ConnectPauseCount++
+									glob.ConnectPauseLock.Unlock()
 
 								} else if strings.Contains(line.Text, "newState(InGame)") {
+
+									glob.ConnectPauseLock.Lock()
 
 									glob.ConnectPauseCount--
 									if glob.ConnectPauseCount <= 0 {
 										glob.ConnectPauseCount = 0
+										glob.ConnectPauseTimer = 0
 
 										if config.Config.DefaultGSpeed != "" {
 											fact.WriteFact("/gspeed " + config.Config.DefaultGSpeed)
@@ -504,6 +510,8 @@ func Chat() {
 											fact.WriteFact("/gspeed 1.0")
 										}
 									}
+
+									glob.ConnectPauseLock.Unlock()
 								}
 
 							}
