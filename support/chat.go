@@ -434,6 +434,9 @@ func Chat() {
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(10 * time.Second)
 
+									fact.CMS(config.Config.FactorioChannelID, "Stopping Factorio, and disabling auto-launch.")
+									fact.SetRelaunchThrottle(0)
+									fact.SetAutoStart(false)
 									fact.QuitFactorio()
 								}()
 							}
