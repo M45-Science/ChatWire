@@ -142,8 +142,6 @@ func UpdateSeen(pname string) {
 			return
 		}
 	}
-
-	return
 }
 
 func PlayerLevelSet(pname string, level int) bool {
@@ -244,7 +242,6 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 
 		WhitelistPlayer(pname, level)
 	}
-	return
 }
 
 func PlayerLevelGet(pname string) int {

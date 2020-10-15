@@ -16,5 +16,4 @@ func SaveServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	} else {
 		fact.CMS(m.ChannelID, "Factorio isn't running.")
 	}
-	return
 }

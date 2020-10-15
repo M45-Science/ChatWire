@@ -13,5 +13,4 @@ func Reload(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	fact.SetBotReboot(true)
 	fact.SetRelaunchThrottle(0)
 	fact.QuitFactorio()
-	return
 }

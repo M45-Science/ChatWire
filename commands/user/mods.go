@@ -28,5 +28,4 @@ func ModsList(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	} else {
 		fact.CMS(m.ChannelID, "Mod list: "+glob.ModLoadString)
 	}
-	return
 }

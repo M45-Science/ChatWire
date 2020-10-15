@@ -26,7 +26,7 @@ import (
 
 func ZipLogs() {
 
-	folderPath, err := osext.ExecutableFolder()
+	_, err := osext.ExecutableFolder()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,8 +34,7 @@ func ZipLogs() {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ZipIntegrityLimit)
 	defer cancel()
 
-	cmdargs := []string{"--best", folderPath + "/log/*.log"}
-	cmd := exec.CommandContext(ctx, config.Config.CompressBin, cmdargs...)
+	cmd := exec.CommandContext(ctx, config.Config.CompressScript)
 	o, err := cmd.CombinedOutput()
 
 	if ctx.Err() == context.DeadlineExceeded {
@@ -69,18 +68,20 @@ func main() {
 	config.Config.LoadEnv()
 
 	//Append whitelist to launch params if we are in that mode
-	if config.Config.DoWhitelist == "yes" || config.Config.DoWhitelist == "true" {
+	if strings.ToLower(config.Config.DoWhitelist) == "yes" ||
+		strings.ToLower(config.Config.DoWhitelist) == "true" {
 		config.Config.LaunchParameters = append(config.Config.LaunchParameters, "--use-server-whitelist")
 		glob.WhitelistMode = true
 	}
 
 	//Set autostart mode from config
-	if strings.ToLower(config.Config.AutoStart) == "yes" || strings.ToLower(config.Config.AutoStart) == "true" {
+	if strings.ToLower(config.Config.AutoStart) == "yes" ||
+		strings.ToLower(config.Config.AutoStart) == "true" {
 		fact.SetAutoStart(true)
 	}
 
 	//Saves a ton of space!
-	ZipLogs()
+	//ZipLogs()
 
 	//Create our log file names
 	glob.GameLogName = fmt.Sprintf("log/game-%v.log", t.Unix())

@@ -74,7 +74,7 @@ MembersRole = "Members"
 AdminsRole = "Factorio Admin"
 
 #Eventually might be used for compressing log files
-CompressBin = "/usr/bin/lbzip2"
+CompressScript = "logcomp.sh"
 
 #Where to send maps after $archive command, uses a directory with factorio version number.
 #Example: /home/user/DropBox/Old Server Maps/0.18 maps/ The version number is grabbed from the factorio logs

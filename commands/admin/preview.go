@@ -26,7 +26,7 @@ func GetMapTypeNum(mapt string) int {
 		return 0
 	}
 	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
-		if strings.ToLower(constants.MapTypes[i]) == strings.ToLower(mapt) {
+		if strings.EqualFold(constants.MapTypes[i], mapt) {
 			return i
 		}
 	}
@@ -101,6 +101,4 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	}
 
 	fact.CMS(m.ChannelID, buffer)
-
-	return
 }

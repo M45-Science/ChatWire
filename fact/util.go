@@ -42,9 +42,9 @@ func DoExit() {
 	for x := 0; glob.CMSBuffer != nil && x < 30; x++ {
 		time.Sleep(100 * time.Millisecond)
 	}
+	time.Sleep(10 * time.Second)
 	logs.LogWithoutEcho("Locking CMS buffer.")
 	glob.CMSBufferLock.Lock()
-	time.Sleep(2 * time.Second)
 
 	if glob.DS != nil {
 		logs.LogWithoutEcho("Closing Discord session and exiting.")

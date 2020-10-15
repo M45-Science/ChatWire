@@ -215,5 +215,4 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	}
 
 	fact.CMS(m.ChannelID, buf)
-	return
 }

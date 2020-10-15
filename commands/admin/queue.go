@@ -1,7 +1,6 @@
 package admin
 
 import (
-
 	"../../fact"
 	"github.com/bwmarrin/discordgo"
 )
@@ -13,5 +12,4 @@ func Queue(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		fact.CMS(m.ChannelID, "Reload is now queued.")
 		fact.SetQueued(true)
 	}
-	return
 }

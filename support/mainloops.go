@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -53,15 +54,8 @@ func MainLoops() {
 					}
 
 					if fact.IsFactorioBooted() {
-						if nores > 10 && nores%10 == 0 {
-							logs.Log(fmt.Sprintf("Game not responding for %d seconds.", nores))
-						}
-						if nores == 30 {
-							fact.CMS(config.Config.FactorioChannelID, "Game unresponsive for 30 seconds...")
-							fact.UpdateChannelName(false, false)
-						}
-						if nores == 60 {
-							fact.CMS(config.Config.FactorioChannelID, "Game unresponsive for 60 seconds...")
+						if nores >= 30 && nores%10 == 0 {
+							fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("Game not responding for %d seconds.", nores))
 						}
 					}
 					if nores == 120 {
@@ -284,7 +278,7 @@ func MainLoops() {
 			r1 := rand.New(s1)
 
 			for {
-				time.Sleep(30 * time.Second)
+				time.Sleep(60 * time.Second)
 
 				if fact.IsFactRunning() {
 					fact.WriteFact("/p o c")
@@ -321,6 +315,43 @@ func MainLoops() {
 			}
 		}()
 
+		//**********************************
+		//Pause on connect
+		//**********************************
+		go func() {
+			for {
+
+				time.Sleep(5 * time.Second)
+				tn := time.Now()
+
+				if strings.ToLower(config.Config.PauseOnConnect) == "yes" ||
+					strings.ToLower(config.Config.PauseOnConnect) == "true" {
+
+					glob.ConnectPauseLock.Lock()
+
+					if glob.ConnectPauseTimer > 0 {
+						if tn.Unix()-glob.ConnectPauseTimer >= 120 {
+							glob.ConnectPauseTimer = 0
+							glob.ConnectPauseCount = 0
+
+							buf := "Catch-up taking over two minutes, returning to normal speed."
+							fact.CMS(config.Config.FactorioChannelID, buf)
+							fact.WriteFact("/chat (SYSTEM) " + buf)
+
+							if config.Config.DefaultGSpeed != "" {
+								fact.WriteFact("/gspeed " + config.Config.DefaultGSpeed)
+							} else {
+								fact.WriteFact("/gspeed 1.0")
+							}
+						}
+					}
+
+					glob.ConnectPauseLock.Unlock()
+
+				}
+			}
+		}()
+
 		//****************************************
 		//Load & Save player database, for safety
 		//****************************************
@@ -328,7 +359,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(120 * time.Minute)
+				time.Sleep(1800 * time.Minute)
 
 				logs.LogWithoutEcho("Database safety read/write.")
 				fact.LoadPlayers()
@@ -628,11 +659,11 @@ func MainLoops() {
 			for {
 				fact.CheckFactUpdate(false)
 
-				//Add 5 minutes of randomness to delay
-				fuzz := r1.Intn(constants.MinuteInMicro * 5)
+				//Add 30 minutes of randomness to delay
+				fuzz := r1.Intn(constants.MinuteInMicro * 30)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 
-				time.Sleep(15 * time.Minute)
+				time.Sleep(1 * time.Hour)
 			}
 		}()
 
@@ -645,11 +676,11 @@ func MainLoops() {
 
 			for {
 				//Add 60 minutes of randomness to delay
-				fuzz := r1.Intn(60 * constants.MinuteInMicro)
+				fuzz := r1.Intn(30 * constants.MinuteInMicro)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 
-				//With random value, we force refresh every 6-7 hours
-				time.Sleep(6 * time.Hour)
+				//With random value, we force refresh every 1-1.5 hours
+				time.Sleep(1 * time.Hour)
 
 				fact.UpdateChannelName(true, true)
 			}

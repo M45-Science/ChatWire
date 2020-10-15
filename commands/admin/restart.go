@@ -15,6 +15,4 @@ func Restart(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	if fact.IsFactRunning() {
 		fact.QuitFactorio()
 	}
-
-	return
 }

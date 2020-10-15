@@ -15,7 +15,6 @@ func LogWithoutEcho(text string) {
 	date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
 
 	glob.BotLogDesc.WriteString(fmt.Sprintf("%s: %s\n", date, text))
-	return
 }
 
 //Yuck, can't link package fact.. pasted.
@@ -51,5 +50,4 @@ func Log(text string) {
 
 	buf = fmt.Sprintf("`%s` %s", date, text)
 	cms(config.Config.AuxChannel, buf)
-	return
 }

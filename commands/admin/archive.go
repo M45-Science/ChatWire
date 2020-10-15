@@ -54,7 +54,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			logs.Log(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
 		}
 
-		buf := "Error"
+		var buf string
 		if erra == nil && errb == nil && errc == nil {
 			buf = fmt.Sprintf("Map archived as: %s", newmappath)
 		} else {

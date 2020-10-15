@@ -60,7 +60,7 @@ func RegisterCommands() {
 // RunCommand runs a specified command.
 func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	for _, command := range CL.CommandList {
-		if strings.ToLower(command.Name) == strings.ToLower(name) {
+		if strings.EqualFold(command.Name, name) {
 			if command.Admin && CheckAdmin(m.Author.ID) {
 				command.Command(s, m, args)
 				return
@@ -111,5 +111,4 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	buf = buf + "\n```"
 
 	fact.CMS(m.ChannelID, buf)
-	return
 }

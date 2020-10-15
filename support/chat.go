@@ -499,6 +499,50 @@ func Chat() {
 						}
 
 						//*****************
+						//Pause on catch-up
+						//*****************
+						if strings.ToLower(config.Config.PauseOnConnect) == "yes" ||
+							strings.ToLower(config.Config.PauseOnConnect) == "true" {
+
+							tn := time.Now()
+
+							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
+
+								if strings.Contains(line.Text, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
+									if config.Config.SlowGSpeed == "" {
+										fact.WriteFact("/gspeed 0.166666666667")
+									} else {
+										fact.WriteFact("/gspeed " + config.Config.SlowGSpeed)
+									}
+
+									glob.ConnectPauseLock.Lock()
+									glob.ConnectPauseTimer = tn.Unix()
+									glob.ConnectPauseCount++
+									glob.ConnectPauseLock.Unlock()
+
+								} else if strings.Contains(line.Text, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
+
+									glob.ConnectPauseLock.Lock()
+
+									glob.ConnectPauseCount--
+									if glob.ConnectPauseCount <= 0 {
+										glob.ConnectPauseCount = 0
+										glob.ConnectPauseTimer = 0
+
+										if config.Config.DefaultGSpeed != "" {
+											fact.WriteFact("/gspeed " + config.Config.DefaultGSpeed)
+										} else {
+											fact.WriteFact("/gspeed 1.0")
+										}
+									}
+
+									glob.ConnectPauseLock.Unlock()
+								}
+
+							}
+						}
+
+						//*****************
 						//MAP LOAD
 						//*****************
 						if strings.HasPrefix(NoTC, "Loading map") {
@@ -604,11 +648,22 @@ func Chat() {
 
 							//Send whitelist
 							if glob.WhitelistMode {
+								fact.SetNoResponseCount(0)
 								glob.PlayerListLock.RLock()
+								var pcount = 0
 								for i := 0; i <= glob.PlayerListMax; i++ {
-									fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
+									if glob.PlayerList[i].Name != "" && glob.PlayerList[i].Level > 1 {
+										pcount++
+										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
+									}
+									fact.SetNoResponseCount(0)
 								}
 								glob.PlayerListLock.RUnlock()
+								fact.SetNoResponseCount(0)
+								if pcount > 0 {
+									buf := fmt.Sprintf("Whitelist of %d players sent.", pcount)
+									fact.LogCMS(config.Config.FactorioChannelID, buf)
+								}
 							}
 							continue
 						}

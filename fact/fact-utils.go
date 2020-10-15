@@ -41,6 +41,7 @@ func WhitelistPlayer(pname string, level int) {
 
 func QuitFactorio() {
 	SetRelaunchThrottle(0)
+	SetNoResponseCount(0)
 	if IsFactorioBooted() && GetNumPlayers() > 0 {
 		WriteFact(fmt.Sprintf("%sServer closing.[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("%sServer closing..[/color]", RandomColor(false)))
@@ -63,9 +64,6 @@ func SaveFactorio() {
 
 		SetSaveTimer()
 	}
-
-	return
-
 }
 
 func WriteFact(buf string) {
@@ -87,7 +85,7 @@ func WriteFact(buf string) {
 				return
 			}
 
-			time.Sleep(100 * time.Millisecond)
+			//time.Sleep(100 * time.Millisecond)
 			_, err := io.WriteString(gpipe, buf+"\n")
 			if err != nil {
 				logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
@@ -101,8 +99,6 @@ func WriteFact(buf string) {
 			return
 		}
 	}
-	return
-
 }
 
 func AutoPromote(pname string) string {
@@ -157,7 +153,7 @@ func AutoPromote(pname string) string {
 			}
 		} else {
 
-			//logs.Log("No guild data.")
+			logs.Log("No guild data.")
 		}
 	}
 
@@ -224,7 +220,7 @@ func UpdateChannelName(dorefresh bool, booting bool) {
 }
 
 func RandomColor(justnumbers bool) string {
-	buf := "[color=1,1,1]"
+	var buf string
 
 	if glob.LastColor < (constants.NumColors - 1) {
 		glob.LastColor++
