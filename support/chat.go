@@ -419,6 +419,27 @@ func Chat() {
 							continue
 						}
 						//*****************
+						//MAP END
+						//*****************
+						if strings.HasPrefix(line.Text, "[END]MAPEND") {
+							if fact.IsFactRunning() {
+								go func() {
+									msg := "Server will shutdown in 5 minutes."
+									fact.WriteFact(msg)
+									fact.CMS(config.Config.FactorioChannelID, msg)
+									time.Sleep(5 * time.Minute)
+
+									msg = "Server shutting down."
+									fact.WriteFact(msg)
+									fact.CMS(config.Config.FactorioChannelID, msg)
+									time.Sleep(10 * time.Second)
+
+									fact.QuitFactorio()
+								}()
+							}
+						}
+
+						//*****************
 						//MSG AREA
 						//*****************
 						if strings.HasPrefix(line.Text, "[MSG]") {
