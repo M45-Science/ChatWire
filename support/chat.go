@@ -425,12 +425,12 @@ func Chat() {
 							if fact.IsFactRunning() {
 								go func() {
 									msg := "Server will shutdown in 5 minutes."
-									fact.WriteFact(msg)
+									fact.WriteFact("/cchat " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(5 * time.Minute)
 
 									msg = "Server shutting down."
-									fact.WriteFact(msg)
+									fact.WriteFact("/cchat " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(10 * time.Second)
 
