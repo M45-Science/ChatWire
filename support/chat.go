@@ -419,6 +419,32 @@ func Chat() {
 							continue
 						}
 						//*****************
+						//MAP END
+						//*****************
+						if strings.HasPrefix(line.Text, "[END]MAPEND") {
+							if fact.IsFactRunning() {
+								go func() {
+									msg := "Server will shutdown in 5 minutes."
+									fact.WriteFact("/cchat " + msg)
+									fact.CMS(config.Config.FactorioChannelID, msg)
+									time.Sleep(5 * time.Minute)
+
+									msg = "Server shutting down."
+									fact.WriteFact("/cchat " + msg)
+									fact.CMS(config.Config.FactorioChannelID, msg)
+									time.Sleep(10 * time.Second)
+
+									if fact.IsFactRunning() {
+										fact.CMS(config.Config.FactorioChannelID, "Stopping Factorio, and disabling auto-launch.")
+										fact.SetRelaunchThrottle(0)
+										fact.SetAutoStart(false)
+										fact.QuitFactorio()
+									}
+								}()
+							}
+						}
+
+						//*****************
 						//MSG AREA
 						//*****************
 						if strings.HasPrefix(line.Text, "[MSG]") {
