@@ -529,7 +529,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(5 * time.Second)
+				time.Sleep(1 * time.Second)
 
 				// Look for signal files
 				if _, err := os.Stat(".upgrade"); !os.IsNotExist(err) {
