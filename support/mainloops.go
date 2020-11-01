@@ -683,6 +683,18 @@ func MainLoops() {
 		}()
 
 		//****************************
+		// Force refresh channel names
+		//****************************
+		go func() {
+
+			for {
+				time.Sleep(time.Hour)
+				fact.UpdateChannelName()
+				fact.DoUpdateChannelName()
+			}
+		}()
+
+		//****************************
 		// Capture man-minutes
 		//****************************
 		go func() {
