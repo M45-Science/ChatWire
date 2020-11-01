@@ -385,6 +385,7 @@ func Chat() {
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(config.Config.FactorioChannelID, buf)
+								fact.UpdateChannelName()
 							}
 							continue
 						}
@@ -415,6 +416,7 @@ func Chat() {
 									fact.UpdateSeen(factname)
 								}(nodslist[1])
 								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), nodslist[1]))
+								fact.UpdateChannelName()
 							}
 							continue
 						}
