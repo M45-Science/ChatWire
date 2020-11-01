@@ -64,7 +64,6 @@ func MainLoops() {
 						fact.LogCMS(config.Config.FactorioChannelID, "Game unresponsive for 120 seconds... restarting it.")
 
 						fact.SetFactRunning(false, true)
-						fact.UpdateChannelName(false, false)
 					}
 				} else if fact.IsFactRunning() == false && fact.IsSetAutoStart() == true && fact.GetDoUpdateFactorio() == false { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update
@@ -668,21 +667,17 @@ func MainLoops() {
 		}()
 
 		//****************************
-		// Force refresh channel names
+		// Refresh channel names
 		//****************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 
 			for {
-				//Add 60 minutes of randomness to delay
-				fuzz := r1.Intn(30 * constants.MinuteInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
-
-				//With random value, we force refresh every 1-1.5 hours
-				time.Sleep(1 * time.Hour)
-
-				fact.UpdateChannelName(true, true)
+				if glob.OldChanName != glob.NewChanName {
+					fact.DoUpdateChannelName()
+					time.Sleep(5 * time.Minute)
+				} else {
+					time.Sleep(5 * time.Second)
+				}
 			}
 		}()
 

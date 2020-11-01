@@ -35,9 +35,9 @@ var DS *discordgo.Session
 var FactorioVersion = constants.Unknown
 var NewVersion = constants.Unknown
 var NewPatchName = constants.Unknown
-var OldFChanName = constants.Unknown
-var OldAChanName = constants.Unknown
 
+var OldChanName = constants.Unknown
+var NewChanName = constants.Unknown
 var GameLogName = ""
 var BotLogName = ""
 var GameLogDesc *os.File

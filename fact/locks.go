@@ -175,15 +175,13 @@ func SetFactRunning(run bool, err bool) {
 	glob.FactIsRunningLock.Unlock()
 
 	if run == true && GetNoResposeCount() >= 30 {
-		UpdateChannelName(false, false)
 		CMS(config.Config.FactorioChannelID, "Server now appears to be responding again.")
 		logs.Log("Server now appears to be responding again.")
-		UpdateChannelName(false, false)
 	}
 	SetNoResponseCount(0)
 
 	if wasrun != run {
-		UpdateChannelName(false, false)
+		UpdateChannelName()
 		if run == false {
 			FactorioIsOffline(err)
 		}

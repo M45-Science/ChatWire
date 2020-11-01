@@ -176,5 +176,5 @@ func startbot() {
 	bot.UpdateStatus(0, botstatus)
 
 	logs.Log("Bot online. *v" + constants.Version + "*")
-	fact.UpdateChannelName(false, true)
+	fact.UpdateChannelName()
 }

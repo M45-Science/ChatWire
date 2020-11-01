@@ -9,8 +9,6 @@ import (
 func SaveServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if fact.IsFactRunning() {
-		fact.UpdateChannelName(true, true)
-
 		fact.SaveFactorio()
 		fact.CMS(m.ChannelID, "Game saved!")
 	} else {

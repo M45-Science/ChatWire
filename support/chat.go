@@ -326,7 +326,7 @@ func Chat() {
 								}
 								glob.RecordPlayersLock.Unlock()
 
-								fact.UpdateChannelName(false, false)
+								fact.UpdateChannelName()
 							}
 							continue
 						}
