@@ -2,11 +2,11 @@ package constants
 
 import "time"
 
-const Version = "0.0.427-10-31-2020-0911p"
+const Version = "0.0.428-11-1-2020-1134a"
 const Unknown = "Unknown"
 
 //Max player database size, pre-allocated
-const MaxPlayers = 25000
+const MaxPlayers = 5000
 
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 15
@@ -20,7 +20,7 @@ const AdminWhoisResults = 50
 const MaxPasswords = 128
 
 //Maximum time to wait for factorio update download
-const FactorioUpdateCheckLimit = 10 * time.Minute
+const FactorioUpdateCheckLimit = 15 * time.Minute
 
 //Maximum time before giving up on patching
 const FactorioUpdateProcessLimit = 10 * time.Minute
@@ -35,7 +35,6 @@ const TenthInMicro = 100000
 const HundrethInMicro = 10000
 
 const WatchdogInterval = time.Second
-const MainLoopsOffset = 100 * time.Millisecond
 
 //Discord throttle 5/5
 const CMSRate = 2000 * time.Millisecond
