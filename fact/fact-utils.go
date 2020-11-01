@@ -180,23 +180,25 @@ func UpdateChannelName() {
 
 func DoUpdateChannelName() {
 
-	glob.UpdateChannelLock.Lock()
-	defer glob.UpdateChannelLock.Unlock()
-
 	if glob.DS == nil {
 		return
 	}
 
 	chpos, _ := strconv.Atoi(config.Config.ChannelPos)
 
+	glob.UpdateChannelLock.Lock()
+
 	if glob.OldChanName != glob.NewChanName {
 		glob.OldChanName = glob.NewChanName
+		glob.UpdateChannelLock.Unlock()
 
 		_, aerr := glob.DS.ChannelEditComplex(config.Config.FactorioChannelID, &discordgo.ChannelEdit{Name: glob.NewChanName, Position: chpos + 200})
 
 		if aerr != nil {
 			logs.Log(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
 		}
+	} else {
+		glob.UpdateChannelLock.Unlock()
 	}
 }
 

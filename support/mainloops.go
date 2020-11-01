@@ -60,9 +60,7 @@ func MainLoops() {
 					}
 					if nores == 120 {
 						fact.SetNoResponseCount(0)
-
 						fact.LogCMS(config.Config.FactorioChannelID, "Game unresponsive for 120 seconds... restarting it.")
-
 						fact.SetFactRunning(false, true)
 					}
 				} else if fact.IsFactRunning() == false && fact.IsSetAutoStart() == true && fact.GetDoUpdateFactorio() == false { //Isn't running, but we should be
@@ -673,11 +671,17 @@ func MainLoops() {
 
 			for {
 				fact.UpdateChannelName()
+
+				glob.UpdateChannelLock.Lock()
 				if glob.OldChanName != glob.NewChanName {
+					glob.UpdateChannelLock.Unlock()
+
 					fact.DoUpdateChannelName()
 					time.Sleep(1 * time.Minute)
 				} else {
-					time.Sleep(5 * time.Second)
+					glob.UpdateChannelLock.Unlock()
+
+					time.Sleep(2 * time.Second)
 				}
 			}
 		}()
