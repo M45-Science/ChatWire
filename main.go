@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -21,32 +18,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/kardianos/osext"
 )
-
-func ZipLogs() {
-
-	_, err := osext.ExecutableFolder()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), constants.ZipIntegrityLimit)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, config.Config.CompressScript)
-	o, err := cmd.CombinedOutput()
-
-	if ctx.Err() == context.DeadlineExceeded {
-		logs.Log("Zip logs timed out.")
-	}
-
-	if err == nil {
-		logs.Log("Old log files compressed.")
-	} else {
-		logs.Log("Attempt to compress old log files failed: " + string(o))
-	}
-}
 
 func main() {
 	t := time.Now()
