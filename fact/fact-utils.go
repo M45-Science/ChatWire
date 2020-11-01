@@ -173,7 +173,6 @@ func UpdateChannelName() {
 	}
 
 	glob.UpdateChannelLock.Lock()
-	glob.OldChanName = glob.NewChanName
 	glob.NewChanName = newchname
 	glob.UpdateChannelLock.Unlock()
 
