@@ -59,6 +59,7 @@ func MainLoops() {
 						}
 					}
 					if nores == 120 {
+						fact.DoShowLocks("")
 						fact.SetNoResponseCount(0)
 						fact.LogCMS(config.Config.FactorioChannelID, "Game unresponsive for 120 seconds... restarting it.")
 						fact.SetFactRunning(false, true)
