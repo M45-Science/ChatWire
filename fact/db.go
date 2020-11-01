@@ -353,12 +353,7 @@ func WritePlayers() {
 	glob.PlayerListLock.RLock()
 	for i := 0; i < glob.PlayerListMax; i++ {
 
-		//Level -254 is saved as level -255, level 255 isn't saved.
-		//This is used to tell other servers to delete the entry.
-		if glob.PlayerList[i].Level > -255 {
-			if glob.PlayerList[i].Level == -254 {
-				glob.PlayerList[i].Level = -255
-			}
+		if glob.PlayerList[i].Level > 0 {
 
 			//Filter comma from names, just in case
 			name := strings.ReplaceAll(glob.PlayerList[i].Name, ",", "") //remove comma
