@@ -675,7 +675,7 @@ func MainLoops() {
 				fact.UpdateChannelName()
 				if glob.OldChanName != glob.NewChanName {
 					fact.DoUpdateChannelName()
-					time.Sleep(5 * time.Minute)
+					time.Sleep(1 * time.Minute)
 				} else {
 					time.Sleep(5 * time.Second)
 				}

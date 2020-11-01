@@ -167,19 +167,9 @@ func UpdateChannelName() {
 	nump := GetNumPlayers()
 
 	if nump == 0 {
-		if glob.WhitelistMode {
-			newchname = fmt.Sprintf("⬛%s", config.Config.ChannelName)
-		} else {
-			newchname = fmt.Sprintf("⚫%s", config.Config.ChannelName)
-		}
-	} else if nump > 0 {
-		if glob.WhitelistMode {
-			newchname = fmt.Sprintf("🟩%s_%v", config.Config.ChannelName, nump)
-		} else {
-			newchname = fmt.Sprintf("🟢%s_%v", config.Config.ChannelName, nump)
-		}
+		newchname = fmt.Sprintf("%v", config.Config.ChannelName)
 	} else {
-		newchname = fmt.Sprintf("%s_%v", config.Config.ChannelName, nump)
+		newchname = fmt.Sprintf("%v🟢%v", nump, config.Config.ChannelName)
 	}
 
 	glob.UpdateChannelLock.Lock()
@@ -195,7 +185,6 @@ func DoUpdateChannelName() {
 	defer glob.UpdateChannelLock.Unlock()
 
 	if glob.DS == nil {
-
 		return
 	}
 
