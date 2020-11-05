@@ -46,6 +46,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whitelist", Command: admin.SendWhitelist, Admin: true, Help: "Send whitelist to server"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Archive", Command: admin.ArchiveMap, Admin: true, Help: "Archive current map"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Update", Command: admin.Update, Admin: true, Help: "Update Factorio"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Locks", Command: admin.ShowLocks, Admin: true, Help: "Check Mutex Locks"})
 
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, Admin: false, Help: "Show player info"})

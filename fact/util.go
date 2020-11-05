@@ -6,9 +6,133 @@ import (
 	"strings"
 	"time"
 
+	"../config"
 	"../glob"
 	"../logs"
 )
+
+func DoShowLocks(inch string) {
+	var startTime = time.Now()
+
+	var ch string
+	if inch == "" {
+		ch = config.Config.AuxChannel
+	} else {
+		ch = inch
+	}
+
+	glob.GuildLock.Lock()
+	glob.GuildLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": GuildLock")
+
+	glob.CMSBufferLock.Lock()
+	glob.CMSBufferLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": CMSBufferLock")
+
+	glob.PipeLock.Lock()
+	glob.PipeLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PipeLock")
+
+	glob.GameMapLock.Lock()
+	glob.GameMapLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": GameMapLock")
+
+	glob.ModLoadLock.Lock()
+	glob.ModLoadLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": ModLoadLock")
+
+	glob.PausedTicksLock.Lock()
+	glob.PausedTicksLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PausedTicksLock")
+
+	glob.GametimeLock.Lock()
+	glob.GametimeLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": GametimeLock")
+
+	glob.SaveTimerLock.Lock()
+	glob.SaveTimerLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": SaveTimerLock")
+
+	glob.FactIsRunningLock.Lock()
+	glob.FactIsRunningLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": FactIsRunningLock")
+
+	glob.FactAutoStartLock.Lock()
+	glob.FactAutoStartLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": FactAutoStartLock")
+
+	glob.DoRebootBotLock.Lock()
+	glob.DoRebootBotLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": DoRebootBotLock")
+
+	glob.NumPlayersLock.Lock()
+	glob.NumPlayersLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": NumPlayersLock")
+
+	glob.RelaunchThrottleLock.Lock()
+	glob.RelaunchThrottleLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": RelaunchThrottleLock")
+
+	glob.PlayerListLock.Lock()
+	glob.PlayerListLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PlayerListLock")
+
+	glob.PlayerListWriteLock.Lock()
+	glob.PlayerListWriteLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PlayerListWriteLock")
+
+	glob.NumLoginsLock.Lock()
+	glob.NumLoginsLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": NumLoginsLock")
+
+	glob.FactorioBootedLock.Lock()
+	glob.FactorioBootedLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": FactorioBootedLock")
+
+	glob.PlayerListUpdatedLock.Lock()
+	glob.PlayerListUpdatedLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PlayerListUpdatedLock")
+
+	glob.PlayerListDirtyLock.Lock()
+	glob.PlayerListDirtyLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PlayerListDirtyLock")
+
+	glob.PlayerListSeenDirtyLock.Lock()
+	glob.PlayerListSeenDirtyLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PlayerListSeenDirtyLock")
+
+	glob.RecordPlayersWriteLock.Lock()
+	glob.RecordPlayersWriteLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": RecordPlayersWriteLock")
+
+	glob.PasswordListLock.Lock()
+	glob.PasswordListLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": PasswordListLock")
+
+	glob.NoResponseCountLock.Lock()
+	glob.NoResponseCountLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": NoResponseCountLock")
+
+	glob.FactorioLaunchLock.Lock()
+	glob.FactorioLaunchLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": FactorioLaunchLock")
+
+	glob.UpdateFactorioLock.Lock()
+	glob.UpdateFactorioLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": UpdateFactorioLock")
+
+	glob.DoUpdateFactorioLock.Lock()
+	glob.DoUpdateFactorioLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": DoUpdateFactorioLock")
+
+	glob.ManMinutesLock.Lock()
+	glob.ManMinutesLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": ManMinutesLock")
+
+	glob.ConnectPauseLock.Lock()
+	glob.ConnectPauseLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": ConnectPauseLock")
+}
 
 func DoExit() {
 

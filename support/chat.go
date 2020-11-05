@@ -515,7 +515,10 @@ func Chat() {
 
 							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
-								if strings.Contains(line.Text, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
+								if strings.Contains(line.Text, "removing peer") {
+									fact.WriteFact("/p o c")
+									//Fix for players leaving with no leave message
+								} else if strings.Contains(line.Text, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
 									if config.Config.SlowGSpeed == "" {
 										fact.WriteFact("/gspeed 0.166666666667")
 									} else {

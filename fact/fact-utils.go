@@ -167,23 +167,12 @@ func UpdateChannelName() {
 	nump := GetNumPlayers()
 
 	if nump == 0 {
-		if glob.WhitelistMode {
-			newchname = fmt.Sprintf("⬛%s", config.Config.ChannelName)
-		} else {
-			newchname = fmt.Sprintf("⚫%s", config.Config.ChannelName)
-		}
-	} else if nump > 0 {
-		if glob.WhitelistMode {
-			newchname = fmt.Sprintf("🟩%s_%v", config.Config.ChannelName, nump)
-		} else {
-			newchname = fmt.Sprintf("🟢%s_%v", config.Config.ChannelName, nump)
-		}
+		newchname = fmt.Sprintf("%v", config.Config.ChannelName)
 	} else {
-		newchname = fmt.Sprintf("%s_%v", config.Config.ChannelName, nump)
+		newchname = fmt.Sprintf("%v🟢%v", nump, config.Config.ChannelName)
 	}
 
 	glob.UpdateChannelLock.Lock()
-	glob.OldChanName = glob.NewChanName
 	glob.NewChanName = newchname
 	glob.UpdateChannelLock.Unlock()
 
@@ -191,24 +180,26 @@ func UpdateChannelName() {
 
 func DoUpdateChannelName() {
 
-	glob.UpdateChannelLock.Lock()
-	defer glob.UpdateChannelLock.Unlock()
-
 	if glob.DS == nil {
-
 		return
 	}
 
 	chpos, _ := strconv.Atoi(config.Config.ChannelPos)
 
+	glob.UpdateChannelLock.Lock()
+	var chname = glob.NewChanName
+
 	if glob.OldChanName != glob.NewChanName {
 		glob.OldChanName = glob.NewChanName
+		glob.UpdateChannelLock.Unlock()
 
-		_, aerr := glob.DS.ChannelEditComplex(config.Config.FactorioChannelID, &discordgo.ChannelEdit{Name: glob.NewChanName, Position: chpos + 200})
+		_, aerr := glob.DS.ChannelEditComplex(config.Config.FactorioChannelID, &discordgo.ChannelEdit{Name: chname, Position: chpos + 200})
 
 		if aerr != nil {
 			logs.Log(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
 		}
+	} else {
+		glob.UpdateChannelLock.Unlock()
 	}
 }
 
