@@ -357,7 +357,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(1800 * time.Minute)
+				time.Sleep(60 * time.Minute)
 
 				logs.LogWithoutEcho("Database safety read/write.")
 				fact.LoadPlayers()
@@ -678,11 +678,11 @@ func MainLoops() {
 					glob.UpdateChannelLock.Unlock()
 
 					fact.DoUpdateChannelName()
-					time.Sleep(1 * time.Minute)
+					time.Sleep(60 * time.Second)
 				} else {
 					glob.UpdateChannelLock.Unlock()
 
-					time.Sleep(2 * time.Second)
+					time.Sleep(5 * time.Second)
 				}
 			}
 		}()

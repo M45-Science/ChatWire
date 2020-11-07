@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "0.0.430-11-6-2020-0440a"
+const Version = "0.0.431-110620200338p"
 const Unknown = "Unknown"
 
 //Max player database size, pre-allocated
@@ -37,9 +37,9 @@ const HundrethInMicro = 10000
 const WatchdogInterval = time.Second
 
 //Discord throttle 5/5
-const CMSRate = 1000 * time.Millisecond
-const CMSRestTime = 6 * time.Second
-const CMSPollRate = 100 * time.Millisecond
+const CMSRate = 500 * time.Millisecond
+const CMSRestTime = 6000 * time.Millisecond
+const CMSPollRate = 500 * time.Millisecond
 
 const NumColors = 17
 
