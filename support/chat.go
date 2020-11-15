@@ -385,7 +385,7 @@ func Chat() {
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(config.Config.FactorioChannelID, buf)
-								fact.UpdateChannelName()
+								//fact.UpdateChannelName()
 							}
 							continue
 						}
@@ -394,7 +394,7 @@ func Chat() {
 						//*****************
 						if strings.HasPrefix(NoDS, "[LEAVE]") {
 
-							if nodslistlen > 1 {
+							if nodslistlen > 0 {
 								fact.WriteFact("/p o c")
 
 								go func() {
@@ -416,7 +416,7 @@ func Chat() {
 									fact.UpdateSeen(factname)
 								}(nodslist[1])
 								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), nodslist[1]))
-								fact.UpdateChannelName()
+								//fact.UpdateChannelName()
 							}
 							continue
 						}
