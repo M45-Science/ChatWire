@@ -393,9 +393,9 @@ func Chat() {
 						//LEAVE
 						//*****************
 						if strings.HasPrefix(NoDS, "[LEAVE]") {
+							fact.WriteFact("/p o c")
 
-							if nodslistlen > 0 {
-								fact.WriteFact("/p o c")
+							if nodslistlen > 1 {
 
 								go func() {
 
