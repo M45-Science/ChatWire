@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -53,7 +54,9 @@ func main() {
 	}
 
 	//Saves a ton of space!
-	//ZipLogs()
+	cargs := []string{}
+	cmdb := exec.Command(config.Config.CompressScript, cargs...)
+	cmdb.CombinedOutput()
 
 	//Create our log file names
 	glob.GameLogName = fmt.Sprintf("log/game-%v.log", t.Unix())
