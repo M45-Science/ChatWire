@@ -54,8 +54,7 @@ func main() {
 	}
 
 	//Saves a ton of space!
-	cargs := []string{}
-	cmdb := exec.Command(config.Config.CompressScript, cargs...)
+	cmdb := exec.Command("/bin/sh", config.Config.CompressScript)
 	cmdb.CombinedOutput()
 
 	//Create our log file names
