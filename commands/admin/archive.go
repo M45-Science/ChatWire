@@ -3,7 +3,6 @@ package admin
 import (
 	"fmt"
 	"io"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -37,7 +36,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
 		newmapname := fmt.Sprintf("%s-%s.zip", config.Config.ChannelName, date)
 		newmappath := fmt.Sprintf("%s/%s maps/%s", config.Config.MapArchivePath, shortversion, newmapname)
-		newmapurl := fmt.Sprintf("http://m45sci.xyz/u/fact/old-maps/%s maps/%s", shortversion, newmapname)
+		newmapurl := fmt.Sprintf("http://m45sci.xyz/u/fact/old-maps/%s%smaps/%s", shortversion, "%20", newmapname)
 
 		from, erra := os.Open(glob.GameMapPath)
 		if erra != nil {
@@ -58,7 +57,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		var buf string
 		if erra == nil && errb == nil && errc == nil {
-			buf = fmt.Sprintf("Map archived as: %s", url.QueryEscape(newmapurl))
+			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
 		} else {
 			buf = "Map archive failed."
 		}
