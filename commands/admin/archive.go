@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -57,7 +58,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		var buf string
 		if erra == nil && errb == nil && errc == nil {
-			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
+			buf = fmt.Sprintf("Map archived as: %s", url.QueryEscape(newmapurl))
 		} else {
 			buf = "Map archive failed."
 		}
