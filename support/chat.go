@@ -145,6 +145,7 @@ func Chat() {
 									glob.PausedTicks = 0
 								}
 								glob.LastGametime = glob.Gametime
+								glob.GametimeString = lowerline
 								glob.Gametime = newtime
 
 								glob.PausedTicksLock.Unlock()

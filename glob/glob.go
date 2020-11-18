@@ -56,6 +56,7 @@ var PausedTicks = 0
 var PausedTicksLock sync.RWMutex
 
 var Gametime = constants.Unknown
+var GametimeString = constants.Unknown
 var GametimeLock sync.RWMutex
 
 var SaveTimer time.Time
