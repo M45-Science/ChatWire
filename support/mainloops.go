@@ -270,19 +270,15 @@ func MainLoops() {
 		//**********************
 		//Check players online
 		//**********************
-		//(Factorio login/out buggy)
+		//Safety, in case player count gets off
+		//Also helps detect servers crash/dead while paused
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
-
 			for {
-				time.Sleep(60 * time.Second)
+				time.Sleep(15 * time.Minute)
 
 				if fact.IsFactRunning() {
 					fact.WriteFact("/p o c")
 				}
-				fuzz := r1.Intn(constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -357,7 +353,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(1800 * time.Minute)
+				time.Sleep(60 * time.Minute)
 
 				logs.LogWithoutEcho("Database safety read/write.")
 				fact.LoadPlayers()
@@ -678,7 +674,7 @@ func MainLoops() {
 					glob.UpdateChannelLock.Unlock()
 
 					fact.DoUpdateChannelName()
-					time.Sleep(1 * time.Minute)
+					time.Sleep(30 * time.Second)
 				} else {
 					glob.UpdateChannelLock.Unlock()
 

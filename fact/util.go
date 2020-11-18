@@ -132,6 +132,8 @@ func DoShowLocks(inch string) {
 	glob.ConnectPauseLock.Lock()
 	glob.ConnectPauseLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ConnectPauseLock")
+
+	CMS(ch, "Complete.")
 }
 
 func DoExit() {

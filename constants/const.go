@@ -2,19 +2,19 @@ package constants
 
 import "time"
 
-const Version = "0.0.429-11-1-2020-1157a"
+const Version = "0.0.433-111720200430a"
 const Unknown = "Unknown"
 
 //Max player database size, pre-allocated
-const MaxPlayers = 20000
+const MaxPlayers = 5000
 
 //Number of repeated time reports before we assume server is paused
-const PauseThresh = 15
+const PauseThresh = 30
 
 //Minimum time between logout saves
 const SaveThresh = 300
 const WhoisResults = 20
-const AdminWhoisResults = 50
+const AdminWhoisResults = 40
 
 //Max number of registration passwords at once
 const MaxPasswords = 128
@@ -36,9 +36,9 @@ const HundrethInMicro = 10000
 
 const WatchdogInterval = time.Second
 
-//Discord throttle 5/5
-const CMSRate = 1000 * time.Millisecond
-const CMSRestTime = 6 * time.Second
+//Throttle to about 5 every 6 seconds
+const CMSRate = 500 * time.Millisecond
+const CMSRestTime = 6000 * time.Millisecond
 const CMSPollRate = 100 * time.Millisecond
 
 const NumColors = 17

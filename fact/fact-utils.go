@@ -85,7 +85,9 @@ func WriteFact(buf string) {
 				return
 			}
 
-			//time.Sleep(100 * time.Millisecond)
+			//To limit max output speed
+			time.Sleep(1 * time.Millisecond)
+
 			_, err := io.WriteString(gpipe, buf+"\n")
 			if err != nil {
 				logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
