@@ -674,7 +674,7 @@ func MainLoops() {
 					glob.UpdateChannelLock.Unlock()
 
 					fact.DoUpdateChannelName()
-					time.Sleep(30 * time.Second)
+					time.Sleep(60 * time.Second)
 				} else {
 					glob.UpdateChannelLock.Unlock()
 
