@@ -126,6 +126,7 @@ func startbot() {
 		startbot()
 		return
 	}
+
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
 	errb := bot.Open()
