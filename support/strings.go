@@ -12,8 +12,8 @@ func TruncateString(str string, num int) string {
 	return bnoden
 }
 
-//StripCtlAndExtFromBytes Strip all specials
-func StripCtlAndExtFromBytes(str string) string {
+//Strip all but a-z
+func StripControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
@@ -26,7 +26,7 @@ func StripCtlAndExtFromBytes(str string) string {
 	return string(b[:bl])
 }
 
-//SubCtlAndExtFromBytes Sub with ? unless newline/return/tab
+//Sub specials with '?', sub newlines, returns and tabs with ' '
 func SubControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
@@ -46,8 +46,8 @@ func SubControlAndSpecial(str string) string {
 	return string(b[:bl])
 }
 
-//SubCtlAndExtFromBytes Sub with ? unless newline/return/tab
-func SubSpecial(str string) string {
+//Strip lower ascii codes, sub newlines, returns and tabs with ' '
+func StripControlAndSubSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
@@ -55,7 +55,7 @@ func SubSpecial(str string) string {
 		if c == '\n' || c == '\r' || c == '\t' {
 			b[bl] = ' '
 			bl++
-		} else {
+		} else if c >= 32 {
 			b[bl] = c
 			bl++
 		}
