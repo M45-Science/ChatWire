@@ -83,7 +83,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
 			//Clean strings
-			cmess := support.SubSpecial(ctext)
+			cmess := support.StripControlAndSubSpecial(ctext)
 			//cmess = unidecode.Unidecode(cmess)
 
 			//Remove factorio tags
@@ -132,9 +132,9 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}(dname)
 
 			//Filter names...
-			corduser := support.SubSpecial(m.Author.Username)
-			cordnick := support.SubSpecial(m.Member.Nick)
-			factuser := support.SubSpecial(dname)
+			corduser := support.StripControlAndSubSpecial(m.Author.Username)
+			cordnick := support.StripControlAndSubSpecial(m.Member.Nick)
+			factuser := support.StripControlAndSubSpecial(dname)
 
 			corduserlen := len(corduser)
 			cordnicklen := len(cordnick)
