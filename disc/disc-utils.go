@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"../config"
 	"../glob"
 	"../logs"
 
@@ -19,15 +18,13 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
 		if err != nil {
 
-			//time.Sleep(time.Second)
-			//SmartWriteDiscordEmbed(ch, embed)
 			logs.LogWithoutEcho(fmt.Sprintf("SmartWriteDiscordEmbed: ERROR: %v", err))
 		}
 
 		return err
 	} else {
 
-		time.Sleep(time.Second)
+		time.Sleep(5 * time.Second)
 		SmartWriteDiscordEmbed(ch, embed)
 	}
 
@@ -41,13 +38,11 @@ func SmartWriteDiscord(ch string, text string) {
 
 		if err != nil {
 
-			//time.Sleep(time.Second)
-			//SmartWriteDiscord(ch, text)
 			logs.LogWithoutEcho(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
 		}
 	} else {
 
-		time.Sleep(time.Second)
+		time.Sleep(5 * time.Second)
 		SmartWriteDiscord(ch, text)
 	}
 }
@@ -59,15 +54,13 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 
 		if err != nil || ch == nil {
 
-			//time.Sleep(time.Second)
-			//SmartChannelCreate(id)
 			logs.LogWithoutEcho(fmt.Sprintf("SmartChannelCreate: ERROR: %v", err))
 		} else {
 			return ch
 		}
 	} else {
 
-		time.Sleep(time.Second)
+		time.Sleep(5 * time.Second)
 		SmartChannelCreate(id)
 	}
 
@@ -81,15 +74,13 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 
 		if err != nil {
 
-			//time.Sleep(time.Second)
-			//SmartRoleAdd(gid, uid, rid)
 			logs.LogWithoutEcho(fmt.Sprintf("SmartRoleAdd: ERROR: %v", err))
 		}
 
 		return err
 	} else {
 
-		time.Sleep(time.Second)
+		time.Sleep(5 * time.Second)
 		SmartRoleAdd(gid, uid, rid)
 	}
 
@@ -121,9 +112,9 @@ func GetNameFromID(id string, disc bool) string {
 	if id == "" || glob.DS == nil {
 		return ""
 	}
-	g, err := glob.DS.State.Guild(config.Config.GuildID)
+	g := glob.Guild
 
-	if err == nil {
+	if g != nil {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				if disc {
@@ -135,7 +126,7 @@ func GetNameFromID(id string, disc bool) string {
 		}
 	}
 
-	return ""
+	return id
 }
 
 //Discord avatar from discordid
@@ -144,9 +135,9 @@ func GetDiscordAvatarFromId(id string, size int) string {
 	if id == "" || glob.DS == nil {
 		return ""
 	}
-	g, err := glob.DS.State.Guild(config.Config.GuildID)
+	g := glob.Guild
 
-	if err == nil {
+	if g != nil {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				return m.User.AvatarURL(string(size))
