@@ -112,8 +112,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				cmess = regh.ReplaceAllString(cmess, "")
 			}
 
-			if len(cmess) > 250 {
-				cmess = fmt.Sprintf("%s...(cut, too long!)", support.TruncateString(cmess, 250))
+			if len(cmess) > 500 {
+				cmess = fmt.Sprintf("%s...(cut, too long!)", support.TruncateString(cmess, 500))
 			}
 
 			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
