@@ -1,3 +1,5 @@
 ChatWire
 ChatWire.exe
 .env
+log
+*.log
