@@ -3,12 +3,12 @@ Requirements:
 
 Linux
 
-Golang 1.13
+Golang 1.15
 
 ImageMagick
 
 Zip
 
-Factorio Headless 0.17 or 0.18
+Factorio Headless v1.0
 
 .env file (for config)
