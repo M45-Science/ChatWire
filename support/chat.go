@@ -897,7 +897,10 @@ func Chat() {
 				//*****************
 				if strings.HasPrefix(line.Text, "~") {
 					if strings.Contains(line.Text, "Activity: ") && strings.Contains(line.Text, "Online: ") &&
-						(strings.Contains(line.Text, ", (Members)") || strings.Contains(line.Text, ", (Regulars)") || strings.Contains(line.Text, ", (NEW)")) {
+						(strings.Contains(line.Text, ", (Members)") ||
+							strings.Contains(line.Text, ", (Regulars)") ||
+							strings.Contains(line.Text, ", (NEW)") ||
+							strings.Contains(line.Text, ", (Admins)")) {
 
 						//Upgrade or replace this...
 						fact.CMS(config.Config.FactorioChannelID, line.Text)
