@@ -44,9 +44,8 @@ func Chat() {
 				//Server is alive
 				fact.SetFactRunning(true, false)
 
-				if linelen > 1900 {
+				if linelen > 4096 {
 					//Message too long
-					//fact.WriteFact("/cchat Message was too long to post to Discord.")
 					logs.Log("Line from factorio was too long.")
 					continue
 				}
@@ -499,12 +498,12 @@ func Chat() {
 						//*****************
 						//(ONLINE)
 						//*****************
-						if strings.Contains(line.Text, "(online)") {
+						//if strings.Contains(line.Text, "(online)") {
 
-							//Upgrade or replace this...
-							fact.CMS(config.Config.FactorioChannelID, line.Text)
-							continue
-						}
+						//Upgrade or replace this...
+						//fact.CMS(config.Config.FactorioChannelID, line.Text)
+						//continue
+						//}
 
 						//*****************
 						//Pause on catch-up
@@ -828,8 +827,8 @@ func Chat() {
 									cmess = regh.ReplaceAllString(cmess, "")
 								}
 
-								if len(cmess) > 250 {
-									cmess = fmt.Sprintf("%s**(message cut, too long!)**", TruncateString(cmess, 250))
+								if len(cmess) > 500 {
+									cmess = fmt.Sprintf("%s**(message cut, too long!)**", TruncateString(cmess, 500))
 								}
 
 								//Yeah, on different thread please.
@@ -892,6 +891,19 @@ func Chat() {
 				//*****************
 				//END FILTERED
 				//*****************
+
+				//*****************
+				//"/online"
+				//*****************
+				if strings.HasPrefix(line.Text, "~") {
+					if strings.Contains(line.Text, "Activity: ") && strings.Contains(line.Text, "Online: ") &&
+						(strings.Contains(line.Text, ", (Members)") || strings.Contains(line.Text, ", (Regulars)") || strings.Contains(line.Text, ", (NEW)")) {
+
+						//Upgrade or replace this...
+						fact.CMS(config.Config.FactorioChannelID, line.Text)
+						continue
+					}
+				}
 
 			}
 			//*****************
