@@ -35,9 +35,12 @@ func Chat() {
 			//*****************
 			for line := range t.Lines {
 
-				linelen := len(line.Text)
+				//Strip stuff we don't want
+				lineText := StripControlAndSubSpecial(line.Text)
+
+				linelen := len(lineText)
 				//Ignore blanks
-				if line.Text == "" || linelen <= 2 {
+				if lineText == "" || linelen <= 2 {
 					continue
 				}
 
@@ -57,7 +60,7 @@ func Chat() {
 				//***************************************
 
 				//Timecode removal
-				trimmed := strings.TrimLeft(line.Text, " ")
+				trimmed := strings.TrimLeft(lineText, " ")
 				words := strings.Split(trimmed, " ")
 				numwords := len(words)
 				NoTC := constants.Unknown
@@ -71,7 +74,7 @@ func Chat() {
 				}
 
 				//Seperate args -- for use with script output
-				linelist := strings.Split(line.Text, " ")
+				linelist := strings.Split(lineText, " ")
 				linelistlen := len(linelist)
 
 				//Seperate args, notc -- for use with factorio subsystem output
@@ -83,7 +86,7 @@ func Chat() {
 				nodslistlen := len(nodslist)
 
 				//Lowercase converted
-				lowerline := strings.ToLower(line.Text)
+				lowerline := strings.ToLower(lineText)
 				lowerlist := strings.Split(lowerline, " ")
 				lowerlistlen := len(lowerlist)
 
@@ -98,7 +101,7 @@ func Chat() {
 				//FILTERED AREA
 				//NO CMD, ESCAPED OR CONSOLE CHAT
 				//*********************************
-				if !strings.HasPrefix(line.Text, "[CMD]") && !strings.HasPrefix(line.Text, "~") && !strings.HasPrefix(line.Text, "<server>") {
+				if !strings.HasPrefix(lineText, "[CMD]") && !strings.HasPrefix(lineText, "~") && !strings.HasPrefix(lineText, "<server>") {
 
 					//*****************
 					//NO CHAT AREA
@@ -157,20 +160,20 @@ func Chat() {
 						//*****************
 						//COMMAND REPORTING
 						//*****************
-						if strings.HasPrefix(line.Text, "[CMD]") {
-							logs.Log(line.Text)
+						if strings.HasPrefix(lineText, "[CMD]") {
+							logs.Log(lineText)
 							continue
 						}
 
 						//*****************
 						//USER REPORT
 						//*****************
-						if strings.HasPrefix(line.Text, "[REPORT]") {
+						if strings.HasPrefix(lineText, "[REPORT]") {
 							if linelistlen >= 3 {
 								buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
 									config.Config.ChannelName, linelist[1], strings.Join(linelist[2:], " "))
 								fact.CMS(config.Config.ModerationChannel, buf)
-								logs.Log(line.Text)
+								logs.Log(lineText)
 							}
 							continue
 						}
@@ -178,7 +181,7 @@ func Chat() {
 						//*****************
 						//ACCESS
 						//*****************
-						if strings.HasPrefix(line.Text, "[ACCESS]") {
+						if strings.HasPrefix(lineText, "[ACCESS]") {
 							if linelistlen == 4 {
 								//Format:
 								//print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter)
@@ -269,7 +272,7 @@ func Chat() {
 													continue
 												}
 												fact.WriteFact(fmt.Sprintf("/cwhisper %s Registration complete!", pname))
-												fact.LogCMS(config.Config.FactorioChannelID, "Registration complete!")
+												fact.LogCMS(config.Config.FactorioChannelID, pname+": Registration complete!")
 												continue
 											} else {
 												logs.Log("No guild info.")
@@ -283,7 +286,7 @@ func Chat() {
 								glob.PasswordListLock.Unlock()
 								if codefound == false {
 									logs.Log(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
-									fact.WriteFact(fmt.Sprintf("/cwhisper %s Sorry, that code is invalid or expired.", pname))
+									fact.WriteFact(fmt.Sprintf("/cwhisper %s Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 									continue
 								}
 							} else {
@@ -296,7 +299,7 @@ func Chat() {
 						//***********************
 						//CAPTURE ONLINE PLAYERS
 						//***********************
-						if strings.HasPrefix(line.Text, "Online players") {
+						if strings.HasPrefix(lineText, "Online players") {
 
 							if linelistlen > 2 {
 								poc := strings.Join(linelist[2:], " ")
@@ -337,30 +340,13 @@ func Chat() {
 							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
-								pname := nodslist[1]
+								pname := StripControlAndSubSpecial(nodslist[1])
 								glob.NumLoginsLock.Lock()
 								glob.NumLogins = glob.NumLogins + 1
 								glob.NumLoginsLock.Unlock()
 
 								if fact.PlayerLevelGet(pname) == 0 {
 									skip := false
-
-									//Only message new users once a day/reboot
-									glob.PlayerListLock.RLock()
-									for i := 0; i <= glob.PlayerListMax; i++ {
-										if glob.PlayerList[i].Name == pname {
-											if glob.MessageList[i] == true {
-												//Already messaged them on this server today
-												skip = true
-												continue
-											} else {
-												//First time we messaged them, flag
-												glob.MessageList[i] = true
-												continue
-											}
-										}
-									}
-									glob.PlayerListLock.RUnlock()
 
 									//Don't block, make new thread
 									if skip == false {
@@ -383,6 +369,17 @@ func Chat() {
 								}
 								plevelname := fact.AutoPromote(pname)
 
+								//Remove discord markdown
+								regf := regexp.MustCompile(`\*+`)
+								regg := regexp.MustCompile(`\~+`)
+								regh := regexp.MustCompile(`\_+`)
+								for regf.MatchString(pname) || regg.MatchString(pname) || regh.MatchString(pname) {
+									//Filter discord tags
+									pname = regf.ReplaceAllString(pname, "")
+									pname = regg.ReplaceAllString(pname, "")
+									pname = regh.ReplaceAllString(pname, "")
+								}
+
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(config.Config.FactorioChannelID, buf)
 								//fact.UpdateChannelName()
@@ -396,6 +393,7 @@ func Chat() {
 							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
+								pname := nodslist[1]
 
 								go func() {
 
@@ -414,8 +412,19 @@ func Chat() {
 
 								go func(factname string) {
 									fact.UpdateSeen(factname)
-								}(nodslist[1])
-								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), nodslist[1]))
+								}(pname)
+
+								//Remove discord markdown
+								regf := regexp.MustCompile(`\*+`)
+								regg := regexp.MustCompile(`\~+`)
+								regh := regexp.MustCompile(`\_+`)
+								for regf.MatchString(pname) || regg.MatchString(pname) || regh.MatchString(pname) {
+									//Filter discord tags
+									pname = regf.ReplaceAllString(pname, "")
+									pname = regg.ReplaceAllString(pname, "")
+									pname = regh.ReplaceAllString(pname, "")
+								}
+								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname))
 								//fact.UpdateChannelName()
 							}
 							continue
@@ -423,7 +432,7 @@ func Chat() {
 						//*****************
 						//MAP END
 						//*****************
-						if strings.HasPrefix(line.Text, "[END]MAPEND") {
+						if strings.HasPrefix(lineText, "[END]MAPEND") {
 							if fact.IsFactRunning() {
 								go func() {
 									msg := "Server will shutdown in 5 minutes."
@@ -449,25 +458,25 @@ func Chat() {
 						//*****************
 						//MSG AREA
 						//*****************
-						if strings.HasPrefix(line.Text, "[MSG]") {
+						if strings.HasPrefix(lineText, "[MSG]") {
 
 							if linelistlen > 1 {
 								trustname := linelist[1]
 
-								if strings.Contains(line.Text, " is now a member!") {
+								if strings.Contains(lineText, " is now a member!") {
 									fact.PlayerLevelSet(trustname, 1)
 									continue
-								} else if strings.Contains(line.Text, " is now a regular!") {
+								} else if strings.Contains(lineText, " is now a regular!") {
 									fact.PlayerLevelSet(trustname, 2)
 									continue
-								} else if strings.Contains(line.Text, " moved to Admins group.") {
+								} else if strings.Contains(lineText, " moved to Admins group.") {
 									fact.PlayerLevelSet(trustname, 255)
 									continue
-								} else if strings.Contains(line.Text, " to the map!") && strings.Contains(line.Text, "Welcome ") {
+								} else if strings.Contains(lineText, " to the map!") && strings.Contains(lineText, "Welcome ") {
 									btrustname := linelist[2]
 									fact.WriteFact(fmt.Sprintf("/pcolor %s %s", btrustname, fact.RandomColor(true)))
 									fact.AutoPromote(btrustname)
-								} else if strings.Contains(line.Text, " has nil permissions.") {
+								} else if strings.Contains(lineText, " has nil permissions.") {
 									fact.AutoPromote(trustname)
 									continue
 								}
@@ -498,10 +507,10 @@ func Chat() {
 						//*****************
 						//(ONLINE)
 						//*****************
-						//if strings.Contains(line.Text, "(online)") {
+						//if strings.Contains(lineText, "(online)") {
 
 						//Upgrade or replace this...
-						//fact.CMS(config.Config.FactorioChannelID, line.Text)
+						//fact.CMS(config.Config.FactorioChannelID, lineText)
 						//continue
 						//}
 
@@ -515,10 +524,10 @@ func Chat() {
 
 							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
-								if strings.Contains(line.Text, "removing peer") {
+								if strings.Contains(lineText, "removing peer") {
 									fact.WriteFact("/p o c")
 									//Fix for players leaving with no leave message
-								} else if strings.Contains(line.Text, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
+								} else if strings.Contains(lineText, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
 									if config.Config.SlowGSpeed == "" {
 										fact.WriteFact("/gspeed 0.166666666667")
 									} else {
@@ -530,7 +539,7 @@ func Chat() {
 									glob.ConnectPauseCount++
 									glob.ConnectPauseLock.Unlock()
 
-								} else if strings.Contains(line.Text, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
+								} else if strings.Contains(lineText, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
 
 									glob.ConnectPauseLock.Lock()
 
@@ -787,7 +796,7 @@ func Chat() {
 							if pname != "<server>" {
 
 								cmess := strings.Join(nodslist[2:], " ")
-								cmess = SubSpecial(cmess)
+								cmess = StripControlAndSubSpecial(cmess)
 								//cmess = unidecode.Unidecode(cmess)
 
 								//Remove factorio tags
@@ -839,7 +848,7 @@ func Chat() {
 								did := disc.GetDiscordIDFromFactorioName(pname)
 								dname := disc.GetNameFromID(did, false)
 								avatar := disc.GetDiscordAvatarFromId(did, 64)
-								factname := SubSpecial(pname)
+								factname := StripControlAndSubSpecial(pname)
 								factname = TruncateString(factname, 25)
 
 								fbuf := ""
@@ -895,15 +904,15 @@ func Chat() {
 				//*****************
 				//"/online"
 				//*****************
-				if strings.HasPrefix(line.Text, "~") {
-					if strings.Contains(line.Text, "Activity: ") && strings.Contains(line.Text, "Online: ") &&
-						(strings.Contains(line.Text, ", (Members)") ||
-							strings.Contains(line.Text, ", (Regulars)") ||
-							strings.Contains(line.Text, ", (NEW)") ||
-							strings.Contains(line.Text, ", (Admins)")) {
+				if strings.HasPrefix(lineText, "~") {
+					if strings.Contains(lineText, "Activity: ") && strings.Contains(lineText, "Online: ") &&
+						(strings.Contains(lineText, ", (Members)") ||
+							strings.Contains(lineText, ", (Regulars)") ||
+							strings.Contains(lineText, ", (NEW)") ||
+							strings.Contains(lineText, ", (Admins)")) {
 
 						//Upgrade or replace this...
-						fact.CMS(config.Config.FactorioChannelID, line.Text)
+						fact.CMS(config.Config.FactorioChannelID, lineText)
 						continue
 					}
 				}
