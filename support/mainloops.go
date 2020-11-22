@@ -467,8 +467,16 @@ func MainLoops() {
 				//Get guild id, if we need it
 
 				if glob.Guild == nil && glob.DS != nil {
-					nguild, err := glob.DS.Guild(config.Config.GuildID)
-					glob.Guild = nguild
+					// Attempt to get the guild from the state,
+					// If there is an error, fall back to the restapi.
+					nguild, err := glob.DS.State.Guild(config.Config.GuildID)
+					if err != nil {
+						nguild, err = glob.DS.Guild(config.Config.GuildID)
+						if err != nil {
+							//logs.LogWithoutEcho("Failed to get guild data, will retry...")
+							return
+						}
+					}
 
 					if err != nil {
 						logs.Log(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
@@ -482,7 +490,9 @@ func MainLoops() {
 					} else {
 
 						//Guild found, exit loop
+						glob.Guild = nguild
 						glob.Guildname = nguild.Name
+						logs.LogWithoutEcho("Guild data linked.")
 
 						glob.GuildLock.Unlock()
 						break
