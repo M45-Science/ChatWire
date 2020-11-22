@@ -14,7 +14,7 @@ func PlayersOnline(s *discordgo.Session, m *discordgo.MessageCreate, args []stri
 		if fact.GetNumPlayers() == 0 {
 			fact.CMS(m.ChannelID, "No players are currently online.")
 		} else {
-			fact.WriteFact("/players online")
+			fact.WriteFact("/online")
 			fact.CMS(m.ChannelID, "Players online:")
 		}
 	} else {
