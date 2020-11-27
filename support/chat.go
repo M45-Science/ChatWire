@@ -852,6 +852,10 @@ func Chat() {
 								factname = TruncateString(factname, 25)
 
 								fbuf := ""
+								//Filter Factorio names
+								factname = regf.ReplaceAllString(factname, "")
+								factname = regg.ReplaceAllString(factname, "")
+								factname = regh.ReplaceAllString(factname, "")
 								if dname != "" {
 									fbuf = fmt.Sprintf("`%-11s` **%s**: %s", fact.GetGameTime(), factname, cmess)
 								} else {
