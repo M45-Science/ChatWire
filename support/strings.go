@@ -55,7 +55,7 @@ func StripControlAndSubSpecial(str string) string {
 		if c == '\n' || c == '\r' || c == '\t' {
 			b[bl] = ' '
 			bl++
-		} else if c >= 32 {
+		} else if c >= 32 && c != 127 {
 			b[bl] = c
 			bl++
 		}
