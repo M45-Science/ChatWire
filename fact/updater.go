@@ -40,99 +40,103 @@ func CheckZip(filename string) bool {
 
 func CheckFactUpdate(logNoUpdate bool) {
 
-	glob.UpdateFactorioLock.Lock()
-	defer glob.UpdateFactorioLock.Unlock()
+	if config.Config.UpdaterPath != "" {
 
-	//Give up on check/download after a while
-	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
-	defer cancel()
+		glob.UpdateFactorioLock.Lock()
+		defer glob.UpdateFactorioLock.Unlock()
 
-	//Create cache directory
-	os.MkdirAll(config.Config.UpdaterCache, os.ModePerm)
+		//Give up on check/download after a while
+		ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
+		defer cancel()
 
-	cmdargs := []string{config.Config.UpdaterPath, "-O", config.Config.UpdaterCache, "-a", config.Config.Executable, "-d"}
-	if strings.ToLower(config.Config.UpdateToExperimental) == "true" ||
-		strings.ToLower(config.Config.UpdateToExperimental) == "yes" {
-		cmdargs = append(cmdargs, "-x")
-	}
+		//Create cache directory
+		os.MkdirAll(config.Config.UpdaterCache, os.ModePerm)
 
-	cmd := exec.CommandContext(ctx, config.Config.UpdaterShell, cmdargs...)
-	o, err := cmd.CombinedOutput()
-	out := string(o)
+		cmdargs := []string{config.Config.UpdaterPath, "-O", config.Config.UpdaterCache, "-a", config.Config.Executable, "-d"}
+		if strings.ToLower(config.Config.UpdateToExperimental) == "true" ||
+			strings.ToLower(config.Config.UpdateToExperimental) == "yes" {
+			cmdargs = append(cmdargs, "-x")
+		}
 
-	if ctx.Err() == context.DeadlineExceeded {
-		logs.Log("fact update check: download/check timed out... purging cache.")
-		os.RemoveAll(config.Config.UpdaterCache)
-		return
-	}
+		cmd := exec.CommandContext(ctx, config.Config.UpdaterShell, cmdargs...)
+		o, err := cmd.CombinedOutput()
+		out := string(o)
 
-	if err == nil {
-		clines := strings.Split(out, "\n")
-		for _, line := range clines {
-			linelen := len(line)
-			var newversion string
-			var oldversion string
+		if ctx.Err() == context.DeadlineExceeded {
+			logs.Log("fact update check: download/check timed out... purging cache.")
+			os.RemoveAll(config.Config.UpdaterCache)
+			return
+		}
 
-			if linelen > 0 {
+		if err == nil {
+			clines := strings.Split(out, "\n")
+			for _, line := range clines {
+				linelen := len(line)
+				var newversion string
+				var oldversion string
 
-				words := strings.Split(line, " ")
-				numwords := len(words)
+				if linelen > 0 {
 
-				if strings.HasPrefix(line, "No updates available") {
-					if logNoUpdate == true {
-						mess := "fact update check: Factorio is up-to-date."
-						logs.Log(mess)
-					}
-					return
-				} else if strings.HasPrefix(line, "Wrote ") {
-					if linelen > 1 && strings.Contains(line, ".zip") {
+					words := strings.Split(line, " ")
+					numwords := len(words)
 
-						//Only trigger on a new patch file
-						if line != glob.NewPatchName {
-							glob.NewPatchName = line
-
-							if numwords > 1 && CheckZip(words[1]) {
-								mess := "Factorio update downloaded and verified, will update when no players are online."
-								CMS(config.Config.FactorioChannelID, mess)
-								WriteFact("/cchat [SYSTEM] " + mess)
-								logs.Log(mess)
-
-								SetDoUpdateFactorio(true)
-							} else {
-								os.RemoveAll(config.Config.UpdaterCache)
-								//Purge patch name so we attempt check again
-								glob.NewPatchName = constants.Unknown
-								logs.Log("fact update check: Factorio update zip invalid... purging cache.")
-							}
+					if strings.HasPrefix(line, "No updates available") {
+						if logNoUpdate == true {
+							mess := "fact update check: Factorio is up-to-date."
+							logs.Log(mess)
 						}
 						return
-					}
-				} else if strings.HasPrefix(line, "Dry run: would have fetched update from") {
-					if numwords >= 9 {
-						oldversion = words[7]
-						newversion = words[9]
+					} else if strings.HasPrefix(line, "Wrote ") {
+						if linelen > 1 && strings.Contains(line, ".zip") {
 
-						messdisc := fmt.Sprintf("**Factorio update available:** '%v' to '%v'", oldversion, newversion)
-						messfact := fmt.Sprintf("Factorio update available: '%v' to '%v'", oldversion, newversion)
-						//Don't message, unless this is actually a unique new version
-						if glob.NewVersion != newversion {
-							glob.NewVersion = newversion
+							//Only trigger on a new patch file
+							if line != glob.NewPatchName {
+								glob.NewPatchName = line
 
-							CMS(config.Config.FactorioChannelID, messdisc)
+								if numwords > 1 && CheckZip(words[1]) {
+									mess := "Factorio update downloaded and verified, will update when no players are online."
+									CMS(config.Config.FactorioChannelID, mess)
+									WriteFact("/cchat [SYSTEM] " + mess)
+									logs.Log(mess)
 
-							WriteFact("/cchat [SYSTEM] " + messfact)
-							logs.Log(messfact)
+									SetDoUpdateFactorio(true)
+								} else {
+									os.RemoveAll(config.Config.UpdaterCache)
+									//Purge patch name so we attempt check again
+									glob.NewPatchName = constants.Unknown
+									logs.Log("fact update check: Factorio update zip invalid... purging cache.")
+								}
+							}
+							return
+						}
+					} else if strings.HasPrefix(line, "Dry run: would have fetched update from") {
+						if numwords >= 9 {
+							oldversion = words[7]
+							newversion = words[9]
+
+							messdisc := fmt.Sprintf("**Factorio update available:** '%v' to '%v'", oldversion, newversion)
+							messfact := fmt.Sprintf("Factorio update available: '%v' to '%v'", oldversion, newversion)
+							//Don't message, unless this is actually a unique new version
+							if glob.NewVersion != newversion {
+								glob.NewVersion = newversion
+
+								CMS(config.Config.FactorioChannelID, messdisc)
+
+								WriteFact("/cchat [SYSTEM] " + messfact)
+								logs.Log(messfact)
+							}
 						}
 					}
 				}
 			}
+		} else {
+			os.RemoveAll(config.Config.UpdaterCache)
+			logs.Log("fact update dry: (error) Non-zero exit code... purging update cache.")
 		}
-	} else {
-		os.RemoveAll(config.Config.UpdaterCache)
-		logs.Log("fact update dry: (error) Non-zero exit code... purging update cache.")
+
+		logs.Log(fmt.Sprintf("fact update dry: (error) update_fact.py:\n%v", out))
 	}
 
-	logs.Log(fmt.Sprintf("fact update dry: (error) update_fact.py:\n%v", out))
 }
 
 func FactUpdate() {
