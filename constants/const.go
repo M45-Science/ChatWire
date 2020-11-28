@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "440-112270200330p"
+const Version = "441-112820200905a"
 const Unknown = "Unknown"
 
 //Max player database size, pre-allocated
