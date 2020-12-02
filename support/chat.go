@@ -665,6 +665,8 @@ func Chat() {
 							fact.LogCMS(config.Config.FactorioChannelID, "Factorio "+glob.FactorioVersion+" is now online.")
 							fact.WriteFact("/p o c")
 
+							fact.WriteFact("/cname " + strings.ToUpper(config.Config.ChannelName))
+
 							//Send whitelist
 							if glob.WhitelistMode {
 								fact.SetNoResponseCount(0)
