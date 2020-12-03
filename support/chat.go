@@ -346,26 +346,22 @@ func Chat() {
 								glob.NumLoginsLock.Unlock()
 
 								if fact.PlayerLevelGet(pname) == 0 {
-									skip := false
 
-									//Don't block, make new thread
-									if skip == false {
-										go func(pname string) {
+									go func(pname string) {
 
-											time.Sleep(5 * time.Second)
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sWelcome, use ` or ~ to chat, or to use commands. /help shows all commands.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										time.Sleep(5 * time.Second)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sWelcome, use ` or ~ to chat, or to use commands. /help shows all commands.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
 
-											time.Sleep(5 * time.Second)
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sYou are currently a new player, some actions will not be available for you at first.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										time.Sleep(5 * time.Second)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sYou are currently a new player, some actions will not be available for you at first.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
 
-											time.Sleep(10 * time.Second)
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sFor more information, check out our Discord, copy-paste link is at the top-left of your screen.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										time.Sleep(10 * time.Second)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sFor more information, check out our Discord, copy-paste link is at the top-left of your screen.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
 
-											time.Sleep(10 * time.Second)
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sYou can report issues or abuse with /report <your message here>[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										time.Sleep(10 * time.Second)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sYou can report issues or abuse with /report <your message here>[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
 
-										}(pname)
-									}
+									}(pname)
 								}
 								plevelname := fact.AutoPromote(pname)
 
@@ -464,25 +460,30 @@ func Chat() {
 								trustname := linelist[1]
 
 								if trustname != "" {
+									oldlevel := fact.PlayerLevelGet(trustname)
 
 									if strings.Contains(lineText, " is now a member!") {
 										fact.PlayerLevelSet(trustname, 1)
-										continue
 									} else if strings.Contains(lineText, " is now a regular!") {
 										fact.PlayerLevelSet(trustname, 2)
-										continue
 									} else if strings.Contains(lineText, " moved to Admins group.") {
 										fact.PlayerLevelSet(trustname, 255)
 										continue
 									} else if strings.Contains(lineText, " to the map!") && strings.Contains(lineText, "Welcome ") {
 										btrustname := linelist[2]
 										fact.AutoPromote(btrustname)
+										continue
 									} else if strings.Contains(lineText, " has nil permissions.") {
 										fact.AutoPromote(trustname)
 										continue
 									}
 
-									fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
+									newlevel := fact.PlayerLevelGet(trustname)
+
+									//Only report if level increased
+									if oldlevel >= 0 && oldlevel < newlevel {
+										fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
+									}
 								}
 							}
 							continue
