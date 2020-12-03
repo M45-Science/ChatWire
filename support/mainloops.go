@@ -538,7 +538,7 @@ func MainLoops() {
 				if config.Config.UpdaterPath != "" {
 					if fact.IsFactRunning() && fact.GetNumPlayers() > 0 && fact.GetDoUpdateFactorio() && glob.NewVersion != constants.Unknown {
 						//Warn users
-						msg := fmt.Sprintf("Factorio update waiting (%v), please log off when there is a good stopping point, Thanks!", glob.NewVersion)
+						msg := fmt.Sprintf("[SYSTEM] Factorio update waiting (%v), please log off when there is a good stopping point, Thanks!", glob.NewVersion)
 						fact.CMS(config.Config.FactorioChannelID, msg)
 						time.Sleep(15 * time.Minute)
 					}
