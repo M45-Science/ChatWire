@@ -525,6 +525,29 @@ func MainLoops() {
 			}
 		}()
 
+		//************************************
+		//Bug players if there is an pending update
+		//************************************
+		go func() {
+			s1 := rand.NewSource(time.Now().UnixNano())
+			r1 := rand.New(s1)
+
+			for {
+				time.Sleep(5 * time.Second)
+
+				if config.Config.UpdaterPath != "" {
+					if fact.IsFactRunning() && fact.GetNumPlayers() > 0 && fact.GetDoUpdateFactorio() && glob.NewVersion != constants.Unknown {
+						//Warn users
+						msg := fmt.Sprintf("Factorio update waiting (%v), please log off when there is a good stopping point, Thanks!", glob.NewVersion)
+						fact.CMS(config.Config.FactorioChannelID, msg)
+						time.Sleep(15 * time.Minute)
+					}
+				}
+				fuzz := r1.Intn(constants.SecondInMicro)
+				time.Sleep(time.Duration(fuzz) * time.Microsecond)
+			}
+		}()
+
 		//*******************
 		//Check signal files
 		//*******************
