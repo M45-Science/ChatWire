@@ -106,56 +106,58 @@ func WriteFact(buf string) {
 func AutoPromote(pname string) string {
 	newusername := " *(New Player)* "
 
-	plevel := PlayerLevelGet(pname)
-	if plevel == -1 {
-		newusername = " *(Banned)*"
+	if pname != "" {
+		plevel := PlayerLevelGet(pname)
+		if plevel == -1 {
+			newusername = " *(Banned)*"
 
-		WriteFact(fmt.Sprintf("/ban %s", pname))
-	} else if plevel == 1 {
-		newusername = " *(Trusted)*"
-
-		WriteFact(fmt.Sprintf("/member %s", pname))
-	} else if plevel == 2 {
-		newusername = " *(Regular)*"
-
-		WriteFact(fmt.Sprintf("/regular %s", pname))
-	} else if plevel == 255 {
-		newusername = " *(Admin)*"
-
-		WriteFact(fmt.Sprintf("/promote %s", pname))
-	}
-
-	discid := disc.GetDiscordIDFromFactorioName(pname)
-	factname := disc.GetFactorioNameFromDiscordID(discid)
-
-	if factname == pname {
-
-		newrole := ""
-		if plevel == 0 {
-			newrole = config.Config.MembersRole
+			WriteFact(fmt.Sprintf("/ban %s", pname))
 		} else if plevel == 1 {
-			newrole = config.Config.MembersRole
+			newusername = " *(Trusted)*"
+
+			WriteFact(fmt.Sprintf("/member %s", pname))
 		} else if plevel == 2 {
-			newrole = config.Config.RegularsRole
+			newusername = " *(Regular)*"
+
+			WriteFact(fmt.Sprintf("/regular %s", pname))
 		} else if plevel == 255 {
-			newrole = config.Config.AdminsRole
+			newusername = " *(Admin)*"
+
+			WriteFact(fmt.Sprintf("/promote %s", pname))
 		}
 
-		guild := GetGuild()
+		discid := disc.GetDiscordIDFromFactorioName(pname)
+		factname := disc.GetFactorioNameFromDiscordID(discid)
 
-		if guild != nil && glob.DS != nil {
+		if factname == pname {
 
-			errrole, regrole := disc.RoleExists(guild, newrole)
-
-			if errrole {
-				errset := disc.SmartRoleAdd(config.Config.GuildID, discid, regrole.ID)
-				if errset != nil {
-					logs.Log(fmt.Sprintf("Couldn't set role %v for %v.", plevel, pname))
-				}
+			newrole := ""
+			if plevel == 0 {
+				newrole = config.Config.MembersRole
+			} else if plevel == 1 {
+				newrole = config.Config.MembersRole
+			} else if plevel == 2 {
+				newrole = config.Config.RegularsRole
+			} else if plevel == 255 {
+				newrole = config.Config.AdminsRole
 			}
-		} else {
 
-			logs.Log("No guild data.")
+			guild := GetGuild()
+
+			if guild != nil && glob.DS != nil {
+
+				errrole, regrole := disc.RoleExists(guild, newrole)
+
+				if errrole {
+					errset := disc.SmartRoleAdd(config.Config.GuildID, discid, regrole.ID)
+					if errset != nil {
+						logs.Log(fmt.Sprintf("Couldn't set role %v for %v.", plevel, pname))
+					}
+				}
+			} else {
+
+				logs.Log("No guild data.")
+			}
 		}
 	}
 
