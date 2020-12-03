@@ -463,25 +463,27 @@ func Chat() {
 							if linelistlen > 1 {
 								trustname := linelist[1]
 
-								if strings.Contains(lineText, " is now a member!") {
-									fact.PlayerLevelSet(trustname, 1)
-									continue
-								} else if strings.Contains(lineText, " is now a regular!") {
-									fact.PlayerLevelSet(trustname, 2)
-									continue
-								} else if strings.Contains(lineText, " moved to Admins group.") {
-									fact.PlayerLevelSet(trustname, 255)
-									continue
-								} else if strings.Contains(lineText, " to the map!") && strings.Contains(lineText, "Welcome ") {
-									btrustname := linelist[2]
-									fact.WriteFact(fmt.Sprintf("/pcolor %s %s", btrustname, fact.RandomColor(true)))
-									fact.AutoPromote(btrustname)
-								} else if strings.Contains(lineText, " has nil permissions.") {
-									fact.AutoPromote(trustname)
-									continue
-								}
+								if trustname != "" {
 
-								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
+									if strings.Contains(lineText, " is now a member!") {
+										fact.PlayerLevelSet(trustname, 1)
+										continue
+									} else if strings.Contains(lineText, " is now a regular!") {
+										fact.PlayerLevelSet(trustname, 2)
+										continue
+									} else if strings.Contains(lineText, " moved to Admins group.") {
+										fact.PlayerLevelSet(trustname, 255)
+										continue
+									} else if strings.Contains(lineText, " to the map!") && strings.Contains(lineText, "Welcome ") {
+										btrustname := linelist[2]
+										fact.AutoPromote(btrustname)
+									} else if strings.Contains(lineText, " has nil permissions.") {
+										fact.AutoPromote(trustname)
+										continue
+									}
+
+									fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
+								}
 							}
 							continue
 						}
@@ -650,7 +652,7 @@ func Chat() {
 						//GOODBYE
 						//*****************
 						if strings.HasPrefix(NoTC, "Goodbye") {
-							logs.Log("Factorio is now offline.")
+							fact.LogCMS(config.Config.FactorioChannelID, "Factorio is now offline.")
 							fact.SetFactorioBooted(false)
 							fact.SetFactRunning(false, false)
 							continue
