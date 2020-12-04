@@ -73,7 +73,7 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 		}
 	}
 
-	fact.CMS(m.ChannelID, "Invalid command.")
+	fact.CMS(m.ChannelID, "Invalid command, try "+config.Config.Prefix+"help")
 }
 
 // CheckAdmin checks if the user attempting to run an admin command is an admin
