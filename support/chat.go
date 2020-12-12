@@ -919,9 +919,7 @@ func Chat() {
 							strings.Contains(lineText, ", (Regulars)") ||
 							strings.Contains(lineText, ", (NEW)") ||
 							strings.Contains(lineText, ", (Admins)")) {
-
-						//Upgrade or replace this...
-						fact.CMS(config.Config.FactorioChannelID, lineText)
+						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
 					}
 				}
