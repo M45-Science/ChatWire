@@ -540,6 +540,7 @@ func MainLoops() {
 						//Warn users
 						msg := fmt.Sprintf("[SYSTEM] Factorio update waiting (%v), please log off when there is a good stopping point, Thanks!", glob.NewVersion)
 						fact.CMS(config.Config.FactorioChannelID, msg)
+						fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
 						time.Sleep(15 * time.Minute)
 					}
 				}
