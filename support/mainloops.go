@@ -679,18 +679,13 @@ func MainLoops() {
 		go func() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
-			fuzz := r1.Intn(constants.MinuteInMicro*5) + constants.MinuteInMicro*15
-			time.Sleep(time.Duration(fuzz) * time.Microsecond)
-			//Sleep 15-20 minutes before checking for updates
 
 			for {
+				time.Sleep(15 * time.Minute)
 				fact.CheckFactUpdate(false)
 
-				//Add 30 minutes of randomness to delay
-				fuzz := r1.Intn(constants.MinuteInMicro * 30)
+				fuzz := r1.Intn(constants.MinuteInMicro * 5)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
-
-				time.Sleep(1 * time.Hour)
 			}
 		}()
 
