@@ -922,6 +922,9 @@ func Chat() {
 							strings.Contains(lineText, ", (Admins)")) {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
+					} else {
+						//Send console to aux channel
+						fact.CMS(config.Config.AuxChannel, lineText)
 					}
 				}
 
