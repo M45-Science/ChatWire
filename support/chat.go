@@ -918,6 +918,7 @@ func Chat() {
 						(strings.Contains(lineText, ", (Members)") ||
 							strings.Contains(lineText, ", (Regulars)") ||
 							strings.Contains(lineText, ", (NEW)") ||
+							strings.Contains(lineText, ", (BANISHED)") ||
 							strings.Contains(lineText, ", (Admins)")) {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
