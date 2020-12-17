@@ -48,6 +48,7 @@ type config struct {
 	ZipBinary            string
 	ModerationChannel    string
 	MapGenJson           string
+	MapSetJson           string
 	CompressScript       string
 	PauseOnConnect       string
 	DefaultGSpeed        string
@@ -101,6 +102,7 @@ func (conf *config) LoadEnv() {
 		ZipBinary:            os.Getenv("ZipBinary"),
 		ModerationChannel:    os.Getenv("ModerationChannel"),
 		MapGenJson:           os.Getenv("MapGenJson"),
+		MapSetJson:           os.Getenv("MapSetJson"),
 		CompressScript:       os.Getenv("CompressScript"),
 		PauseOnConnect:       os.Getenv("PauseOnConnect"),
 		DefaultGSpeed:        os.Getenv("DefaultGSpeed"),

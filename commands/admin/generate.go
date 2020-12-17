@@ -92,6 +92,12 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		factargs = append(factargs, config.Config.MapGenJson)
 	}
 
+	//Append map settings if set
+	if config.Config.MapSetJson != "" {
+		factargs = append(factargs, "--map-settings")
+		factargs = append(factargs, config.Config.MapSetJson)
+	}
+
 	cmd := exec.Command(config.Config.Executable, factargs...)
 	out, aerr := cmd.CombinedOutput()
 

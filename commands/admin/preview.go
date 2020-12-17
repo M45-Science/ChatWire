@@ -65,6 +65,12 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 		args = append(args, config.Config.MapGenJson)
 	}
 
+	//Append map settings if set
+	if config.Config.MapSetJson != "" {
+		args = append(args, "--map-settings")
+		args = append(args, config.Config.MapSetJson)
+	}
+
 	cmd := exec.Command(config.Config.Executable, args...)
 	out, aerr := cmd.CombinedOutput()
 
