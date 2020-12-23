@@ -393,15 +393,12 @@ func Chat() {
 
 								go func() {
 
-									//Don't bother with this on whitelist servers
-									if glob.WhitelistMode == false {
-										// Don't save if we saved recently
-										t := time.Now()
-										if t.Sub(fact.GetSaveTimer()).Seconds() > constants.SaveThresh {
+									// Don't save if we saved recently
+									t := time.Now()
+									if t.Sub(fact.GetSaveTimer()).Seconds() > constants.SaveThresh {
 
-											fact.SaveFactorio()
-											fact.SetSaveTimer()
-										}
+										fact.SaveFactorio()
+										fact.SetSaveTimer()
 									}
 
 								}()
