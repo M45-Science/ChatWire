@@ -47,7 +47,7 @@ func Chat() {
 				//Server is alive
 				fact.SetFactRunning(true, false)
 
-				if linelen > 4096 {
+				if linelen > 8192 {
 					//Message too long
 					logs.Log("Line from factorio was too long.")
 					continue
@@ -109,7 +109,7 @@ func Chat() {
 					if !strings.HasPrefix(NoDS, "[CHAT]") {
 
 						//*****************
-						//GET FACTORIO TIME
+						//GET FACTORIO TIME, replace me
 						//*****************
 						if strings.Contains(lowerline, " second") || strings.Contains(lowerline, " minute") || strings.Contains(lowerline, " hour") || strings.Contains(lowerline, " day") {
 
@@ -153,7 +153,7 @@ func Chat() {
 								glob.PausedTicksLock.Unlock()
 								glob.GametimeLock.Unlock()
 							}
-							//This might block stuff by accident
+							//This might block stuff by accident, don't do it
 							//continue
 						}
 
@@ -911,16 +911,16 @@ func Chat() {
 				//"/online"
 				//*****************
 				if strings.HasPrefix(lineText, "~") {
-					if strings.Contains(lineText, "Activity: ") && strings.Contains(lineText, "Online: ") &&
+					if strings.Contains(lineText, " Activity: ") && strings.Contains(lineText, ", Online: ") &&
 						(strings.Contains(lineText, ", (Members)") ||
 							strings.Contains(lineText, ", (Regulars)") ||
 							strings.Contains(lineText, ", (NEW)") ||
 							strings.Contains(lineText, ", (BANISHED)") ||
-							strings.Contains(lineText, ", (Admins)")) {
+							strings.Contains(lineText, ", (ADMINS)")) {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
 					} else {
-						//Send console to aux channel
+						//Send console messages to aux channel
 						fbuf := fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), lineText)
 						fact.CMS(config.Config.AuxChannel, fbuf)
 					}
