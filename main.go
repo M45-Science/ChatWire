@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -153,4 +154,8 @@ func startbot() {
 
 	logs.Log("Bot online. *v" + constants.Version + "*")
 	fact.UpdateChannelName()
+
+	//Update aux channel name on reboot
+	chpos, _ := strconv.Atoi(config.Config.ChannelPos)
+	glob.DS.ChannelEditComplex(config.Config.AuxChannel, &discordgo.ChannelEdit{Name: config.Config.ChannelName, Position: chpos + 200})
 }
