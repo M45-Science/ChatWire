@@ -43,9 +43,9 @@ func QuitFactorio() {
 	SetRelaunchThrottle(0)
 	SetNoResponseCount(0)
 	if IsFactorioBooted() && GetNumPlayers() > 0 {
-		WriteFact(fmt.Sprintf("%sServer closing.[/color]", RandomColor(false)))
-		WriteFact(fmt.Sprintf("%sServer closing..[/color]", RandomColor(false)))
-		WriteFact(fmt.Sprintf("%sServer closing...[/color]", RandomColor(false)))
+		WriteFact(fmt.Sprintf("/cchat %sServer quitting.[/color]", RandomColor(false)))
+		WriteFact(fmt.Sprintf("/cchat %sServer quitting..[/color]", RandomColor(false)))
+		WriteFact(fmt.Sprintf("/cchat %sServer quitting...[/color]", RandomColor(false)))
 		time.Sleep(5 * time.Second)
 	}
 	WriteFact("/quit")
@@ -218,18 +218,18 @@ func RandomColor(justnumbers bool) string {
 
 	color := constants.Colors[glob.LastColor]
 
-	red := color.R
-	green := color.G
-	blue := color.B
+	red := color.R + 0.1
+	green := color.G + 0.1
+	blue := color.B + 0.1
 
-	if red > 1.0 {
-		red = 1.0
+	if red > 0.9 {
+		red = 0.9
 	}
-	if green > 1.0 {
-		green = 1.0
+	if green > 0.9 {
+		green = 0.9
 	}
-	if blue > 1.0 {
-		blue = 1.0
+	if blue > 0.9 {
+		blue = 0.9
 	}
 
 	if justnumbers {
