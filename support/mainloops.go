@@ -262,7 +262,7 @@ func MainLoops() {
 					//fact.SetFactRunning(false, true)
 					continue
 				} else {
-					fact.WriteFact(string(line))
+					//fact.WriteFact(string(line))
 				}
 			}
 		}()
@@ -572,7 +572,7 @@ func MainLoops() {
 
 							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
 								for x := 0; x < 3; x++ {
-									fact.WriteFact(fmt.Sprintf("/cchat %sFactorio is shutting down in 30 seconds, to upgrade to a new version![/color]", fact.RandomColor(false)))
+									fact.WriteFact(fmt.Sprintf("/cchat  [SYSTEM] %sFactorio is shutting down in 30 seconds, to upgrade to a new version![/color]", fact.RandomColor(false)))
 								}
 								time.Sleep(30 * time.Second)
 							}
@@ -619,7 +619,7 @@ func MainLoops() {
 						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is restarting!")
 						go func() {
 							for x := 0; x < 3; x++ {
-								fact.WriteFact(fmt.Sprintf("/cchat %sFactorio is rebooting in 30 seconds![/color]", fact.RandomColor(false)))
+								fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is rebooting in 30 seconds![/color]", fact.RandomColor(false)))
 							}
 							time.Sleep(30 * time.Second)
 							fact.QuitFactorio()
@@ -642,7 +642,7 @@ func MainLoops() {
 						go func() {
 							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
 								for x := 0; x < 3; x++ {
-									fact.WriteFact(fmt.Sprintf("/cchat %sFactorio is rebooting in 5 seconds![/color]", fact.RandomColor(false)))
+									fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is rebooting in 5 seconds![/color]", fact.RandomColor(false)))
 								}
 								time.Sleep(5 * time.Second)
 							}
@@ -660,7 +660,7 @@ func MainLoops() {
 							fact.LogCMS(config.Config.FactorioChannelID, "Factorio is shutting down for maintenance!")
 							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
 								for x := 0; x < 3; x++ {
-									fact.WriteFact(fmt.Sprintf("/cchat %sFactorio is shutting down in 30 seconds, for system maintenance![/color]", fact.RandomColor(false)))
+									fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is shutting down in 30 seconds, for system maintenance![/color]", fact.RandomColor(false)))
 								}
 								time.Sleep(30 * time.Second)
 							}
