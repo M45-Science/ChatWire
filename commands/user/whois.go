@@ -36,6 +36,8 @@ func levelToString(level int) string {
 
 	if level <= -254 {
 		name = "Deleted"
+	} else if level == -1 {
+		name = "Banned"
 	} else if level == 0 {
 		name = "New"
 	} else if level == 1 {
