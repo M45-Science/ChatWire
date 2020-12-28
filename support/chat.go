@@ -350,13 +350,13 @@ func Chat() {
 									go func(pname string) {
 
 										time.Sleep(15 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Welcome, use ` or ~ to chat, or to use commands. /h shows all commands.", pname )
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Welcome, use ` or ~ to chat, or to use commands. /h shows all commands.", pname))
 
 										time.Sleep(5 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] You are currently a NEW player, SOME ACTIONS WILL NOT BE AVAILABLE for you at first.", pname )
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] You are currently a NEW player, SOME ACTIONS WILL NOT BE AVAILABLE for you at first.", pname))
 
 										time.Sleep(5 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] For more information, check out our Discord, copy-paste link is at the top-left of your screen. (Ps2jnm7)", pname)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] For more information, check out our Discord, copy-paste link is at the top-left of your screen. (Ps2jnm7)", pname))
 
 									}(pname)
 								}
