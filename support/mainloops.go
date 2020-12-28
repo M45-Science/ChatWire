@@ -253,6 +253,8 @@ func MainLoops() {
 		//Bot console
 		//**************
 		go func() {
+			return // Not being used, return
+
 			Console := bufio.NewReader(os.Stdin)
 			for {
 				time.Sleep(100 * time.Millisecond)
@@ -262,7 +264,7 @@ func MainLoops() {
 					//fact.SetFactRunning(false, true)
 					continue
 				} else {
-					//fact.WriteFact(string(line))
+					fact.WriteFact(string(line))
 				}
 			}
 		}()
