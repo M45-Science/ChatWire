@@ -236,17 +236,17 @@ func Chat() {
 										factname := disc.GetFactorioNameFromDiscordID(pid)
 
 										if discid == pid && factname == pname {
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s This Factorio account, and Discord account are already connected! Setting role, if needed.", pname))
+											fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account, and Discord account are already connected! Setting role, if needed.", pname))
 											codegood = true
 											//Do not break, process
 										} else if discid != "" {
 											logs.Log(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s that discord user is already connected to a different Factorio user.", pname))
+											fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user.", pname))
 											codegood = false
 											continue
 										} else if factname != "" {
 											logs.Log(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
-											fact.WriteFact(fmt.Sprintf("/cwhisper %s This Factorio user is already connected to a different discord user.", pname))
+											fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user.", pname))
 											codegood = false
 											continue
 										}
@@ -260,7 +260,7 @@ func Chat() {
 
 												if !errrole {
 													fact.LogCMS(config.Config.FactorioChannelID, fmt.Sprintf("Sorry, there is an error. I couldn't find the Discord role '%s'.", newrole))
-													fact.WriteFact(fmt.Sprintf("/cwhisper %s Sorry, there was an internal error, I coudn't find the Discord role '%s' Let the moderators know!", newrole, pname))
+													fact.WriteFact(fmt.Sprintf("/cwhisper %s  [SYSTEM] Sorry, there was an internal error, I coudn't find the Discord role '%s' Let the moderators know!", newrole, pname))
 													continue
 												}
 
@@ -268,10 +268,10 @@ func Chat() {
 
 												if erradd != nil || glob.DS == nil {
 													fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("Sorry, there is an error. I couldn't assign the Discord role '%s'.", newrole))
-													fact.WriteFact(fmt.Sprintf("/cwhisper %s Sorry, there was an error, coundn't assign role '%s' Let the moderators know!", newrole, pname))
+													fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, coundn't assign role '%s' Let the moderators know!", newrole, pname))
 													continue
 												}
-												fact.WriteFact(fmt.Sprintf("/cwhisper %s Registration complete!", pname))
+												fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
 												fact.LogCMS(config.Config.FactorioChannelID, pname+": Registration complete!")
 												continue
 											} else {
@@ -286,7 +286,7 @@ func Chat() {
 								glob.PasswordListLock.Unlock()
 								if codefound == false {
 									logs.Log(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
-									fact.WriteFact(fmt.Sprintf("/cwhisper %s Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
+									fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 									continue
 								}
 							} else {
@@ -349,17 +349,14 @@ func Chat() {
 
 									go func(pname string) {
 
-										time.Sleep(5 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sWelcome, use ` or ~ to chat, or to use commands. /help shows all commands.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										time.Sleep(15 * time.Second)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Welcome, use ` or ~ to chat, or to use commands. /h shows all commands.", pname )
 
 										time.Sleep(5 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sYou are currently a new player, some actions will not be available for you at first.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] You are currently a NEW player, SOME ACTIONS WILL NOT BE AVAILABLE for you at first.", pname )
 
-										time.Sleep(10 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sFor more information, check out our Discord, copy-paste link is at the top-left of your screen.[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
-
-										time.Sleep(10 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s %s[@ChatWire][/color] %sYou can report issues or abuse with /report <your message here>[/color]", pname, fact.RandomColor(false), fact.RandomColor(false)))
+										time.Sleep(5 * time.Second)
+										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] For more information, check out our Discord, copy-paste link is at the top-left of your screen. (Ps2jnm7)", pname)
 
 									}(pname)
 								}
@@ -429,12 +426,12 @@ func Chat() {
 							if fact.IsFactRunning() {
 								go func() {
 									msg := "Server will shutdown in 5 minutes."
-									fact.WriteFact("/cchat " + msg)
+									fact.WriteFact("/cchat [SYSTEM] " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(5 * time.Minute)
 
 									msg = "Server shutting down."
-									fact.WriteFact("/cchat " + msg)
+									fact.WriteFact("/cchat [SYSTEM] " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(10 * time.Second)
 
