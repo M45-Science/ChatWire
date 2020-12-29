@@ -844,6 +844,10 @@ func Chat() {
 									cmess = fmt.Sprintf("%s**(message cut, too long!)**", TruncateString(cmess, 500))
 								}
 
+								if cmess == "" {
+									continue
+								}
+
 								//Yeah, on different thread please.
 								go func(ptemp string) {
 									fact.UpdateSeen(ptemp)

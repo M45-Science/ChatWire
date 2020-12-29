@@ -116,6 +116,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				cmess = fmt.Sprintf("%s...(cut, too long!)", support.TruncateString(cmess, 500))
 			}
 
+			if cmess == "" {
+				return
+			}
+
 			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 			nbuf := ""
 
