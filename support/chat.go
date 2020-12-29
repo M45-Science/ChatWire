@@ -664,6 +664,11 @@ func Chat() {
 
 							fact.WriteFact("/cname " + strings.ToUpper(config.Config.ChannelName))
 
+							//If this is a whitelist server, we can disable new-user restrictions.
+							if glob.WhitelistMode {
+								fact.WriteFact("/restrict off")
+							}
+
 							//Send whitelist
 							if glob.WhitelistMode {
 								fact.SetNoResponseCount(0)
