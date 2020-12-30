@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // Config is a config interface.
@@ -56,10 +58,17 @@ type config struct {
 }
 
 func (conf *config) LoadEnv() {
-	os.Clearenv()
 
 	if _, err := os.Stat(".env"); os.IsNotExist(err) {
 		println("Environment file not found, cannot continue!")
+		println(err)
+		os.Exit(1)
+	}
+
+	err := godotenv.Load()
+
+	if err != nil {
+		println("Environment file failed to load!")
 		println(err)
 		os.Exit(1)
 	}
