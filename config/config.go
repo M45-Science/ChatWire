@@ -65,7 +65,7 @@ func (conf *config) LoadEnv() {
 		os.Exit(1)
 	}
 
-	err := godotenv.Load(".env")
+	err := godotenv.Overload(".env")
 
 	if err != nil {
 		println("Environment file failed to load!")
