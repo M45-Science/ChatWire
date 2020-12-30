@@ -762,6 +762,14 @@ func Chat() {
 								fact.SetFactRunning(false, true)
 								continue
 							}
+							//level.dat
+							if strings.Contains(NoTC, "level.dat not found.") {
+								fact.CMS(config.Config.FactorioChannelID, "Unable to load save-game.")
+								fact.SetAutoStart(false)
+								fact.SetFactorioBooted(false)
+								fact.SetFactRunning(false, true)
+								continue
+							}
 							//Stack traces
 							if strings.Contains(NoTC, "Unexpected error occurred.") {
 								fact.CMS(config.Config.FactorioChannelID, "Factorio crashed.")
