@@ -450,11 +450,14 @@ func Chat() {
 						//*****************
 						if strings.HasPrefix(lineText, "[MSG]") {
 
+							if linelistlen > 0 {
+								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
+							}
+
 							if linelistlen > 1 {
 								trustname := linelist[1]
 
 								if trustname != "" {
-									oldlevel := fact.PlayerLevelGet(trustname)
 
 									if strings.Contains(lineText, " is now a member!") {
 										fact.PlayerLevelSet(trustname, 1)
@@ -470,13 +473,6 @@ func Chat() {
 									} else if strings.Contains(lineText, " has nil permissions.") {
 										fact.AutoPromote(trustname)
 										continue
-									}
-
-									newlevel := fact.PlayerLevelGet(trustname)
-
-									//Only report if level increased
-									if oldlevel >= 0 && oldlevel < newlevel {
-										fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
 									}
 								}
 							}
