@@ -737,7 +737,7 @@ func Chat() {
 						//*****************
 						//CAPTURE CRASHES
 						//*****************
-						if strings.HasPrefix(NoTC, "Error") && fact.IsFactRunning() {
+						if strings.HasPrefix(NoTC, "Error") {
 							fact.CMS(config.Config.AuxChannel, "error: "+NoTC)
 							//Lock error
 							if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
