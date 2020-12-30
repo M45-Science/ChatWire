@@ -56,13 +56,13 @@ type config struct {
 }
 
 func (conf *config) LoadEnv() {
+	os.Clearenv()
+
 	if _, err := os.Stat(".env"); os.IsNotExist(err) {
 		println("Environment file not found, cannot continue!")
 		println(err)
 		os.Exit(1)
 	}
-
-	os.Clearenv()
 
 	Config = config{
 		DiscordToken:         os.Getenv("DiscordToken"),
