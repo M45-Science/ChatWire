@@ -62,6 +62,8 @@ func (conf *config) LoadEnv() {
 		os.Exit(1)
 	}
 
+	os.Clearenv()
+
 	Config = config{
 		DiscordToken:         os.Getenv("DiscordToken"),
 		FactorioChannelID:    os.Getenv("FactorioChannelID"),
