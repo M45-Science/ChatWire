@@ -14,9 +14,6 @@ AdminIDs = "1234 5678"
 #Prefix for discord commands
 Prefix = "$"
 
-#Used for bot's discord status
-GameName = "Factorio"
-
 #We use this as the base name for the discord channel
 #So we can put server status and number of players online in channel name
 ChannelName = "MyFactorio"
@@ -97,3 +94,8 @@ ZipBinary = "/usr/bin/unzip"
 
 #Custom --map-gen-settings, "" for none
 MapGenJson = ""
+#Custom --map-settings, "" for none
+MapSetJson
+
+#Used for /report and /banish
+ModerationChannel="1234"

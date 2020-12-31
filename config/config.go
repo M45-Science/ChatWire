@@ -18,7 +18,6 @@ type config struct {
 	AdminIDs             []string
 	Prefix               string
 	FactorioLocation     string
-	GameName             string
 	ChannelName          string
 	DBFile               string
 	MaxFile              string
@@ -81,7 +80,6 @@ func (conf *config) LoadEnv() {
 		AdminIDs:             strings.Split(os.Getenv("AdminIDs"), " "),
 		Prefix:               os.Getenv("Prefix"),
 		FactorioLocation:     os.Getenv("FactorioLocation"),
-		GameName:             os.Getenv("GameName"),
 		ChannelName:          os.Getenv("ChannelName"),
 		DBFile:               os.Getenv("DBFile"),
 		MaxFile:              os.Getenv("MaxFile"),
