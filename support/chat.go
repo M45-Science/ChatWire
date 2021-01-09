@@ -926,8 +926,8 @@ func Chat() {
 						continue
 					} else {
 						//Send console messages to aux channel
-						fbuf := fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), lineText)
-						fact.CMS(config.Config.AuxChannel, fbuf)
+						//fbuf := fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), lineText)
+						//fact.CMS(config.Config.AuxChannel, fbuf)
 					}
 				}
 
