@@ -337,7 +337,7 @@ func Chat() {
 						//JOIN AREA
 						//*****************
 						if strings.HasPrefix(NoDS, "[JOIN]") {
-							fact.WriteFact("/p o c")
+							//fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
 								pname := StripControlAndSubSpecial(nodslist[1])
@@ -383,22 +383,10 @@ func Chat() {
 						//LEAVE
 						//*****************
 						if strings.HasPrefix(NoDS, "[LEAVE]") {
-							fact.WriteFact("/p o c")
+							//fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
 								pname := nodslist[1]
-
-								go func() {
-
-									// Don't save if we saved recently
-									t := time.Now()
-									if t.Sub(fact.GetSaveTimer()).Seconds() > constants.SaveThresh {
-
-										fact.SaveFactorio()
-										fact.SetSaveTimer()
-									}
-
-								}()
 
 								go func(factname string) {
 									fact.UpdateSeen(factname)
@@ -414,7 +402,8 @@ func Chat() {
 									pname = regg.ReplaceAllString(pname, "")
 									pname = regh.ReplaceAllString(pname, "")
 								}
-								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname))
+								buf := fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname)
+								fact.CMS(config.Config.FactorioChannelID, buf)
 								//fact.UpdateChannelName()
 							}
 							continue
@@ -451,7 +440,43 @@ func Chat() {
 						if strings.HasPrefix(lineText, "[MSG]") {
 
 							if linelistlen > 0 {
-								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), strings.Join(linelist[1:], " ")))
+								ctext := strings.Join(linelist[1:], " ")
+
+								//Clean strings
+								cmess := StripControlAndSubSpecial(ctext)
+								//cmess = unidecode.Unidecode(cmess)
+
+								//Remove factorio tags
+								rega := regexp.MustCompile(`\[/[^][]+\]`) //remove close tags [/color]
+
+								regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
+								regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
+
+								regf := regexp.MustCompile(`\*+`) //Remove discord markdown
+								regg := regexp.MustCompile(`\~+`)
+								regh := regexp.MustCompile(`\_+`)
+
+								for regc.MatchString(cmess) || regd.MatchString(cmess) {
+									//Remove colors/fonts
+									cmess = regc.ReplaceAllString(cmess, "")
+									cmess = regd.ReplaceAllString(cmess, "")
+								}
+								for rega.MatchString(cmess) {
+									//Filter close tags
+									cmess = rega.ReplaceAllString(cmess, "")
+								}
+								for regf.MatchString(cmess) || regg.MatchString(cmess) || regh.MatchString(cmess) {
+									//Filter discord tags
+									cmess = regf.ReplaceAllString(cmess, "")
+									cmess = regg.ReplaceAllString(cmess, "")
+									cmess = regh.ReplaceAllString(cmess, "")
+								}
+
+								if len(cmess) > 500 {
+									cmess = fmt.Sprintf("%s...(cut, too long!)", TruncateString(cmess, 500))
+								}
+
+								fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), cmess))
 							}
 
 							if linelistlen > 1 {
@@ -656,7 +681,7 @@ func Chat() {
 						if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 							fact.SetFactorioBooted(true)
 							fact.LogCMS(config.Config.FactorioChannelID, "Factorio "+glob.FactorioVersion+" is now online.")
-							fact.WriteFact("/p o c")
+							//fact.WriteFact("/p o c")
 
 							fact.WriteFact("/cname " + strings.ToUpper(config.Config.ChannelName))
 
@@ -924,10 +949,6 @@ func Chat() {
 					if strings.Contains(lineText, "Activity:") && strings.Contains(lineText, "Online:") {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
-					} else {
-						//Send console messages to aux channel
-						//fbuf := fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), lineText)
-						//fact.CMS(config.Config.AuxChannel, fbuf)
 					}
 				}
 
