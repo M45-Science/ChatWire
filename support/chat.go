@@ -930,7 +930,7 @@ func Chat() {
 				//"/online"
 				//*****************
 				if strings.HasPrefix(lineText, "~") {
-					if strings.Contains(lineText, "Activity:") && strings.Contains(lineText, "Online:") {
+					if strings.Contains(lineText, "Score:") && strings.Contains(lineText, "Online:") {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
 					}
