@@ -337,7 +337,7 @@ func Chat() {
 						//JOIN AREA
 						//*****************
 						if strings.HasPrefix(NoDS, "[JOIN]") {
-							//fact.WriteFact("/p o c")
+							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
 								pname := StripControlAndSubSpecial(nodslist[1])
@@ -383,7 +383,7 @@ func Chat() {
 						//LEAVE
 						//*****************
 						if strings.HasPrefix(NoDS, "[LEAVE]") {
-							//fact.WriteFact("/p o c")
+							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
 								pname := nodslist[1]
