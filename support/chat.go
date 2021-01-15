@@ -344,22 +344,6 @@ func Chat() {
 								glob.NumLoginsLock.Lock()
 								glob.NumLogins = glob.NumLogins + 1
 								glob.NumLoginsLock.Unlock()
-
-								if fact.PlayerLevelGet(pname) == 0 {
-
-									go func(pname string) {
-
-										time.Sleep(15 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Welcome, use ` or ~ to chat, or to use commands. /h shows all commands.", pname))
-
-										time.Sleep(5 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] You are currently a NEW player, SOME ACTIONS WILL NOT BE AVAILABLE for you at first.", pname))
-
-										time.Sleep(5 * time.Second)
-										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] For more information, check out our Discord, copy-paste link is at the top-left of your screen. (Ps2jnm7)", pname))
-
-									}(pname)
-								}
 								plevelname := fact.AutoPromote(pname)
 
 								//Remove discord markdown
@@ -946,7 +930,7 @@ func Chat() {
 				//"/online"
 				//*****************
 				if strings.HasPrefix(lineText, "~") {
-					if strings.Contains(lineText, "Activity:") && strings.Contains(lineText, "Online:") {
+					if strings.Contains(lineText, "Score:") && strings.Contains(lineText, "Online:") {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
 					}
