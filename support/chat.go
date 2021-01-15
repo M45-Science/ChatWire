@@ -665,7 +665,7 @@ func Chat() {
 						if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 							fact.SetFactorioBooted(true)
 							fact.LogCMS(config.Config.FactorioChannelID, "Factorio "+glob.FactorioVersion+" is now online.")
-							//fact.WriteFact("/p o c")
+							fact.WriteFact("/p o c")
 
 							fact.WriteFact("/cname " + strings.ToUpper(config.Config.ChannelName))
 
@@ -930,7 +930,7 @@ func Chat() {
 				//"/online"
 				//*****************
 				if strings.HasPrefix(lineText, "~") {
-					if strings.Contains(lineText, "Score:") && strings.Contains(lineText, "Online:") {
+					if strings.Contains(lineText, "Online:") {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
 					}
