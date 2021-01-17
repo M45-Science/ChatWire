@@ -684,6 +684,10 @@ func Chat() {
 										pcount++
 										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
 									}
+									if config.Config.CleanMapOnBoot == "true" || config.Config.CleanMapOnBoot == "yes" {
+										fact.LogCMS(config.Config.FactorioChannelID, "Cleaning map.")
+										fact.WriteFact("/cleanmap")
+									}
 									fact.SetNoResponseCount(0)
 								}
 								glob.PlayerListLock.RUnlock()

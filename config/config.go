@@ -54,6 +54,7 @@ type config struct {
 	PauseOnConnect       string
 	DefaultGSpeed        string
 	SlowGSpeed           string
+	CleanMapOnBoot       string
 }
 
 func (conf *config) LoadEnv() {
@@ -116,6 +117,7 @@ func (conf *config) LoadEnv() {
 		PauseOnConnect:       os.Getenv("PauseOnConnect"),
 		DefaultGSpeed:        os.Getenv("DefaultGSpeed"),
 		SlowGSpeed:           os.Getenv("SlowGSpeed"),
+		CleanMapOnBoot:       os.Getenv("CleanMapOnBoot"),
 	}
 
 }
