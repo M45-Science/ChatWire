@@ -144,3 +144,7 @@ var LastColor = 0
 var ConnectPauseLock sync.Mutex
 var ConnectPauseTimer int64 = 0
 var ConnectPauseCount = 0
+
+var LastTotalStat = ""
+var LastMemberStat = ""
+var LastRegularStat = ""

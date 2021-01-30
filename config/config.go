@@ -55,6 +55,10 @@ type config struct {
 	DefaultGSpeed        string
 	SlowGSpeed           string
 	CleanMapOnBoot       string
+	ShowStats            string
+	StatTotalID          string
+	StatMemberID         string
+	StatRegularsID       string
 }
 
 func (conf *config) LoadEnv() {
@@ -118,6 +122,10 @@ func (conf *config) LoadEnv() {
 		DefaultGSpeed:        os.Getenv("DefaultGSpeed"),
 		SlowGSpeed:           os.Getenv("SlowGSpeed"),
 		CleanMapOnBoot:       os.Getenv("CleanMapOnBoot"),
+		ShowStats:            os.Getenv("ShowStats"),
+		StatTotalID:          os.Getenv("StatTotalID"),
+		StatMemberID:         os.Getenv("StatMemberID"),
+		StatRegularsID:       os.Getenv("StatRegularsID"),
 	}
 
 }

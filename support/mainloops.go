@@ -19,6 +19,7 @@ import (
 	"../glob"
 	"../logs"
 	"../platform"
+	"github.com/bwmarrin/discordgo"
 )
 
 //*******************
@@ -141,6 +142,66 @@ func MainLoops() {
 					//close lock
 					glob.FactorioLaunchLock.Unlock()
 				}
+			}
+		}()
+
+		go func() {
+			time.Sleep(5 * time.Minute)
+			for {
+				time.Sleep(5 * time.Second)
+				if strings.EqualFold(config.Config.ShowStats, "true") {
+
+					numreg := 0
+					numnew := 0
+					numtrust := 0
+					numregulars := 0
+					numadmin := 0
+					numother := 0
+
+					glob.PlayerListLock.RLock()
+					for i := 0; i <= glob.PlayerListMax; i++ {
+						if glob.PlayerList[i].ID != "" {
+							numreg++
+						}
+
+						if glob.PlayerList[i].Level == 0 {
+							numnew++
+						} else if glob.PlayerList[i].Level == 1 {
+							numtrust++
+						} else if glob.PlayerList[i].Level == 2 {
+							numregulars++
+						} else if glob.PlayerList[i].Level == 255 {
+							numadmin++
+						} else {
+							numother++
+						}
+					}
+					glob.PlayerListLock.RUnlock()
+
+					totalstat := fmt.Sprintf("total-%v", (numtrust + numregulars + numadmin + numother))
+					memberstat := fmt.Sprintf("members-%v", numtrust)
+					regularstat := fmt.Sprintf("regulars-%v", numregulars)
+
+					if glob.LastTotalStat != totalstat {
+						glob.DS.ChannelEditComplex(config.Config.StatTotalID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
+						glob.LastTotalStat = totalstat
+						time.Sleep(5 * time.Minute)
+					}
+
+					if glob.LastMemberStat != memberstat {
+						glob.DS.ChannelEditComplex(config.Config.StatMemberID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
+						glob.LastMemberStat = memberstat
+						time.Sleep(5 * time.Minute)
+					}
+
+					if glob.LastRegularStat != regularstat {
+						glob.DS.ChannelEditComplex(config.Config.StatRegularsID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
+						glob.LastRegularStat = regularstat
+						time.Sleep(5 * time.Minute)
+					}
+
+				}
+
 			}
 		}()
 
@@ -705,11 +766,11 @@ func MainLoops() {
 					glob.UpdateChannelLock.Unlock()
 
 					fact.DoUpdateChannelName()
-					time.Sleep(60 * time.Second)
+					time.Sleep(time.Minute * 5)
 				} else {
 					glob.UpdateChannelLock.Unlock()
 
-					time.Sleep(2 * time.Second)
+					time.Sleep(5 * time.Second)
 				}
 			}
 		}()
