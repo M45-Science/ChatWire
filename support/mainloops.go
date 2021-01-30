@@ -182,19 +182,19 @@ func MainLoops() {
 					memberstat := fmt.Sprintf("members-%v", numtrust)
 					regularstat := fmt.Sprintf("regulars-%v", numregulars)
 
-					if glob.LastTotalStat != totalstat {
+					if glob.LastTotalStat != totalstat && config.Config.StatTotalID != "" {
 						glob.DS.ChannelEditComplex(config.Config.StatTotalID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
 						glob.LastTotalStat = totalstat
 						time.Sleep(5 * time.Minute)
 					}
 
-					if glob.LastMemberStat != memberstat {
+					if glob.LastMemberStat != memberstat && config.Config.StatMemberID != "" {
 						glob.DS.ChannelEditComplex(config.Config.StatMemberID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
 						glob.LastMemberStat = memberstat
 						time.Sleep(5 * time.Minute)
 					}
 
-					if glob.LastRegularStat != regularstat {
+					if glob.LastRegularStat != regularstat && config.Config.StatRegularsID != "" {
 						glob.DS.ChannelEditComplex(config.Config.StatRegularsID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
 						glob.LastRegularStat = regularstat
 						time.Sleep(5 * time.Minute)
