@@ -63,9 +63,10 @@ func WatchDatabaseFile() {
 
 func IsPlayerListUpdated() bool {
 	glob.PlayerListUpdatedLock.Lock()
-	defer glob.PlayerListUpdatedLock.Unlock()
+	reply := glob.PlayerListUpdated
+	glob.PlayerListUpdatedLock.Unlock()
 
-	return glob.PlayerListUpdated
+	return reply
 }
 
 func SetPlayerListUpdated() {
