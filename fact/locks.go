@@ -3,7 +3,6 @@ package fact
 import (
 	"time"
 
-	"../config"
 	"../constants"
 	"../glob"
 	"../logs"
@@ -17,81 +16,85 @@ import (
 
 func GetManMinutes() int {
 	glob.ManMinutesLock.Lock()
-	defer glob.ManMinutesLock.Unlock()
+	temp := glob.ManMinutes
+	glob.ManMinutesLock.Unlock()
 
-	return glob.ManMinutes
+	return temp
 }
 
 func SetManMinutes(val int) {
 	glob.ManMinutesLock.Lock()
-	defer glob.ManMinutesLock.Unlock()
-
 	glob.ManMinutes = val
+	glob.ManMinutesLock.Unlock()
 }
 
 func GetDoUpdateFactorio() bool {
 	glob.DoUpdateFactorioLock.Lock()
-	defer glob.DoUpdateFactorioLock.Unlock()
+	temp := glob.DoUpdateFactorio
+	glob.DoUpdateFactorioLock.Unlock()
 
-	return glob.DoUpdateFactorio
+	return temp
 }
 
 func SetDoUpdateFactorio(val bool) {
 	glob.DoUpdateFactorioLock.Lock()
-	defer glob.DoUpdateFactorioLock.Unlock()
-
 	glob.DoUpdateFactorio = val
+	glob.DoUpdateFactorioLock.Unlock()
 }
 
 func GetNumLogins() int {
 	glob.NumLoginsLock.RLock()
-	defer glob.NumLoginsLock.RUnlock()
+	temp := glob.NumLogins
+	glob.NumLoginsLock.RUnlock()
 
-	return glob.NumLogins
+	return temp
 }
 
 func GetPausedTicks() int {
 	glob.PausedTicksLock.RLock()
-	defer glob.PausedTicksLock.RUnlock()
+	temp := glob.PausedTicks
+	glob.PausedTicksLock.RUnlock()
 
-	return glob.PausedTicks
+	return temp
 }
 
 func SetPausedTicks(val int) {
 	glob.PausedTicksLock.Lock()
-	defer glob.PausedTicksLock.Unlock()
-
 	glob.PausedTicks = val
+	glob.PausedTicksLock.Unlock()
 }
 
 func SetRelaunchThrottle(val int) {
 	glob.RelaunchThrottleLock.Lock()
-	defer glob.RelaunchThrottleLock.Unlock()
-
 	glob.RelaunchThrottle = val
+	glob.RelaunchThrottleLock.Unlock()
 }
 
 func GetRelaunchThrottle() int {
 	glob.RelaunchThrottleLock.RLock()
-	defer glob.RelaunchThrottleLock.RUnlock()
+	temp := glob.RelaunchThrottle
+	glob.RelaunchThrottleLock.RUnlock()
 
-	return glob.RelaunchThrottle
+	return temp
 }
 
 func SetFactorioBooted(isbooted bool) {
 	glob.FactorioBootedLock.Lock()
-	defer glob.FactorioBootedLock.Unlock()
-
 	glob.FactorioBooted = isbooted
+	glob.FactorioBootedLock.Unlock()
+
 }
 
 func IsFactorioBooted() bool {
 	glob.FactorioBootedLock.RLock()
-	glob.FactIsRunningLock.RLock()
-	defer glob.FactorioBootedLock.RUnlock()
-	defer glob.FactIsRunningLock.RUnlock()
+	booted := glob.FactorioBooted
+	glob.FactorioBootedLock.RUnlock()
 
-	if glob.FactorioBooted && glob.FactIsRunning {
+	glob.FactIsRunningLock.RLock()
+	running := glob.FactIsRunning
+	glob.FactIsRunningLock.RUnlock()
+
+	if booted && running {
 		return true
 	}
 
@@ -100,72 +103,72 @@ func IsFactorioBooted() bool {
 
 func SetNumPlayers(num int) {
 	glob.NumPlayersLock.Lock()
-	defer glob.NumPlayersLock.Unlock()
-
 	glob.NumPlayers = num
+	glob.NumPlayersLock.Unlock()
 }
 
 func GetNumPlayers() int {
 	glob.NumPlayersLock.RLock()
-	defer glob.NumPlayersLock.RUnlock()
+	temp := glob.NumPlayers
+	glob.NumPlayersLock.RUnlock()
 
-	return glob.NumPlayers
+	return temp
 }
 
 func SetNoResponseCount(num int) {
 	glob.NoResponseCountLock.Lock()
-	defer glob.NoResponseCountLock.Unlock()
-
 	glob.NoResponseCount = num
+	glob.NoResponseCountLock.Unlock()
 }
 
 func GetNoResposeCount() int {
 	glob.NoResponseCountLock.RLock()
-	defer glob.NoResponseCountLock.RUnlock()
+	temp := glob.NoResponseCount
+	glob.NoResponseCountLock.RUnlock()
 
-	return glob.NoResponseCount
+	return temp
 }
 
 func IsSetRebootBot() bool {
 	glob.DoRebootBotLock.RLock()
-	defer glob.DoRebootBotLock.RUnlock()
+	temp := glob.DoRebootBot
+	glob.DoRebootBotLock.RUnlock()
 
-	return glob.DoRebootBot
+	return temp
 }
 
 func SetBotReboot(should bool) {
 	glob.DoRebootBotLock.Lock()
-	defer glob.DoRebootBotLock.Unlock()
-
 	glob.DoRebootBot = should
+	glob.DoRebootBotLock.Unlock()
 }
 
 func IsQueued() bool {
 	glob.QueueReloadLock.RLock()
-	defer glob.QueueReloadLock.RUnlock()
+	temp := glob.QueueReload
+	glob.QueueReloadLock.RUnlock()
 
-	return glob.QueueReload
+	return temp
 }
 
 func SetQueued(queue bool) {
 	glob.QueueReloadLock.Lock()
-	defer glob.QueueReloadLock.Unlock()
-
 	glob.QueueReload = queue
+	glob.QueueReloadLock.Unlock()
 }
 
 func SetAutoStart(auto bool) {
 	glob.FactAutoStartLock.Lock()
-	defer glob.FactAutoStartLock.Unlock()
-
 	glob.FactAutoStart = auto
+	glob.FactAutoStartLock.Unlock()
 }
 
 func IsSetAutoStart() bool {
 	glob.FactAutoStartLock.RLock()
-	defer glob.FactAutoStartLock.RUnlock()
+	temp := glob.FactAutoStart
+	glob.FactAutoStartLock.RUnlock()
 
-	return glob.FactAutoStart
+	return temp
 }
 
 func SetFactRunning(run bool, err bool) {
@@ -174,8 +177,8 @@ func SetFactRunning(run bool, err bool) {
 	glob.FactIsRunning = run
 	glob.FactIsRunningLock.Unlock()
 
-	if run == true && GetNoResposeCount() >= 30 {
-		CMS(config.Config.FactorioChannelID, "Server now appears to be responding again.")
+	if run == true && GetNoResposeCount() >= 10 {
+		//CMS(config.Config.FactorioChannelID, "Server now appears to be responding again.")
 		logs.Log("Server now appears to be responding again.")
 	}
 	SetNoResponseCount(0)
@@ -191,9 +194,10 @@ func SetFactRunning(run bool, err bool) {
 
 func IsFactRunning() bool {
 	glob.FactIsRunningLock.RLock()
-	defer glob.FactIsRunningLock.RUnlock()
+	temp := glob.FactIsRunning
+	glob.FactIsRunningLock.RUnlock()
 
-	return glob.FactIsRunning
+	return temp
 }
 
 func SetSaveTimer() {
@@ -204,9 +208,10 @@ func SetSaveTimer() {
 
 func GetSaveTimer() time.Time {
 	glob.SaveTimerLock.RLock()
-	defer glob.SaveTimerLock.RUnlock()
+	temp := glob.SaveTimer
+	glob.SaveTimerLock.RUnlock()
 
-	return glob.SaveTimer
+	return temp
 }
 
 func GetGuild() *discordgo.Guild {
@@ -218,9 +223,10 @@ func GetGuild() *discordgo.Guild {
 
 func GetGuildName() string {
 	glob.GuildLock.RLock()
-	defer glob.GuildLock.RUnlock()
+	temp := glob.Guild
+	glob.GuildLock.RUnlock()
 
-	if glob.Guild == nil {
+	if temp == nil {
 		return constants.Unknown
 	} else {
 		return glob.Guildname
@@ -229,15 +235,14 @@ func GetGuildName() string {
 
 func GetGameTime() string {
 	glob.GametimeLock.RLock()
-	defer glob.GametimeLock.RUnlock()
-
 	temp := glob.Gametime
+	glob.GametimeLock.RUnlock()
+
 	return temp
 }
 
 func SetGameTime(newtime string) {
 	glob.GametimeLock.Lock()
-	defer glob.GametimeLock.Unlock()
-
 	glob.Gametime = newtime
+	glob.GametimeLock.Unlock()
 }
