@@ -70,36 +70,30 @@ func WriteFact(buf string) {
 	glob.PipeLock.Lock()
 	defer glob.PipeLock.Unlock()
 
-	running := IsFactRunning()
-	if running {
-		gpipe := glob.Pipe
-		if gpipe != nil {
+	gpipe := glob.Pipe
+	if gpipe != nil {
 
-			plen := len(buf)
+		plen := len(buf)
 
-			if plen > 2000 {
-				logs.LogWithoutEcho("Message to factorio, too long... Not sending.")
-				return
-			} else if plen <= 1 {
-				logs.LogWithoutEcho("Message for factorio too short... Not sending.")
-				return
-			}
+		if plen > 2000 {
+			logs.LogWithoutEcho("Message to factorio, too long... Not sending.")
+			return
+		} else if plen <= 1 {
+			logs.LogWithoutEcho("Message for factorio too short... Not sending.")
+			return
+		}
 
-			//To limit max output speed
-			time.Sleep(1 * time.Millisecond)
-
-			_, err := io.WriteString(gpipe, buf+"\n")
-			if err != nil {
-				logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
-				SetFactRunning(false, true)
-				return
-			}
-
-		} else {
-			logs.LogWithoutEcho("An error occurred when attempting to write to Factorio (nil pipe)")
+		_, err := io.WriteString(gpipe, buf+"\n")
+		if err != nil {
+			logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
 			SetFactRunning(false, true)
 			return
 		}
+
+	} else {
+		logs.LogWithoutEcho("An error occurred when attempting to write to Factorio (nil pipe)")
+		SetFactRunning(false, true)
+		return
 	}
 }
 
@@ -191,9 +185,12 @@ func DoUpdateChannelName() {
 	chpos, _ := strconv.Atoi(config.Config.ChannelPos)
 
 	glob.UpdateChannelLock.Lock()
-	var chname = glob.NewChanName
+	chname := glob.NewChanName
+	oldchname := glob.OldChanName
+	glob.UpdateChannelLock.Unlock()
 
-	if glob.OldChanName != glob.NewChanName {
+	if chname != oldchname {
+		glob.UpdateChannelLock.Lock()
 		glob.OldChanName = glob.NewChanName
 		glob.UpdateChannelLock.Unlock()
 
@@ -202,8 +199,6 @@ func DoUpdateChannelName() {
 		if aerr != nil {
 			logs.Log(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
 		}
-	} else {
-		glob.UpdateChannelLock.Unlock()
 	}
 }
 
