@@ -1,7 +1,6 @@
 package support
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"math/rand"
@@ -55,15 +54,17 @@ func MainLoops() {
 					}
 
 					if fact.IsFactorioBooted() {
-						if nores >= 30 && nores%10 == 0 {
+						if nores >= 120 && nores%60 == 0 {
 							fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("Game not responding for %d seconds.", nores))
 						}
 					}
-					if nores == 120 {
-						fact.DoShowLocks("")
-						fact.SetNoResponseCount(0)
-						fact.LogCMS(config.Config.FactorioChannelID, "Game unresponsive for 120 seconds... restarting it.")
-						fact.SetFactRunning(false, true)
+					if nores == 300 {
+						//fact.DoShowLocks("")
+						//fact.SetNoResponseCount(0)
+						fact.LogCMS(config.Config.FactorioChannelID, "Unresponsive for 5 minutes... rebooting.")
+						//fact.SetFactRunning(false, true)
+						fact.SetRelaunchThrottle(0)
+						fact.DoExit()
 					}
 				} else if fact.IsFactRunning() == false && fact.IsSetAutoStart() == true && fact.GetDoUpdateFactorio() == false { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update
@@ -76,13 +77,17 @@ func MainLoops() {
 						logs.Log("Soft-mod inserted into save file.")
 					}
 
-					time.Sleep(time.Second)
+					time.Sleep(2 * time.Second)
 
 					//Relaunch Throttle
 					throt := fact.GetRelaunchThrottle()
 					if throt > 0 {
 
 						delay := throt * throt * 10
+						//5 min is long enough
+						if delay > 300 {
+							delay = 300
+						}
 
 						if delay > 0 {
 							logs.Log(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
@@ -91,6 +96,7 @@ func MainLoops() {
 							}
 						}
 					}
+
 					fact.SetRelaunchThrottle(throt + 1)
 
 					//Prevent us from distrupting updates
@@ -313,22 +319,22 @@ func MainLoops() {
 		//**************
 		//Bot console
 		//**************
-		go func() {
-			return // Not being used, return
+		//go func() {
+		//return // Not being used, return
 
-			Console := bufio.NewReader(os.Stdin)
-			for {
-				time.Sleep(100 * time.Millisecond)
-				line, _, err := Console.ReadLine()
-				if err != nil {
-					//logs.Log(fmt.Sprintf("%s: An error occurred when attempting to read the input to pass as input to the console Details: %s", time.Now(), err))
-					//fact.SetFactRunning(false, true)
-					continue
-				} else {
-					fact.WriteFact(string(line))
-				}
-			}
-		}()
+		//Console := bufio.NewReader(os.Stdin)
+		//for {
+		//time.Sleep(100 * time.Millisecond)
+		//line, _, err := Console.ReadLine()
+		//if err != nil {
+		//	logs.Log(fmt.Sprintf("%s: An error occurred when attempting to read the input to pass as input to the console Details: %s", time.Now(), err))
+		//	fact.SetFactRunning(false, true)
+		//	continue
+		//} else {
+		//	fact.WriteFact(string(line))
+		//}
+		//}
+		//}()
 
 		//**********************
 		//Check players online
@@ -416,7 +422,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(60 * time.Minute)
+				time.Sleep(5 * time.Minute)
 
 				logs.LogWithoutEcho("Database safety read/write.")
 				fact.LoadPlayers()
@@ -574,7 +580,7 @@ func MainLoops() {
 			r1 := rand.New(s1)
 
 			for {
-				time.Sleep(5 * time.Second)
+				time.Sleep(2 * time.Second)
 
 				if (fact.IsQueued() || fact.GetDoUpdateFactorio()) && fact.GetNumPlayers() == 0 {
 					if fact.IsFactRunning() {
@@ -762,13 +768,14 @@ func MainLoops() {
 				fact.UpdateChannelName()
 
 				glob.UpdateChannelLock.Lock()
-				if glob.OldChanName != glob.NewChanName {
-					glob.UpdateChannelLock.Unlock()
+				chname := glob.NewChanName
+				oldchname := glob.OldChanName
+				glob.UpdateChannelLock.Unlock()
 
+				if oldchname != chname {
 					fact.DoUpdateChannelName()
-					time.Sleep(time.Minute * 5)
+					time.Sleep(time.Minute * 2)
 				} else {
-					glob.UpdateChannelLock.Unlock()
 
 					time.Sleep(5 * time.Second)
 				}
@@ -793,15 +800,13 @@ func MainLoops() {
 		go func() {
 			for {
 				time.Sleep(time.Minute)
-				if fact.IsFactorioBooted() {
-					nump := fact.GetNumPlayers()
+				nump := fact.GetNumPlayers()
 
-					glob.ManMinutesLock.Lock()
-					if nump > 0 {
-						glob.ManMinutes = (glob.ManMinutes + nump)
-					}
-					glob.ManMinutesLock.Unlock()
+				glob.ManMinutesLock.Lock()
+				if nump > 0 {
+					glob.ManMinutes = (glob.ManMinutes + nump)
 				}
+				glob.ManMinutesLock.Unlock()
 			}
 		}()
 	}()
