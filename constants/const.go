@@ -2,14 +2,14 @@ package constants
 
 import "time"
 
-const Version = "457-2-7-2021-0447p"
+const Version = "460-2-7-2021-0448p"
 const Unknown = "Unknown"
 
 //Max player database size, pre-allocated
 const MaxPlayers = 5000
 
 //Number of repeated time reports before we assume server is paused
-const PauseThresh = 30
+const PauseThresh = 5
 
 //Minimum time between logout saves
 const SaveThresh = 300

@@ -14,7 +14,6 @@ import (
 func Debug(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	numreg := 0
-
 	numnew := 0
 	numtrust := 0
 	numregulars := 0

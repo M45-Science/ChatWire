@@ -337,7 +337,7 @@ func Chat() {
 						//JOIN AREA
 						//*****************
 						if strings.HasPrefix(NoDS, "[JOIN]") {
-							//fact.WriteFact("/p o c")
+							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
 								pname := StripControlAndSubSpecial(nodslist[1])
@@ -367,7 +367,7 @@ func Chat() {
 						//LEAVE
 						//*****************
 						if strings.HasPrefix(NoDS, "[LEAVE]") {
-							//fact.WriteFact("/p o c")
+							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
 								pname := nodslist[1]
@@ -701,6 +701,11 @@ func Chat() {
 									fact.SetNoResponseCount(0)
 								}
 								glob.PlayerListLock.RUnlock()
+
+								if config.Config.CleanMapOnBoot == "true" || config.Config.CleanMapOnBoot == "yes" {
+									fact.LogCMS(config.Config.FactorioChannelID, "Cleaning map.")
+									fact.WriteFact("/cleanmap")
+								}
 								fact.SetNoResponseCount(0)
 								if pcount > 0 {
 									buf := fmt.Sprintf("Whitelist of %d players sent.", pcount)
@@ -944,7 +949,7 @@ func Chat() {
 				//"/online"
 				//*****************
 				if strings.HasPrefix(lineText, "~") {
-					if strings.Contains(lineText, "Score:") && strings.Contains(lineText, "Online:") {
+					if strings.Contains(lineText, "Online:") {
 						fact.CMS(config.Config.FactorioChannelID, "`"+lineText+"`")
 						continue
 					}

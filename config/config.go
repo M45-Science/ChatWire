@@ -57,6 +57,11 @@ type config struct {
 	RestrictMode         string
 	FriendlyFire         string
 	ResetInterval        string
+	CleanMapOnBoot       string
+	ShowStats            string
+	StatTotalID          string
+	StatMemberID         string
+	StatRegularsID       string
 }
 
 func (conf *config) LoadEnv() {
@@ -122,6 +127,11 @@ func (conf *config) LoadEnv() {
 		FriendlyFire:         os.Getenv("FriendlyFire"),
 		RestrictMode:         os.Getenv("RestrictMode"),
 		ResetInterval:        os.Getenv("ResetInterval"),
+		CleanMapOnBoot:       os.Getenv("CleanMapOnBoot"),
+		ShowStats:            os.Getenv("ShowStats"),
+		StatTotalID:          os.Getenv("StatTotalID"),
+		StatMemberID:         os.Getenv("StatMemberID"),
+		StatRegularsID:       os.Getenv("StatRegularsID"),
 	}
 
 }
