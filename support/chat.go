@@ -665,13 +665,27 @@ func Chat() {
 						if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 							fact.SetFactorioBooted(true)
 							fact.LogCMS(config.Config.FactorioChannelID, "Factorio "+glob.FactorioVersion+" is now online.")
-							//fact.WriteFact("/p o c")
+							fact.WriteFact("/p o c")
 
 							fact.WriteFact("/cname " + strings.ToUpper(config.Config.ChannelName))
 
-							//If this is a whitelist server, we can disable new-user restrictions.
-							if glob.WhitelistMode {
+							//Config new-users restrictions
+							if strings.EqualFold(config.Config.RestrictMode, "false") || strings.EqualFold(config.Config.RestrictMode, "no") {
 								fact.WriteFact("/restrict off")
+							} else if strings.EqualFold(config.Config.RestrictMode, "true") || strings.EqualFold(config.Config.RestrictMode, "yes") {
+								fact.WriteFact("/restrict on")
+							}
+
+							//Config friendly fire
+							if strings.EqualFold(config.Config.FriendlyFire, "false") || strings.EqualFold(config.Config.FriendlyFire, "no") {
+								fact.WriteFact("/friendlyfire off")
+							} else if strings.EqualFold(config.Config.FriendlyFire, "true") || strings.EqualFold(config.Config.FriendlyFire, "yes") {
+								fact.WriteFact("/friendlyfire on")
+							}
+
+							//Config reset-interval
+							if config.Config.FriendlyFire != "" {
+								fact.WriteFact("/resetint " + config.Config.ResetInterval)
 							}
 
 							//Send whitelist
@@ -680,7 +694,7 @@ func Chat() {
 								glob.PlayerListLock.RLock()
 								var pcount = 0
 								for i := 0; i <= glob.PlayerListMax; i++ {
-									if glob.PlayerList[i].Name != "" && glob.PlayerList[i].Level > 1 {
+									if glob.PlayerList[i].Name != "" && glob.PlayerList[i].Level > 0 {
 										pcount++
 										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
 									}
