@@ -102,8 +102,6 @@ func Map_reset() {
 		}
 
 		CMS(config.Config.FactorioChannelID, buf)
-
-		SetAutoStart()
 	}
 
 	t := time.Now()
