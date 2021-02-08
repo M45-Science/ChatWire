@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -41,6 +42,34 @@ func GetMapTypeName(num int) string {
 
 //Generate map
 func Map_reset(data string) {
+
+	newstr := data
+
+	//Remove factorio tags
+	rega := regexp.MustCompile(`\[/[^][]+\]`) //remove close tags [/color]
+
+	regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
+	regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
+
+	regf := regexp.MustCompile(`\*+`) //Remove discord markdown
+	regg := regexp.MustCompile(`\~+`)
+	regh := regexp.MustCompile(`\_+`)
+
+	for regc.MatchString(newstr) || regd.MatchString(newstr) {
+		//Remove colors/fonts
+		newstr = regc.ReplaceAllString(newstr, "")
+		newstr = regd.ReplaceAllString(newstr, "")
+	}
+	for rega.MatchString(newstr) {
+		//Filter close tags
+		newstr = rega.ReplaceAllString(newstr, "")
+	}
+	for regf.MatchString(newstr) || regg.MatchString(newstr) || regh.MatchString(newstr) {
+		//Filter discord tags
+		newstr = regf.ReplaceAllString(newstr, "")
+		newstr = regg.ReplaceAllString(newstr, "")
+		newstr = regh.ReplaceAllString(newstr, "")
+	}
 
 	if IsFactRunning() {
 		if data != "" {
