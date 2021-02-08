@@ -144,7 +144,7 @@ func Map_reset() {
 		logs.Log(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 		return
 	}
-
+	CMS(config.Config.FactorioChannelID, "Rebooting.")
 	DoExit()
 	return
 
