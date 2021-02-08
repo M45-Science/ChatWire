@@ -44,6 +44,7 @@ func Map_reset() {
 
 	if IsFactRunning() {
 		CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
+		SetAutoStart(false)
 		QuitFactorio()
 	}
 
@@ -101,6 +102,8 @@ func Map_reset() {
 		}
 
 		CMS(config.Config.FactorioChannelID, buf)
+
+		SetAutoStart()
 	}
 
 	t := time.Now()
