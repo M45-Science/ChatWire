@@ -144,6 +144,7 @@ func Map_reset() {
 		return
 	}
 
-	fact.DoExit()
+	DoExit()
+	return
 
 }
