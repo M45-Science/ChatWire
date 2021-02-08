@@ -855,4 +855,7 @@ func clearOldSignals() {
 	if err := os.Remove(".reload"); err == nil {
 		logs.Log("old .reload removed.")
 	}
+	if err := os.Remove(".newmap"); err == nil {
+		logs.Log("old .reload removed.")
+	}
 }
