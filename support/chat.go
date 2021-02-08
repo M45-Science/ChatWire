@@ -684,7 +684,7 @@ func Chat() {
 							}
 
 							//Config reset-interval
-							if config.Config.FriendlyFire != "" {
+							if config.Config.ResetInterval != "" {
 								fact.WriteFact("/resetint " + config.Config.ResetInterval)
 							}
 
