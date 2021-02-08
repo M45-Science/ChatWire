@@ -386,8 +386,8 @@ func Chat() {
 									pname = regg.ReplaceAllString(pname, "")
 									pname = regh.ReplaceAllString(pname, "")
 								}
-								buf := fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname)
-								fact.CMS(config.Config.FactorioChannelID, buf)
+								//buf := fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname)
+								//fact.CMS(config.Config.FactorioChannelID, buf)
 								//fact.UpdateChannelName()
 
 								newtime := time.Now()
