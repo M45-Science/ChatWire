@@ -389,6 +389,12 @@ func Chat() {
 								buf := fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname)
 								fact.CMS(config.Config.FactorioChannelID, buf)
 								//fact.UpdateChannelName()
+
+								//Only save if time has passed
+								if time.Now()-fact.GetSaveTimer() >= 60 {
+									fact.SetSaveTimer()
+									fact.SaveFactorio()
+								}
 							}
 							continue
 						}
@@ -398,7 +404,7 @@ func Chat() {
 						if strings.HasPrefix(lineText, "[END]MAPEND") {
 							if fact.IsFactRunning() {
 								go func() {
-									msg := "Server will shutdown in 5 minutes."
+									msg := "Server will shutdown in fminutes."
 									fact.WriteFact("/cchat [SYSTEM] " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(5 * time.Minute)
