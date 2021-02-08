@@ -42,9 +42,6 @@ func GetMapTypeName(num int) string {
 //Generate map
 func Map_reset() {
 
-	glob.GameMapLock.Lock()
-	defer glob.GameMapLock.Unlock()
-
 	if IsFactRunning() {
 		CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
 		QuitFactorio()
@@ -54,6 +51,9 @@ func Map_reset() {
 	for IsFactRunning() {
 		time.Sleep(10 * time.Second)
 	}
+
+	glob.GameMapLock.Lock()
+	defer glob.GameMapLock.Unlock()
 
 	version := strings.Split(glob.FactorioVersion, ".")
 	vlen := len(version)
@@ -144,6 +144,6 @@ func Map_reset() {
 		return
 	}
 
-	SetRelaunchThrottle(0)
+	fact.DoExit()
 
 }
