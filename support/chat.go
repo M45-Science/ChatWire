@@ -390,8 +390,10 @@ func Chat() {
 								fact.CMS(config.Config.FactorioChannelID, buf)
 								//fact.UpdateChannelName()
 
+								newtime := time.Now()
+								savetimer := fact.GetSaveTimer()
 								//Only save if time has passed
-								if time.Now()-fact.GetSaveTimer() >= 60 {
+								if newtime.Sub(savetimer) >= 60 {
 									fact.SetSaveTimer()
 									fact.SaveFactorio()
 								}
