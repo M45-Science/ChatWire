@@ -757,10 +757,10 @@ func MainLoops() {
 			r1 := rand.New(s1)
 
 			for {
-				time.Sleep(15 * time.Minute)
+				time.Sleep(6 * time.Hour)
 				fact.CheckFactUpdate(false)
 
-				fuzz := r1.Intn(constants.MinuteInMicro * 5)
+				fuzz := r1.Intn(constants.MinuteInMicro * 30)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
