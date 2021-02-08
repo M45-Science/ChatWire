@@ -375,28 +375,14 @@ func Chat() {
 								go func(factname string) {
 									fact.UpdateSeen(factname)
 								}(pname)
+							}
+							newtime := time.Now()
+							savetimer := fact.GetSaveTimer()
 
-								//Remove discord markdown
-								regf := regexp.MustCompile(`\*+`)
-								regg := regexp.MustCompile(`\~+`)
-								regh := regexp.MustCompile(`\_+`)
-								for regf.MatchString(pname) || regg.MatchString(pname) || regh.MatchString(pname) {
-									//Filter discord tags
-									pname = regf.ReplaceAllString(pname, "")
-									pname = regg.ReplaceAllString(pname, "")
-									pname = regh.ReplaceAllString(pname, "")
-								}
-								//buf := fmt.Sprintf("`%-11s` *%s left*", fact.GetGameTime(), pname)
-								//fact.CMS(config.Config.FactorioChannelID, buf)
-								//fact.UpdateChannelName()
-
-								newtime := time.Now()
-								savetimer := fact.GetSaveTimer()
-								//Only save if time has passed
-								if newtime.Sub(savetimer) >= 60 {
-									fact.SetSaveTimer()
-									fact.SaveFactorio()
-								}
+							//Only save if time has passed
+							if newtime.Sub(savetimer) >= 60 {
+								fact.SetSaveTimer()
+								fact.SaveFactorio()
 							}
 							continue
 						}
@@ -536,6 +522,16 @@ func Chat() {
 
 								if strings.Contains(lineText, "removing peer") {
 									fact.WriteFact("/p o c")
+
+									newtime := time.Now()
+									savetimer := fact.GetSaveTimer()
+
+									//Only save if time has passed
+									if newtime.Sub(savetimer) >= 60 {
+										fact.SetSaveTimer()
+										fact.SaveFactorio()
+									}
+
 									//Fix for players leaving with no leave message
 								} else if strings.Contains(lineText, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
 									if config.Config.SlowGSpeed == "" {
