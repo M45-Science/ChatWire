@@ -73,7 +73,7 @@ func Map_reset(data string) {
 
 	if IsFactRunning() {
 		if data != "" {
-			CMS(config.Config.FactorioChannelID, data)
+			CMS(config.Config.FactorioChannelID, newstr)
 			WriteFact("/cchat " + data)
 			return
 		} else {
