@@ -56,10 +56,12 @@ func MainLoops() {
 
 					if fact.IsFactorioBooted() {
 						if nores >= 15 && fact.IsQueued() {
-							fact.DoQuit()
+							fact.QuitFactorio()
 							return
-						}
-						if nores >= 120 && nores%60 == 0 {
+						} else if nores >= 35 && fact.IsQueued() {
+							fact.DoExit()
+							return
+						} else if nores >= 120 && nores%60 == 0 {
 							fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("Game not responding for %d seconds.", nores))
 						}
 					}
