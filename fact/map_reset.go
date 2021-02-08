@@ -40,12 +40,17 @@ func GetMapTypeName(num int) string {
 }
 
 //Generate map
-func Map_reset() {
+func Map_reset(data string) {
 
 	if IsFactRunning() {
-		CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
-		SetAutoStart(false)
-		QuitFactorio()
+		if data != "" {
+			CMS(config.Config.FactorioChannelID, data)
+			return
+		} else {
+			CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
+			SetAutoStart(false)
+			QuitFactorio()
+		}
 	}
 
 	//Wait for server to stop if running
