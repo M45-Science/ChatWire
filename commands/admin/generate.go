@@ -12,20 +12,11 @@ import (
 	"time"
 
 	"../../config"
-	"../../constants"
 	"../../fact"
 	"../../glob"
 	"../../logs"
 	"github.com/bwmarrin/discordgo"
 )
-
-func GetMapTypeName(num int) string {
-
-	if num < glob.MaxMapTypes && num >= 0 {
-		return constants.MapTypes[num]
-	}
-	return "Error"
-}
 
 //Generate map
 func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
@@ -60,7 +51,7 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			pnum, _ = strconv.Atoi(arg[0:1])
 		}
 
-		MapPreset = GetMapTypeName(pnum)
+		MapPreset = fact.GetMapTypeName(pnum)
 		decoded, _ := base64.RawURLEncoding.DecodeString(arg[2:])
 		ourseed = binary.BigEndian.Uint64(decoded)
 	}
@@ -81,7 +72,7 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
-	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	filename := config.Config.FactorioLocation + "/saves/" + ourcode + ".zip"
 
 	factargs := []string{"--preset", MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}

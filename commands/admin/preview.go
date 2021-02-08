@@ -12,26 +12,11 @@ import (
 	"time"
 
 	"../../config"
-	"../../constants"
 	"../../fact"
 	"../../glob"
 	"../../logs"
 	"github.com/bwmarrin/discordgo"
 )
-
-func GetMapTypeNum(mapt string) int {
-	i := 0
-
-	if config.Config.MapGenJson != "" {
-		return 0
-	}
-	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
-		if strings.EqualFold(constants.MapTypes[i], mapt) {
-			return i
-		}
-	}
-	return -1
-}
 
 //RandomMap locks FactorioLaunchLock
 func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []string) {
@@ -52,7 +37,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	buf := new(bytes.Buffer)
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	glob.LastMapSeed = ourseed
-	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(config.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(config.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	glob.LastMapCode = ourcode
 
 	path := fmt.Sprintf("%s%s.png", config.Config.PreviewPath, ourcode)
