@@ -45,6 +45,7 @@ func Map_reset(data string) {
 	if IsFactRunning() {
 		if data != "" {
 			CMS(config.Config.FactorioChannelID, data)
+			WriteFact(data)
 			return
 		} else {
 			CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
