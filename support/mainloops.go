@@ -673,6 +673,12 @@ func MainLoops() {
 						fact.SetAutoStart(true)
 						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is starting!")
 					}
+				} else if _, err := os.Stat(".newmap"); !os.IsNotExist(err) {
+
+					if err := os.Remove(".newmap"); err != nil {
+						logs.Log(".newmap file disappeared?")
+					}
+					fact.Map_reset()
 				} else if _, err := os.Stat(".restart"); !os.IsNotExist(err) {
 
 					if err := os.Remove(".restart"); err != nil {
