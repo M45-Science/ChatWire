@@ -58,20 +58,12 @@ func MainLoops() {
 						if nores >= 15 && fact.IsQueued() {
 							fact.QuitFactorio()
 							return
-						} else if nores >= 35 && fact.IsQueued() {
-							fact.DoExit()
-							return
-						} else if nores >= 120 && nores%60 == 0 {
-							fact.CMS(config.Config.FactorioChannelID, fmt.Sprintf("Game not responding for %d seconds.", nores))
 						}
 					}
 					if nores == 300 {
-						//fact.DoShowLocks("")
-						//fact.SetNoResponseCount(0)
-						fact.LogCMS(config.Config.FactorioChannelID, "Unresponsive for 5 minutes... rebooting.")
-						//fact.SetFactRunning(false, true)
+						fact.LogCMS(config.Config.FactorioChannelID, "Factorio unresponsive for 5 minutes... rebooting.")
 						fact.SetRelaunchThrottle(0)
-						fact.DoExit()
+						fact.QuitFactorio()
 					}
 				} else if fact.IsFactRunning() == false && fact.IsSetAutoStart() == true && fact.GetDoUpdateFactorio() == false { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update

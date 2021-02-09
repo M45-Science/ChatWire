@@ -53,14 +53,23 @@ func QuitFactorio() {
 
 	SetRelaunchThrottle(0)
 	SetNoResponseCount(0)
-	if IsFactorioBooted() && GetNumPlayers() > 0 {
+
+	//Running but no players, just quit
+	if IsFactorioBooted() && GetNumPlayers() <= 0 {
+		WriteFact("/quit")
+
+		//Running, but players connected... Give them quick feedback.
+	} else if IsFactorioBooted() && GetNumPlayers() > 0 {
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting.[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting..[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting...[/color]", RandomColor(false)))
 		time.Sleep(5 * time.Second)
+		WriteFact("/quit")
+	} else {
+		//Not running, just reboot
+		DoExit()
+		return
 	}
-
-	WriteFact("/quit")
 }
 
 func SaveFactorio() {
