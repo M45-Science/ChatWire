@@ -23,7 +23,7 @@ func GetUpdateWarnCounter() int {
 }
 
 func SetUpdateWarnCounter(val int) {
-	glob.FactQuitTiUpdateWarnCounterLockmerLock.Lock()
+	glob.UpdateWarnCounterLock.Lock()
 	glob.UpdateWarnCounter = val
 	glob.UpdateWarnCounterLock.Unlock()
 }
