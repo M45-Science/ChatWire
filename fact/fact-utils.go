@@ -40,6 +40,17 @@ func WhitelistPlayer(pname string, level int) {
 }
 
 func QuitFactorio() {
+
+	timer := GetFactQuitTimer()
+
+	//See if we have a quit timer or not, if we don't... start one.
+	if timer.IsZero() {
+		StartFactQuitTimer()
+	} else {
+		//We already have a timer going!
+		return
+	}
+
 	SetRelaunchThrottle(0)
 	SetNoResponseCount(0)
 	if IsFactorioBooted() && GetNumPlayers() > 0 {
@@ -48,6 +59,7 @@ func QuitFactorio() {
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting...[/color]", RandomColor(false)))
 		time.Sleep(5 * time.Second)
 	}
+
 	WriteFact("/quit")
 }
 

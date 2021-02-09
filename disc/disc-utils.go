@@ -60,7 +60,7 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 		}
 	} else {
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(30 * time.Second)
 		SmartChannelCreate(id)
 	}
 
@@ -80,7 +80,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		return err
 	} else {
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(30 * time.Second)
 		SmartRoleAdd(gid, uid, rid)
 	}
 

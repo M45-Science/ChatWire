@@ -14,6 +14,40 @@ import (
 //LOCK HANDLER FUNCTIONS
 //************************
 
+func GetUpdateWarnCounter() int {
+	glob.UpdateWarnCounterLock.Lock()
+	temp := glob.UpdateWarnCounter
+	glob.UpdateWarnCounterLock.Unlock()
+
+	return temp
+}
+
+func SetUpdateWarnCounter(val int) {
+	glob.FactQuitTiUpdateWarnCounterLockmerLock.Lock()
+	glob.UpdateWarnCounter = val
+	glob.UpdateWarnCounterLock.Unlock()
+}
+
+func GetFactQuitTimer() time.Time {
+	glob.FactQuitTimerLock.Lock()
+	temp := glob.FactQuitTimer
+	glob.FactQuitTimerLock.Unlock()
+
+	return temp
+}
+
+func StartFactQuitTimer() {
+	glob.FactQuitTimerLock.Lock()
+	glob.FactQuitTimer = time.Now()
+	glob.FactQuitTimerLock.Unlock()
+}
+
+func StopFactQuitTimer() {
+	glob.FactQuitTimerLock.Lock()
+	glob.FactQuitTimer = time.Time{} //Emtpy/Zero
+	glob.FactQuitTimerLock.Unlock()
+}
+
 func GetManMinutes() int {
 	glob.ManMinutesLock.Lock()
 	temp := glob.ManMinutes

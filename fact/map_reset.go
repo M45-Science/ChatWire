@@ -85,7 +85,7 @@ func Map_reset(data string) {
 
 	//Wait for server to stop if running
 	for IsFactRunning() {
-		time.Sleep(10 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 
 	glob.GameMapLock.Lock()

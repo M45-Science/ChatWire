@@ -587,7 +587,7 @@ func MainLoops() {
 			r1 := rand.New(s1)
 
 			for {
-				time.Sleep(2 * time.Second)
+				time.Sleep(1 * time.Second)
 
 				if (fact.IsQueued() || fact.GetDoUpdateFactorio()) && fact.GetNumPlayers() == 0 {
 					if fact.IsFactRunning() {
@@ -595,6 +595,26 @@ func MainLoops() {
 						fact.QuitFactorio()
 						break //We don't need to loop anymore
 					}
+				}
+				fuzz := r1.Intn(constants.SecondInMicro / 10)
+				time.Sleep(time.Duration(fuzz) * time.Microsecond)
+			}
+		}()
+
+		//************************************
+		//Eventually give up waiting for Factorio to quit
+		//************************************
+		go func() {
+			s1 := rand.NewSource(time.Now().UnixNano())
+			r1 := rand.New(s1)
+
+			for {
+				time.Sleep(5 * time.Second)
+
+				timer := fact.GetFactQuitTimer()
+				if !timer.IsZero() && time.Since(timer) > (30*time.Second) {
+					fact.DoExit()
+					break
 				}
 				fuzz := r1.Intn(constants.SecondInMicro)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
@@ -613,11 +633,28 @@ func MainLoops() {
 
 				if config.Config.UpdaterPath != "" {
 					if fact.IsFactRunning() && fact.GetNumPlayers() > 0 && fact.GetDoUpdateFactorio() && glob.NewVersion != constants.Unknown {
+
+						numwarn := fact.GetUpdateWarnCounter()
+
 						//Warn users
-						msg := fmt.Sprintf("[SYSTEM] Factorio update waiting (%v), please log off when there is a good stopping point, Thanks!", glob.NewVersion)
-						//fact.CMS(config.Config.FactorioChannelID, msg)
-						fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
-						time.Sleep(15 * time.Minute)
+						if numwarn < glob.UpdateGraceMinutes {
+							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", glob.NewVersion, glob.UpdateGraceMinutes-numwarn)
+							fact.CMS(config.Config.FactorioChannelID, msg)
+							fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
+						}
+						time.Sleep(1 * time.Minute)
+
+						//Reboot anyway
+						if numwarn > glob.UpdateGraceMinutes {
+							msg := "(SYSTEM) Rebooting for Factorio update."
+							fact.CMS(config.Config.FactorioChannelID, msg)
+							fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
+							fact.SetUpdateWarnCounter(0)
+							fact.QuitFactorio()
+
+							break //Stop looping
+						}
+						fact.SetUpdateWarnCounter(numwarn + 1)
 					}
 				}
 				fuzz := r1.Intn(constants.SecondInMicro)
@@ -769,10 +806,10 @@ func MainLoops() {
 			r1 := rand.New(s1)
 
 			for {
-				time.Sleep(6 * time.Hour)
+				time.Sleep(15 * time.Minute)
 				fact.CheckFactUpdate(false)
 
-				fuzz := r1.Intn(constants.MinuteInMicro * 30)
+				fuzz := r1.Intn(constants.SecondInMicro * 30)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()

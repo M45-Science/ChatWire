@@ -148,3 +148,10 @@ var ConnectPauseCount = 0
 var LastTotalStat = ""
 var LastMemberStat = ""
 var LastRegularStat = ""
+
+var FactQuitTimerLock sync.Mutex
+var FactQuitTimer time.Time
+
+var UpdateWarnCouterLock sync.Mutex
+var UpdateWarnCounter = 0
+var UpdateGraceMinutes = 5

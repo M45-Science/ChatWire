@@ -392,7 +392,7 @@ func Chat() {
 						if strings.HasPrefix(lineText, "[END]MAPEND") {
 							if fact.IsFactRunning() {
 								go func() {
-									msg := "Server will shutdown in fminutes."
+									msg := "Server will shutdown in 5 minutes."
 									fact.WriteFact("/cchat [SYSTEM] " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
 									time.Sleep(5 * time.Minute)
@@ -400,7 +400,7 @@ func Chat() {
 									msg = "Server shutting down."
 									fact.WriteFact("/cchat [SYSTEM] " + msg)
 									fact.CMS(config.Config.FactorioChannelID, msg)
-									time.Sleep(10 * time.Second)
+									time.Sleep(5 * time.Second)
 
 									if fact.IsFactRunning() {
 										fact.CMS(config.Config.FactorioChannelID, "Stopping Factorio, and disabling auto-launch.")
@@ -656,6 +656,9 @@ func Chat() {
 						//GOODBYE
 						//*****************
 						if strings.HasPrefix(NoTC, "Goodbye") {
+							//Factorio has completety closed, stop quit timer!
+							fact.StopFactQuitTimer()
+
 							fact.LogCMS(config.Config.FactorioChannelID, "Factorio is now offline.")
 							fact.SetFactorioBooted(false)
 							fact.SetFactRunning(false, false)
