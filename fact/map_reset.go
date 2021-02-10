@@ -74,7 +74,7 @@ func Map_reset(data string) {
 	if IsFactRunning() {
 		if data != "" {
 			CMS(config.Config.FactorioChannelID, newstr)
-			WriteFact("/cchat " + data)
+			WriteFact("/cchat [color=red](SYSTEM) " + data + "[/color]")
 			return
 		} else {
 			CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
