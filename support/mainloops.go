@@ -712,14 +712,14 @@ func MainLoops() {
 				} else if _, err := os.Stat(".newmap"); !os.IsNotExist(err) {
 
 					filedata, err := ioutil.ReadFile(".newmap")
+					fstring := string(filedata)
+					fstring = strings.ReplaceAll(fstring, "\n", "") //replace newline
+					fstring = strings.ReplaceAll(fstring, "\r", "") //replace return
 
-					filedata = strings.ReplaceAll(filedata, "\n", "") //replace newline
-					filedata = strings.ReplaceAll(filedata, "\r", "") //replace return
-
-					if err == nil && string(filedata) != "" {
-						fact.Map_reset(string(filedata))
+					if err == nil && len(fstring) > 1 {
+						fact.Map_reset(fstring)
 					} else {
-						fact.Map_reset("")
+						fact.Map_reset(nil)
 					}
 					if err := os.Remove(".newmap"); err != nil {
 						logs.Log(".newmap file disappeared?")

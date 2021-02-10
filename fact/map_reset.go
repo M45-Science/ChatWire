@@ -75,7 +75,7 @@ func Map_reset(data string) {
 	}
 
 	if IsFactRunning() {
-		if data != "" {
+		if data != nil {
 			CMS(config.Config.FactorioChannelID, newstr)
 			WriteFact("/cchat [color=red](SYSTEM) " + data + "[/color]")
 			return
