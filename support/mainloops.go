@@ -714,7 +714,7 @@ func MainLoops() {
 					filedata, err := ioutil.ReadFile(".newmap")
 					if err == nil && string(filedata) != "" {
 						fact.Map_reset(string(filedata))
-					} else if err == nil {
+					} else {
 						fact.Map_reset("")
 					}
 					if err := os.Remove(".newmap"); err != nil {
