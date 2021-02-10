@@ -55,6 +55,9 @@ func Map_reset(data string) {
 	regg := regexp.MustCompile(`\~+`)
 	regh := regexp.MustCompile(`\_+`)
 
+	newstr = strings.ReplaceAll(newstr, "\n", "") //replace newline
+	newstr = strings.ReplaceAll(newstr, "\r", "") //replace return
+
 	for regc.MatchString(newstr) || regd.MatchString(newstr) {
 		//Remove colors/fonts
 		newstr = regc.ReplaceAllString(newstr, "")

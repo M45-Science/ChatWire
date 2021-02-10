@@ -712,6 +712,10 @@ func MainLoops() {
 				} else if _, err := os.Stat(".newmap"); !os.IsNotExist(err) {
 
 					filedata, err := ioutil.ReadFile(".newmap")
+
+					filedata = strings.ReplaceAll(filedata, "\n", "") //replace newline
+					filedata = strings.ReplaceAll(filedata, "\r", "") //replace return
+
 					if err == nil && string(filedata) != "" {
 						fact.Map_reset(string(filedata))
 					} else {
