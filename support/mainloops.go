@@ -719,7 +719,7 @@ func MainLoops() {
 					if err == nil && len(fstring) > 1 {
 						fact.Map_reset(fstring)
 					} else {
-						fact.Map_reset(nil)
+						fact.Map_reset("")
 					}
 					if err := os.Remove(".newmap"); err != nil {
 						logs.Log(".newmap file disappeared?")
