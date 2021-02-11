@@ -183,6 +183,7 @@ func Map_reset(data string) {
 		return
 	}
 	CMS(config.Config.FactorioChannelID, "Rebooting.")
+	CMS(config.Config.AnnounceChannelID, "Map on server: "+config.Config.ChannelName+" has been reset.")
 	DoExit()
 	return
 

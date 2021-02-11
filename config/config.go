@@ -62,6 +62,7 @@ type config struct {
 	StatTotalID          string
 	StatMemberID         string
 	StatRegularsID       string
+	AnnounceChannelID    string
 }
 
 func (conf *config) LoadEnv() {
@@ -132,6 +133,7 @@ func (conf *config) LoadEnv() {
 		StatTotalID:          os.Getenv("StatTotalID"),
 		StatMemberID:         os.Getenv("StatMemberID"),
 		StatRegularsID:       os.Getenv("StatRegularsID"),
+		AnnounceChannelID:    os.Getenv("AnnounceChannelID"),
 	}
 
 }
