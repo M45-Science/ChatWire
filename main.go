@@ -150,7 +150,7 @@ func startbot() {
 	commands.RegisterCommands()
 	bot.AddHandler(MessageCreate)
 	botstatus := fmt.Sprintf("%vhelp", config.Config.Prefix)
-	bot.UpdateStatus(0, botstatus)
+	bot.UpdateGameStatus(0, botstatus)
 
 	logs.Log("Bot online. *v" + constants.Version + "*")
 	fact.UpdateChannelName()
