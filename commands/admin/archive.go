@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"../../config"
+	"../../cfg"
 	"../../constants"
 	"../../fact"
 	"../../glob"
@@ -34,8 +34,8 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		t := time.Now()
 		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
-		newmapname := fmt.Sprintf("%s-%s.zip", config.Config.ChannelName, date)
-		newmappath := fmt.Sprintf("%s/%s maps/%s", config.Config.MapArchivePath, shortversion, newmapname)
+		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ChannelData.Name, date)
+		newmappath := fmt.Sprintf("%s/%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
 		newmapurl := fmt.Sprintf("http://m45sci.xyz/u/fact/old-maps/%s%smaps/%s", shortversion, "%20", newmapname)
 
 		from, erra := os.Open(glob.GameMapPath)

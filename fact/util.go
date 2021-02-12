@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"../config"
+	"../cfg"
 	"../glob"
 	"../logs"
 )
@@ -16,7 +16,7 @@ func DoShowLocks(inch string) {
 
 	var ch string
 	if inch == "" {
-		ch = config.Config.AuxChannel
+		ch = cfg.Local.ChannelData.LogID
 	} else {
 		ch = inch
 	}

@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"../config"
+	"../cfg"
 	"../constants"
 	"../glob"
 	"../logs"
@@ -19,7 +19,7 @@ func CheckZip(filename string) bool {
 	defer cancel()
 
 	cmdargs := []string{"-t", filename}
-	cmd := exec.CommandContext(ctx, config.Config.ZipBinary, cmdargs...)
+	cmd := exec.CommandContext(ctx, cfg.Global.PathData.ZipBinaryPath, cmdargs...)
 	o, err := cmd.CombinedOutput()
 	out := string(o)
 
@@ -40,7 +40,7 @@ func CheckZip(filename string) bool {
 
 func CheckFactUpdate(logNoUpdate bool) {
 
-	if config.Config.UpdaterPath != "" {
+	if cfg.Global.PathData.FactUpdaterPath != "" {
 
 		glob.UpdateFactorioLock.Lock()
 		defer glob.UpdateFactorioLock.Unlock()
@@ -50,21 +50,20 @@ func CheckFactUpdate(logNoUpdate bool) {
 		defer cancel()
 
 		//Create cache directory
-		os.MkdirAll(config.Config.UpdaterCache, os.ModePerm)
+		os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, os.ModePerm)
 
-		cmdargs := []string{config.Config.UpdaterPath, "-O", config.Config.UpdaterCache, "-a", config.Config.Executable, "-d"}
-		if strings.ToLower(config.Config.UpdateToExperimental) == "true" ||
-			strings.ToLower(config.Config.UpdateToExperimental) == "yes" {
+		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary, "-d"}
+		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
 
-		cmd := exec.CommandContext(ctx, config.Config.UpdaterShell, cmdargs...)
+		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdaterPath, cmdargs...)
 		o, err := cmd.CombinedOutput()
 		out := string(o)
 
 		if ctx.Err() == context.DeadlineExceeded {
 			logs.Log("fact update check: download/check timed out... purging cache.")
-			os.RemoveAll(config.Config.UpdaterCache)
+			os.RemoveAll(cfg.Global.PathData.FactUpdateCache)
 			return
 		}
 
@@ -95,13 +94,13 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 								if numwords > 1 && CheckZip(words[1]) {
 									mess := "Factorio update downloaded and verified, will update when no players are online."
-									CMS(config.Config.FactorioChannelID, mess)
+									CMS(cfg.Local.ChannelData.ChatID, mess)
 									WriteFact("/cchat [SYSTEM] " + mess)
 									logs.Log(mess)
 
 									SetDoUpdateFactorio(true)
 								} else {
-									os.RemoveAll(config.Config.UpdaterCache)
+									os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
 									//Purge patch name so we attempt check again
 									glob.NewPatchName = constants.Unknown
 									logs.Log("fact update check: Factorio update zip invalid... purging cache.")
@@ -120,7 +119,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 							if glob.NewVersion != newversion {
 								glob.NewVersion = newversion
 
-								CMS(config.Config.FactorioChannelID, messdisc)
+								CMS(cfg.Local.ChannelData.ChatID, messdisc)
 
 								WriteFact("/cchat [SYSTEM] " + messfact)
 								logs.Log(messfact)
@@ -130,7 +129,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 				}
 			}
 		} else {
-			os.RemoveAll(config.Config.UpdaterCache)
+			os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
 			logs.Log("fact update dry: (error) Non-zero exit code... purging update cache.")
 		}
 
@@ -153,20 +152,19 @@ func FactUpdate() {
 		glob.FactorioLaunchLock.Lock()
 		defer glob.FactorioLaunchLock.Unlock()
 
-		cmdargs := []string{config.Config.UpdaterPath, "-O", config.Config.UpdaterCache, "-a", config.Config.Executable}
-		if strings.ToLower(config.Config.UpdateToExperimental) == "true" ||
-			strings.ToLower(config.Config.UpdateToExperimental) == "yes" {
+		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary}
+		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
 
-		cmd := exec.CommandContext(ctx, config.Config.UpdaterShell, cmdargs...)
+		cmd := exec.CommandContext(ctx, cfg.Global.PathData.ShellPath, cmdargs...)
 		o, err := cmd.CombinedOutput()
 		out := string(o)
 
 		if ctx.Err() == context.DeadlineExceeded {
 			logs.Log("fact update: (error) Factorio update patching timed out, deleting possible corrupted patch file.")
 
-			os.RemoveAll(config.Config.UpdaterCache)
+			os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
 			return
 		}
 
@@ -186,7 +184,7 @@ func FactUpdate() {
 				}
 			}
 		} else {
-			os.RemoveAll(config.Config.UpdaterCache)
+			os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
 			logs.Log("fact update: (error) Non-zero exit code... purging update cache.")
 			logs.Log(fmt.Sprintf("fact update: (error) update_fact.py:\n%v", out))
 			return

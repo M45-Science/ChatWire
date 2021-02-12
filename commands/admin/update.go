@@ -3,7 +3,7 @@ package admin
 import (
 	"strings"
 
-	"../../config"
+	"../../cfg"
 	"../../fact"
 	"github.com/bwmarrin/discordgo"
 )
@@ -11,15 +11,15 @@ import (
 func Update(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	argnum := len(args)
 
-	if config.Config.UpdaterPath != "" {
+	if cfg.Local.AutoUpdate {
 		if argnum > 0 && strings.ToLower(args[0]) == "cancel" {
 			fact.SetDoUpdateFactorio(false)
-			config.Config.UpdaterPath = ""
+			cfg.Local.AutoUpdate = false
 			fact.CMS(m.ChannelID, "Update canceled, and update check disabled.")
 			return
 		}
 		fact.CheckFactUpdate(true)
 	} else {
-		fact.CMS(m.ChannelID, "Updater is not configured.")
+		fact.CMS(m.ChannelID, "AutoUpdate is disabled.")
 	}
 }

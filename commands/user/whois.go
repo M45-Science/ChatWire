@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"../../config"
+	"../../cfg"
 	"../../constants"
 	"../../disc"
 	"../../fact"
@@ -52,8 +52,8 @@ func levelToString(level int) string {
 }
 
 func CheckAdmin(ID string) bool {
-	for _, admin := range config.Config.AdminIDs {
-		if ID == admin {
+	for _, admin := range cfg.Global.AdminData.Admins {
+		if ID == admin.ID {
 			return true
 		}
 	}

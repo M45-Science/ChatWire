@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"../config"
+	"../cfg"
 	"../constants"
 	"../glob"
 	"../logs"
@@ -50,7 +50,7 @@ func WatchDatabaseFile() {
 				}
 			}()
 
-			if err := watcher.Add(config.Config.DBFile); err != nil {
+			if err := watcher.Add(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName); err != nil {
 				logs.Log(fmt.Sprintf("fsnotify error: %v", err))
 			}
 
@@ -284,7 +284,7 @@ func LoadPlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	filedata, err := ioutil.ReadFile(config.Config.DBFile)
+	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName)
 	if err != nil {
 		logs.Log("Couldn't read db file, skipping...")
 		return
@@ -338,7 +338,7 @@ func WritePlayers() {
 
 	buffer := ""
 
-	fo, err := os.Create(config.Config.DBFile)
+	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName)
 	if err != nil {
 		logs.Log("Couldn't open db file, skipping...")
 		return
@@ -366,7 +366,7 @@ func WritePlayers() {
 	}
 	glob.PlayerListLock.RUnlock()
 
-	nfilename := fmt.Sprintf("pdb-%s.tmp", config.Config.ServerLetter)
+	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.ServerCallsign)
 	err = ioutil.WriteFile(nfilename, []byte(buffer), 0644)
 
 	if err != nil {
@@ -375,7 +375,7 @@ func WritePlayers() {
 	}
 
 	oldName := nfilename
-	newName := config.Config.DBFile
+	newName := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName
 	err = os.Rename(oldName, newName)
 
 	if err != nil {

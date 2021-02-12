@@ -212,7 +212,7 @@ func SetFactRunning(run bool, err bool) {
 	glob.FactIsRunningLock.Unlock()
 
 	if run == true && GetNoResposeCount() >= 10 {
-		//CMS(config.Config.FactorioChannelID, "Server now appears to be responding again.")
+		//CMS(cfg.Local.ChannelData.ChatID, "Server now appears to be responding again.")
 		logs.Log("Server now appears to be responding again.")
 	}
 	SetNoResponseCount(0)
