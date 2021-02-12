@@ -102,10 +102,10 @@ func MainLoops() {
 					glob.FactorioLaunchLock.Lock()
 
 					var err error
-					tempargs := cfg.Global.FactorioLaunchParams
+					tempargs := cfg.Local.FactorioLaunchParams
 					tempargs = append(tempargs, "--use-server-whitelist")
 
-					cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, tempargs...)
+					cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, tempargs...)
 					platform.LinuxSetProcessGroup(cmd)
 					//Used later on when binary is launched, redirects game stdout to file.
 					logwriter := io.Writer(glob.GameLogDesc)

@@ -21,6 +21,8 @@ type config struct {
 
 	ChannelData ChannelDataStruct
 
+	FactorioLaunchParams []string
+
 	MapPreset     string
 	AutoStart     bool
 	AutoUpdate    bool
@@ -49,7 +51,6 @@ type gconfig struct {
 	PathData       PathDataStruct
 	MapPreviewData MapPreviewDataStruct
 
-	FactorioLaunchParams []string
 	DiscordCommandPrefix string
 }
 
@@ -157,7 +158,7 @@ func ReadGCfg() bool {
 
 	} else {
 
-		file, err := ioutil.ReadFile(constants.CWLocalConfig)
+		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
 
 		if file != nil && err == nil {
 			cfg := CreateGCfg()

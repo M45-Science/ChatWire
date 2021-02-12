@@ -17,7 +17,6 @@ import (
 	"./support"
 
 	"github.com/bwmarrin/discordgo"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
@@ -36,9 +35,11 @@ func main() {
 
 	glob.Uptime = time.Now()
 
+	//Read global and local configs
 	cfg.ReadGCfg()
 	cfg.ReadLCfg()
 
+	//Re-Write global and local configs
 	cfg.WriteGCfg()
 	cfg.WriteLCfg()
 
