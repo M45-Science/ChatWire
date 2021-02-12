@@ -9,7 +9,6 @@ import (
 
 	"./cfg"
 	"./commands"
-	"./config"
 	"./constants"
 	"./fact"
 	"./glob"
@@ -37,8 +36,8 @@ func main() {
 
 	glob.Uptime = time.Now()
 
-	//Load settings
-	config.Config.LoadEnv()
+	cfg.ReadGCfg()
+	cfg.WriteGCfg()
 
 	//Set autostart mode from config
 	if cfg.Local.AutoStart {

@@ -5,6 +5,9 @@ import "time"
 const Version = "461-2-9-2021-1102a"
 const Unknown = "Unknown"
 
+//Config files
+const CWGlobalConfig = "../cw-global-config.json"
+
 //Max player database size, pre-allocated
 const MaxPlayers = 5000
 

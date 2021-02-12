@@ -52,8 +52,8 @@ func levelToString(level int) string {
 }
 
 func CheckAdmin(ID string) bool {
-	for _, admin := range cfg.Global.AdminData.Admins {
-		if ID == admin.ID {
+	for _, admin := range cfg.Global.AdminData.IDs {
+		if ID == admin {
 			return true
 		}
 	}

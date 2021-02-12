@@ -1,9 +1,22 @@
 package cfg
 
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"time"
+
+	"../constants"
+	"../glob"
+)
+
 var Local config
 var Global gconfig
 
 type config struct {
+	Version        string
 	ServerCallsign string
 
 	ChannelData ChannelDataStruct
@@ -29,14 +42,20 @@ type config struct {
 }
 
 type gconfig struct {
+	Version        string
 	DiscordData    DiscordDataStruct
-	AdminData      AdminIDsStruct
+	AdminData      AdminData
 	RoleData       RoleDataStruct
 	PathData       PathDataStruct
 	MapPreviewData MapPreviewDataStruct
 
 	FactorioLaunchParams []string
 	DiscordCommandPrefix string
+}
+
+type AdminData struct {
+	IDs   []string
+	Names []string
 }
 
 //Global
@@ -58,12 +77,13 @@ type PathDataStruct struct {
 	FactUpdateCache    string //bor
 	MapGenPath         string //bor
 
-	MapPreviewPath  string //ap
-	MapArchivePath  string //ap
-	ImageMagickPath string //ap
-	ShellPath       string //ap
-	ZipBinaryPath   string //ap
-	MapPreviewURL   string
+	MapPreviewPath   string //ap
+	MapArchivePath   string //ap
+	ImageMagickPath  string //ap
+	ShellPath        string //ap
+	FactUpdaterShell string //ap
+	ZipBinaryPath    string //ap
+	MapPreviewURL    string
 }
 
 type DiscordDataStruct struct {
@@ -76,15 +96,6 @@ type DiscordDataStruct struct {
 
 	ReportChannelID   string
 	AnnounceChannelID string
-}
-
-type AdminIDsStruct struct {
-	Admins []AdminStruct
-}
-
-type AdminStruct struct {
-	Name string
-	ID   string
 }
 
 type RoleDataStruct struct {
@@ -107,4 +118,78 @@ type ChannelDataStruct struct {
 	Pos    int
 	ChatID string
 	LogID  string
+}
+
+func WriteGCfg() bool {
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	enc.SetIndent("", "\t")
+
+	if err := enc.Encode(Global); err != nil {
+		log("WriteGCfg: enc.Encode failure")
+		return false
+	}
+
+	_, err := os.Create(constants.CWGlobalConfig)
+
+	if err != nil {
+		log("WriteGCfg: os.Create failure")
+		return false
+	}
+
+	err = ioutil.WriteFile(constants.CWGlobalConfig, []byte(outbuf.String()), 0644)
+
+	if err != nil {
+		log("WriteGCfg: WriteFile failure")
+	}
+
+	return true
+}
+
+func ReadGCfg() bool {
+
+	_, err := os.Stat(constants.CWGlobalConfig)
+	notfound := os.IsNotExist(err)
+
+	if notfound {
+		log("ReadGCfg: os.Stat failed")
+		return false
+
+	} else {
+
+		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
+
+		if file != nil && err == nil {
+			cfg := CreateGCfg()
+
+			err := json.Unmarshal([]byte(file), &cfg)
+			if err != nil {
+				log("ReadGCfg: Unmashal failure")
+				log(err.Error())
+				os.Exit(1)
+			}
+
+			Global = cfg
+
+			return true
+		} else {
+			log("ReadGCfg: ReadFile failure")
+			return false
+		}
+	}
+}
+
+func CreateGCfg() gconfig {
+	gconfig := gconfig{Version: "0.0.1"}
+	return gconfig
+}
+
+func log(text string) {
+
+	t := time.Now()
+	date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
+
+	buf := fmt.Sprintf("%s %s", date, text)
+	glob.BotLogDesc.WriteString(buf + "\n")
+	println(buf)
 }

@@ -80,8 +80,8 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 
 // CheckAdmin checks if the user attempting to run an admin command is an admin
 func CheckAdmin(ID string) bool {
-	for _, admin := range cfg.Global.AdminData.Admins {
-		if ID == admin.ID {
+	for _, admin := range cfg.Global.AdminData.IDs {
+		if ID == admin {
 			return true
 		}
 	}

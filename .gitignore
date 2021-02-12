@@ -3,3 +3,5 @@ ChatWire.exe
 .env
 log
 *.log
+cw-global-config.json
+cw-local-config.json
