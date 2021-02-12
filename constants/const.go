@@ -7,6 +7,7 @@ const Unknown = "Unknown"
 
 //Config files
 const CWGlobalConfig = "../cw-global-config.json"
+const CWLocalConfig = "cw-local-config.json"
 
 //Max player database size, pre-allocated
 const MaxPlayers = 5000

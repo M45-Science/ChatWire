@@ -37,7 +37,10 @@ func main() {
 	glob.Uptime = time.Now()
 
 	cfg.ReadGCfg()
+	cfg.ReadLCfg()
+
 	cfg.WriteGCfg()
+	cfg.WriteLCfg()
 
 	//Set autostart mode from config
 	if cfg.Local.AutoStart {

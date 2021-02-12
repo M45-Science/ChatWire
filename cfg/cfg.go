@@ -157,7 +157,7 @@ func ReadGCfg() bool {
 
 	} else {
 
-		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
+		file, err := ioutil.ReadFile(constants.CWLocalConfig)
 
 		if file != nil && err == nil {
 			cfg := CreateGCfg()
@@ -180,8 +180,72 @@ func ReadGCfg() bool {
 }
 
 func CreateGCfg() gconfig {
-	gconfig := gconfig{Version: "0.0.1"}
-	return gconfig
+	cfg := gconfig{Version: "0.0.1"}
+	return cfg
+}
+
+func WriteLCfg() bool {
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	enc.SetIndent("", "\t")
+
+	if err := enc.Encode(Local); err != nil {
+		log("WriteLCfg: enc.Encode failure")
+		return false
+	}
+
+	_, err := os.Create(constants.CWLocalConfig)
+
+	if err != nil {
+		log("WriteLCfg: os.Create failure")
+		return false
+	}
+
+	err = ioutil.WriteFile(constants.CWLocalConfig, []byte(outbuf.String()), 0644)
+
+	if err != nil {
+		log("WriteLCfg: WriteFile failure")
+	}
+
+	return true
+}
+
+func ReadLCfg() bool {
+
+	_, err := os.Stat(constants.CWLocalConfig)
+	notfound := os.IsNotExist(err)
+
+	if notfound {
+		log("ReadLCfg: os.Stat failed")
+		return false
+
+	} else {
+
+		file, err := ioutil.ReadFile(constants.CWLocalConfig)
+
+		if file != nil && err == nil {
+			cfg := CreateLCfg()
+
+			err := json.Unmarshal([]byte(file), &cfg)
+			if err != nil {
+				log("ReadLCfg: Unmashal failure")
+				log(err.Error())
+				os.Exit(1)
+			}
+
+			Local = cfg
+
+			return true
+		} else {
+			log("ReadLCfg: ReadFile failure")
+			return false
+		}
+	}
+}
+
+func CreateLCfg() config {
+	cfg := config{Version: "0.0.1"}
+	return cfg
 }
 
 func log(text string) {
