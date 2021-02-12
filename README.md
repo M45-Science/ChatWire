@@ -3,12 +3,15 @@ Requirements:
 
 Linux
 
-Golang 1.15
+Golang 1.15+
 
 ImageMagick
 
 Zip
 
-Factorio Headless v1.0
+Factorio Headless 1.1
 
-.env file (for config)
+Config files
+ChatWire-Folder/cw-local-config.json
+ChatWire-Folder../cw-global-config.json
+
