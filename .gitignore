@@ -5,3 +5,4 @@ log
 *.log
 cw-global-config.json
 cw-local-config.json
+cw.lock
