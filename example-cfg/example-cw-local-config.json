@@ -1,5 +1,6 @@
 {
 	"Version": "0.0.1",
+	"Port": 1234,
 	"ServerCallsign": "t",
 	"ChannelData": {
 		"Name": "test",
@@ -7,6 +8,7 @@
 		"ChatID": "1234",
 		"LogID": "5678"
 	},
+	"FactorioLaunchParams": null,
 	"MapPreset": "rail-world",
 	"AutoStart": true,
 	"AutoUpdate": true,

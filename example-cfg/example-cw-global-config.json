@@ -1,5 +1,7 @@
 {
 	"Version": "0.0.1",
+	"RconPortOffset": 10000,
+	"RconPass": "myrconpassword",
 	"DiscordData": {
 		"Token": "secret token",
 		"GuildID": "1234",
@@ -22,12 +24,12 @@
 		"FactorioServersRoot": "/home/user/factservers/",
 		"FactorioHomePrefix": "fact-",
 		"FactorioBinary": "/bin/x64/factorio",
-		"RecordPlayersFilename": "recordplayers.dat",
+		"RecordPlayersFilename": "RecordPlayers.dat",
 		"SaveFilePath": "saves",
-		"ScriptInserterPath": "softmod-insert.sh",
+		"ScriptInserterPath": "scripts/softmod-insert.sh",
 		"DBFileName": "players.dat",
 		"LogCompScriptPath": "comp-logs.sh",
-		"FactUpdaterPath": "update-fact.py",
+		"FactUpdaterPath": "scripts/update-fact.py",
 		"FactUpdateCache": "update-cache",
 		"MapGenPath": "map-gen-json",
 		"MapPreviewPath": "/var/www/html/prev/",
@@ -36,7 +38,8 @@
 		"ShellPath": "/bin/bash",
 		"FactUpdaterShell": "/sbin/python",
 		"ZipBinaryPath": "/sbin/zip",
-		"MapPreviewURL": "http://mysite/prev/"
+		"MapPreviewURL": "http://mysite/prev/",
+		"ArchiveURL": "http://mysite/old-maps/"
 	},
 	"MapPreviewData": {
 		"Args": "",
@@ -45,6 +48,5 @@
 		"JPGQuality": "85",
 		"JPGScale": "1024x1024"
 	},
-	"FactorioLaunchParams": "--server-load-latest",
 	"DiscordCommandPrefix": "$"
 }
