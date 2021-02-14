@@ -112,7 +112,7 @@ func MainLoops() {
 						cfg.Local.ServerCallsign + "/" +
 						"server-settings.json"
 
-					tempargs = append(tempargs, "--start-serer-load-latest")
+					tempargs = append(tempargs, "--start-server-load-latest")
 					tempargs = append(tempargs, "--rcon-port")
 					tempargs = append(tempargs, fmt.Sprintf("%v", rconport))
 
