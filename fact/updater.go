@@ -40,7 +40,7 @@ func CheckZip(filename string) bool {
 
 func CheckFactUpdate(logNoUpdate bool) {
 
-	if cfg.Global.PathData.FactUpdaterPath != "" {
+	if cfg.Local.AutoUpdate {
 
 		glob.UpdateFactorioLock.Lock()
 		defer glob.UpdateFactorioLock.Unlock()
