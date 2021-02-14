@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os/exec"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -103,10 +102,6 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
-			//plug-in PreviewPath in the future?
-			result := regexp.MustCompile(`(?m).*Creating new map \/home\/fact\/(.*)`)
-			filename = result.ReplaceAllString(l, "${1}")
-
 			fact.CMS(m.ChannelID, "New map saved as: "+filename)
 			return
 		}
