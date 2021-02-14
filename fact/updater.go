@@ -57,7 +57,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			cmdargs = append(cmdargs, "-x")
 		}
 
-		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdaterPath, cmdargs...)
+		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 		o, err := cmd.CombinedOutput()
 		out := string(o)
 
