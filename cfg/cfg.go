@@ -90,6 +90,7 @@ type PathDataStruct struct {
 	FactUpdaterShell string //ap
 	ZipBinaryPath    string //ap
 	MapPreviewURL    string
+	ArchiveURL       string
 }
 
 type DiscordDataStruct struct {
