@@ -118,6 +118,10 @@ func Map_reset(data string) {
 		}
 		defer from.Close()
 
+		//Make directory if it does not exist
+		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
+		os.MkdirAll(newdir, os.ModePerm)
+
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
 			logs.Log(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
