@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 
-	"../../config"
+	"../../cfg"
 	"../../fact"
 	"../../glob"
 	"../../logs"
@@ -31,32 +30,32 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 
 	fact.CMS(m.ChannelID, "Generating map preview...")
 
-	var filename = ""
+	var preview_made = false
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
 	buf := new(bytes.Buffer)
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	glob.LastMapSeed = ourseed
-	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(config.Config.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	glob.LastMapCode = ourcode
 
-	path := fmt.Sprintf("%s%s.png", config.Config.PreviewPath, ourcode)
-	jpgpath := fmt.Sprintf("%s%s.jpg", config.Config.PreviewPath, ourcode)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + config.Config.PreviewRes, "--map-preview-scale=" + config.Config.PreviewScale, "--preset", config.Config.MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), config.Config.PreviewArgs}
+	path := fmt.Sprintf("%s%s.png", cfg.Global.PathData.MapPreviewPath, ourcode)
+	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.PathData.MapPreviewPath, ourcode)
+	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.MapPreviewData.Res, "--map-preview-scale=" + cfg.Global.MapPreviewData.Scale, "--preset", cfg.Local.MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.MapPreviewData.Args}
 
 	//Append map gen if set
-	if config.Config.MapGenJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-gen-settings")
-		args = append(args, config.Config.MapGenJson)
+		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-gen.json")
 	}
 
 	//Append map settings if set
-	if config.Config.MapSetJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-settings")
-		args = append(args, config.Config.MapSetJson)
+		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-set.json")
 	}
 
-	cmd := exec.Command(config.Config.Executable, args...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, args...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
@@ -67,14 +66,12 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 
 	for _, l := range lines {
 		if strings.Contains(l, "Wrote map preview image file:") {
-			//plug-in PreviewPath in the future?
-			result := regexp.MustCompile(`(?m).*Wrote map preview image file: \/home\/fact\/public_html\/(.*)`)
-			filename = result.ReplaceAllString(l, config.Config.SiteURL+"${1}")
+			preview_made = true
 		}
 	}
 
-	imgargs := []string{path, "-quality", config.Config.JpgQuality, "-scale", config.Config.JpgScale, jpgpath}
-	cmdb := exec.Command(config.Config.ConvertExec, imgargs...)
+	imgargs := []string{path, "-quality", cfg.Global.MapPreviewData.JPGQuality, "-scale", cfg.Global.MapPreviewData.JPGScale, jpgpath}
+	cmdb := exec.Command(cfg.Global.PathData.ImageMagickPath, imgargs...)
 	_, berr := cmdb.CombinedOutput()
 
 	//Delete PNG, we don't need it now
@@ -87,8 +84,8 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	}
 
 	buffer := "Preview failed."
-	if filename != "" {
-		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, config.Config.SiteURL, ourcode)
+	if preview_made {
+		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, cfg.Global.PathData.MapPreviewURL, ourcode)
 	}
 
 	fact.CMS(m.ChannelID, buffer)

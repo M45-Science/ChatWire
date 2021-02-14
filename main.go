@@ -5,12 +5,10 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	"strconv"
-	"strings"
 	"time"
 
+	"./cfg"
 	"./commands"
-	"./config"
 	"./constants"
 	"./fact"
 	"./glob"
@@ -19,7 +17,6 @@ import (
 	"./support"
 
 	"github.com/bwmarrin/discordgo"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
@@ -38,24 +35,21 @@ func main() {
 
 	glob.Uptime = time.Now()
 
-	//Load settings
-	config.Config.LoadEnv()
+	//Read global and local configs
+	cfg.ReadGCfg()
+	cfg.ReadLCfg()
 
-	//Append whitelist to launch params if we are in that mode
-	if strings.ToLower(config.Config.DoWhitelist) == "yes" ||
-		strings.ToLower(config.Config.DoWhitelist) == "true" {
-		config.Config.LaunchParameters = append(config.Config.LaunchParameters, "--use-server-whitelist")
-		glob.WhitelistMode = true
-	}
+	//Re-Write global and local configs
+	cfg.WriteGCfg()
+	cfg.WriteLCfg()
 
 	//Set autostart mode from config
-	if strings.ToLower(config.Config.AutoStart) == "yes" ||
-		strings.ToLower(config.Config.AutoStart) == "true" {
+	if cfg.Local.AutoStart {
 		fact.SetAutoStart(true)
 	}
 
 	//Saves a ton of space!
-	cmdb := exec.Command("/bin/sh", config.Config.CompressScript)
+	cmdb := exec.Command(cfg.Global.PathData.ShellPath, cfg.Global.PathData.LogCompScriptPath)
 	cmdb.CombinedOutput()
 
 	//Create our log file names
@@ -119,7 +113,7 @@ func startbot() {
 
 	logs.LogWithoutEcho("Starting bot...")
 
-	bot, erra := discordgo.New("Bot " + config.Config.DiscordToken)
+	bot, erra := discordgo.New("Bot " + cfg.Global.DiscordData.Token)
 
 	if erra != nil {
 		logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
@@ -149,13 +143,12 @@ func startbot() {
 	time.Sleep(2 * time.Second)
 	commands.RegisterCommands()
 	bot.AddHandler(MessageCreate)
-	botstatus := fmt.Sprintf("%vhelp", config.Config.Prefix)
+	botstatus := fmt.Sprintf("%vhelp", cfg.Global.DiscordCommandPrefix)
 	bot.UpdateGameStatus(0, botstatus)
 
 	logs.Log("Bot online. *v" + constants.Version + "*")
 	fact.UpdateChannelName()
 
 	//Update aux channel name on reboot
-	chpos, _ := strconv.Atoi(config.Config.ChannelPos)
-	glob.DS.ChannelEditComplex(config.Config.AuxChannel, &discordgo.ChannelEdit{Name: config.Config.ChannelName, Position: chpos + 200})
+	glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ChannelData.Name, Position: cfg.Local.ChannelData.Pos})
 }

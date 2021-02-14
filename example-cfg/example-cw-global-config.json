@@ -1,0 +1,50 @@
+{
+	"Version": "0.0.1",
+	"DiscordData": {
+		"Token": "secret token",
+		"GuildID": "1234",
+		"StatTotalChannelID": "",
+		"StatMemberChannelID": "",
+		"StatRegularsChannelID": "",
+		"ReportChannelID": "",
+		"AnnounceChannelID": ""
+	},
+	"AdminData": {
+		"IDs": ["1234"],
+		"Names": ["Tester"]
+	},
+	"RoleData": {
+		"Admins": "Admin",
+		"Regulars": "Regular",
+		"Members": "Member"
+	},
+	"PathData": {
+		"FactorioServersRoot": "/home/user/factservers/",
+		"FactorioHomePrefix": "fact-",
+		"FactorioBinary": "/bin/x64/factorio",
+		"RecordPlayersFilename": "recordplayers.dat",
+		"SaveFilePath": "saves",
+		"ScriptInserterPath": "softmod-insert.sh",
+		"DBFileName": "players.dat",
+		"LogCompScriptPath": "comp-logs.sh",
+		"FactUpdaterPath": "update-fact.py",
+		"FactUpdateCache": "update-cache",
+		"MapGenPath": "map-gen-json",
+		"MapPreviewPath": "/var/www/html/prev/",
+		"MapArchivePath": "/var/www/html/oldmap/",
+		"ImageMagickPath": "/sbin/convert",
+		"ShellPath": "/bin/bash",
+		"FactUpdaterShell": "/sbin/python",
+		"ZipBinaryPath": "/sbin/zip",
+		"MapPreviewURL": "http://mysite/prev/"
+	},
+	"MapPreviewData": {
+		"Args": "",
+		"Res": "1024",
+		"Scale": "1",
+		"JPGQuality": "85",
+		"JPGScale": "1024x1024"
+	},
+	"FactorioLaunchParams": "--server-load-latest",
+	"DiscordCommandPrefix": "$"
+}

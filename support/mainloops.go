@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"../config"
+	"../cfg"
 	"../constants"
 	"../disc"
 	"../fact"
@@ -61,15 +61,15 @@ func MainLoops() {
 						}
 					}
 					if nores == 300 {
-						fact.LogCMS(config.Config.FactorioChannelID, "Factorio unresponsive for 5 minutes... rebooting.")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for 5 minutes... rebooting.")
 						fact.SetRelaunchThrottle(0)
 						fact.QuitFactorio()
 					}
 				} else if fact.IsFactRunning() == false && fact.IsSetAutoStart() == true && fact.GetDoUpdateFactorio() == false { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update
 
-					command := config.Config.ZipScript
-					out, errs := exec.Command(command, config.Config.ServerLetter).Output()
+					command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
+					out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
 					if errs != nil {
 						logs.Log(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", out, errs))
 					} else {
@@ -102,7 +102,35 @@ func MainLoops() {
 					glob.FactorioLaunchLock.Lock()
 
 					var err error
-					cmd := exec.Command(config.Config.Executable, config.Config.LaunchParameters...)
+					tempargs := cfg.Local.FactorioLaunchParams
+
+					rconport := cfg.Local.Port + cfg.Global.RconPortOffset
+					rconpass := cfg.Global.RconPass
+					port := cfg.Local.Port
+					serversettings := cfg.Global.PathData.FactorioServersRoot +
+						cfg.Global.PathData.FactorioHomePrefix +
+						cfg.Local.ServerCallsign + "/" +
+						"server-settings.json"
+
+					tempargs = append(tempargs, "--start-serer-load-latest")
+					tempargs = append(tempargs, "--rcon-port")
+					tempargs = append(tempargs, fmt.Sprintf("%v", rconport))
+
+					tempargs = append(tempargs, "--rcon-password")
+					tempargs = append(tempargs, rconpass)
+
+					tempargs = append(tempargs, "--port")
+					tempargs = append(tempargs, fmt.Sprintf("%v", port))
+
+					tempargs = append(tempargs, "--server-settings")
+					tempargs = append(tempargs, serversettings)
+
+					//Whitelist
+					if cfg.Local.DoWhitelist {
+						tempargs = append(tempargs, "--use-server-whitelist")
+					}
+
+					cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, tempargs...)
 					platform.LinuxSetProcessGroup(cmd)
 					//Used later on when binary is launched, redirects game stdout to file.
 					logwriter := io.Writer(glob.GameLogDesc)
@@ -154,7 +182,7 @@ func MainLoops() {
 			time.Sleep(5 * time.Minute)
 			for {
 				time.Sleep(5 * time.Second)
-				if strings.EqualFold(config.Config.ShowStats, "true") {
+				if cfg.Local.ShowStats {
 
 					numreg := 0
 					numnew := 0
@@ -187,20 +215,20 @@ func MainLoops() {
 					memberstat := fmt.Sprintf("members-%v", numtrust)
 					regularstat := fmt.Sprintf("regulars-%v", numregulars)
 
-					if glob.LastTotalStat != totalstat && config.Config.StatTotalID != "" {
-						glob.DS.ChannelEditComplex(config.Config.StatTotalID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
+					if glob.LastTotalStat != totalstat && cfg.Global.DiscordData.StatTotalChannelID != "" {
+						glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
 						glob.LastTotalStat = totalstat
 						time.Sleep(5 * time.Minute)
 					}
 
-					if glob.LastMemberStat != memberstat && config.Config.StatMemberID != "" {
-						glob.DS.ChannelEditComplex(config.Config.StatMemberID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
+					if glob.LastMemberStat != memberstat && cfg.Global.DiscordData.StatMemberChannelID != "" {
+						glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
 						glob.LastMemberStat = memberstat
 						time.Sleep(5 * time.Minute)
 					}
 
-					if glob.LastRegularStat != regularstat && config.Config.StatRegularsID != "" {
-						glob.DS.ChannelEditComplex(config.Config.StatRegularsID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
+					if glob.LastRegularStat != regularstat && cfg.Global.DiscordData.StatRegularsChannelID != "" {
+						glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
 						glob.LastRegularStat = regularstat
 						time.Sleep(5 * time.Minute)
 					}
@@ -243,11 +271,11 @@ func MainLoops() {
 							var moder []string
 
 							for _, msg := range lcopy {
-								if msg.Channel == config.Config.FactorioChannelID {
+								if msg.Channel == cfg.Local.ChannelData.ChatID {
 									factmsg = append(factmsg, msg.Text)
-								} else if msg.Channel == config.Config.AuxChannel {
+								} else if msg.Channel == cfg.Local.ChannelData.LogID {
 									aux = append(aux, msg.Text)
-								} else if msg.Channel == config.Config.ModerationChannel {
+								} else if msg.Channel == cfg.Global.DiscordData.ReportChannelID {
 									moder = append(moder, msg.Text)
 								} else {
 									disc.SmartWriteDiscord(msg.Channel, msg.Text)
@@ -261,14 +289,14 @@ func MainLoops() {
 								oldlen := len(buf) + 1
 								addlen := len(line)
 								if oldlen+addlen >= 2000 {
-									disc.SmartWriteDiscord(config.Config.FactorioChannelID, buf)
+									disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, buf)
 									buf = line
 								} else {
 									buf = buf + "\n" + line
 								}
 							}
 							if buf != "" {
-								disc.SmartWriteDiscord(config.Config.FactorioChannelID, buf)
+								disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, buf)
 							}
 
 							//Aux
@@ -277,14 +305,14 @@ func MainLoops() {
 								oldlen := len(buf) + 1
 								addlen := len(line)
 								if oldlen+addlen >= 2000 {
-									disc.SmartWriteDiscord(config.Config.AuxChannel, buf)
+									disc.SmartWriteDiscord(cfg.Local.ChannelData.LogID, buf)
 									buf = line
 								} else {
 									buf = buf + "\n" + line
 								}
 							}
 							if buf != "" {
-								disc.SmartWriteDiscord(config.Config.AuxChannel, buf)
+								disc.SmartWriteDiscord(cfg.Local.ChannelData.LogID, buf)
 							}
 
 							//Moderation
@@ -293,14 +321,14 @@ func MainLoops() {
 								oldlen := len(buf) + 1
 								addlen := len(line)
 								if oldlen+addlen >= 2000 {
-									disc.SmartWriteDiscord(config.Config.ModerationChannel, buf)
+									disc.SmartWriteDiscord(cfg.Global.DiscordData.ReportChannelID, buf)
 									buf = line
 								} else {
 									buf = buf + "\n" + line
 								}
 							}
 							if buf != "" {
-								disc.SmartWriteDiscord(config.Config.ModerationChannel, buf)
+								disc.SmartWriteDiscord(cfg.Global.DiscordData.ReportChannelID, buf)
 							}
 						}
 
@@ -386,8 +414,7 @@ func MainLoops() {
 				time.Sleep(5 * time.Second)
 				tn := time.Now()
 
-				if strings.ToLower(config.Config.PauseOnConnect) == "yes" ||
-					strings.ToLower(config.Config.PauseOnConnect) == "true" {
+				if cfg.Local.SlowConnect {
 
 					glob.ConnectPauseLock.Lock()
 
@@ -397,11 +424,11 @@ func MainLoops() {
 							glob.ConnectPauseCount = 0
 
 							buf := "Catch-up taking over two minutes, returning to normal speed."
-							fact.CMS(config.Config.FactorioChannelID, buf)
+							fact.CMS(cfg.Local.ChannelData.ChatID, buf)
 							fact.WriteFact("/chat (SYSTEM) " + buf)
 
-							if config.Config.DefaultGSpeed != "" {
-								fact.WriteFact("/gspeed " + config.Config.DefaultGSpeed)
+							if cfg.Local.DefaultSpeed > 0.0 {
+								fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.DefaultSpeed))
 							} else {
 								fact.WriteFact("/gspeed 1.0")
 							}
@@ -537,9 +564,9 @@ func MainLoops() {
 				if glob.Guild == nil && glob.DS != nil {
 					// Attempt to get the guild from the state,
 					// If there is an error, fall back to the restapi.
-					nguild, err := glob.DS.State.Guild(config.Config.GuildID)
+					nguild, err := glob.DS.State.Guild(cfg.Global.DiscordData.GuildID)
 					if err != nil {
-						nguild, err = glob.DS.Guild(config.Config.GuildID)
+						nguild, err = glob.DS.Guild(cfg.Global.DiscordData.GuildID)
 						if err != nil {
 							//logs.LogWithoutEcho("Failed to get guild data, will retry...")
 							return
@@ -583,7 +610,7 @@ func MainLoops() {
 
 				if (fact.IsQueued() || fact.GetDoUpdateFactorio()) && fact.GetNumPlayers() == 0 {
 					if fact.IsFactRunning() {
-						fact.LogCMS(config.Config.FactorioChannelID, "No players currently online, performing scheduled reboot.")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "No players currently online, performing scheduled reboot.")
 						fact.QuitFactorio()
 						break //We don't need to loop anymore
 					}
@@ -623,7 +650,7 @@ func MainLoops() {
 			for {
 				time.Sleep(5 * time.Second)
 
-				if config.Config.UpdaterPath != "" {
+				if cfg.Global.PathData.FactUpdaterPath != "" {
 					if fact.IsFactRunning() && fact.GetNumPlayers() > 0 && fact.GetDoUpdateFactorio() && glob.NewVersion != constants.Unknown {
 
 						numwarn := fact.GetUpdateWarnCounter()
@@ -631,7 +658,7 @@ func MainLoops() {
 						//Warn users
 						if numwarn < glob.UpdateGraceMinutes {
 							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", glob.NewVersion, glob.UpdateGraceMinutes-numwarn)
-							fact.CMS(config.Config.FactorioChannelID, msg)
+							fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 							fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
 						}
 						time.Sleep(1 * time.Minute)
@@ -639,7 +666,7 @@ func MainLoops() {
 						//Reboot anyway
 						if numwarn > glob.UpdateGraceMinutes {
 							msg := "(SYSTEM) Rebooting for Factorio update."
-							fact.CMS(config.Config.FactorioChannelID, msg)
+							fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 							fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
 							fact.SetUpdateWarnCounter(0)
 							fact.QuitFactorio()
@@ -673,7 +700,7 @@ func MainLoops() {
 					}
 					if fact.IsFactRunning() {
 						go func() {
-							fact.LogCMS(config.Config.FactorioChannelID, "Updating Factorio!")
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Updating Factorio!")
 
 							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
 								for x := 0; x < 3; x++ {
@@ -690,14 +717,14 @@ func MainLoops() {
 					}
 					if fact.IsQueued() == false {
 						fact.SetQueued(true)
-						fact.LogCMS(config.Config.FactorioChannelID, "Reboot queued!")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Reboot queued!")
 					}
 				} else if _, err := os.Stat(".reload"); !os.IsNotExist(err) {
 
 					if err := os.Remove(".reload"); err != nil {
 						logs.Log(".reload file disappeared?")
 					}
-					fact.LogCMS(config.Config.FactorioChannelID, "Rebooting!")
+					fact.LogCMS(cfg.Local.ChannelData.ChatID, "Rebooting!")
 					fact.SetBotReboot(true)
 					fact.QuitFactorio()
 				} else if _, err := os.Stat(".start"); !os.IsNotExist(err) {
@@ -707,7 +734,7 @@ func MainLoops() {
 					}
 					if fact.IsFactRunning() == false {
 						fact.SetAutoStart(true)
-						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is starting!")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
 					}
 				} else if _, err := os.Stat(".newmap"); !os.IsNotExist(err) {
 
@@ -731,12 +758,12 @@ func MainLoops() {
 					}
 					if fact.IsFactRunning() == false {
 						fact.SetAutoStart(true)
-						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is starting!")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
 					} else {
 						fact.SetAutoStart(true)
 						fact.SetQueued(false)
 
-						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is restarting!")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is restarting!")
 						go func() {
 							for x := 0; x < 3; x++ {
 								fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is rebooting in 30 seconds![/color]", fact.RandomColor(false)))
@@ -753,12 +780,12 @@ func MainLoops() {
 					}
 					if fact.IsFactRunning() == false {
 						fact.SetAutoStart(true)
-						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is starting!")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
 					} else {
 						fact.SetAutoStart(true)
 						fact.SetQueued(false)
 
-						fact.LogCMS(config.Config.FactorioChannelID, "Factorio is quick restarting!")
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is quick restarting!")
 						go func() {
 							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
 								for x := 0; x < 3; x++ {
@@ -777,7 +804,7 @@ func MainLoops() {
 					if fact.IsFactRunning() {
 						fact.SetAutoStart(false)
 						go func() {
-							fact.LogCMS(config.Config.FactorioChannelID, "Factorio is shutting down for maintenance!")
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is shutting down for maintenance!")
 							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
 								for x := 0; x < 3; x++ {
 									fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is shutting down in 30 seconds, for system maintenance![/color]", fact.RandomColor(false)))

@@ -6,12 +6,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os/exec"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"../../config"
+	"../../cfg"
 	"../../fact"
 	"../../glob"
 	"../../logs"
@@ -33,7 +32,7 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	ourseed := uint64(t.UnixNano())
 	argnum := len(args)
 
-	MapPreset := config.Config.MapPreset
+	MapPreset := cfg.Local.MapPreset
 
 	if glob.LastMapSeed > 0 {
 		ourseed = glob.LastMapSeed
@@ -73,23 +72,26 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := config.Config.FactorioLocation + "/saves/" + ourcode + ".zip"
+	filename := cfg.Global.PathData.FactorioServersRoot +
+		cfg.Global.PathData.FactorioHomePrefix +
+		cfg.Local.ServerCallsign +
+		"/saves/" + ourcode + ".zip"
 
 	factargs := []string{"--preset", MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	//Append map gen if set
-	if config.Config.MapGenJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, config.Config.MapGenJson)
+		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-gen.json")
 	}
 
 	//Append map settings if set
-	if config.Config.MapSetJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, config.Config.MapSetJson)
+		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-set.json")
 	}
 
-	cmd := exec.Command(config.Config.Executable, factargs...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, factargs...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
@@ -100,10 +102,6 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
-			//plug-in PreviewPath in the future?
-			result := regexp.MustCompile(`(?m).*Creating new map \/home\/fact\/(.*)`)
-			filename = result.ReplaceAllString(l, "${1}")
-
 			fact.CMS(m.ChannelID, "New map saved as: "+filename)
 			return
 		}

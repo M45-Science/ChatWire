@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"./cfg"
 	"./commands"
-	"./config"
 	"./disc"
 	"./fact"
 	"./support"
@@ -25,8 +25,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	//Command stuff
 	//AUX channel
-	if m.ChannelID == config.Config.AuxChannel {
-		if strings.HasPrefix(ctext, config.Config.Prefix) {
+	if m.ChannelID == cfg.Local.ChannelData.LogID {
+		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}
 
 			slen := len(ctext)
@@ -47,8 +47,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			return
 		}
-	} else if m.ChannelID == config.Config.FactorioChannelID { //Factorio channel
-		if strings.HasPrefix(ctext, config.Config.Prefix) {
+	} else if m.ChannelID == cfg.Local.ChannelData.ChatID { //Factorio channel
+		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}
 
 			slen := len(ctext)
@@ -72,7 +72,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	//Block everything but chat
-	if m.ChannelID != config.Config.FactorioChannelID {
+	if m.ChannelID != cfg.Local.ChannelData.ChatID {
 		return
 	}
 

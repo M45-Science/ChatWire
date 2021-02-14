@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"../config"
+	"../cfg"
 	"../fact"
 	"./admin"
 	"./user"
@@ -75,12 +75,12 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 		}
 	}
 
-	fact.CMS(m.ChannelID, "Invalid command, try "+config.Config.Prefix+"help")
+	fact.CMS(m.ChannelID, "Invalid command, try "+cfg.Global.DiscordCommandPrefix+"help")
 }
 
 // CheckAdmin checks if the user attempting to run an admin command is an admin
 func CheckAdmin(ID string) bool {
-	for _, admin := range config.Config.AdminIDs {
+	for _, admin := range cfg.Global.AdminData.IDs {
 		if ID == admin {
 			return true
 		}
@@ -98,14 +98,14 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			if command.Admin {
 				admin = "(Admin)"
 			}
-			buf = buf + fmt.Sprintf("%s%-12s %s %s\n", config.Config.
-				Prefix, strings.ToLower(command.Name), admin, command.Help)
+			buf = buf + fmt.Sprintf("%s%-12s %s %s\n", cfg.Global.
+				DiscordCommandPrefix, strings.ToLower(command.Name), admin, command.Help)
 		}
 	} else {
 		for _, command := range CL.CommandList {
 			if command.Admin == false {
-				buf = buf + fmt.Sprintf("%s%-12s %s\n", config.Config.
-					Prefix, strings.ToLower(command.Name), command.Help)
+				buf = buf + fmt.Sprintf("%s%-12s %s\n", cfg.Global.
+					DiscordCommandPrefix, strings.ToLower(command.Name), command.Help)
 			}
 		}
 	}

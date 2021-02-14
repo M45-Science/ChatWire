@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"../config"
+	"../cfg"
 	"../glob"
 )
 
@@ -49,5 +49,5 @@ func Log(text string) {
 	glob.BotLogDesc.WriteString(buf + "\n")
 
 	buf = fmt.Sprintf("`%s` %s", date, text)
-	cms(config.Config.AuxChannel, buf)
+	cms(cfg.Local.ChannelData.LogID, buf)
 }

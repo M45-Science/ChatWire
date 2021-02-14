@@ -3,10 +3,9 @@ package fact
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"time"
 
-	"../config"
+	"../cfg"
 	"../constants"
 	"../disc"
 	"../glob"
@@ -19,9 +18,9 @@ func FactorioIsOffline(err bool) {
 
 	if IsFactorioBooted() {
 		if err {
-			LogCMS(config.Config.FactorioChannelID, "Factorio encountered an error, and is now offline.")
+			LogCMS(cfg.Local.ChannelData.ChatID, "Factorio encountered an error, and is now offline.")
 		} else {
-			LogCMS(config.Config.FactorioChannelID, "Factorio is now offline.")
+			LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
 		}
 	}
 
@@ -148,13 +147,13 @@ func AutoPromote(pname string) string {
 
 			newrole := ""
 			if plevel == 0 {
-				newrole = config.Config.MembersRole
+				newrole = cfg.Global.RoleData.Members
 			} else if plevel == 1 {
-				newrole = config.Config.MembersRole
+				newrole = cfg.Global.RoleData.Members
 			} else if plevel == 2 {
-				newrole = config.Config.RegularsRole
+				newrole = cfg.Global.RoleData.Regulars
 			} else if plevel == 255 {
-				newrole = config.Config.AdminsRole
+				newrole = cfg.Global.RoleData.Admins
 			}
 
 			guild := GetGuild()
@@ -164,7 +163,7 @@ func AutoPromote(pname string) string {
 				errrole, regrole := disc.RoleExists(guild, newrole)
 
 				if errrole {
-					errset := disc.SmartRoleAdd(config.Config.GuildID, discid, regrole.ID)
+					errset := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, discid, regrole.ID)
 					if errset != nil {
 						logs.Log(fmt.Sprintf("Couldn't set role %v for %v.", plevel, pname))
 					}
@@ -186,9 +185,9 @@ func UpdateChannelName() {
 	nump := GetNumPlayers()
 
 	if nump == 0 {
-		newchname = fmt.Sprintf("%v", config.Config.ChannelName)
+		newchname = fmt.Sprintf("%v", cfg.Local.ChannelData.Name)
 	} else {
-		newchname = fmt.Sprintf("%v🟢%v", nump, config.Config.ChannelName)
+		newchname = fmt.Sprintf("%v🟢%v", nump, cfg.Local.ChannelData.Name)
 	}
 
 	glob.UpdateChannelLock.Lock()
@@ -203,8 +202,6 @@ func DoUpdateChannelName() {
 		return
 	}
 
-	chpos, _ := strconv.Atoi(config.Config.ChannelPos)
-
 	glob.UpdateChannelLock.Lock()
 	chname := glob.NewChanName
 	oldchname := glob.OldChanName
@@ -215,7 +212,7 @@ func DoUpdateChannelName() {
 		glob.OldChanName = glob.NewChanName
 		glob.UpdateChannelLock.Unlock()
 
-		_, aerr := glob.DS.ChannelEditComplex(config.Config.FactorioChannelID, &discordgo.ChannelEdit{Name: chname, Position: chpos + 200})
+		_, aerr := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.ChatID, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.ChannelData.Pos})
 
 		if aerr != nil {
 			logs.Log(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"../config"
+	"../cfg"
 	"../constants"
 	"../glob/"
 	"../logs"
@@ -21,7 +21,7 @@ import (
 func GetMapTypeNum(mapt string) int {
 	i := 0
 
-	if config.Config.MapGenJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		return 0
 	}
 	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
@@ -76,11 +76,11 @@ func Map_reset(data string) {
 
 	if IsFactRunning() {
 		if newstr != "" {
-			CMS(config.Config.FactorioChannelID, newstr)
+			CMS(cfg.Local.ChannelData.ChatID, newstr)
 			WriteFact("/cchat [color=red](SYSTEM) " + newstr + "[/color]")
 			return
 		} else {
-			CMS(config.Config.FactorioChannelID, "Stopping server, for map reset.")
+			CMS(cfg.Local.ChannelData.ChatID, "Stopping server, for map reset.")
 			SetAutoStart(false)
 			QuitFactorio()
 		}
@@ -107,9 +107,9 @@ func Map_reset(data string) {
 
 		t := time.Now()
 		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
-		newmapname := fmt.Sprintf("%s-%s.zip", config.Config.ChannelName, date)
-		newmappath := fmt.Sprintf("%s/%s maps/%s", config.Config.MapArchivePath, shortversion, newmapname)
-		newmapurl := fmt.Sprintf("http://m45sci.xyz/u/fact/old-maps/%s%smaps/%s", shortversion, "%20", newmapname)
+		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ChannelData.Name, date)
+		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
+		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
 
 		from, erra := os.Open(glob.GameMapPath)
 		if erra != nil {
@@ -117,6 +117,10 @@ func Map_reset(data string) {
 			return
 		}
 		defer from.Close()
+
+		//Make directory if it does not exist
+		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
+		os.MkdirAll(newdir, os.ModePerm)
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
@@ -139,51 +143,51 @@ func Map_reset(data string) {
 			return
 		}
 
-		CMS(config.Config.FactorioChannelID, buf)
+		CMS(cfg.Local.ChannelData.ChatID, buf)
 	}
 
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
 
-	MapPreset := config.Config.MapPreset
+	MapPreset := cfg.Local.MapPreset
 
 	if MapPreset == "Error" {
-		CMS(config.Config.FactorioChannelID, "Invalid map preset.")
+		CMS(cfg.Local.ChannelData.ChatID, "Invalid map preset.")
 		return
 	}
 
-	CMS(config.Config.FactorioChannelID, "Generating map...")
+	CMS(cfg.Local.ChannelData.ChatID, "Generating map...")
 
 	//Generate code to make filename
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := config.Config.FactorioLocation + "/saves/" + ourcode + ".zip"
+	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + "/saves/" + ourcode + ".zip"
 
 	factargs := []string{"--preset", MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	//Append map gen if set
-	if config.Config.MapGenJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, config.Config.MapGenJson)
+		factargs = append(factargs, cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-set.json")
 	}
 
 	//Append map settings if set
-	if config.Config.MapSetJson != "" {
+	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, config.Config.MapSetJson)
+		factargs = append(factargs, cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-gen.json")
 	}
 
-	cmd := exec.Command(config.Config.Executable, factargs...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, factargs...)
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
 		logs.Log(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 		return
 	}
-	CMS(config.Config.FactorioChannelID, "Rebooting.")
-	CMS(config.Config.AnnounceChannelID, "Map on server: "+config.Config.ChannelName+" has been reset.")
+	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
+	CMS(cfg.Global.DiscordData.AnnounceChannelID, "Map on server: "+cfg.Local.ChannelData.Name+" has been reset.")
 	DoExit()
 	return
 

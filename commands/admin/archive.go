@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"../../config"
+	"../../cfg"
 	"../../constants"
 	"../../fact"
 	"../../glob"
@@ -34,15 +34,19 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		t := time.Now()
 		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
-		newmapname := fmt.Sprintf("%s-%s.zip", config.Config.ChannelName, date)
-		newmappath := fmt.Sprintf("%s/%s maps/%s", config.Config.MapArchivePath, shortversion, newmapname)
-		newmapurl := fmt.Sprintf("http://m45sci.xyz/u/fact/old-maps/%s%smaps/%s", shortversion, "%20", newmapname)
+		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ChannelData.Name, date)
+		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
+		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
 
 		from, erra := os.Open(glob.GameMapPath)
 		if erra != nil {
 			logs.Log(fmt.Sprintf("An error occurred when attempting to the map to archive. Details: %s", erra))
 		}
 		defer from.Close()
+
+		//Make directory if it does not exist
+		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
+		os.MkdirAll(newdir, os.ModePerm)
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {

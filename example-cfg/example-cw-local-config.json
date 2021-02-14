@@ -1,0 +1,26 @@
+{
+	"Version": "0.0.1",
+	"ServerCallsign": "t",
+	"ChannelData": {
+		"Name": "test",
+		"Pos": 0,
+		"ChatID": "1234",
+		"LogID": "5678"
+	},
+	"MapPreset": "rail-world",
+	"AutoStart": true,
+	"AutoUpdate": true,
+	"DoWhitelist": false,
+	"UpdateFactExp": false,
+	"MapGenPreset": "",
+	"ShowStats": false,
+
+	"###COMMENT###": "these are softmod-specific",
+	"RestrictMode": false,
+	"FriendlyFire": false,
+	"CleanMapOnBoot": false,
+	"SlowConnect": false,
+	"DefaultSpeed": 0,
+	"ConnectSpeed": 0,
+	"ResetScheduleText": "Just a test"
+}
