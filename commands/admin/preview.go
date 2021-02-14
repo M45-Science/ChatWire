@@ -46,16 +46,16 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	//Append map gen if set
 	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-gen-settings")
-		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-gen.json")
+		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
 	}
 
 	//Append map settings if set
 	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-settings")
-		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-set.json")
+		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, args...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, args...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
