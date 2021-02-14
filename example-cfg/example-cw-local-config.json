@@ -1,28 +1,29 @@
 {
 	"Version": "0.0.1",
-	"Port": 1234,
 	"ServerCallsign": "t",
+	"Name": "test",
+	"Port": 1234,
+	"MapPreset": "rail-world",
+	"MapGenPreset": "",
+	"AutoStart": true,
+	"AutoUpdate": false,
+	"UpdateFactExp": false,
+	"ResetScheduleText": "every firday morning",
+	"WriteStatsDisc": false,
 	"ChannelData": {
-		"Name": "test",
 		"Pos": 0,
 		"ChatID": "1234",
 		"LogID": "5678"
 	},
-	"FactorioLaunchParams": null,
-	"MapPreset": "rail-world",
-	"AutoStart": true,
-	"AutoUpdate": true,
-	"DoWhitelist": false,
-	"UpdateFactExp": false,
-	"MapGenPreset": "",
-	"ShowStats": false,
-
-	"###COMMENT###": "these are softmod-specific",
-	"RestrictMode": false,
-	"FriendlyFire": false,
-	"CleanMapOnBoot": false,
-	"SlowConnect": false,
-	"DefaultSpeed": 0,
-	"ConnectSpeed": 0,
-	"ResetScheduleText": "Just a test"
+	"SlowConnect": {
+		"SlowConnect": false,
+		"DefaultSpeed": 1.0,
+		"ConnectSpeed": 0.5
+	},
+	"SoftModOptions": {
+		"DoWhitelist": false,
+		"RestrictMode": false,
+		"FriendlyFire": false,
+		"CleanMapOnBoot": false
+	}
 }

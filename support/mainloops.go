@@ -102,7 +102,7 @@ func MainLoops() {
 					glob.FactorioLaunchLock.Lock()
 
 					var err error
-					tempargs := cfg.Local.FactorioLaunchParams
+					var tempargs []string
 
 					rconport := cfg.Local.Port + cfg.Global.RconPortOffset
 					rconpass := cfg.Global.RconPass
@@ -126,7 +126,7 @@ func MainLoops() {
 					tempargs = append(tempargs, serversettings)
 
 					//Whitelist
-					if cfg.Local.DoWhitelist {
+					if cfg.Local.SoftModOptions.DoWhitelist {
 						tempargs = append(tempargs, "--use-server-whitelist")
 					}
 
@@ -182,7 +182,7 @@ func MainLoops() {
 			time.Sleep(5 * time.Minute)
 			for {
 				time.Sleep(5 * time.Second)
-				if cfg.Local.ShowStats {
+				if cfg.Local.WriteStatsDisc {
 
 					numreg := 0
 					numnew := 0
@@ -414,7 +414,7 @@ func MainLoops() {
 				time.Sleep(5 * time.Second)
 				tn := time.Now()
 
-				if cfg.Local.SlowConnect {
+				if cfg.Local.SlowConnect.SlowConnect {
 
 					glob.ConnectPauseLock.Lock()
 
@@ -427,8 +427,8 @@ func MainLoops() {
 							fact.CMS(cfg.Local.ChannelData.ChatID, buf)
 							fact.WriteFact("/chat (SYSTEM) " + buf)
 
-							if cfg.Local.DefaultSpeed > 0.0 {
-								fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.DefaultSpeed))
+							if cfg.Local.SlowConnect.DefaultSpeed > 0.0 {
+								fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.DefaultSpeed))
 							} else {
 								fact.WriteFact("/gspeed 1.0")
 							}

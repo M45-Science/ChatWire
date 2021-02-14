@@ -38,8 +38,8 @@
 		"ShellPath": "/bin/bash",
 		"FactUpdaterShell": "/sbin/python",
 		"ZipBinaryPath": "/sbin/zip",
-		"MapPreviewURL": "http://mysite/prev/",
-		"ArchiveURL": "http://mysite/old-maps/"
+		"MapPreviewURL": "http://mysite.com/prev/",
+		"ArchiveURL": "http://mysite.com/old-maps/"
 	},
 	"MapPreviewData": {
 		"Args": "",
