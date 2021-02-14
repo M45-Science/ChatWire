@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 
@@ -31,7 +30,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 
 	fact.CMS(m.ChannelID, "Generating map preview...")
 
-	var filename = ""
+	var preview_made = false
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
 	buf := new(bytes.Buffer)
@@ -67,9 +66,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 
 	for _, l := range lines {
 		if strings.Contains(l, "Wrote map preview image file:") {
-			//plug-in PreviewPath in the future?
-			result := regexp.MustCompile(`(?m).*Wrote map preview image file: \/home\/fact\/public_html\/(.*)`)
-			filename = result.ReplaceAllString(l, cfg.Global.PathData.MapPreviewURL+"${1}")
+			preview_made = true
 		}
 	}
 
@@ -87,7 +84,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	}
 
 	buffer := "Preview failed."
-	if filename != "" {
+	if preview_made {
 		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, cfg.Global.PathData.MapPreviewURL, ourcode)
 	}
 
