@@ -150,5 +150,5 @@ func startbot() {
 	fact.UpdateChannelName()
 
 	//Update aux channel name on reboot
-	glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ChannelData.Name, Position: cfg.Local.ChannelData.Pos})
+	glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ServerCallsign + "-" + cfg.Local.Name, Position: cfg.Local.ChannelData.Pos})
 }

@@ -107,7 +107,7 @@ func Map_reset(data string) {
 
 		t := time.Now()
 		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
-		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ChannelData.Name, date)
+		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ServerCallsign+"-"+cfg.Local.Name, date)
 		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
 		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
 
@@ -187,7 +187,7 @@ func Map_reset(data string) {
 		return
 	}
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
-	CMS(cfg.Global.DiscordData.AnnounceChannelID, "Map on server: "+cfg.Local.ChannelData.Name+" has been reset.")
+	CMS(cfg.Global.DiscordData.AnnounceChannelID, "Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
 	DoExit()
 	return
 

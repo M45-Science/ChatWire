@@ -171,7 +171,7 @@ func Chat() {
 						if strings.HasPrefix(lineText, "[REPORT]") {
 							if linelistlen >= 3 {
 								buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
-									cfg.Local.ChannelData.Name, linelist[1], strings.Join(linelist[2:], " "))
+									cfg.Local.ServerCallsign+"-"+cfg.Local.Name, linelist[1], strings.Join(linelist[2:], " "))
 								fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
 								logs.Log(lineText)
 							}
@@ -513,7 +513,7 @@ func Chat() {
 						//*****************
 						//Pause on catch-up
 						//*****************
-						if cfg.Local.SlowConnect {
+						if cfg.Local.SlowConnect.SlowConnect {
 
 							tn := time.Now()
 
@@ -533,10 +533,10 @@ func Chat() {
 
 									//Fix for players leaving with no leave message
 								} else if strings.Contains(lineText, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
-									if cfg.Local.ConnectSpeed <= 0.0 {
+									if cfg.Local.SlowConnect.ConnectSpeed <= 0.0 {
 										fact.WriteFact("/gspeed 0.5")
 									} else {
-										fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.ConnectSpeed))
+										fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.ConnectSpeed))
 									}
 
 									glob.ConnectPauseLock.Lock()
@@ -553,8 +553,8 @@ func Chat() {
 										glob.ConnectPauseCount = 0
 										glob.ConnectPauseTimer = 0
 
-										if cfg.Local.DefaultSpeed >= 0.0 {
-											fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.DefaultSpeed))
+										if cfg.Local.SlowConnect.DefaultSpeed >= 0.0 {
+											fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.DefaultSpeed))
 										} else {
 											fact.WriteFact("/gspeed 1.0")
 										}
@@ -673,17 +673,17 @@ func Chat() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+glob.FactorioVersion+" is now online.")
 							fact.WriteFact("/p o c")
 
-							fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ChannelData.Name))
+							fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
 
 							//Config new-users restrictions
-							if cfg.Local.RestrictMode {
+							if cfg.Local.SoftModOptions.RestrictMode {
 								fact.WriteFact("/restrict on")
 							} else {
 								fact.WriteFact("/restrict off")
 							}
 
 							//Config friendly fire
-							if cfg.Local.FriendlyFire {
+							if cfg.Local.SoftModOptions.FriendlyFire {
 								fact.WriteFact("/friendlyfire on")
 							} else {
 								fact.WriteFact("/friendlyfire off")
@@ -708,7 +708,7 @@ func Chat() {
 								}
 								glob.PlayerListLock.RUnlock()
 
-								if cfg.Local.CleanMapOnBoot {
+								if cfg.Local.SoftModOptions.CleanMapOnBoot {
 									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 									fact.WriteFact("/cleanmap")
 								}

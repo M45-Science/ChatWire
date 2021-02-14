@@ -18,35 +18,27 @@ var Global gconfig
 type config struct {
 	Version string
 
-	Port           int
 	ServerCallsign string
+	Name           string
+	Port           int
 
-	ChannelData ChannelDataStruct
-
-	FactorioLaunchParams []string
-
-	MapPreset     string
-	AutoStart     bool
-	AutoUpdate    bool
-	DoWhitelist   bool
-	UpdateFactExp bool
-
+	MapPreset    string
 	MapGenPreset string
 
-	RestrictMode   bool
-	FriendlyFire   bool
-	CleanMapOnBoot bool
-	ShowStats      bool
-
-	SlowConnect  bool
-	DefaultSpeed float32
-	ConnectSpeed float32
-
+	AutoStart         bool
+	AutoUpdate        bool
+	UpdateFactExp     bool
 	ResetScheduleText string
+	WriteStatsDisc    bool
+
+	ChannelData    ChannelDataStruct
+	SlowConnect    SlowConnectStruct
+	SoftModOptions SoftModOptionsStruct
 }
 
 type gconfig struct {
-	Version        string
+	Version string
+
 	RconPortOffset int
 	RconPass       string
 
@@ -121,10 +113,22 @@ type MapPreviewDataStruct struct {
 
 //Local
 type ChannelDataStruct struct {
-	Name   string
 	Pos    int
 	ChatID string
 	LogID  string
+}
+
+type SlowConnectStruct struct {
+	SlowConnect  bool
+	DefaultSpeed float32
+	ConnectSpeed float32
+}
+
+type SoftModOptionsStruct struct {
+	DoWhitelist    bool
+	RestrictMode   bool
+	FriendlyFire   bool
+	CleanMapOnBoot bool
 }
 
 func WriteGCfg() bool {
