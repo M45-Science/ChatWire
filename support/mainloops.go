@@ -103,7 +103,25 @@ func MainLoops() {
 
 					var err error
 					tempargs := cfg.Local.FactorioLaunchParams
-					tempargs = append(tempargs, "--use-server-whitelist")
+
+					rconport := cfg.Local.Port + cfg.Global.RconPortOffset
+					rconpass := cfg.Global.RconPass
+					port := cfg.Local.Port
+					serversettings := cfg.Global.PathData.FactorioServersRoot +
+						cfg.Global.PathData.FactorioHomePrefix +
+						cfg.Local.ServerCallsign + "/" +
+						"server-settings.json"
+
+					tempargs = append(tempargs, "--start-serer-load-latest")
+					tempargs = append(tempargs, "--rcon-port "+fmt.Sprintf("%v", rconport))
+					tempargs = append(tempargs, "--rcon-password "+rconpass)
+					tempargs = append(tempargs, "--port "+fmt.Sprintf("%v", port))
+					tempargs = append(tempargs, "--server-settings "+serversettings)
+
+					//Whitelist
+					if cfg.Local.DoWhitelist {
+						tempargs = append(tempargs, "--use-server-whitelist")
+					}
 
 					cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, tempargs...)
 					platform.LinuxSetProcessGroup(cmd)

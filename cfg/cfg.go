@@ -16,7 +16,9 @@ var Local config
 var Global gconfig
 
 type config struct {
-	Version        string
+	Version string
+
+	Port           int
 	ServerCallsign string
 
 	ChannelData ChannelDataStruct
@@ -45,6 +47,9 @@ type config struct {
 
 type gconfig struct {
 	Version        string
+	RconPortOffset int
+	RconPass       string
+
 	DiscordData    DiscordDataStruct
 	AdminData      AdminData
 	RoleData       RoleDataStruct
