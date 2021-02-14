@@ -88,7 +88,7 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-set.json")
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, factargs...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {

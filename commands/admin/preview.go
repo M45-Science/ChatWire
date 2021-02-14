@@ -55,7 +55,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-set.json")
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, args...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, args...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {

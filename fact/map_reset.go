@@ -179,7 +179,7 @@ func Map_reset(data string) {
 		factargs = append(factargs, cfg.Global.PathData.MapGenPath+cfg.Local.MapGenPreset+"-gen.json")
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, factargs...)
+	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
