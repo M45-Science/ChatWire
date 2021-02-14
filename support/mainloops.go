@@ -113,10 +113,17 @@ func MainLoops() {
 						"server-settings.json"
 
 					tempargs = append(tempargs, "--start-serer-load-latest")
-					tempargs = append(tempargs, "--rcon-port "+fmt.Sprintf("%v", rconport))
-					tempargs = append(tempargs, "--rcon-password "+rconpass)
-					tempargs = append(tempargs, "--port "+fmt.Sprintf("%v", port))
-					tempargs = append(tempargs, "--server-settings "+serversettings)
+					tempargs = append(tempargs, "--rcon-port")
+					tempargs = append(tempargs, fmt.Sprintf("%v", rconport))
+
+					tempargs = append(tempargs, "--rcon-password")
+					tempargs = append(tempargs, rconpass)
+
+					tempargs = append(tempargs, "--port")
+					tempargs = append(tempargs, fmt.Sprintf("%v", port))
+
+					tempargs = append(tempargs, "--server-settings")
+					tempargs = append(tempargs, serversettings)
 
 					//Whitelist
 					if cfg.Local.DoWhitelist {
