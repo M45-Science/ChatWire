@@ -50,7 +50,7 @@ func WatchDatabaseFile() {
 				}
 			}()
 
-			if err := watcher.Add(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName); err != nil {
+			if err := watcher.Add(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName); err != nil {
 				logs.Log(fmt.Sprintf("fsnotify error: %v", err))
 			}
 
@@ -338,7 +338,7 @@ func WritePlayers() {
 
 	buffer := ""
 
-	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName)
+	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
 	if err != nil {
 		logs.Log("Couldn't open db file, skipping...")
 		return
@@ -375,7 +375,7 @@ func WritePlayers() {
 	}
 
 	oldName := nfilename
-	newName := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.DBFileName
+	newName := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
 	err = os.Rename(oldName, newName)
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"../../cfg"
 	"../../fact"
 	"../../glob"
 	"github.com/bwmarrin/discordgo"
