@@ -31,7 +31,7 @@ func FactorioIsOffline(err bool) {
 func WhitelistPlayer(pname string, level int) {
 	if IsFactRunning() {
 		if glob.WhitelistMode {
-			if level > 1 {
+			if level > 0 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
 			}
 		}
