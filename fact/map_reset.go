@@ -179,7 +179,11 @@ func Map_reset(data string) {
 		factargs = append(factargs, MapPreset)
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
+	bloc := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary
+	lbuf := fmt.Sprint("EXEC: %v ARGS: %v", bloc, strings.Join(factargs, " "))
+	logs.Log(lbuf)
+
+	cmd := exec.Command(bloc, factargs...)
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
