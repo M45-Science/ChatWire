@@ -175,7 +175,8 @@ func Map_reset(data string) {
 		factargs = append(factargs, "--map-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
 	} else {
-		factargs = append(factargs, "--preset", MapPreset)
+		factargs = append(factargs, "--preset")
+		factargs = append(factargs, MapPreset)
 	}
 
 	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
