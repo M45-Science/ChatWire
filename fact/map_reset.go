@@ -180,7 +180,7 @@ func Map_reset(data string) {
 	}
 
 	bloc := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary
-	lbuf := fmt.Sprint("EXEC: %v ARGS: %v", bloc, strings.Join(factargs, " "))
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", bloc, strings.Join(factargs, " "))
 	logs.Log(lbuf)
 
 	cmd := exec.Command(bloc, factargs...)
