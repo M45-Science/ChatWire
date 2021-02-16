@@ -80,12 +80,11 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
-	}
 
-	//Append map settings if set
-	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+	} else {
+		factargs = append(factargs, "--preset", MapPreset)
 	}
 
 	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
