@@ -191,7 +191,12 @@ func Map_reset(data string) {
 		return
 	}
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
-	CMS(cfg.Global.DiscordData.AnnounceChannelID, "Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
+
+	pingstr := ""
+	if cfg.Local.ResetPingString != "" {
+		pingstr = cfg.Local.ResetPingString
+	}
+	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
 	DoExit()
 	return
 

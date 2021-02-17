@@ -30,6 +30,7 @@ type config struct {
 	UpdateFactExp     bool
 	ResetScheduleText string
 	WriteStatsDisc    bool
+	ResetPingString   string
 
 	ChannelData    ChannelDataStruct
 	SlowConnect    SlowConnectStruct
