@@ -137,8 +137,6 @@ var DoUpdateFactorioLock sync.Mutex
 var ManMinutes = 0
 var ManMinutesLock sync.Mutex
 
-var WhitelistMode = false
-
 var LastColor = 0
 
 var ConnectPauseLock sync.Mutex
