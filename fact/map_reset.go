@@ -192,8 +192,11 @@ func Map_reset(data string) {
 	}
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
 
+	//If available, use per-server ping setting... otherwise use global
 	pingstr := ""
-	if cfg.Global.ResetPingString != "" {
+	if cfg.Local.ResetPingString != "" {
+		pingstr = cfg.Local.ResetPingString
+	} else if cfg.Global.ResetPingString != "" {
 		pingstr = cfg.Global.ResetPingString
 	}
 	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
