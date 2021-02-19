@@ -86,13 +86,16 @@ func SaveFactorio() {
 	}
 }
 
-//Strip all but a-z
+//Strip lower ascii codes, sub newlines, returns and tabs with ' '
 func stripshit(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
 		c := str[i]
-		if c >= 32 && c < 127 {
+		if c == '\n' || c == '\r' || c == '\t' {
+			b[bl] = ' '
+			bl++
+		} else if c >= 32 && c != 127 {
 			b[bl] = c
 			bl++
 		}

@@ -16,7 +16,8 @@ import (
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	ctext, _ := m.ContentWithMoreMentionsReplaced(s)
+	input, _ := m.ContentWithMoreMentionsReplaced(s)
+	ctext := support.StripControlAndSubSpecial(input)
 	log.Print("[" + m.Author.Username + "] " + ctext)
 
 	if m.Author.ID == s.State.User.ID || m.Author.Bot {

@@ -40,7 +40,7 @@ func Chat() {
 
 				linelen := len(lineText)
 				//Ignore blanks
-				if lineText == "" || linelen <= 2 {
+				if lineText == "" || linelen <= 1 {
 					continue
 				}
 
@@ -385,31 +385,6 @@ func Chat() {
 								fact.SaveFactorio()
 							}
 							continue
-						}
-						//*****************
-						//MAP END
-						//*****************
-						if strings.HasPrefix(lineText, "[END]MAPEND") {
-							if fact.IsFactRunning() {
-								go func() {
-									msg := "Server will shutdown in 5 minutes."
-									fact.WriteFact("/cchat [SYSTEM] " + msg)
-									fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-									time.Sleep(5 * time.Minute)
-
-									msg = "Server shutting down."
-									fact.WriteFact("/cchat [SYSTEM] " + msg)
-									fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-									time.Sleep(5 * time.Second)
-
-									if fact.IsFactRunning() {
-										fact.CMS(cfg.Local.ChannelData.ChatID, "Stopping Factorio, and disabling auto-launch.")
-										fact.SetRelaunchThrottle(0)
-										fact.SetAutoStart(false)
-										fact.QuitFactorio()
-									}
-								}()
-							}
 						}
 
 						//*****************
