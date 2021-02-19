@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"../../cfg"
 	"../../fact"
 	"../../glob"
 	"github.com/bwmarrin/discordgo"
@@ -12,6 +13,13 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	glob.GameMapLock.Lock()
 	defer glob.GameMapLock.Unlock()
 
-	fact.CMS(m.ChannelID, "Not yet implemented")
+	//Read global and local configs
+	cfg.ReadGCfg()
+	cfg.ReadLCfg()
+
+	//Re-Write global and local configs
+	cfg.WriteGCfg()
+	cfg.WriteLCfg()
+	fact.CMS(m.ChannelID, "Config files reloaded.")
 
 }

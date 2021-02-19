@@ -36,26 +36,31 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	buf := new(bytes.Buffer)
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	glob.LastMapSeed = ourseed
+	MapPreset := cfg.Local.MapPreset
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	glob.LastMapCode = ourcode
 
 	path := fmt.Sprintf("%s%s.png", cfg.Global.PathData.MapPreviewPath, ourcode)
 	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.PathData.MapPreviewPath, ourcode)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.MapPreviewData.Res, "--map-preview-scale=" + cfg.Global.MapPreviewData.Scale, "--preset", cfg.Local.MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.MapPreviewData.Args}
+	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.MapPreviewData.Res, "--map-preview-scale=" + cfg.Global.MapPreviewData.Scale, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.MapPreviewData.Args}
 
 	//Append map gen if set
 	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-gen-settings")
 		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
-	}
 
-	//Append map settings if set
-	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-settings")
 		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+	} else {
+		args = append(args, "--preset")
+		args = append(args, MapPreset)
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, args...)
+	bloc := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", bloc, strings.Join(args, " "))
+	logs.Log(lbuf)
+	cmd := exec.Command(bloc, args...)
+
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {

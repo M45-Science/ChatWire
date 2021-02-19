@@ -165,21 +165,25 @@ func Map_reset(data string) {
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/" + ourcode + ".zip"
 
-	factargs := []string{"--preset", MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
+	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	//Append map gen if set
 	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
-	}
 
-	//Append map settings if set
-	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+	} else {
+		factargs = append(factargs, "--preset")
+		factargs = append(factargs, MapPreset)
 	}
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
+	bloc := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", bloc, strings.Join(factargs, " "))
+	logs.Log(lbuf)
+
+	cmd := exec.Command(bloc, factargs...)
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
@@ -187,7 +191,15 @@ func Map_reset(data string) {
 		return
 	}
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
-	CMS(cfg.Global.DiscordData.AnnounceChannelID, "Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
+
+	//If available, use per-server ping setting... otherwise use global
+	pingstr := ""
+	if cfg.Local.ResetPingString != "" {
+		pingstr = cfg.Local.ResetPingString
+	} else if cfg.Global.ResetPingString != "" {
+		pingstr = cfg.Global.ResetPingString
+	}
+	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
 	DoExit()
 	return
 

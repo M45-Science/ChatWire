@@ -36,7 +36,6 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if glob.LastMapSeed > 0 {
 		ourseed = glob.LastMapSeed
-		glob.LastMapSeed = 0
 	}
 
 	if argnum > 0 {
@@ -74,21 +73,24 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/" + ourcode + ".zip"
 
-	factargs := []string{"--preset", MapPreset, "--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
+	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	//Append map gen if set
 	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
-	}
 
-	//Append map settings if set
-	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+	} else {
+		factargs = append(factargs, "--preset")
+		factargs = append(factargs, MapPreset)
 	}
+	bloc := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", bloc, strings.Join(factargs, " "))
+	logs.Log(lbuf)
 
-	cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, factargs...)
+	cmd := exec.Command(bloc, factargs...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {

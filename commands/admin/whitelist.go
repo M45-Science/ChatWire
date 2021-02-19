@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"../../cfg"
 	"../../fact"
 	"../../glob"
 	"github.com/bwmarrin/discordgo"
@@ -10,7 +11,7 @@ import (
 func SendWhitelist(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	//Send whitelist
-	if glob.WhitelistMode {
+	if cfg.Local.SoftModOptions.DoWhitelist {
 		glob.PlayerListLock.RLock()
 		for i := 0; i <= glob.PlayerListMax; i++ {
 			fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)

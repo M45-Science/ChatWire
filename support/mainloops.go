@@ -128,6 +128,7 @@ func MainLoops() {
 					//Whitelist
 					if cfg.Local.SoftModOptions.DoWhitelist {
 						tempargs = append(tempargs, "--use-server-whitelist")
+						tempargs = append(tempargs, "true")
 					}
 
 					cmd := exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, tempargs...)
