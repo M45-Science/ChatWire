@@ -83,44 +83,9 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
-			//Clean strings
 			cmess := sclean.StripControlAndSubSpecial(ctext)
-			//cmess = unidecode.Unidecode(cmess)
-
-			//Remove factorio tags
-			rega := regexp.MustCompile(`\[/[^][]+\]`) //remove close tags [/color]
-
-			regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
-			regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
-
-			regf := regexp.MustCompile(`\*+`) //Remove discord markdown
-			regg := regexp.MustCompile(`\~+`)
-			regh := regexp.MustCompile(`\_+`)
-
-			for regc.MatchString(cmess) || regd.MatchString(cmess) {
-				//Remove colors/fonts
-				cmess = regc.ReplaceAllString(cmess, "")
-				cmess = regd.ReplaceAllString(cmess, "")
-			}
-			for rega.MatchString(cmess) {
-				//Filter close tags
-				cmess = rega.ReplaceAllString(cmess, "")
-			}
-			for regf.MatchString(cmess) || regg.MatchString(cmess) || regh.MatchString(cmess) {
-				//Filter discord tags
-				cmess = regf.ReplaceAllString(cmess, "")
-				cmess = regg.ReplaceAllString(cmess, "")
-				cmess = regh.ReplaceAllString(cmess, "")
-			}
-
-			if len(cmess) > 500 {
-				cmess = fmt.Sprintf("%s...(cut, too long!)", sclean.TruncateString(cmess, 500))
-			}
-
-			if cmess == "" {
-				return
-			}
-
+			cmess = sclean.RemoveDiscordMarkdown(cmess)
+			cmess = sclean.RemoveFactorioTags(cmess)
 			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 			nbuf := ""
 

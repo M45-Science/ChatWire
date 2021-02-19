@@ -347,16 +347,7 @@ func Chat() {
 								glob.NumLoginsLock.Unlock()
 								plevelname := fact.AutoPromote(pname)
 
-								//Remove discord markdown
-								regf := regexp.MustCompile(`\*+`)
-								regg := regexp.MustCompile(`\~+`)
-								regh := regexp.MustCompile(`\_+`)
-								for regf.MatchString(pname) || regg.MatchString(pname) || regh.MatchString(pname) {
-									//Filter discord tags
-									pname = regf.ReplaceAllString(pname, "")
-									pname = regg.ReplaceAllString(pname, "")
-									pname = regh.ReplaceAllString(pname, "")
-								}
+								pname = sclean.RemoveDiscordMarkdown(pname)
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(cfg.Local.ChannelData.ChatID, buf)
@@ -398,33 +389,8 @@ func Chat() {
 
 								//Clean strings
 								cmess := sclean.StripControlAndSubSpecial(ctext)
-								//cmess = unidecode.Unidecode(cmess)
-
-								//Remove factorio tags
-								rega := regexp.MustCompile(`\[/[^][]+\]`) //remove close tags [/color]
-
-								regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
-								regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
-
-								regf := regexp.MustCompile(`\*+`) //Remove discord markdown
-								regg := regexp.MustCompile(`\~+`)
-								regh := regexp.MustCompile(`\_+`)
-
-								for regc.MatchString(cmess) || regd.MatchString(cmess) {
-									//Remove colors/fonts
-									cmess = regc.ReplaceAllString(cmess, "")
-									cmess = regd.ReplaceAllString(cmess, "")
-								}
-								for rega.MatchString(cmess) {
-									//Filter close tags
-									cmess = rega.ReplaceAllString(cmess, "")
-								}
-								for regf.MatchString(cmess) || regg.MatchString(cmess) || regh.MatchString(cmess) {
-									//Filter discord tags
-									cmess = regf.ReplaceAllString(cmess, "")
-									cmess = regg.ReplaceAllString(cmess, "")
-									cmess = regh.ReplaceAllString(cmess, "")
-								}
+								cmess = sclean.RemoveDiscordMarkdown(cmess)
+								cmess = sclean.RemoveFactorioTags(cmess)
 
 								if len(cmess) > 500 {
 									cmess = fmt.Sprintf("%s...(cut, too long!)", sclean.TruncateString(cmess, 500))
@@ -815,44 +781,8 @@ func Chat() {
 
 								cmess := strings.Join(nodslist[2:], " ")
 								cmess = sclean.StripControlAndSubSpecial(cmess)
-								//cmess = unidecode.Unidecode(cmess)
-
-								//Remove factorio tags
-								rega := regexp.MustCompile(`\[/[^][]+\]`) //remove close tags [/color]
-
-								regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
-								regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
-
-								rege := regexp.MustCompile(`\[(.*?)=(.*?)\]`) //Sub others
-
-								regf := regexp.MustCompile(`\*+`) //Remove discord markdown
-								regg := regexp.MustCompile(`\~+`)
-								regh := regexp.MustCompile(`\_+`)
-
-								cmess = strings.Replace(cmess, "\n", " ", -1)
-								cmess = strings.Replace(cmess, "\r", " ", -1)
-								cmess = strings.Replace(cmess, "\t", " ", -1)
-
-								for regc.MatchString(cmess) || regd.MatchString(cmess) {
-									//Remove colors/fonts
-									cmess = regc.ReplaceAllString(cmess, "")
-									cmess = regd.ReplaceAllString(cmess, "")
-								}
-								for rege.MatchString(cmess) {
-									//Sub
-									cmess = rege.ReplaceAllString(cmess, " [${1}: ${2}] ")
-								}
-								for rega.MatchString(cmess) {
-									//Filter close tags
-									cmess = rega.ReplaceAllString(cmess, "")
-								}
-
-								for regf.MatchString(cmess) || regg.MatchString(cmess) || regh.MatchString(cmess) {
-									//Filter discord tags
-									cmess = regf.ReplaceAllString(cmess, "")
-									cmess = regg.ReplaceAllString(cmess, "")
-									cmess = regh.ReplaceAllString(cmess, "")
-								}
+								cmess = sclean.RemoveDiscordMarkdown(cmess)
+								cmess = sclean.RemoveFactorioTags(cmess)
 
 								if len(cmess) > 500 {
 									cmess = fmt.Sprintf("%s**(message cut, too long!)**", sclean.TruncateString(cmess, 500))
@@ -875,9 +805,9 @@ func Chat() {
 
 								fbuf := ""
 								//Filter Factorio names
-								factname = regf.ReplaceAllString(factname, "")
-								factname = regg.ReplaceAllString(factname, "")
-								factname = regh.ReplaceAllString(factname, "")
+
+								factname = sclean.StripControlAndSubSpecial(factname)
+								factname = sclean.RemoveDiscordMarkdown(factname)
 								if dname != "" {
 									fbuf = fmt.Sprintf("`%-11s` **%s**: %s", fact.GetGameTime(), factname, cmess)
 								} else {

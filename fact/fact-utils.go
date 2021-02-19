@@ -10,6 +10,7 @@ import (
 	"../disc"
 	"../glob"
 	"../logs"
+	"../sclean"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -86,29 +87,12 @@ func SaveFactorio() {
 	}
 }
 
-//Strip lower ascii codes, sub newlines, returns and tabs with ' '
-func stripshit(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c == '\n' || c == '\r' || c == '\t' {
-			b[bl] = ' '
-			bl++
-		} else if c >= 32 && c != 127 {
-			b[bl] = c
-			bl++
-		}
-	}
-	return string(b[:bl])
-}
-
-func WriteFact(crap string) {
+func WriteFact(input string) {
 	glob.PipeLock.Lock()
 	defer glob.PipeLock.Unlock()
 
 	//If this filter is here because of people like you, you should commit suicide.
-	buf := stripshit(crap)
+	buf := sclean.StripControlAndSubSpecial(input)
 
 	gpipe := glob.Pipe
 	if gpipe != nil {

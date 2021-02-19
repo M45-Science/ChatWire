@@ -12,6 +12,7 @@ import (
 	"../constants"
 	"../glob"
 	"../logs"
+	"../sclean"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -94,6 +95,10 @@ func PlayerSetID(pname string, id string, level int) bool {
 		return false
 	}
 
+	pname = strings.ReplaceAll(pname, ",", "") //remove comma
+	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = sclean.StripControlAndSubSpecial(pname)
+
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
@@ -130,6 +135,10 @@ func UpdateSeen(pname string) {
 		return
 	}
 
+	pname = strings.ReplaceAll(pname, ",", "") //remove comma
+	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = sclean.StripControlAndSubSpecial(pname)
+
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
@@ -149,6 +158,10 @@ func PlayerLevelSet(pname string, level int) bool {
 	if pname == "" {
 		return false
 	}
+
+	pname = strings.ReplaceAll(pname, ",", "") //remove comma
+	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = sclean.StripControlAndSubSpecial(pname)
 
 	t := time.Now()
 
@@ -207,6 +220,10 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		return
 	}
 
+	pname = strings.ReplaceAll(pname, ",", "") //remove comma
+	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = sclean.StripControlAndSubSpecial(pname)
+
 	for i := 0; i <= glob.PlayerListMax; i++ {
 		if glob.PlayerList[i].Name == pname {
 
@@ -234,6 +251,9 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 
 	//Not in list, add them
 	if glob.PlayerListMax < constants.MaxPlayers { //Don't go over max
+		pname = strings.ReplaceAll(pname, ",", "") //remove comma
+		pname = strings.ReplaceAll(pname, ":", "") //replace colon
+		pname = sclean.StripControlAndSubSpecial(pname)
 		glob.PlayerList[glob.PlayerListMax].Name = pname
 		glob.PlayerList[glob.PlayerListMax].Level = level
 		glob.PlayerList[glob.PlayerListMax].Creation = creation
@@ -249,6 +269,10 @@ func PlayerLevelGet(pname string) int {
 	if pname == "" {
 		return 0
 	}
+
+	pname = strings.ReplaceAll(pname, ",", "") //remove comma
+	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = sclean.StripControlAndSubSpecial(pname)
 
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
@@ -303,6 +327,9 @@ func LoadPlayers() {
 				numitems := len(items)
 				if numitems == 5 {
 					pname := items[0]
+					pname = strings.ReplaceAll(pname, ",", "") //remove comma
+					pname = strings.ReplaceAll(pname, ":", "") //replace colon
+					pname = sclean.StripControlAndSubSpecial(pname)
 					playerlevel, _ := strconv.Atoi(items[1])
 					pid := items[2]
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
@@ -359,8 +386,7 @@ func WritePlayers() {
 			//Filter comma from names, just in case
 			name := strings.ReplaceAll(glob.PlayerList[i].Name, ",", "") //remove comma
 			name = strings.ReplaceAll(name, ":", "")                     //replace colon
-			name = strings.ReplaceAll(name, "\n", "")                    //replace newline
-			name = strings.ReplaceAll(name, "\r", "")                    //replace return
+			name = sclean.StripControlAndSubSpecial(name)
 			buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", name, glob.PlayerList[i].Level, glob.PlayerList[i].ID, glob.PlayerList[i].Creation, glob.PlayerList[i].LastSeen)
 		}
 	}
