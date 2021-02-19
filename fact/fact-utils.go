@@ -86,11 +86,25 @@ func SaveFactorio() {
 	}
 }
 
+//Strip all but a-z
+func stripshit(str string) string {
+	b := make([]byte, len(str))
+	var bl int
+	for i := 0; i < len(str); i++ {
+		c := str[i]
+		if c >= 32 && c < 127 {
+			b[bl] = c
+			bl++
+		}
+	}
+	return string(b[:bl])
+}
+
 func WriteFact(crap string) {
 	glob.PipeLock.Lock()
 	defer glob.PipeLock.Unlock()
 
-	buf := support.stringStripControlAndSpecial(crap)
+	buf := stripshit(crap)
 
 	gpipe := glob.Pipe
 	if gpipe != nil {
