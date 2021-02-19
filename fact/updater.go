@@ -19,6 +19,7 @@ func CheckZip(filename string) bool {
 	defer cancel()
 
 	cmdargs := []string{"-t", filename}
+	logs.Log("Update args: " + strings.Join(cmdargs, " "))
 	cmd := exec.CommandContext(ctx, cfg.Global.PathData.ZipBinaryPath, cmdargs...)
 	o, err := cmd.CombinedOutput()
 	out := string(o)
@@ -56,6 +57,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
+		logs.Log("Update args: " + strings.Join(cmdargs, " "))
 
 		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 		o, err := cmd.CombinedOutput()
@@ -154,6 +156,7 @@ func FactUpdate() {
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
+		logs.Log("Update args: " + strings.Join(cmdargs, " "))
 
 		cmd := exec.CommandContext(ctx, cfg.Global.PathData.ShellPath, cmdargs...)
 		o, err := cmd.CombinedOutput()
