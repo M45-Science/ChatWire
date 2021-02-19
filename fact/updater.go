@@ -100,8 +100,6 @@ func CheckFactUpdate(logNoUpdate bool) {
 									CMS(cfg.Local.ChannelData.ChatID, mess)
 									WriteFact("/cchat [SYSTEM] " + mess)
 									logs.Log(mess)
-
-									SetDoUpdateFactorio(true)
 								} else {
 									os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
 									//Purge patch name so we attempt check again

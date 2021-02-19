@@ -652,7 +652,7 @@ func MainLoops() {
 				time.Sleep(5 * time.Second)
 
 				if cfg.Local.AutoUpdate {
-					if fact.IsFactRunning() && fact.GetDoUpdateFactorio() && glob.NewVersion != constants.Unknown {
+					if fact.IsFactRunning() && glob.NewVersion != constants.Unknown {
 						if fact.GetNumPlayers() > 0 {
 
 							numwarn := fact.GetUpdateWarnCounter()
