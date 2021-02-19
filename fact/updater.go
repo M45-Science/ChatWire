@@ -93,7 +93,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 								glob.NewPatchName = line
 
 								if numwords > 1 &&
-								CheckZip(cfg.Global.PathData.FactorioServersRoot + [words[1]) {
+									CheckZip(cfg.Global.PathData.FactorioServersRoot+words[1]) {
 									mess := "Factorio update downloaded and verified, will update when no players are online."
 									CMS(cfg.Local.ChannelData.ChatID, mess)
 									WriteFact("/cchat [SYSTEM] " + mess)
