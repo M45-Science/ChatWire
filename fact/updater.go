@@ -123,6 +123,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 								glob.NewVersion = newversion
 
 								CMS(cfg.Local.ChannelData.ChatID, messdisc)
+								SetDoUpdateFactorio(true)
 
 								WriteFact("/cchat [SYSTEM] " + messfact)
 								logs.Log(messfact)
