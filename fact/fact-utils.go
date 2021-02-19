@@ -86,9 +86,11 @@ func SaveFactorio() {
 	}
 }
 
-func WriteFact(buf string) {
+func WriteFact(crap string) {
 	glob.PipeLock.Lock()
 	defer glob.PipeLock.Unlock()
+
+	buf := support.stringStripControlAndSpecial(crap)
 
 	gpipe := glob.Pipe
 	if gpipe != nil {
