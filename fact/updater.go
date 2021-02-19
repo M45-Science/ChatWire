@@ -116,7 +116,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 							messdisc := fmt.Sprintf("**Factorio update available:** '%v' to '%v'", oldversion, newversion)
 							messfact := fmt.Sprintf("Factorio update available: '%v' to '%v'", oldversion, newversion)
-							fact.GetDoUpdateFactorio(true)
+							GetDoUpdateFactorio(true)
 
 							//Don't message, unless this is actually a unique new version
 							if glob.NewVersion != newversion {
