@@ -129,9 +129,6 @@ func CheckFactUpdate(logNoUpdate bool) {
 					}
 				}
 			}
-		} else {
-			os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
-			logs.Log("fact update dry: (error) Non-zero exit code... purging update cache.")
 		}
 
 		logs.Log(fmt.Sprintf("fact update dry: (error) update_fact.py:\n%v", out))
