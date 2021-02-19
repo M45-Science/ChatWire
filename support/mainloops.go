@@ -651,7 +651,7 @@ func MainLoops() {
 			for {
 				time.Sleep(5 * time.Second)
 
-				if cfg.Global.PathData.FactUpdaterPath != "" {
+				if cfg.Local.AutoUpdate {
 					if fact.IsFactRunning() && fact.GetNumPlayers() > 0 && fact.GetDoUpdateFactorio() && glob.NewVersion != constants.Unknown {
 
 						numwarn := fact.GetUpdateWarnCounter()
