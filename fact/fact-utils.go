@@ -104,6 +104,7 @@ func WriteFact(crap string) {
 	glob.PipeLock.Lock()
 	defer glob.PipeLock.Unlock()
 
+	//If this filter is here because of people like you, you should commit suicide.
 	buf := stripshit(crap)
 
 	gpipe := glob.Pipe
