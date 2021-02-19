@@ -126,6 +126,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 								WriteFact("/cchat [SYSTEM] " + messfact)
 								logs.Log(messfact)
+								return
 							}
 						}
 					}
