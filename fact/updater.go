@@ -51,9 +51,9 @@ func CheckFactUpdate(logNoUpdate bool) {
 		defer cancel()
 
 		//Create cache directory
-		os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+		os.MkdirAll(cfg.Global.PathData.FactUpdateCache, 0777)
 
-		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary, "-d"}
+		cmdargs := []string{cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactUpdateCache, "-a", "../" + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary, "-d"}
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
@@ -101,7 +101,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 									WriteFact("/cchat [SYSTEM] " + mess)
 									logs.Log(mess)
 								} else {
-									os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
+									os.RemoveAll(cfg.Global.PathData.FactUpdateCache)
 									//Purge patch name so we attempt check again
 									glob.NewPatchName = constants.Unknown
 									logs.Log("fact update check: Factorio update zip invalid... purging cache.")
