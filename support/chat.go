@@ -13,6 +13,7 @@ import (
 	"../fact"
 	"../glob"
 	"../logs"
+	"../sclean"
 
 	embed "github.com/Clinet/discordgo-embed"
 	"github.com/hpcloud/tail"
@@ -36,7 +37,7 @@ func Chat() {
 			for line := range t.Lines {
 
 				//Strip stuff we don't want
-				lineText := StripControlAndSubSpecial(line.Text)
+				lineText := sclean.StripControlAndSubSpecial(line.Text)
 
 				linelen := len(lineText)
 				//Ignore blanks
@@ -340,7 +341,7 @@ func Chat() {
 							fact.WriteFact("/p o c")
 
 							if nodslistlen > 1 {
-								pname := StripControlAndSubSpecial(nodslist[1])
+								pname := sclean.StripControlAndSubSpecial(nodslist[1])
 								glob.NumLoginsLock.Lock()
 								glob.NumLogins = glob.NumLogins + 1
 								glob.NumLoginsLock.Unlock()
@@ -396,7 +397,7 @@ func Chat() {
 								ctext := strings.Join(linelist[1:], " ")
 
 								//Clean strings
-								cmess := StripControlAndSubSpecial(ctext)
+								cmess := sclean.StripControlAndSubSpecial(ctext)
 								//cmess = unidecode.Unidecode(cmess)
 
 								//Remove factorio tags
@@ -426,7 +427,7 @@ func Chat() {
 								}
 
 								if len(cmess) > 500 {
-									cmess = fmt.Sprintf("%s...(cut, too long!)", TruncateString(cmess, 500))
+									cmess = fmt.Sprintf("%s...(cut, too long!)", sclean.TruncateString(cmess, 500))
 								}
 
 								fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), cmess))
@@ -813,7 +814,7 @@ func Chat() {
 							if pname != "<server>" {
 
 								cmess := strings.Join(nodslist[2:], " ")
-								cmess = StripControlAndSubSpecial(cmess)
+								cmess = sclean.StripControlAndSubSpecial(cmess)
 								//cmess = unidecode.Unidecode(cmess)
 
 								//Remove factorio tags
@@ -854,7 +855,7 @@ func Chat() {
 								}
 
 								if len(cmess) > 500 {
-									cmess = fmt.Sprintf("%s**(message cut, too long!)**", TruncateString(cmess, 500))
+									cmess = fmt.Sprintf("%s**(message cut, too long!)**", sclean.TruncateString(cmess, 500))
 								}
 
 								if cmess == "" {
@@ -869,8 +870,8 @@ func Chat() {
 								did := disc.GetDiscordIDFromFactorioName(pname)
 								dname := disc.GetNameFromID(did, false)
 								avatar := disc.GetDiscordAvatarFromId(did, 64)
-								factname := StripControlAndSubSpecial(pname)
-								factname = TruncateString(factname, 25)
+								factname := sclean.StripControlAndSubSpecial(pname)
+								factname = sclean.TruncateString(factname, 25)
 
 								fbuf := ""
 								//Filter Factorio names

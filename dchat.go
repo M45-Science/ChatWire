@@ -10,14 +10,14 @@ import (
 	"./commands"
 	"./disc"
 	"./fact"
-	"./support"
+	"./sclean"
 	"github.com/bwmarrin/discordgo"
 )
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	input, _ := m.ContentWithMoreMentionsReplaced(s)
-	ctext := support.StripControlAndSubSpecial(input)
+	ctext := sclean.StripControlAndSubSpecial(input)
 	log.Print("[" + m.Author.Username + "] " + ctext)
 
 	if m.Author.ID == s.State.User.ID || m.Author.Bot {
@@ -84,7 +84,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
 			//Clean strings
-			cmess := support.StripControlAndSubSpecial(ctext)
+			cmess := sclean.StripControlAndSubSpecial(ctext)
 			//cmess = unidecode.Unidecode(cmess)
 
 			//Remove factorio tags
@@ -114,7 +114,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			if len(cmess) > 500 {
-				cmess = fmt.Sprintf("%s...(cut, too long!)", support.TruncateString(cmess, 500))
+				cmess = fmt.Sprintf("%s...(cut, too long!)", sclean.TruncateString(cmess, 500))
 			}
 
 			if cmess == "" {
@@ -137,9 +137,9 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}(dname)
 
 			//Filter names...
-			corduser := support.StripControlAndSubSpecial(m.Author.Username)
-			cordnick := support.StripControlAndSubSpecial(m.Member.Nick)
-			factuser := support.StripControlAndSubSpecial(dname)
+			corduser := sclean.StripControlAndSubSpecial(m.Author.Username)
+			cordnick := sclean.StripControlAndSubSpecial(m.Member.Nick)
+			factuser := sclean.StripControlAndSubSpecial(dname)
 
 			corduserlen := len(corduser)
 			cordnicklen := len(cordnick)
@@ -160,8 +160,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			//Cap name length
-			cordname = support.TruncateString(cordname, 25)
-			factuser = support.TruncateString(factuser, 25)
+			cordname = sclean.TruncateString(cordname, 25)
+			factuser = sclean.TruncateString(factuser, 25)
 
 			//If we find discord name, and discord name... and factorio name don't contain the same name
 			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {

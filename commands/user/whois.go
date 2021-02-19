@@ -11,7 +11,7 @@ import (
 	"../../disc"
 	"../../fact"
 	"../../glob"
-	"../../support"
+	"../../sclean"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -109,7 +109,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = tnow.Sub(jtime.Round(time.Second)).String()
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", support.TruncateString(p.Name, 20), support.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 				count++
 			}
 		}
@@ -142,7 +142,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = tnow.Sub(jtime.Round(time.Second)).String()
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", support.TruncateString(p.Name, 20), support.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 				count++
 			}
 		}
@@ -176,7 +176,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						jtime := time.Unix(p.Creation, 0)
 						joined = tnow.Sub(jtime.Round(time.Second)).String()
 					}
-					buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", support.TruncateString(p.Name, 20), support.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+					buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 					count++
 				}
 			}
@@ -208,7 +208,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = tnow.Sub(jtime.Round(time.Second)).String()
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", support.TruncateString(p.Name, 20), support.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 			}
 		}
 		if buf == "" {

@@ -1,4 +1,4 @@
-package support
+package sclean
 
 //TruncateString Actually shorten strings
 func TruncateString(str string, num int) string {

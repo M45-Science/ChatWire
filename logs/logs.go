@@ -7,11 +7,11 @@ import (
 
 	"../cfg"
 	"../glob"
-	"../support"
+	"../sclean"
 )
 
 func LogWithoutEcho(input string) {
-	text := support.StripControl(input)
+	text := sclean.StripControl(input)
 
 	t := time.Now()
 	date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
@@ -43,7 +43,7 @@ func cms(channel string, text string) {
 	glob.CMSBufferLock.Unlock()
 }
 func Log(input string) {
-	text := support.StripControl(input)
+	text := sclean.StripControl(input)
 
 	t := time.Now()
 	date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
