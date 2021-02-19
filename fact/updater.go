@@ -51,7 +51,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 		defer cancel()
 
 		//Create cache directory
-		os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, os.ModePerm)
+		os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
 
 		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary, "-d"}
 		if cfg.Local.UpdateFactExp {
@@ -147,7 +147,7 @@ func FactUpdate() {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 	defer cancel()
 
-	os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, os.ModePerm)
+	os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
 
 	if IsFactRunning() == false {
 		//Keep us from stepping on a factorio launch or update
