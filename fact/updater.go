@@ -126,7 +126,6 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 								WriteFact("/cchat [SYSTEM] " + messfact)
 								logs.Log(messfact)
-								return
 							}
 						}
 					}
@@ -134,7 +133,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			}
 		}
 
-		logs.Log(fmt.Sprintf("fact update dry: (error) update_fact.py:\n%v", out))
+		logs.Log(fmt.Sprintf("fact update dry: update_fact.py:\n%v", out))
 	}
 
 }
