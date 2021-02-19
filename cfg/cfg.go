@@ -63,6 +63,7 @@ type AdminData struct {
 type PathDataStruct struct {
 	FactorioServersRoot string //root of factorio server
 	FactorioHomePrefix  string //per-server
+	ChatWireHomePrefix  string //per-server
 	FactorioBinary      string
 
 	RecordPlayersFilename string //boh
