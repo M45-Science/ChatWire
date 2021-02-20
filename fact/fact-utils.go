@@ -91,7 +91,7 @@ func WriteFact(input string) {
 	glob.PipeLock.Lock()
 	defer glob.PipeLock.Unlock()
 
-	//If this filter is here because of people like you, you should commit suicide.
+	//Clean string
 	buf := sclean.StripControlAndSubSpecial(input)
 
 	gpipe := glob.Pipe
