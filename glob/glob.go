@@ -3,20 +3,19 @@ package glob
 import (
 	"io"
 	"os"
-	"sync"
 	"time"
 
 	"../constants"
 
 	"github.com/bwmarrin/discordgo"
-	//"github.com/sasha-s/go-deadlock"
+	"github.com/sasha-s/go-deadlock"
 )
 
 var Uptime time.Time
 
 var Guild *discordgo.Guild
 var Guildname = constants.Unknown
-var GuildLock sync.RWMutex
+var GuildLock deadlock.RWMutex
 
 type CMSBuf struct {
 	Added   time.Time
@@ -25,10 +24,10 @@ type CMSBuf struct {
 }
 
 var CMSBuffer []CMSBuf
-var CMSBufferLock sync.Mutex
+var CMSBufferLock deadlock.Mutex
 
 var Pipe io.WriteCloser
-var PipeLock sync.Mutex
+var PipeLock deadlock.Mutex
 
 var DS *discordgo.Session
 
@@ -45,41 +44,41 @@ var BotLogDesc *os.File
 
 var GameMapName = ""
 var GameMapPath = ""
-var GameMapLock sync.Mutex
+var GameMapLock deadlock.Mutex
 
 var ModLoadMessage *discordgo.Message
 var ModLoadString = constants.Unknown
-var ModLoadLock sync.RWMutex
+var ModLoadLock deadlock.RWMutex
 
 var LastGametime = ""
 var PausedTicks = 0
-var PausedTicksLock sync.RWMutex
+var PausedTicksLock deadlock.RWMutex
 
 var Gametime = constants.Unknown
 var GametimeString = constants.Unknown
-var GametimeLock sync.RWMutex
+var GametimeLock deadlock.RWMutex
 
 var SaveTimer time.Time
-var SaveTimerLock sync.RWMutex
+var SaveTimerLock deadlock.RWMutex
 
 var FactIsRunning = false
-var FactIsRunningLock sync.RWMutex
+var FactIsRunningLock deadlock.RWMutex
 
 var FactAutoStart = false
-var FactAutoStartLock sync.RWMutex
+var FactAutoStartLock deadlock.RWMutex
 
 var QueueReload = false
-var QueueReloadLock sync.RWMutex
+var QueueReloadLock deadlock.RWMutex
 
 var DoRebootBot = false
-var DoRebootBotLock sync.RWMutex
+var DoRebootBotLock deadlock.RWMutex
 
 var RecordPlayers = 0
 var NumPlayers = 0
-var NumPlayersLock sync.RWMutex
+var NumPlayersLock deadlock.RWMutex
 
 var RelaunchThrottle = 0
-var RelaunchThrottleLock sync.RWMutex
+var RelaunchThrottleLock deadlock.RWMutex
 
 type PList struct {
 	Name     string
@@ -91,8 +90,8 @@ type PList struct {
 
 var PlayerListMax = 0
 var PlayerList [constants.MaxPlayers + 1]PList
-var PlayerListLock sync.RWMutex
-var PlayerListWriteLock sync.Mutex
+var PlayerListLock deadlock.RWMutex
+var PlayerListWriteLock deadlock.Mutex
 
 var PasswordList [constants.MaxPasswords + 1]string
 var PasswordID [constants.MaxPasswords + 1]string
@@ -102,44 +101,44 @@ var PasswordMax = 0
 var MessageList [constants.MaxPlayers + 1]bool
 
 var NumLogins = 0
-var NumLoginsLock sync.RWMutex
-var UpdateChannelLock sync.Mutex
+var NumLoginsLock deadlock.RWMutex
+var UpdateChannelLock deadlock.Mutex
 
 var FactorioBooted = false
-var FactorioBootedLock sync.RWMutex
+var FactorioBootedLock deadlock.RWMutex
 
 var PlayerListUpdated = false
-var PlayerListUpdatedLock sync.Mutex
+var PlayerListUpdatedLock deadlock.Mutex
 
 var PlayerListDirty = false
-var PlayerListDirtyLock sync.Mutex
+var PlayerListDirtyLock deadlock.Mutex
 
 var PlayerListSeenDirty = false
-var PlayerListSeenDirtyLock sync.Mutex
+var PlayerListSeenDirtyLock deadlock.Mutex
 
-var RecordPlayersWriteLock sync.Mutex
-var RecordPlayersLock sync.RWMutex
+var RecordPlayersWriteLock deadlock.Mutex
+var RecordPlayersLock deadlock.RWMutex
 
-var PasswordListLock sync.RWMutex
+var PasswordListLock deadlock.RWMutex
 
 var NoResponseCount = 0
-var NoResponseCountLock sync.RWMutex
+var NoResponseCountLock deadlock.RWMutex
 
 var MaxMapTypes = 0
 var LastMapSeed uint64 = 0
 var LastMapCode = ""
-var FactorioLaunchLock sync.Mutex
+var FactorioLaunchLock deadlock.Mutex
 
-var UpdateFactorioLock sync.Mutex
+var UpdateFactorioLock deadlock.Mutex
 var DoUpdateFactorio = false
-var DoUpdateFactorioLock sync.Mutex
+var DoUpdateFactorioLock deadlock.Mutex
 
 var ManMinutes = 0
-var ManMinutesLock sync.Mutex
+var ManMinutesLock deadlock.Mutex
 
 var LastColor = 0
 
-var ConnectPauseLock sync.Mutex
+var ConnectPauseLock deadlock.Mutex
 var ConnectPauseTimer int64 = 0
 var ConnectPauseCount = 0
 
@@ -147,9 +146,9 @@ var LastTotalStat = ""
 var LastMemberStat = ""
 var LastRegularStat = ""
 
-var FactQuitTimerLock sync.Mutex
+var FactQuitTimerLock deadlock.Mutex
 var FactQuitTimer time.Time
 
-var UpdateWarnCounterLock sync.Mutex
+var UpdateWarnCounterLock deadlock.Mutex
 var UpdateWarnCounter = 0
 var UpdateGraceMinutes = 5

@@ -11,7 +11,7 @@ import (
 func Update(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	argnum := len(args)
 
-	if cfg.Local.AutoUpdate {
+	if cfg.Global.PathData.FactUpdaterPath != "" {
 		if argnum > 0 && strings.ToLower(args[0]) == "cancel" {
 			fact.SetDoUpdateFactorio(false)
 			cfg.Local.AutoUpdate = false
