@@ -71,7 +71,7 @@ func MainLoops() {
 					command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
 					out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
 					if errs != nil {
-						logs.Log(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", out, errs))
+						logs.Log(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
 					} else {
 						logs.Log("Soft-mod inserted into save file.")
 					}
