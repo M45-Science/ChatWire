@@ -37,7 +37,7 @@ func MainLoops() {
 			for {
 				time.Sleep(constants.WatchdogInterval)
 
-				if fact.IsFactRunning() == false && (fact.IsQueued() || fact.IsSetRebootBot() || fact.GetDoUpdateFactorio()) {
+				if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootBot() || fact.GetDoUpdateFactorio()) {
 					if fact.GetDoUpdateFactorio() {
 						fact.FactUpdate()
 					}
@@ -65,7 +65,7 @@ func MainLoops() {
 						fact.SetRelaunchThrottle(0)
 						fact.QuitFactorio()
 					}
-				} else if fact.IsFactRunning() == false && fact.IsSetAutoStart() == true && fact.GetDoUpdateFactorio() == false { //Isn't running, but we should be
+				} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update
 
 					command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
@@ -83,10 +83,6 @@ func MainLoops() {
 					if throt > 0 {
 
 						delay := throt * throt * 10
-						//5 min is long enough
-						if delay > 300 {
-							delay = 300
-						}
 
 						if delay > 0 {
 							logs.Log(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
@@ -217,20 +213,29 @@ func MainLoops() {
 					regularstat := fmt.Sprintf("regulars-%v", numregulars)
 
 					if glob.LastTotalStat != totalstat && cfg.Global.DiscordData.StatTotalChannelID != "" {
-						glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
+						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
 						glob.LastTotalStat = totalstat
+						if err != nil {
+							fmt.Println(err)
+						}
 						time.Sleep(5 * time.Minute)
 					}
 
 					if glob.LastMemberStat != memberstat && cfg.Global.DiscordData.StatMemberChannelID != "" {
-						glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
+						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
 						glob.LastMemberStat = memberstat
+						if err != nil {
+							fmt.Println(err)
+						}
 						time.Sleep(5 * time.Minute)
 					}
 
 					if glob.LastRegularStat != regularstat && cfg.Global.DiscordData.StatRegularsChannelID != "" {
-						glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
+						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
 						glob.LastRegularStat = regularstat
+						if err != nil {
+							fmt.Println(err)
+						}
 						time.Sleep(5 * time.Minute)
 					}
 
@@ -721,7 +726,7 @@ func MainLoops() {
 					if err := os.Remove(".queue"); err != nil {
 						logs.Log(".queue file disappeared?")
 					}
-					if fact.IsQueued() == false {
+					if !fact.IsQueued() {
 						fact.SetQueued(true)
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Reboot queued!")
 					}
@@ -738,7 +743,7 @@ func MainLoops() {
 					if err := os.Remove(".start"); err != nil {
 						logs.Log(".start file disappeared?")
 					}
-					if fact.IsFactRunning() == false {
+					if !fact.IsFactRunning() {
 						fact.SetAutoStart(true)
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
 					}
@@ -762,7 +767,7 @@ func MainLoops() {
 					if err := os.Remove(".restart"); err != nil {
 						logs.Log(".restart file disappeared?")
 					}
-					if fact.IsFactRunning() == false {
+					if !fact.IsFactRunning() {
 						fact.SetAutoStart(true)
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
 					} else {
@@ -784,7 +789,7 @@ func MainLoops() {
 					if err := os.Remove(".qrestart"); err != nil {
 						logs.Log(".qrestart file disappeared?")
 					}
-					if fact.IsFactRunning() == false {
+					if !fact.IsFactRunning() {
 						fact.SetAutoStart(true)
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
 					} else {

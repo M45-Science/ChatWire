@@ -22,10 +22,6 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 		}
 
 		return err
-	} else {
-
-		time.Sleep(5 * time.Second)
-		SmartWriteDiscordEmbed(ch, embed)
 	}
 
 	return fmt.Errorf("error")
@@ -78,10 +74,6 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		}
 
 		return err
-	} else {
-
-		time.Sleep(30 * time.Second)
-		SmartRoleAdd(gid, uid, rid)
 	}
 
 	return fmt.Errorf("error")

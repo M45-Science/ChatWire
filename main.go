@@ -13,7 +13,6 @@ import (
 	"./fact"
 	"./glob"
 	"./logs"
-	"./platform"
 	"./support"
 
 	"github.com/bwmarrin/discordgo"
@@ -50,14 +49,20 @@ func main() {
 
 	//Saves a ton of space!
 	cmdb := exec.Command(cfg.Global.PathData.ShellPath, cfg.Global.PathData.LogCompScriptPath)
-	cmdb.CombinedOutput()
+	_, err := cmdb.CombinedOutput()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	//Create our log file names
 	glob.GameLogName = fmt.Sprintf("log/game-%v.log", t.Unix())
 	glob.BotLogName = fmt.Sprintf("log/bot-%v.log", t.Unix())
 
 	//Make log directory
-	os.MkdirAll("log", os.ModePerm)
+	errr := os.MkdirAll("log", os.ModePerm)
+	if errr != nil {
+		fmt.Println(errr)
+	}
 
 	//Open log files
 	gdesc, erra := os.OpenFile(glob.GameLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -68,7 +73,7 @@ func main() {
 	glob.BotLogDesc = bdesc
 
 	//Send stdout and stderr to our logfile, to capture panic errors and discordgo errors
-	platform.CaptureErrorOut(bdesc)
+	//platform.CaptureErrorOut(bdesc)
 
 	//Handle file errors
 	if erra != nil {
@@ -144,7 +149,10 @@ func startbot() {
 	commands.RegisterCommands()
 	bot.AddHandler(MessageCreate)
 	botstatus := fmt.Sprintf("%vhelp", cfg.Global.DiscordCommandPrefix)
-	bot.UpdateGameStatus(0, botstatus)
+	errc := bot.UpdateGameStatus(0, botstatus)
+	if errc != nil {
+		fmt.Println(errc)
+	}
 
 	logs.Log("Bot online. *v" + constants.Version + "*")
 	fact.UpdateChannelName()

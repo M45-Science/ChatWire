@@ -51,7 +51,10 @@ func CheckFactUpdate(logNoUpdate bool) {
 		defer cancel()
 
 		//Create cache directory
-		os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+		err := os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary, "-d"}
 		if cfg.Local.UpdateFactExp {
@@ -82,7 +85,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 					numwords := len(words)
 
 					if strings.HasPrefix(line, "No updates available") {
-						if logNoUpdate == true {
+						if logNoUpdate {
 							mess := "fact update check: Factorio is up-to-date."
 							logs.Log(mess)
 						}
@@ -147,9 +150,12 @@ func FactUpdate() {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 	defer cancel()
 
-	os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+	err := os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	if IsFactRunning() == false {
+	if !IsFactRunning() {
 		//Keep us from stepping on a factorio launch or update
 		glob.FactorioLaunchLock.Lock()
 		defer glob.FactorioLaunchLock.Unlock()

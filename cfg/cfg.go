@@ -151,7 +151,7 @@ func WriteGCfg() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(constants.CWGlobalConfig, []byte(outbuf.String()), 0644)
+	err = ioutil.WriteFile(constants.CWGlobalConfig, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		log("WriteGCfg: WriteFile failure")
@@ -215,7 +215,7 @@ func WriteLCfg() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(constants.CWLocalConfig, []byte(outbuf.String()), 0644)
+	err = ioutil.WriteFile(constants.CWLocalConfig, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		log("WriteLCfg: WriteFile failure")
@@ -268,6 +268,9 @@ func log(text string) {
 	date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
 
 	buf := fmt.Sprintf("%s %s", date, text)
-	glob.BotLogDesc.WriteString(buf + "\n")
+	_, err := glob.BotLogDesc.WriteString(buf + "\n")
+	if err != nil {
+		fmt.Println(err)
+	}
 	println(buf)
 }

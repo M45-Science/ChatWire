@@ -93,7 +93,10 @@ func Map_reset(data string) {
 
 		//Make directory if it does not exist
 		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
-		os.MkdirAll(newdir, os.ModePerm)
+		err := os.MkdirAll(newdir, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
@@ -111,12 +114,13 @@ func Map_reset(data string) {
 		var buf string
 		if erra == nil && errb == nil && errc == nil {
 			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
+			CMS(cfg.Local.ChannelData.ChatID, buf)
+			return
 		} else {
 			buf = "Map archive failed."
+			CMS(cfg.Local.ChannelData.ChatID, buf)
 			return
 		}
-
-		CMS(cfg.Local.ChannelData.ChatID, buf)
 	}
 
 	t := time.Now()
@@ -174,6 +178,4 @@ func Map_reset(data string) {
 	}
 	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
 	DoExit()
-	return
-
 }

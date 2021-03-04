@@ -46,7 +46,10 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		//Make directory if it does not exist
 		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
-		os.MkdirAll(newdir, os.ModePerm)
+		err := os.MkdirAll(newdir, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {

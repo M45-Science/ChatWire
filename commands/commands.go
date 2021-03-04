@@ -68,7 +68,7 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 				return
 			}
 
-			if command.Admin == false {
+			if !command.Admin {
 				command.Command(s, m, args)
 			}
 			return
@@ -92,7 +92,7 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	buf := "Help:\n```\n"
 
-	if CheckAdmin(m.Author.ID) == true {
+	if CheckAdmin(m.Author.ID) {
 		for _, command := range CL.CommandList {
 			admin := ""
 			if command.Admin {
@@ -103,7 +103,7 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		}
 	} else {
 		for _, command := range CL.CommandList {
-			if command.Admin == false {
+			if !command.Admin {
 				buf = buf + fmt.Sprintf("%s%-12s %s\n", cfg.Global.
 					DiscordCommandPrefix, strings.ToLower(command.Name), command.Help)
 			}
