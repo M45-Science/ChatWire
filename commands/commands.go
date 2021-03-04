@@ -8,7 +8,6 @@ import (
 	"../fact"
 	"./admin"
 	"./user"
-
 	"github.com/bwmarrin/discordgo"
 )
 

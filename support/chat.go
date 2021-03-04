@@ -14,7 +14,6 @@ import (
 	"../glob"
 	"../logs"
 	"../sclean"
-
 	embed "github.com/Clinet/discordgo-embed"
 	"github.com/hpcloud/tail"
 )

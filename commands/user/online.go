@@ -2,7 +2,6 @@ package user
 
 import (
 	"../../fact"
-
 	"github.com/bwmarrin/discordgo"
 )
 

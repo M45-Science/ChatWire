@@ -4,7 +4,6 @@ import (
 	"../../constants"
 	"../../fact"
 	"../../glob"
-
 	"github.com/bwmarrin/discordgo"
 )
 

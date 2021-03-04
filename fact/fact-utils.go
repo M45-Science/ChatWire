@@ -11,7 +11,6 @@ import (
 	"../glob"
 	"../logs"
 	"../sclean"
-
 	"github.com/bwmarrin/discordgo"
 )
 

@@ -22,114 +22,142 @@ func DoShowLocks(inch string) {
 	}
 
 	glob.GuildLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.GuildLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GuildLock")
 
 	glob.CMSBufferLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.CMSBufferLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": CMSBufferLock")
 
 	glob.PipeLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PipeLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PipeLock")
 
 	glob.GameMapLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.GameMapLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GameMapLock")
 
 	glob.ModLoadLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.ModLoadLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ModLoadLock")
 
 	glob.PausedTicksLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PausedTicksLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PausedTicksLock")
 
 	glob.GametimeLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.GametimeLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GametimeLock")
 
 	glob.SaveTimerLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.SaveTimerLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": SaveTimerLock")
 
 	glob.FactIsRunningLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.FactIsRunningLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactIsRunningLock")
 
 	glob.FactAutoStartLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.FactAutoStartLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactAutoStartLock")
 
 	glob.DoRebootBotLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.DoRebootBotLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": DoRebootBotLock")
 
 	glob.NumPlayersLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.NumPlayersLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": NumPlayersLock")
 
 	glob.RelaunchThrottleLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.RelaunchThrottleLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": RelaunchThrottleLock")
 
 	glob.PlayerListLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PlayerListLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PlayerListLock")
 
 	glob.PlayerListWriteLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PlayerListWriteLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PlayerListWriteLock")
 
 	glob.NumLoginsLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.NumLoginsLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": NumLoginsLock")
 
 	glob.FactorioBootedLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.FactorioBootedLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactorioBootedLock")
 
 	glob.PlayerListUpdatedLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PlayerListUpdatedLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PlayerListUpdatedLock")
 
 	glob.PlayerListDirtyLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PlayerListDirtyLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PlayerListDirtyLock")
 
 	glob.PlayerListSeenDirtyLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PlayerListSeenDirtyLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PlayerListSeenDirtyLock")
 
 	glob.RecordPlayersWriteLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.RecordPlayersWriteLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": RecordPlayersWriteLock")
 
 	glob.PasswordListLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.PasswordListLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PasswordListLock")
 
 	glob.NoResponseCountLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.NoResponseCountLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": NoResponseCountLock")
 
 	glob.FactorioLaunchLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.FactorioLaunchLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactorioLaunchLock")
 
 	glob.UpdateFactorioLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.UpdateFactorioLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": UpdateFactorioLock")
 
 	glob.DoUpdateFactorioLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.DoUpdateFactorioLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": DoUpdateFactorioLock")
 
 	glob.ManMinutesLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.ManMinutesLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ManMinutesLock")
 
 	glob.ConnectPauseLock.Lock()
+	time.Sleep(time.Microsecond)
 	glob.ConnectPauseLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ConnectPauseLock")
 

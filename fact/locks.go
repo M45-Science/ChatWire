@@ -6,7 +6,6 @@ import (
 	"../constants"
 	"../glob"
 	"../logs"
-
 	"github.com/bwmarrin/discordgo"
 )
 

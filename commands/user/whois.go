@@ -12,7 +12,6 @@ import (
 	"../../fact"
 	"../../glob"
 	"../../sclean"
-
 	"github.com/bwmarrin/discordgo"
 )
 

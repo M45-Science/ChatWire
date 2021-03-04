@@ -7,7 +7,6 @@ import (
 
 	"../glob"
 	"../logs"
-
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -132,7 +131,7 @@ func GetDiscordAvatarFromId(id string, size int) string {
 	if g != nil {
 		for _, m := range g.Members {
 			if m.User.ID == id {
-				return m.User.AvatarURL(string(size))
+				return m.User.AvatarURL(fmt.Sprintf("%v", size))
 			}
 		}
 	}

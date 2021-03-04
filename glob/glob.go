@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"../constants"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/sasha-s/go-deadlock"
 )
