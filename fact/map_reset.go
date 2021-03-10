@@ -115,7 +115,6 @@ func Map_reset(data string) {
 		if erra == nil && errb == nil && errc == nil {
 			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
 			CMS(cfg.Local.ChannelData.ChatID, buf)
-			return
 		} else {
 			buf = "Map archive failed."
 			CMS(cfg.Local.ChannelData.ChatID, buf)
