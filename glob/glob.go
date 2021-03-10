@@ -7,9 +7,8 @@ import (
 	"time"
 
 	"../constants"
-
 	"github.com/bwmarrin/discordgo"
-	//"github.com/sasha-s/go-deadlock"
+	//"github.com/sasha-s/go-sync"
 )
 
 var Uptime time.Time

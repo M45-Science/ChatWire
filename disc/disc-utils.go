@@ -7,7 +7,6 @@ import (
 
 	"../glob"
 	"../logs"
-
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -22,10 +21,6 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 		}
 
 		return err
-	} else {
-
-		time.Sleep(5 * time.Second)
-		SmartWriteDiscordEmbed(ch, embed)
 	}
 
 	return fmt.Errorf("error")
@@ -78,10 +73,6 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		}
 
 		return err
-	} else {
-
-		time.Sleep(30 * time.Second)
-		SmartRoleAdd(gid, uid, rid)
 	}
 
 	return fmt.Errorf("error")
@@ -140,7 +131,7 @@ func GetDiscordAvatarFromId(id string, size int) string {
 	if g != nil {
 		for _, m := range g.Members {
 			if m.User.ID == id {
-				return m.User.AvatarURL(string(size))
+				return m.User.AvatarURL(fmt.Sprintf("%v", size))
 			}
 		}
 	}

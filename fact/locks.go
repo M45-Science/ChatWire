@@ -6,7 +6,6 @@ import (
 	"../constants"
 	"../glob"
 	"../logs"
-
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -211,7 +210,7 @@ func SetFactRunning(run bool, err bool) {
 	glob.FactIsRunning = run
 	glob.FactIsRunningLock.Unlock()
 
-	if run == true && GetNoResposeCount() >= 10 {
+	if run && GetNoResposeCount() >= 10 {
 		//CMS(cfg.Local.ChannelData.ChatID, "Server now appears to be responding again.")
 		logs.Log("Server now appears to be responding again.")
 	}
@@ -219,7 +218,7 @@ func SetFactRunning(run bool, err bool) {
 
 	if wasrun != run {
 		UpdateChannelName()
-		if run == false {
+		if !run {
 			FactorioIsOffline(err)
 		}
 		return

@@ -14,7 +14,6 @@ import (
 	"../glob"
 	"../logs"
 	"../sclean"
-
 	embed "github.com/Clinet/discordgo-embed"
 	"github.com/hpcloud/tail"
 )
@@ -252,7 +251,7 @@ func Chat() {
 											continue
 										}
 
-										if codegood == true {
+										if codegood {
 											fact.PlayerSetID(pname, pid, plevel)
 
 											guild := fact.GetGuild()
@@ -285,7 +284,7 @@ func Chat() {
 									}
 								} //End of loop
 								glob.PasswordListLock.Unlock()
-								if codefound == false {
+								if !codefound {
 									logs.Log(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
 									fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 									continue

@@ -9,7 +9,6 @@ import (
 	"../../disc"
 	"../../fact"
 	"../../glob"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
