@@ -98,8 +98,6 @@ var PasswordID [constants.MaxPasswords + 1]string
 var PasswordTime [constants.MaxPasswords + 1]int64
 var PasswordMax = 0
 
-var MessageList [constants.MaxPlayers + 1]bool
-
 var NumLogins = 0
 var NumLoginsLock sync.RWMutex
 var UpdateChannelLock sync.Mutex
