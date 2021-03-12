@@ -16,19 +16,21 @@ import (
 )
 
 func DeleteOldSav() {
-	//Delete old sav-*.zip files, to save space.
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/sav-*.zip"
+	//Delete old sav-*.zip, gen-*.zip files, to save space.
+	patha := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/sav-*.zip"
+	pathb := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-*.zip"
 
 	var tempargs []string
 	tempargs = append(tempargs, "-f")
-	tempargs = append(tempargs, path)
+	tempargs = append(tempargs, patha)
+	tempargs = append(tempargs, pathb)
 
 	out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
 
 	if errs != nil {
-		logs.Log(fmt.Sprintf("Unable to delete old sav-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+		logs.Log(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	} else {
-		logs.Log("Deleted old sav-* map saves.")
+		logs.Log("Deleted old sav-*/gen-* map saves.")
 	}
 }
 

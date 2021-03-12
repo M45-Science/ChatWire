@@ -133,13 +133,15 @@ func Map_reset(data string) {
 	}
 
 	CMS(cfg.Local.ChannelData.ChatID, "Generating map...")
+	//Delete old sav-* map to save space
+	DeleteOldSav()
 
 	//Generate code to make filename
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/" + ourcode + ".zip"
+	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-" + ourcode + ".zip"
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
@@ -166,8 +168,6 @@ func Map_reset(data string) {
 		logs.Log(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 		return
 	}
-	//Delete old sav-* map to save space
-	DeleteOldSav()
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
 
 	//If available, use per-server ping setting... otherwise use global

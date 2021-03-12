@@ -66,12 +66,15 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.CMS(m.ChannelID, "Generating map...")
 
+	//Delete old sav-* map to save space
+	fact.DeleteOldSav()
+
 	//Generate code to make filename
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/" + ourcode + ".zip"
+	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-" + ourcode + ".zip"
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
@@ -102,9 +105,6 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
 			fact.CMS(m.ChannelID, "New map saved as: "+filename)
-
-			//Delete old sav-* map to save space
-			fact.DeleteOldSav()
 			time.Sleep(2 * time.Second)
 			return
 		}
