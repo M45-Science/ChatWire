@@ -793,7 +793,7 @@ func Chat() {
 									continue
 								}
 								if strings.Contains(NoTC, "Failed to reach auth server.") {
-									fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com, server will not show up in factorio server list. Reboot to re-attempt.")
+									fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com. Server will not show up in factorio server list, reboot to re-attempt.")
 									continue
 								}
 							}
