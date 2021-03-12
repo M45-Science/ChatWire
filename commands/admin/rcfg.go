@@ -22,4 +22,9 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	cfg.WriteLCfg()
 	fact.CMS(m.ChannelID, "Config files reloaded.")
 
+	//Config reset-interval
+	if cfg.Local.ResetScheduleText != "" {
+		fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
+	}
+
 }
