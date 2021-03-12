@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -758,13 +759,41 @@ func Chat() {
 								continue
 							}
 							//Multiplayer manger
-							if strings.Contains(NoTC, "ServerMultiplayerManager") {
-								if strings.Contains(NoTC, "MultiplayerManager failed:") &&
-									strings.Contains(NoTC, "info.json not found (No such file or directory)") {
+							if strings.Contains(NoTC, "MultiplayerManager failed:") {
+								if strings.Contains(NoTC, "info.json not found") {
 									fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
 									fact.SetAutoStart(false)
 									fact.SetFactorioBooted(false)
 									fact.SetFactRunning(false, true)
+									continue
+								}
+								//Corrupt savegame
+								if strings.Contains(NoTC, "Closing file") {
+									glob.GameMapLock.Lock()
+									path := glob.GameMapPath
+									glob.GameMapLock.Unlock()
+
+									var tempargs []string
+									tempargs = append(tempargs, "-f")
+									tempargs = append(tempargs, path)
+
+									out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
+
+									if errs != nil {
+										logs.Log(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+										fact.SetAutoStart(false)
+										fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
+									} else {
+										logs.Log("Deleted corrupted savegame.")
+										fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
+									}
+
+									fact.SetFactorioBooted(false)
+									fact.SetFactRunning(false, true)
+									continue
+								}
+								if strings.Contains(NoTC, "Failed to reach auth server.") {
+									fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com, server will not show up in factorio server list. Reboot to re-attempt.")
 									continue
 								}
 							}
