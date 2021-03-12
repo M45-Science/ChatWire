@@ -166,6 +166,8 @@ func Map_reset(data string) {
 		logs.Log(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 		return
 	}
+	//Delete old sav-* map to save space
+	DeleteOldSav()
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
 
 	//If available, use per-server ping setting... otherwise use global
