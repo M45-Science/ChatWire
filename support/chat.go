@@ -405,10 +405,15 @@ func Chat() {
 
 									if strings.Contains(lineText, " is now a member!") {
 										fact.PlayerLevelSet(trustname, 1)
+										fact.AutoPromote(trustname)
+										continue
 									} else if strings.Contains(lineText, " is now a regular!") {
 										fact.PlayerLevelSet(trustname, 2)
+										fact.AutoPromote(trustname)
+										continue
 									} else if strings.Contains(lineText, " moved to Admins group.") {
 										fact.PlayerLevelSet(trustname, 255)
+										fact.AutoPromote(trustname)
 										continue
 									} else if strings.Contains(lineText, " to the map!") && strings.Contains(lineText, "Welcome ") {
 										btrustname := linelist[2]
