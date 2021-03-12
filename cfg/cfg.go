@@ -82,6 +82,7 @@ type PathDataStruct struct {
 	MapArchivePath   string //ap
 	ImageMagickPath  string //ap
 	ShellPath        string //ap
+	RMPath           string //ap
 	FactUpdaterShell string //ap
 	ZipBinaryPath    string //ap
 	MapPreviewURL    string
