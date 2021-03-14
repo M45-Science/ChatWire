@@ -53,13 +53,6 @@ func MainLoops() {
 
 						fact.WriteFact("/time")
 					}
-
-					if fact.IsFactorioBooted() {
-						if nores >= 15 && fact.IsQueued() {
-							fact.QuitFactorio()
-							return
-						}
-					}
 					if nores == 300 {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for 5 minutes... rebooting.")
 						fact.SetRelaunchThrottle(0)
