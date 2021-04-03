@@ -149,7 +149,7 @@ func GetDiscordIDFromFactorioName(pname string) string {
 	defer glob.PlayerListLock.RUnlock()
 
 	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Name == pname {
+		if glob.PlayerList[i].Level >= 0 && glob.PlayerList[i].Name == pname {
 
 			return glob.PlayerList[i].ID
 		}
@@ -167,7 +167,7 @@ func GetFactorioNameFromDiscordID(id string) string {
 	defer glob.PlayerListLock.RUnlock()
 
 	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].ID == id {
+		if glob.PlayerList[i].Level >= 0 && glob.PlayerList[i].ID == id {
 			return glob.PlayerList[i].Name
 		}
 	}
