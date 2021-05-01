@@ -30,7 +30,7 @@ func DeleteOldSav() {
 	if errs != nil {
 		logs.Log(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	} else {
-		logs.Log("Deleted old sav-*/gen-* map saves.")
+		logs.Log(fmt.Sprintf("Deleted old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	}
 }
 
