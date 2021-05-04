@@ -91,9 +91,10 @@ func QuitFactorio() {
 	}
 }
 
+//Disabled
 func SaveFactorio() {
 
-	if IsFactorioBooted() {
+	if IsFactorioBooted() && 1 == 2 {
 		gtime := GetGameTime()
 
 		if gtime != constants.Unknown {
