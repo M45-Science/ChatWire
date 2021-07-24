@@ -129,6 +129,7 @@ func MainLoops() {
 						//Relative path
 						cmd = exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, tempargs...)
 					}
+					fmt.Println("Executing: " + cfg.Global.PathData.FactorioBinary + " " + strings.Join(tempargs, " "))
 
 					platform.LinuxSetProcessGroup(cmd)
 					//Used later on when binary is launched, redirects game stdout to file.
