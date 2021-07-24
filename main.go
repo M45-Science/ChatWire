@@ -23,6 +23,8 @@ import (
 )
 
 func main() {
+
+	fmt.Println("Version: " + constants.Version)
 	t := time.Now()
 
 	//Randomize starting color
