@@ -120,6 +120,14 @@ func MainLoops() {
 						tempargs = append(tempargs, "true")
 					}
 
+					//WriteWhitelist
+					count := fact.WriteWhitelist()
+					if count > 0 {
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, (fmt.Sprintf("Whitelist of %x players written.")))
+					} else {
+						//fact.LogCMS(cfg.Local.ChannelData.ChatID,("Empty whitelist written"))
+					}
+
 					var cmd *exec.Cmd
 					//Exec factorio
 					if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {

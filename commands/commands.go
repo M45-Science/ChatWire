@@ -42,7 +42,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Debug", Command: admin.Debug, Admin: true, Help: "Shows debug info"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Pset", Command: admin.SetPlayerLevel, Admin: true, Help: "Set: player level"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Regular", Command: admin.SetPlayerRegular, Admin: true, Help: "Set: players to regular"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Whitelist", Command: admin.SendWhitelist, Admin: true, Help: "Send whitelist to server"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Whitelist", Command: admin.WriteWhitelist, Admin: true, Help: "Write whitelist"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Archive", Command: admin.ArchiveMap, Admin: true, Help: "Archive current map"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Update", Command: admin.Update, Admin: true, Help: "Update Factorio or type CANCEL"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Locks", Command: admin.ShowLocks, Admin: true, Help: "Check Mutex Locks"})

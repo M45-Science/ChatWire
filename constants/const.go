@@ -2,12 +2,13 @@ package constants
 
 import "time"
 
-const Version = "470-7-23-2021-0734p"
+const Version = "471-7-24-2021-0623p"
 const Unknown = "Unknown"
 
 //Config files
 const CWGlobalConfig = "../cw-global-config.json"
 const CWLocalConfig = "cw-local-config.json"
+const WhitelistName = "server-whitelist.json"
 
 //Max player database size, pre-allocated
 const MaxPlayers = 5000

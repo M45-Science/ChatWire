@@ -640,27 +640,6 @@ func Chat() {
 							if cfg.Local.ResetScheduleText != "" {
 								fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
 							}
-
-							//Send whitelist
-							if cfg.Local.SoftModOptions.DoWhitelist {
-								fact.SetNoResponseCount(0)
-								glob.PlayerListLock.RLock()
-								var pcount = 0
-								for i := 0; i <= glob.PlayerListMax; i++ {
-									if glob.PlayerList[i].Name != "" && glob.PlayerList[i].Level > 0 {
-										pcount++
-										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
-									}
-									fact.SetNoResponseCount(0)
-								}
-								glob.PlayerListLock.RUnlock()
-
-								fact.SetNoResponseCount(0)
-								if pcount > 0 {
-									buf := fmt.Sprintf("Whitelist of %d players sent.", pcount)
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
-								}
-							}
 							if cfg.Local.SoftModOptions.CleanMapOnBoot {
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 								fact.WriteFact("/cleanmap")

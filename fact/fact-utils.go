@@ -3,6 +3,8 @@ package fact
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"time"
 
@@ -56,6 +58,44 @@ func WhitelistPlayer(pname string, level int) {
 			}
 		}
 	}
+}
+
+func WriteWhitelist() int {
+	glob.PlayerListLock.RLock()
+	var count = 0
+	var buf = "[\n"
+	for i := 0; i <= glob.PlayerListMax; i++ {
+		if glob.PlayerList[i].Level > 0 {
+			buf = buf + "\"" + glob.PlayerList[i].Name + "\",\n"
+			count = count + 1
+		}
+	}
+	buf = buf + "]\n"
+	glob.PlayerListLock.RUnlock()
+
+	wpath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix +
+		cfg.Local.ServerCallsign + "/" + constants.WhitelistName
+	fo, err := os.Create(wpath)
+
+	if err != nil {
+		logs.Log("WriteWhitelist: os.Create failure")
+		return -1
+	}
+
+	// close fo on exit and check for its returned error
+	defer func() {
+		if err := fo.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	err = ioutil.WriteFile(wpath, []byte(buf), 0644)
+
+	if err != nil {
+		logs.Log("WriteWhitelist: WriteFile failure")
+		return -1
+	}
+	return count
 }
 
 func QuitFactorio() {
