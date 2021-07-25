@@ -70,24 +70,19 @@ func WriteWhitelist() int {
 			count = count + 1
 		}
 	}
-	buf = buf + "]\n"
+	lchar := len(buf)
+	buf = buf[0 : lchar-2]
+	buf = buf + "\n]\n"
 	glob.PlayerListLock.RUnlock()
 
 	wpath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix +
 		cfg.Local.ServerCallsign + "/" + constants.WhitelistName
-	fo, err := os.Create(wpath)
+	_, err := os.Create(wpath)
 
 	if err != nil {
 		logs.Log("WriteWhitelist: os.Create failure")
 		return -1
 	}
-
-	// close fo on exit and check for its returned error
-	defer func() {
-		if err := fo.Close(); err != nil {
-			panic(err)
-		}
-	}()
 
 	err = ioutil.WriteFile(wpath, []byte(buf), 0644)
 
