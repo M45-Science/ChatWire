@@ -347,7 +347,7 @@ func Chat() {
 								glob.NumLoginsLock.Unlock()
 								plevelname := fact.AutoPromote(pname)
 
-								pname = sclean.RemoveDiscordMarkdown(pname)
+								pname = sclean.EscapeDiscordMarkdown(pname)
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(cfg.Local.ChannelData.ChatID, buf)
@@ -389,7 +389,7 @@ func Chat() {
 
 								//Clean strings
 								cmess := sclean.StripControlAndSubSpecial(ctext)
-								cmess = sclean.RemoveDiscordMarkdown(cmess)
+								cmess = sclean.EscapeDiscordMarkdown(cmess)
 								cmess = sclean.RemoveFactorioTags(cmess)
 
 								if len(cmess) > 500 {
@@ -793,7 +793,7 @@ func Chat() {
 
 								cmess := strings.Join(nodslist[2:], " ")
 								cmess = sclean.StripControlAndSubSpecial(cmess)
-								cmess = sclean.RemoveDiscordMarkdown(cmess)
+								cmess = sclean.EscapeDiscordMarkdown(cmess)
 								cmess = sclean.RemoveFactorioTags(cmess)
 
 								if len(cmess) > 500 {
@@ -819,7 +819,7 @@ func Chat() {
 								//Filter Factorio names
 
 								factname = sclean.StripControlAndSubSpecial(factname)
-								factname = sclean.RemoveDiscordMarkdown(factname)
+								factname = sclean.EscapeDiscordMarkdown(factname)
 								if dname != "" {
 									fbuf = fmt.Sprintf("`%-11s` **%s**: %s", fact.GetGameTime(), factname, cmess)
 								} else {

@@ -44,12 +44,11 @@ func GetMapTypeName(num int) string {
 func Map_reset(data string) {
 
 	newstr := sclean.StripControlAndSubSpecial(data)
-	newstr = sclean.RemoveDiscordMarkdown(newstr)
 	newstr = sclean.RemoveFactorioTags(newstr)
 
 	if IsFactRunning() {
 		if newstr != "" {
-			CMS(cfg.Local.ChannelData.ChatID, newstr)
+			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(newstr))
 			WriteFact("/cchat [color=red](SYSTEM) " + newstr + "[/color]")
 			return
 		} else {
