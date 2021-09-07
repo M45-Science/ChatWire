@@ -347,7 +347,7 @@ func Chat() {
 								glob.NumLoginsLock.Unlock()
 								plevelname := fact.AutoPromote(pname)
 
-								pname = sclean.RemoveDiscordMarkdown(pname)
+								pname = sclean.EscapeDiscordMarkdown(pname)
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(cfg.Local.ChannelData.ChatID, buf)
@@ -389,7 +389,7 @@ func Chat() {
 
 								//Clean strings
 								cmess := sclean.StripControlAndSubSpecial(ctext)
-								cmess = sclean.RemoveDiscordMarkdown(cmess)
+								cmess = sclean.EscapeDiscordMarkdown(cmess)
 								cmess = sclean.RemoveFactorioTags(cmess)
 
 								if len(cmess) > 500 {
@@ -640,27 +640,6 @@ func Chat() {
 							if cfg.Local.ResetScheduleText != "" {
 								fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
 							}
-
-							//Send whitelist
-							if cfg.Local.SoftModOptions.DoWhitelist {
-								fact.SetNoResponseCount(0)
-								glob.PlayerListLock.RLock()
-								var pcount = 0
-								for i := 0; i <= glob.PlayerListMax; i++ {
-									if glob.PlayerList[i].Name != "" && glob.PlayerList[i].Level > 0 {
-										pcount++
-										fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
-									}
-									fact.SetNoResponseCount(0)
-								}
-								glob.PlayerListLock.RUnlock()
-
-								fact.SetNoResponseCount(0)
-								if pcount > 0 {
-									buf := fmt.Sprintf("Whitelist of %d players sent.", pcount)
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
-								}
-							}
 							if cfg.Local.SoftModOptions.CleanMapOnBoot {
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 								fact.WriteFact("/cleanmap")
@@ -814,7 +793,7 @@ func Chat() {
 
 								cmess := strings.Join(nodslist[2:], " ")
 								cmess = sclean.StripControlAndSubSpecial(cmess)
-								cmess = sclean.RemoveDiscordMarkdown(cmess)
+								cmess = sclean.EscapeDiscordMarkdown(cmess)
 								cmess = sclean.RemoveFactorioTags(cmess)
 
 								if len(cmess) > 500 {
@@ -840,7 +819,7 @@ func Chat() {
 								//Filter Factorio names
 
 								factname = sclean.StripControlAndSubSpecial(factname)
-								factname = sclean.RemoveDiscordMarkdown(factname)
+								factname = sclean.EscapeDiscordMarkdown(factname)
 								if dname != "" {
 									fbuf = fmt.Sprintf("`%-11s` **%s**: %s", fact.GetGameTime(), factname, cmess)
 								} else {

@@ -120,16 +120,25 @@ func MainLoops() {
 						tempargs = append(tempargs, "true")
 					}
 
+					//WriteWhitelist
+					count := fact.WriteWhitelist()
+					if count > 0 {
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, (fmt.Sprintf("Whitelist of %v players written.", count)))
+					} else {
+						//fact.LogCMS(cfg.Local.ChannelData.ChatID,("Empty whitelist written"))
+					}
+
 					var cmd *exec.Cmd
 					//Exec factorio
 					if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
 						//Absolute path
 						cmd = exec.Command(cfg.Global.PathData.FactorioBinary, tempargs...)
+						fmt.Println("Executing: " + cfg.Global.PathData.FactorioBinary + " " + strings.Join(tempargs, " "))
 					} else {
 						//Relative path
-						cmd = exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+cfg.Global.PathData.FactorioBinary, tempargs...)
+						cmd = exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, tempargs...)
+						fmt.Println("Executing: " + cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary + " " + strings.Join(tempargs, " "))
 					}
-					fmt.Println("Executing: " + cfg.Global.PathData.FactorioBinary + " " + strings.Join(tempargs, " "))
 
 					platform.LinuxSetProcessGroup(cmd)
 					//Used later on when binary is launched, redirects game stdout to file.

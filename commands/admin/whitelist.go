@@ -1,24 +1,24 @@
 package admin
 
 import (
+	"fmt"
+
 	"../../cfg"
 	"../../fact"
-	"../../glob"
 	"github.com/bwmarrin/discordgo"
 )
 
-//SendWhitelist locks PlayerListLock (READ)
-func SendWhitelist(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+//WriteWhitelist locks PlayerListLock (READ)
+func WriteWhitelist(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
-	//Send whitelist
+	//Write whitelist
 	if cfg.Local.SoftModOptions.DoWhitelist {
-		glob.PlayerListLock.RLock()
-		for i := 0; i <= glob.PlayerListMax; i++ {
-			fact.WhitelistPlayer(glob.PlayerList[i].Name, glob.PlayerList[i].Level)
+		count := fact.WriteWhitelist()
+		if count > 0 {
+			fact.CMS(m.ChannelID, fmt.Sprintf("Wrote whitelist of %x players", count))
+		} else {
+			fact.CMS(m.ChannelID, "Empty whitelist written")
 		}
-		glob.PlayerListLock.RUnlock()
-
-		fact.CMS(m.ChannelID, "Whitelist sent.")
 	} else {
 		fact.CMS(m.ChannelID, "whitelist isn't enabled.")
 	}
