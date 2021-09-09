@@ -56,7 +56,14 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 		args = append(args, MapPreset)
 	}
 
-	bloc := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + cfg.Global.PathData.FactorioBinary
+	bloc := ""
+	if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
+		//Absolute path
+		bloc = cfg.Global.PathData.FactorioBinary
+	} else {
+		//Relative path
+		bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
+	}
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", bloc, strings.Join(args, " "))
 	logs.Log(lbuf)
 	cmd := exec.Command(bloc, args...)
