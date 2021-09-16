@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "473-9-9-2021-1059"
+const Version = "474-9-16-2021-0318p"
 const Unknown = "Unknown"
 
 //Config files
@@ -14,7 +14,7 @@ const WhitelistName = "server-whitelist.json"
 const MaxPlayers = 5000
 
 //Number of repeated time reports before we assume server is paused
-const PauseThresh = 5
+const PauseThresh = 10
 
 //Minimum time between logout saves
 const SaveThresh = 300
