@@ -54,7 +54,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: user.PlayersOnline, Admin: false, Help: "Show players online"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Info", Command: user.Info, Admin: false, Help: "Show game & server info"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: user.ModsList, Admin: false, Help: "Show installed game-mods"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Register", Command: user.AccessServer, Admin: false, Help: "Get promoted to members, or regulars role on Discord."})
+	//CL.CommandList = append(CL.CommandList, Command{Name: "Register", Command: user.AccessServer, Admin: false, Help: "Get promoted to members, or regulars role on Discord."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, Admin: false, Help: "You are here"})
 }
 

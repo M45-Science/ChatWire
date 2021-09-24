@@ -122,7 +122,7 @@ func MainLoops() {
 
 					//WriteWhitelist
 					count := fact.WriteWhitelist()
-					if count > 0 {
+					if count > 0 && cfg.Local.SoftModOptions.DoWhitelist {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, (fmt.Sprintf("Whitelist of %v players written.", count)))
 					} else {
 						//fact.LogCMS(cfg.Local.ChannelData.ChatID,("Empty whitelist written"))
@@ -388,7 +388,7 @@ func MainLoops() {
 		//Also helps detect servers crash/dead while paused
 		go func() {
 			for {
-				time.Sleep(15 * time.Minute)
+				time.Sleep(5 * time.Minute)
 
 				if fact.IsFactRunning() {
 					fact.WriteFact("/p o c")
@@ -459,24 +459,6 @@ func MainLoops() {
 			}
 		}()
 
-		//****************************************
-		//Load & Save player database, for safety
-		//****************************************
-		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
-			for {
-				time.Sleep(30 * time.Minute)
-
-				logs.LogWithoutEcho("Database safety read/write.")
-				fact.LoadPlayers()
-				fact.WritePlayers()
-
-				fuzz := r1.Intn(5 * constants.MinuteInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
-			}
-		}()
-
 		//*******************************
 		//Save database, if marked dirty
 		//*******************************
@@ -484,7 +466,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(30 * time.Second)
+				time.Sleep(5 * time.Second)
 
 				glob.PlayerListDirtyLock.Lock()
 
@@ -510,7 +492,7 @@ func MainLoops() {
 			s1 := rand.NewSource(time.Now().UnixNano())
 			r1 := rand.New(s1)
 			for {
-				time.Sleep(15 * time.Minute)
+				time.Sleep(5 * time.Minute)
 				glob.PlayerListSeenDirtyLock.Lock()
 
 				if glob.PlayerListSeenDirty {
@@ -558,7 +540,7 @@ func MainLoops() {
 
 					logs.LogWithoutEcho("Database file modified, loading.")
 					fact.LoadPlayers()
-					time.Sleep(30 * time.Second)
+					time.Sleep(5 * time.Second)
 				}
 
 				fuzz := r1.Intn(constants.SecondInMicro)

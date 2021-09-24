@@ -165,6 +165,8 @@ func PlayerLevelSet(pname string, level int) bool {
 
 	t := time.Now()
 
+	WhitelistPlayer(pname, level)
+
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
@@ -172,24 +174,14 @@ func PlayerLevelSet(pname string, level int) bool {
 		if glob.PlayerList[i].Name == pname {
 
 			glob.PlayerList[i].LastSeen = t.Unix()
-			SetPlayerListSeenDirty()
 
-			if glob.PlayerList[i].Level < level && level > 0 {
-				WhitelistPlayer(pname, level)
-			}
-
-			//If level didn't change, don't bother
 			if glob.PlayerList[i].Level != level {
-				glob.PlayerList[i].Level = level
-
-				//Don't care about writing out new users often
-				if level != 0 {
-					SetPlayerListDirty()
-				} else {
-					SetPlayerListSeenDirty()
-				}
+				SetPlayerListDirty()
+			} else {
+				SetPlayerListSeenDirty()
 			}
 
+			glob.PlayerList[i].Level = level
 			return true
 		}
 	}
@@ -202,15 +194,9 @@ func PlayerLevelSet(pname string, level int) bool {
 		glob.PlayerList[glob.PlayerListMax].Creation = t.Unix()
 		glob.PlayerListMax++
 
-		WhitelistPlayer(pname, level)
+		SetPlayerListDirty()
 	}
 
-	//Don't care about writing out new users often
-	if level != 0 {
-		SetPlayerListDirty()
-	} else {
-		SetPlayerListSeenDirty()
-	}
 	return false
 }
 
