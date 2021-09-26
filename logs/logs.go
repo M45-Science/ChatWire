@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"../cfg"
 	"../glob"
 	"../sclean"
 )
@@ -57,6 +56,6 @@ func Log(input string) {
 		fmt.Println(err)
 	}
 
-	buf = fmt.Sprintf("`%s` %s", date, text)
-	cms(cfg.Local.ChannelData.LogID, buf)
+	//buf = fmt.Sprintf("`%s` %s", date, text)
+	//cms(cfg.Local.ChannelData.LogID, buf)
 }
