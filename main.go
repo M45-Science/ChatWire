@@ -207,7 +207,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			return
 		}
-	} else if m.ChannelID == cfg.Local.ChannelData.ChatID m.ChannelID != "" { //Factorio channel
+	} else if m.ChannelID == cfg.Local.ChannelData.ChatID && m.ChannelID != "" { //Factorio channel
 		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}
 
