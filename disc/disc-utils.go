@@ -12,6 +12,10 @@ import (
 
 func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
+	if ch == "" || embed == nil {
+		return nil
+	}
+
 	if glob.DS != nil {
 		_, err := glob.DS.ChannelMessageSendEmbed(ch, embed)
 
@@ -27,6 +31,10 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 }
 
 func SmartWriteDiscord(ch string, text string) {
+
+	if ch == "" || text == "" {
+		return
+	}
 
 	if glob.DS != nil {
 		_, err := glob.DS.ChannelMessageSend(ch, text)
