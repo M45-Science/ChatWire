@@ -843,7 +843,7 @@ func Chat() {
 								fnamereduced := filter.ReplaceAllString(fnamelower, "")
 
 								//If we find discord name, and discord name and factorio name don't contain the same name
-								if 1 == 2 && dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
+								if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
 									//Slap data into embed format.
 									myembed := embed.NewEmbed().
 										SetAuthor("@"+dname, avatar).
