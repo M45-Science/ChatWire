@@ -266,7 +266,7 @@ func DoUpdateChannelName() {
 	oldchname := glob.OldChanName
 	glob.UpdateChannelLock.Unlock()
 
-	if chname != oldchname {
+	if chname != oldchname && cfg.Local.ChannelData.ChatID != "" {
 		glob.UpdateChannelLock.Lock()
 		glob.OldChanName = glob.NewChanName
 		glob.UpdateChannelLock.Unlock()
