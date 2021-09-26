@@ -351,7 +351,6 @@ func Chat() {
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(cfg.Local.ChannelData.ChatID, buf)
-								//fact.UpdateChannelName()
 							}
 							continue
 						}
@@ -539,7 +538,7 @@ func Chat() {
 								}
 
 								buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
-								logs.Log(buf)
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
 							} else { //Just in case
 								logs.Log("Loading map...")
 							}
@@ -660,7 +659,12 @@ func Chat() {
 						//**********************
 						//CAPTURE SAVE MESSAGES
 						//**********************
-						if strings.HasPrefix(NoTC, "Info AppManagerStates") && strings.Contains(NoTC, "Saving finished") {
+						if strings.HasPrefix(NoTC, "Info AppManager") && strings.Contains(NoTC, "Saving to") {
+							savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to (_autosave\d+)`)
+							savmatch := savreg.FindStringSubmatch(NoTC)
+							if len(savmatch) > 1 {
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, "("+savmatch[1]+")")
+							}
 							fact.SetSaveTimer()
 							continue
 						}
@@ -681,7 +685,8 @@ func Chat() {
 								glob.GameMapPath = fullpath
 								glob.GameMapLock.Unlock()
 
-								logs.Log("Map saved as: " + filename)
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Map saved as: "+filename)
+
 							}
 							continue
 						}
