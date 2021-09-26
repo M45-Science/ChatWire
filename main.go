@@ -164,9 +164,11 @@ func startbot() {
 	fact.UpdateChannelName()
 
 	//Update aux channel name on reboot
-	_, errd := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ServerCallsign + "-" + cfg.Local.Name, Position: cfg.Local.ChannelData.Pos})
-	if errd != nil {
-		fmt.Println(errd)
+	if cfg.Local.ChannelData.LogID != "" {
+		_, errd := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ServerCallsign + "-" + cfg.Local.Name, Position: cfg.Local.ChannelData.Pos})
+		if errd != nil {
+			fmt.Println(errd)
+		}
 	}
 
 }
@@ -183,7 +185,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	//Command stuff
 	//AUX channel
-	if m.ChannelID == cfg.Local.ChannelData.LogID {
+	if m.ChannelID == cfg.Local.ChannelData.LogID && m.ChannelID != "" {
 		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}
 
@@ -205,7 +207,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			return
 		}
-	} else if m.ChannelID == cfg.Local.ChannelData.ChatID { //Factorio channel
+	} else if m.ChannelID == cfg.Local.ChannelData.ChatID m.ChannelID != "" { //Factorio channel
 		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}
 
