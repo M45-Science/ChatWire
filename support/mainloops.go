@@ -114,6 +114,11 @@ func MainLoops() {
 					tempargs = append(tempargs, "--server-settings")
 					tempargs = append(tempargs, serversettings)
 
+					//Auth Server Bans ( world bans )
+					if cfg.Global.AuthServerBans {
+						tempargs = append(tempargs, "--use-authserver-bans")
+					}
+
 					//Whitelist
 					if cfg.Local.SoftModOptions.DoWhitelist {
 						tempargs = append(tempargs, "--use-server-whitelist")

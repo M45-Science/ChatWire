@@ -51,6 +51,8 @@ type gconfig struct {
 
 	DiscordCommandPrefix string
 	ResetPingString      string
+
+	AuthServerBans bool
 }
 
 type AdminData struct {
