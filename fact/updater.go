@@ -56,16 +56,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			fmt.Println(err)
 		}
 
-		bloc := ""
-		if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
-			//Absolute path
-			bloc = cfg.Global.PathData.FactorioBinary
-		} else {
-			//Relative path
-			bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
-		}
-
-		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", bloc, "-d"}
+		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", GetFactorioBinary(), "-d"}
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
@@ -169,16 +160,7 @@ func FactUpdate() {
 		glob.FactorioLaunchLock.Lock()
 		defer glob.FactorioLaunchLock.Unlock()
 
-		bloc := ""
-		if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
-			//Absolute path
-			bloc = cfg.Global.PathData.FactorioBinary
-		} else {
-			//Relative path
-			bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
-		}
-
-		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + bloc}
+		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + GetFactorioBinary()}
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}

@@ -129,16 +129,8 @@ func MainLoops() {
 					}
 
 					var cmd *exec.Cmd
-					//Exec factorio
-					if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
-						//Absolute path
-						cmd = exec.Command(cfg.Global.PathData.FactorioBinary, tempargs...)
-						fmt.Println("Executing: " + cfg.Global.PathData.FactorioBinary + " " + strings.Join(tempargs, " "))
-					} else {
-						//Relative path
-						cmd = exec.Command(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.FactorioBinary, tempargs...)
-						fmt.Println("Executing: " + cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary + " " + strings.Join(tempargs, " "))
-					}
+					fmt.Println("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
+					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
 					platform.LinuxSetProcessGroup(cmd)
 					//Used later on when binary is launched, redirects game stdout to file.

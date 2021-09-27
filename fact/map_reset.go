@@ -156,18 +156,10 @@ func Map_reset(data string) {
 		factargs = append(factargs, MapPreset)
 	}
 
-	bloc := ""
-	if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
-		//Absolute path
-		bloc = cfg.Global.PathData.FactorioBinary
-	} else {
-		//Relative path
-		bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
-	}
-	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", bloc, strings.Join(factargs, " "))
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", GetFactorioBinary(), strings.Join(factargs, " "))
 	logs.Log(lbuf)
 
-	cmd := exec.Command(bloc, factargs...)
+	cmd := exec.Command(GetFactorioBinary(), factargs...)
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {

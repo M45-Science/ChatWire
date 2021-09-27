@@ -11,6 +11,18 @@ import (
 	"../logs"
 )
 
+func GetFactorioBinary() string {
+	bloc := ""
+	if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
+		//Absolute path
+		bloc = cfg.Global.PathData.FactorioBinary
+	} else {
+		//Relative path
+		bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
+	}
+	return bloc
+}
+
 func DoShowLocks(inch string) {
 	var startTime = time.Now()
 
