@@ -104,9 +104,12 @@ type DiscordDataStruct struct {
 }
 
 type RoleDataStruct struct {
-	Admins   string
-	Regulars string
-	Members  string
+	Moderator string
+	Admin     string
+	Patreon   string
+	Nitro     string
+	Regular   string
+	Member    string
 }
 
 type MapPreviewDataStruct struct {
