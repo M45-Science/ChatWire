@@ -248,18 +248,18 @@ func Chat() {
 										glob.PasswordTime[i] = 0
 
 										newrole := ""
-										if ptype == "normal" {
-											newrole = cfg.Global.RoleData.Members
-											plevel = 0
-										} else if ptype == "trusted" {
-											newrole = cfg.Global.RoleData.Members
+										if ptype == "trusted" {
+											newrole = cfg.Global.RoleData.Member
 											plevel = 1
 										} else if ptype == "regular" {
-											newrole = cfg.Global.RoleData.Regulars
+											newrole = cfg.Global.RoleData.Regular
 											plevel = 2
 										} else if ptype == "admin" {
-											newrole = cfg.Global.RoleData.Admins
+											newrole = cfg.Global.RoleData.Admin
 											plevel = 255
+										} else {
+											newrole = "nothing"
+											plevel = 0
 										}
 
 										discid := disc.GetDiscordIDFromFactorioName(pname)

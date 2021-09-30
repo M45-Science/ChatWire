@@ -205,14 +205,14 @@ func AutoPromote(pname string) string {
 		if factname == pname {
 
 			newrole := ""
-			if plevel == 0 {
-				newrole = cfg.Global.RoleData.Members
-			} else if plevel == 1 {
-				newrole = cfg.Global.RoleData.Members
+			if plevel == 1 {
+				newrole = cfg.Global.RoleData.Member
 			} else if plevel == 2 {
-				newrole = cfg.Global.RoleData.Regulars
+				newrole = cfg.Global.RoleData.Regular
 			} else if plevel == 255 {
-				newrole = cfg.Global.RoleData.Admins
+				newrole = cfg.Global.RoleData.Admin
+			} else {
+				newrole = "Nothing"
 			}
 
 			guild := GetGuild()
