@@ -27,6 +27,21 @@ type Command struct {
 // CL is a Commands interface.
 var CL Commands
 
+// CheckAdmin checks if the user attempting to run an admin command is an admin
+func CheckAdmin(m *discordgo.MessageCreate) bool {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.Moderator {
+			return true
+		}
+	}
+	for _, admin := range cfg.Global.AdminData.IDs {
+		if m.Author.ID == admin {
+			return true
+		}
+	}
+	return false
+}
+
 // RegisterCommands registers the commands on start up.
 func RegisterCommands() {
 	// Admin Commands
@@ -75,21 +90,6 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 	}
 
 	fact.CMS(m.ChannelID, "Invalid command, try "+cfg.Global.DiscordCommandPrefix+"help")
-}
-
-// CheckAdmin checks if the user attempting to run an admin command is an admin
-func CheckAdmin(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.RoleData.Moderator {
-			return true
-		}
-	}
-	for _, admin := range cfg.Global.AdminData.IDs {
-		if m.Author.ID == admin {
-			return true
-		}
-	}
-	return false
 }
 
 func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
