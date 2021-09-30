@@ -20,6 +20,7 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	//Re-Write global and local configs
 	cfg.WriteGCfg()
 	cfg.WriteLCfg()
+	fact.DoUpdateChannelName()
 	fact.CMS(m.ChannelID, "Config files reloaded.")
 
 	//Config reset-interval
