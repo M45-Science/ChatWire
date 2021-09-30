@@ -23,10 +23,14 @@ func handlebool(name string, arg string, m *discordgo.MessageCreate) (bool, bool
 
 func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	myargs := strings.Split(m.Content, " ")
-
-	if len(myargs) > 2 {
+	arglen := len(myargs)
+	if arglen > 0 {
 		arg1 := strings.ToLower(myargs[0])
-		arg2 := strings.ToLower(myargs[1])
+		arg2 := ""
+
+		if arglen > 1 {
+			arg2 = strings.ToLower(myargs[1])
+		}
 
 		if arg1 == "name" && arg2 != "" {
 			cfg.Local.Name = arg2
