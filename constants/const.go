@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "478-9-29-2021-1105p"
+const Version = "479-9-30-2021-1227"
 const Unknown = "Unknown"
 
 //Config files
