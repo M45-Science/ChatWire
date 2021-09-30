@@ -160,7 +160,9 @@ func startbot() {
 		fmt.Println(errc)
 	}
 
-	logs.Log("Bot online. *v" + constants.Version + "*")
+	bstring := "Loading: CW *v" + constants.Version + "*"
+	logs.Log(bstring)
+	fact.CMS(bstring)
 	fact.UpdateChannelName()
 
 	//Update aux channel name on reboot
