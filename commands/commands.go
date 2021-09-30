@@ -48,7 +48,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Locks", Command: admin.ShowLocks, Admin: true, Help: "Check Mutex Locks"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Cfg", Command: admin.ReloadConfig, Admin: true, Help: "Reload config file"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "NewMap", Command: admin.NewMap, Admin: true, Help: "Quickly stop server, archive, generate map and reboot."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Set", Command: admin.NewMap, Admin: true, Help: "Change server settings."})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Set", Command: admin.Set, Admin: true, Help: "Change server settings."})
 
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, Admin: false, Help: "Show player info"})
