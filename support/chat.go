@@ -19,6 +19,35 @@ import (
 	"github.com/hpcloud/tail"
 )
 
+//True, error
+func StringToBool(txt string) (bool, bool) {
+	if strings.ToLower(txt) == "true" ||
+		strings.ToLower(txt) == "t" ||
+		strings.ToLower(txt) == "yes" ||
+		strings.ToLower(txt) == "y" ||
+		strings.ToLower(txt) == "on" ||
+		strings.ToLower(txt) == "1" {
+		return true, false
+	} else if strings.ToLower(txt) == "false" ||
+		strings.ToLower(txt) == "f" ||
+		strings.ToLower(txt) == "no" ||
+		strings.ToLower(txt) == "n" ||
+		strings.ToLower(txt) == "off" ||
+		strings.ToLower(txt) == "0" {
+		return false, false
+	}
+
+	return false, true
+}
+
+func BoolToString(b bool) string {
+	if b {
+		return "on"
+	} else {
+		return "off"
+	}
+}
+
 // Chat pipes in-game chat to Discord, and handles log events
 func Chat() {
 
