@@ -24,7 +24,7 @@ func handlebool(name string, arg string, m *discordgo.MessageCreate) (bool, bool
 func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	myargs := strings.Split(m.Content, " ")
 
-	if len(myargs) > 1 {
+	if len(myargs) > 2 {
 		arg1 := strings.ToLower(myargs[0])
 		arg2 := strings.ToLower(myargs[1])
 
@@ -117,6 +117,6 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			}
 		}
 	} else {
-		fact.CMS(m.ChannelID, "Usage: set <setting> <value>\nSettings:\nName <text>, Port <number>, MapPreset <preset>,  MapGenPreset <text>, AutoStart <on/off>, AutoUpdate <on/off>, UpdateExp <on/off>, SlowConect <on/off>, DefaultSpeed <0.1 to 10.0>, ConnectSpeed <0.1 to 1.0>, DoWhitelist <on/off>, RestrictMode <on/off>, FriendlyFire <true/false>, CleanMapOnBoot <true/false> (requires CleanMap mod)\n")
+		fact.CMS(m.ChannelID, "Usage: ```set <setting> <value>\nSettings:\nName <text>, Port <number>, MapPreset <preset>,  MapGenPreset <text>, AutoStart <on/off>, AutoUpdate <on/off>, UpdateExp <on/off>, SlowConect <on/off>, DefaultSpeed <0.1 to 10.0>, ConnectSpeed <0.1 to 1.0>, DoWhitelist <on/off>, RestrictMode <on/off>, FriendlyFire <true/false>, CleanMapOnBoot <true/false> (requires CleanMap mod)\n```")
 	}
 }
