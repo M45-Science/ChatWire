@@ -162,7 +162,7 @@ func startbot() {
 
 	bstring := "Loading: CW *v" + constants.Version + "*"
 	logs.Log(bstring)
-	fact.CMS(bstring)
+	fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
 	fact.UpdateChannelName()
 
 	//Update aux channel name on reboot
