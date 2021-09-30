@@ -31,6 +31,7 @@ func IsPatreon(id string) bool {
 			if m.User.ID == id {
 				for _, r := range m.Roles {
 					if r == cfg.Global.RoleData.Patreon {
+						print("is patreon\n")
 						return true
 					}
 				}
