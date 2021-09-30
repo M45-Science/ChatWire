@@ -30,8 +30,9 @@ func IsPatreon(id string) bool {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				for _, r := range m.Roles {
+					buf := fmt.Sprintf("Username: %s, ID: %s, Role: %s, RoleCFG: %s", m.User.Username, m.User.ID, r, cfg.Global.RoleData.Patreon)
+					println(buf)
 					if r == cfg.Global.RoleData.Patreon {
-						print("is patreon\n")
 						return true
 					}
 				}

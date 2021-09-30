@@ -50,9 +50,15 @@ func levelToString(level int) string {
 	return name
 }
 
-func CheckAdmin(ID string) bool {
+// CheckAdmin checks if the user attempting to run an admin command is an admin
+func checkadmin(m *discordgo.MessageCreate) bool {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.Moderator {
+			return true
+		}
+	}
 	for _, admin := range cfg.Global.AdminData.IDs {
-		if ID == admin {
+		if m.Author.ID == admin {
 			return true
 		}
 	}
@@ -62,7 +68,7 @@ func CheckAdmin(ID string) bool {
 func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	maxresults := constants.WhoisResults
-	if CheckAdmin(m.Author.ID) {
+	if checkadmin(m) {
 		maxresults = constants.AdminWhoisResults
 	}
 	var slist []glob.PList
