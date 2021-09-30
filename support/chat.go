@@ -19,6 +19,48 @@ import (
 	"github.com/hpcloud/tail"
 )
 
+// IsPatreon checks if user has patreon role
+func IsPatreon(id string) bool {
+	if id == "" || glob.DS == nil {
+		return false
+	}
+	g := glob.Guild
+
+	if g != nil {
+		for _, m := range g.Members {
+			if m.User.ID == id {
+				for _, r := range m.Roles {
+					if r == cfg.Global.RoleData.Patreon {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
+// IsNitro checks if user has nitro role
+func IsNitro(id string) bool {
+	if id == "" || glob.DS == nil {
+		return false
+	}
+	g := glob.Guild
+
+	if g != nil {
+		for _, m := range g.Members {
+			if m.User.ID == id {
+				for _, r := range m.Roles {
+					if r == cfg.Global.RoleData.Nitro {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
 //True, error
 func StringToBool(txt string) (bool, bool) {
 	if strings.ToLower(txt) == "true" ||
@@ -380,6 +422,17 @@ func Chat() {
 
 								buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 								fact.CMS(cfg.Local.ChannelData.ChatID, buf)
+
+								//Give people patreon/nitro tags in-game.
+								did := disc.GetDiscordIDFromFactorioName(pname)
+								if did != "" {
+									if IsPatreon(did) {
+										fact.WriteFact(fmt.Sprintf("/patreon %s", pname))
+									}
+									if IsNitro(did) {
+										fact.WriteFact(fmt.Sprintf("/nitro %s", pname))
+									}
+								}
 							}
 							continue
 						}
