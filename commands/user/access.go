@@ -16,6 +16,10 @@ import (
 //AccessServer locks PasswordListLock
 func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
+	if !fact.IsFactRunning() {
+		s.ChannelMessageSend(m.ChannelID, "Factorio isn't currently running.")
+		return
+	}
 	//Do before lock
 	g := xkcdpwgen.NewGenerator()
 	g.SetNumWords(3)
