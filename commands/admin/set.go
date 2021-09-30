@@ -25,8 +25,8 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	myargs := strings.Split(m.Content, " ")
 
 	if len(myargs) > 1 {
-		arg1 := strings.ToLower(myargs[1])
-		arg2 := strings.ToLower(myargs[2])
+		arg1 := strings.ToLower(myargs[0])
+		arg2 := strings.ToLower(myargs[1])
 
 		if arg1 == "name" && arg2 != "" {
 			cfg.Local.Name = arg2

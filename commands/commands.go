@@ -63,12 +63,11 @@ func RegisterCommands() {
 func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	for _, command := range CL.CommandList {
 		if strings.EqualFold(command.Name, name) {
-			if command.Admin && CheckAdmin(m) {
-				command.Command(s, m, args)
-				return
-			}
-
-			if !command.Admin {
+			if command.Admin {
+				if CheckAdmin(m) {
+					command.Command(s, m, args)
+				}
+			} else {
 				command.Command(s, m, args)
 			}
 			return
@@ -80,8 +79,8 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 
 // CheckAdmin checks if the user attempting to run an admin command is an admin
 func CheckAdmin(m *discordgo.MessageCreate) bool {
-	for _, admin := range m.Member.Roles {
-		if admin == cfg.Global.RoleData.Moderator {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.Moderator {
 			return true
 		}
 	}
