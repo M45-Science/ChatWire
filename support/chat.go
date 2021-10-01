@@ -427,9 +427,11 @@ func Chat() {
 								did := disc.GetDiscordIDFromFactorioName(pname)
 								if did != "" {
 									if IsPatreon(did) {
+										fact.WriteFact(fmt.Sprintf("/regular %s", pname))
 										fact.WriteFact(fmt.Sprintf("/patreon %s", pname))
 									}
 									if IsNitro(did) {
+										fact.WriteFact(fmt.Sprintf("/regular %s", pname))
 										fact.WriteFact(fmt.Sprintf("/nitro %s", pname))
 									}
 								}
