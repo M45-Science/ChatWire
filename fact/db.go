@@ -35,12 +35,14 @@ func WatchDatabaseFile() {
 					case event := <-watcher.Events:
 						if event.Op&fsnotify.Write == fsnotify.Write {
 							SetPlayerListUpdated()
-
 							done <- true
+							return
 						}
 
 					case err := <-watcher.Errors:
 						logs.Log(fmt.Sprintf("fsnotify error: %v", err))
+						done <- true
+						return
 					}
 				}
 			}()
