@@ -456,6 +456,24 @@ func MainLoops() {
 			}
 		}()
 
+		//**********************************
+		//Read and write database regularly for safety
+		//I have seen fsnotify bug out
+		//**********************************
+		go func() {
+			for {
+				s1 := rand.NewSource(time.Now().UnixNano())
+				r1 := rand.New(s1)
+
+				fact.LoadPlayers()
+				fact.WritePlayers()
+				time.Sleep(time.Minute * 15)
+
+				fuzz := r1.Intn(10 * constants.SecondInMicro)
+				time.Sleep(time.Duration(fuzz) * time.Microsecond)
+			}
+		}()
+
 		//*******************************
 		//Save database, if marked dirty
 		//*******************************
@@ -477,7 +495,7 @@ func MainLoops() {
 				}
 				glob.PlayerListDirtyLock.Unlock()
 
-				fuzz := r1.Intn(constants.SecondInMicro)
+				fuzz := r1.Intn(10 * constants.SecondInMicro)
 				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()

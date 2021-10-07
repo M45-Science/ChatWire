@@ -34,15 +34,9 @@ func WatchDatabaseFile() {
 
 					case event := <-watcher.Events:
 						if event.Op&fsnotify.Write == fsnotify.Write {
-
-							//New thread, so we don't miss events
-							go func() {
-								//logs.Log("Database updated, marking for read...")
-								SetPlayerListUpdated()
-							}()
+							SetPlayerListUpdated()
 
 							done <- true
-							return
 						}
 
 					case err := <-watcher.Errors:
