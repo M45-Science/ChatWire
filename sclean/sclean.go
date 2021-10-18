@@ -129,7 +129,7 @@ func RemoveFactorioTags(input string) string {
 	}
 	for rege.MatchString(input) {
 		//Sub
-		input = rege.ReplaceAllString(input, " [${1}: ${2}] ")
+		input = rege.ReplaceAllString(input, " [${1}=${2}] ")
 	}
 	for rega.MatchString(input) {
 		//Filter close tags
