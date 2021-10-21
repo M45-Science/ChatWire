@@ -116,8 +116,6 @@ func RemoveFactorioTags(input string) string {
 	regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
 	regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
 
-	rege := regexp.MustCompile(`\[(.*?)=(.*?)\]`) //Sub others
-
 	input = strings.Replace(input, "\n", " ", -1)
 	input = strings.Replace(input, "\r", " ", -1)
 	input = strings.Replace(input, "\t", " ", -1)
@@ -126,10 +124,6 @@ func RemoveFactorioTags(input string) string {
 		//Remove colors/fonts
 		input = regc.ReplaceAllString(input, "")
 		input = regd.ReplaceAllString(input, "")
-	}
-	for rege.MatchString(input) {
-		//Sub
-		input = rege.ReplaceAllString(input, " [${1}=${2}] ")
 	}
 	for rega.MatchString(input) {
 		//Filter close tags
