@@ -31,6 +31,7 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	}
 	if cfg.Local.DefaultUPSRate > 0 && cfg.Local.DefaultUPSRate < 1000 {
 		fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
+		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
 	}
 
 }
