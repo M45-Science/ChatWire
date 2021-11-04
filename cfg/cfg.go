@@ -33,6 +33,7 @@ type config struct {
 	ResetPingString   string
 	DefaultUPSRate    int
 	DisableBlueprints bool
+	HideAutosaves     bool
 
 	ChannelData    ChannelDataStruct
 	SlowConnect    SlowConnectStruct

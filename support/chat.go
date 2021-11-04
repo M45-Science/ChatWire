@@ -753,10 +753,12 @@ func Chat() {
 						//CAPTURE SAVE MESSAGES
 						//**********************
 						if strings.HasPrefix(NoTC, "Info AppManager") && strings.Contains(NoTC, "Saving to") {
-							savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
-							savmatch := savreg.FindStringSubmatch(NoTC)
-							if len(savmatch) > 1 {
-								fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+							if !cfg.Local.HideAutosaves {
+								savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
+								savmatch := savreg.FindStringSubmatch(NoTC)
+								if len(savmatch) > 1 {
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+								}
 							}
 							fact.SetSaveTimer()
 							continue
