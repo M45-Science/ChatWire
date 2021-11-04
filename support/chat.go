@@ -648,7 +648,8 @@ func Chat() {
 
 								glob.ModLoadLock.Lock()
 
-								if glob.ModLoadMessage == nil {
+								//disabled
+								if glob.ModLoadMessage == nil && 1 == 2 {
 									modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.LogID, "Loading mods...")
 									if cerr != nil {
 										logs.Log(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
