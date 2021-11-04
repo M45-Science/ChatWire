@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "484-10-21-2021-0827"
+const Version = "486-11-4-2021-0504"
 const Unknown = "Unknown"
 
 //Config files
@@ -14,7 +14,7 @@ const WhitelistName = "server-whitelist.json"
 const MaxPlayers = 5000
 
 //Number of repeated time reports before we assume server is paused
-const PauseThresh = 10
+const PauseThresh = 20
 
 //Minimum time between logout saves
 const SaveThresh = 300
@@ -42,7 +42,7 @@ const HundrethInMicro = 10000
 const WatchdogInterval = time.Second
 
 //Throttle to about 5 every 6 seconds
-const CMSRate = 500 * time.Millisecond
+const CMSRate = 2000 * time.Millisecond
 const CMSRestTime = 6000 * time.Millisecond
 const CMSPollRate = 100 * time.Millisecond
 
