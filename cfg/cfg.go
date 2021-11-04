@@ -32,6 +32,7 @@ type config struct {
 	WriteStatsDisc    bool
 	ResetPingString   string
 	DefaultUPSRate    int
+	DisableBlueprints bool
 
 	ChannelData    ChannelDataStruct
 	SlowConnect    SlowConnectStruct
