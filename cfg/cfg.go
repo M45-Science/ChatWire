@@ -31,6 +31,7 @@ type config struct {
 	ResetScheduleText string
 	WriteStatsDisc    bool
 	ResetPingString   string
+	DefaultUPSRate    int
 
 	ChannelData    ChannelDataStruct
 	SlowConnect    SlowConnectStruct

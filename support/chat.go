@@ -727,6 +727,9 @@ func Chat() {
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 								fact.WriteFact("/cleanmap")
 							}
+							if cfg.Local.DefaultUPSRate > 0 && cfg.Local.DefaultUPSRate < 1000 {
+								fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
+							}
 							continue
 						}
 

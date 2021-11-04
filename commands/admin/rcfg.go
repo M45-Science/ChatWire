@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"fmt"
+
 	"../../cfg"
 	"../../fact"
 	"../../glob"
@@ -26,6 +28,9 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	//Config reset-interval
 	if cfg.Local.ResetScheduleText != "" {
 		fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
+	}
+	if cfg.Local.DefaultUPSRate > 0 && cfg.Local.DefaultUPSRate < 1000 {
+		fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
 	}
 
 }
