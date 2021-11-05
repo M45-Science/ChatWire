@@ -29,7 +29,7 @@ import (
 func MainLoops() {
 
 	//Wait to start loops...
-	time.Sleep(time.Second * 15)
+	time.Sleep(time.Second)
 
 	go func() {
 
