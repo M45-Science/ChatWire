@@ -300,7 +300,7 @@ func Chat() {
 											newrole = cfg.Global.RoleData.Admin
 											plevel = 255
 										} else {
-											newrole = "nothing"
+											newrole = cfg.Global.RoleData.New
 											plevel = 0
 										}
 
