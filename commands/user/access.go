@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"../../cfg"
@@ -36,7 +37,7 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 			glob.PasswordID[i] = ""
 			glob.PasswordTime[i] = 0
 
-			fact.CMS(cfg.Local.ChannelData.LogID, "Invalidating previous unused password...")
+			log.Println("Invalidating previous unused password...")
 
 		}
 	}

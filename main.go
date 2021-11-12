@@ -167,15 +167,6 @@ func startbot() {
 	log.Println(bstring)
 	fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
 	fact.UpdateChannelName()
-
-	//Update aux channel name on reboot
-	if cfg.Local.ChannelData.LogID != "" {
-		_, errd := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ServerCallsign + "-" + cfg.Local.Name, Position: cfg.Local.ChannelData.Pos})
-		if errd != nil {
-			log.Println(errd)
-		}
-	}
-
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -189,30 +180,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	//Command stuff
-	//AUX channel
-	if m.ChannelID == cfg.Local.ChannelData.LogID && m.ChannelID != "" {
-		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
-			empty := []string{}
-
-			slen := len(ctext)
-
-			if slen > 1 {
-
-				args := strings.Split(ctext, " ")
-				arglen := len(args)
-
-				if arglen > 0 {
-					name := strings.ToLower(args[0])
-					if arglen > 1 {
-						commands.RunCommand(name[1:], s, m, args[1:arglen])
-					} else {
-						commands.RunCommand(name[1:], s, m, empty)
-					}
-				}
-			}
-			return
-		}
-	} else if m.ChannelID == cfg.Local.ChannelData.ChatID && m.ChannelID != "" { //Factorio channel
+	if m.ChannelID == cfg.Local.ChannelData.ChatID && m.ChannelID != "" { //Factorio channel
 		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}
 

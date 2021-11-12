@@ -285,14 +285,11 @@ func MainLoops() {
 						if lcopy != nil {
 
 							var factmsg []string
-							var aux []string
 							var moder []string
 
 							for _, msg := range lcopy {
 								if msg.Channel == cfg.Local.ChannelData.ChatID {
 									factmsg = append(factmsg, msg.Text)
-								} else if msg.Channel == cfg.Local.ChannelData.LogID {
-									aux = append(aux, msg.Text)
 								} else if msg.Channel == cfg.Global.DiscordData.ReportChannelID {
 									moder = append(moder, msg.Text)
 								} else {
@@ -315,22 +312,6 @@ func MainLoops() {
 							}
 							if buf != "" {
 								disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, buf)
-							}
-
-							//Aux
-							buf = ""
-							for _, line := range aux {
-								oldlen := len(buf) + 1
-								addlen := len(line)
-								if oldlen+addlen >= 2000 {
-									disc.SmartWriteDiscord(cfg.Local.ChannelData.LogID, buf)
-									buf = line
-								} else {
-									buf = buf + "\n" + line
-								}
-							}
-							if buf != "" {
-								disc.SmartWriteDiscord(cfg.Local.ChannelData.LogID, buf)
 							}
 
 							//Moderation

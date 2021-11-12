@@ -23,15 +23,8 @@ func GetFactorioBinary() string {
 	return bloc
 }
 
-func DoShowLocks(inch string) {
+func DoShowLocks(ch string) {
 	var startTime = time.Now()
-
-	var ch string
-	if inch == "" {
-		ch = cfg.Local.ChannelData.LogID
-	} else {
-		ch = inch
-	}
 
 	glob.GuildLock.Lock()
 	time.Sleep(time.Microsecond)

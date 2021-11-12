@@ -126,7 +126,6 @@ type MapPreviewDataStruct struct {
 type ChannelDataStruct struct {
 	Pos    int
 	ChatID string
-	LogID  string
 }
 
 type SlowConnectStruct struct {
