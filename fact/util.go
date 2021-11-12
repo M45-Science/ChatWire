@@ -2,13 +2,13 @@ package fact
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
 
 	"../cfg"
 	"../glob"
-	"../logs"
 )
 
 func GetFactorioBinary() string {
@@ -182,9 +182,9 @@ func DoExit() {
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	mm := GetManMinutes()
-	logs.Log(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
+	log.Println(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
-	logs.Log("Bot closing, load/save db, and waiting for locks...")
+	log.Println("Bot closing, load/save db, and waiting for locks...")
 
 	LoadPlayers()
 	WritePlayers()
@@ -193,30 +193,30 @@ func DoExit() {
 	glob.PlayerListWriteLock.Lock()
 	glob.RecordPlayersWriteLock.Lock()
 
-	logs.Log("Closing log files.")
+	log.Println("Closing log files.")
 	glob.GameLogDesc.Close()
 	glob.BotLogDesc.Close()
 
 	if err := os.Remove("cw.lock"); err != nil {
-		logs.Log("Lock file missing???")
+		log.Println("Lock file missing???")
 	}
 
 	//Wait 30 seconds to clear buffer, then lock buffer
 	if glob.CMSBuffer != nil {
-		logs.Log("Waiting for CMS buffer to finish, locking CMS buffer, and closing Discord session.")
+		log.Println("Waiting for CMS buffer to finish, locking CMS buffer, and closing Discord session.")
 	}
 	for x := 0; glob.CMSBuffer != nil && x < 15; x++ {
 		time.Sleep(1 * time.Second)
 	}
-	logs.LogWithoutEcho("Locking CMS buffer.")
+	log.Println("Locking CMS buffer.")
 	glob.CMSBufferLock.Lock()
 
 	if glob.DS != nil {
-		logs.LogWithoutEcho("Closing Discord session and exiting.")
+		log.Println("Closing Discord session and exiting.")
 		glob.DS.Close()
 	}
 
-	fmt.Println("Goodbye.")
+	log.Println("Goodbye.")
 	os.Exit(1)
 }
 
@@ -236,7 +236,7 @@ func CMS(channel string, text string) {
 
 			glob.CMSBuffer = append(glob.CMSBuffer, item)
 		} else {
-			logs.LogWithoutEcho("CMS: Line too long! Discarding...")
+			log.Println("CMS: Line too long! Discarding...")
 		}
 	}
 
@@ -244,6 +244,6 @@ func CMS(channel string, text string) {
 }
 
 func LogCMS(channel string, text string) {
-	logs.Log(text)
+	log.Println(text)
 	CMS(channel, text)
 }

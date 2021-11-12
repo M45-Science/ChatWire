@@ -1,11 +1,11 @@
 package fact
 
 import (
+	"log"
 	"time"
 
 	"../constants"
 	"../glob"
-	"../logs"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -212,7 +212,7 @@ func SetFactRunning(run bool, err bool) {
 
 	if run && GetNoResposeCount() >= 10 {
 		//CMS(cfg.Local.ChannelData.ChatID, "Server now appears to be responding again.")
-		logs.Log("Server now appears to be responding again.")
+		log.Println("Server now appears to be responding again.")
 	}
 	SetNoResponseCount(0)
 

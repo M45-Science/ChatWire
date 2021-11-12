@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -13,7 +14,6 @@ import (
 	"../../cfg"
 	"../../fact"
 	"../../glob"
-	"../../logs"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -91,13 +91,13 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	}
 
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
-	logs.Log(lbuf)
+	log.Println(lbuf)
 
 	cmd := exec.Command(fact.GetFactorioBinary(), factargs...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		logs.Log(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
+		log.Println(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 	}
 
 	lines := strings.Split(string(out), "\n")

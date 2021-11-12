@@ -3,7 +3,7 @@
 package platform
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"syscall"
@@ -18,9 +18,9 @@ func CaptureErrorOut(cdesc *os.File) {
 	errb := syscall.Dup2(int(cdesc.Fd()), 2)
 
 	if erra != nil {
-		fmt.Println(erra)
+		log.Println(erra)
 	}
 	if errb != nil {
-		fmt.Println(errb)
+		log.Println(errb)
 	}
 }

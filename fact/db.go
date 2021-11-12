@@ -3,6 +3,7 @@ package fact
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"../cfg"
 	"../constants"
 	"../glob"
-	"../logs"
 	"../sclean"
 	"github.com/fsnotify/fsnotify"
 )
@@ -23,7 +23,7 @@ func WatchDatabaseFile() {
 			time.Sleep(time.Second)
 			watcher, err := fsnotify.NewWatcher()
 			if err != nil {
-				logs.Log(fmt.Sprintf("fsnotify error: %v", err))
+				log.Println(fmt.Sprintf("fsnotify error: %v", err))
 			}
 
 			done := make(chan bool)
@@ -40,7 +40,7 @@ func WatchDatabaseFile() {
 						}
 
 					case err := <-watcher.Errors:
-						logs.Log(fmt.Sprintf("fsnotify error: %v", err))
+						log.Println(fmt.Sprintf("fsnotify error: %v", err))
 						done <- true
 						return
 					}
@@ -48,7 +48,7 @@ func WatchDatabaseFile() {
 			}()
 
 			if err := watcher.Add(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName); err != nil {
-				logs.Log(fmt.Sprintf("fsnotify error: %v", err))
+				log.Println(fmt.Sprintf("fsnotify error: %v", err))
 			}
 
 			<-done
@@ -292,7 +292,7 @@ func LoadPlayers() {
 
 	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
 	if err != nil {
-		logs.Log("Couldn't read db file, skipping...")
+		log.Println("Couldn't read db file, skipping...")
 		return
 	}
 
@@ -349,7 +349,7 @@ func WritePlayers() {
 
 	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
 	if err != nil {
-		logs.Log("Couldn't open db file, skipping...")
+		log.Println("Couldn't open db file, skipping...")
 		return
 	}
 	// close fo on exit and check for its returned error
@@ -378,7 +378,7 @@ func WritePlayers() {
 	err = ioutil.WriteFile(nfilename, []byte(buffer), 0644)
 
 	if err != nil {
-		logs.Log("Couldn't write db temp file.")
+		log.Println("Couldn't write db temp file.")
 		return
 	}
 
@@ -387,7 +387,7 @@ func WritePlayers() {
 	err = os.Rename(oldName, newName)
 
 	if err != nil {
-		logs.Log("Couldn't rename db temp file.")
+		log.Println("Couldn't rename db temp file.")
 		return
 	}
 

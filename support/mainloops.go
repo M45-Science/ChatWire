@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -17,7 +18,6 @@ import (
 	"../disc"
 	"../fact"
 	"../glob"
-	"../logs"
 	"../platform"
 	"github.com/bwmarrin/discordgo"
 )
@@ -64,9 +64,9 @@ func MainLoops() {
 					command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
 					out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
 					if errs != nil {
-						logs.Log(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
+						log.Println(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
 					} else {
-						logs.Log("Soft-mod inserted into save file.")
+						log.Println("Soft-mod inserted into save file.")
 					}
 
 					time.Sleep(2 * time.Second)
@@ -78,7 +78,7 @@ func MainLoops() {
 						delay := throt * throt * 10
 
 						if delay > 0 {
-							logs.Log(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
+							log.Println(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
 							for i := 0; i < delay*10 && throt > 0; i++ {
 								time.Sleep(100 * time.Millisecond)
 							}
@@ -134,7 +134,7 @@ func MainLoops() {
 					}
 
 					var cmd *exec.Cmd
-					fmt.Println("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
+					log.Println("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
 					platform.LinuxSetProcessGroup(cmd)
@@ -146,7 +146,7 @@ func MainLoops() {
 					tpipe, errp := cmd.StdinPipe()
 
 					if errp != nil {
-						logs.Log(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
+						log.Println(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 						//close lock
 						glob.FactorioLaunchLock.Unlock()
 						fact.DoExit()
@@ -170,13 +170,13 @@ func MainLoops() {
 					err = cmd.Start()
 
 					if err != nil {
-						logs.Log(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
+						log.Println(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 						//close lock
 						glob.FactorioLaunchLock.Unlock()
 						fact.DoExit()
 						return
 					}
-					logs.Log("Factorio booting...")
+					log.Println("Factorio booting...")
 
 					//close lock
 					glob.FactorioLaunchLock.Unlock()
@@ -225,7 +225,7 @@ func MainLoops() {
 						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
 						glob.LastTotalStat = totalstat
 						if err != nil {
-							fmt.Println(err)
+							log.Println(err)
 						}
 						time.Sleep(5 * time.Minute)
 					}
@@ -234,7 +234,7 @@ func MainLoops() {
 						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
 						glob.LastMemberStat = memberstat
 						if err != nil {
-							fmt.Println(err)
+							log.Println(err)
 						}
 						time.Sleep(5 * time.Minute)
 					}
@@ -243,7 +243,7 @@ func MainLoops() {
 						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
 						glob.LastRegularStat = regularstat
 						if err != nil {
-							fmt.Println(err)
+							log.Println(err)
 						}
 						time.Sleep(5 * time.Minute)
 					}
@@ -369,7 +369,7 @@ func MainLoops() {
 		//time.Sleep(100 * time.Millisecond)
 		//line, _, err := Console.ReadLine()
 		//if err != nil {
-		//	logs.Log(fmt.Sprintf("%s: An error occurred when attempting to read the input to pass as input to the console Details: %s", time.Now(), err))
+		//	log.Println(fmt.Sprintf("%s: An error occurred when attempting to read the input to pass as input to the console Details: %s", time.Now(), err))
 		//	fact.SetFactRunning(false, true)
 		//	continue
 		//} else {
@@ -408,7 +408,7 @@ func MainLoops() {
 				glob.PasswordListLock.Lock()
 				for i := 0; i <= glob.PasswordMax && i <= constants.MaxPasswords; i++ {
 					if glob.PasswordList[i] != "" && (t.Unix()-glob.PasswordTime[i]) > 300 {
-						logs.Log("Invalidating old unused access code for user: " + disc.GetNameFromID(glob.PasswordID[i], false))
+						log.Println("Invalidating old unused access code for user: " + disc.GetNameFromID(glob.PasswordID[i], false))
 						glob.PasswordList[i] = ""
 						glob.PasswordID[i] = ""
 						glob.PasswordTime[i] = 0
@@ -489,7 +489,7 @@ func MainLoops() {
 					glob.PlayerListDirty = false
 					//Prevent recursive lock
 					go func() {
-						logs.LogWithoutEcho("Database marked dirty, saving.")
+						log.Println("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
 				}
@@ -515,7 +515,7 @@ func MainLoops() {
 
 					//Prevent recursive lock
 					go func() {
-						logs.LogWithoutEcho("Database last seen flagged, saving.")
+						log.Println("Database last seen flagged, saving.")
 						fact.WritePlayers()
 					}()
 				}
@@ -553,7 +553,7 @@ func MainLoops() {
 				if updated {
 					updated = false
 
-					logs.LogWithoutEcho("Database file modified, loading.")
+					log.Println("Database file modified, loading.")
 					fact.LoadPlayers()
 					time.Sleep(5 * time.Second)
 				}
@@ -583,26 +583,26 @@ func MainLoops() {
 					if err != nil {
 						nguild, err = glob.DS.Guild(cfg.Global.DiscordData.GuildID)
 						if err != nil {
-							//logs.LogWithoutEcho("Failed to get guild data, will retry...")
+							//log.Println("Failed to get guild data, will retry...")
 							return
 						}
 					}
 
 					if err != nil {
-						logs.Log(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
+						log.Println(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
 
 						glob.GuildLock.Unlock()
 						continue
 					}
 					if nguild == nil || err != nil {
 						glob.Guildname = constants.Unknown
-						logs.LogWithoutEcho("Guild data came back nil.")
+						log.Println("Guild data came back nil.")
 					} else {
 
 						//Guild found, exit loop
 						glob.Guild = nguild
 						glob.Guildname = nguild.Name
-						logs.LogWithoutEcho("Guild data linked.")
+						log.Println("Guild data linked.")
 
 						glob.GuildLock.Unlock()
 						break
@@ -716,7 +716,7 @@ func MainLoops() {
 					fact.SetAutoStart(false)
 
 					if err := os.Remove(".upgrade"); err != nil {
-						logs.Log(".upgrade disappeared?")
+						log.Println(".upgrade disappeared?")
 					}
 					if fact.IsFactRunning() {
 						go func() {
@@ -733,7 +733,7 @@ func MainLoops() {
 					}
 				} else if _, err := os.Stat(".queue"); !os.IsNotExist(err) {
 					if err := os.Remove(".queue"); err != nil {
-						logs.Log(".queue file disappeared?")
+						log.Println(".queue file disappeared?")
 					}
 					if !fact.IsQueued() {
 						fact.SetQueued(true)
@@ -742,7 +742,7 @@ func MainLoops() {
 				} else if _, err := os.Stat(".reload"); !os.IsNotExist(err) {
 
 					if err := os.Remove(".reload"); err != nil {
-						logs.Log(".reload file disappeared?")
+						log.Println(".reload file disappeared?")
 					}
 					fact.LogCMS(cfg.Local.ChannelData.ChatID, "Rebooting!")
 					fact.SetBotReboot(true)
@@ -750,7 +750,7 @@ func MainLoops() {
 				} else if _, err := os.Stat(".start"); !os.IsNotExist(err) {
 
 					if err := os.Remove(".start"); err != nil {
-						logs.Log(".start file disappeared?")
+						log.Println(".start file disappeared?")
 					}
 					if !fact.IsFactRunning() {
 						fact.SetAutoStart(true)
@@ -769,12 +769,12 @@ func MainLoops() {
 						fact.Map_reset("")
 					}
 					if err := os.Remove(".newmap"); err != nil {
-						logs.Log(".newmap file disappeared?")
+						log.Println(".newmap file disappeared?")
 					}
 				} else if _, err := os.Stat(".restart"); !os.IsNotExist(err) {
 
 					if err := os.Remove(".restart"); err != nil {
-						logs.Log(".restart file disappeared?")
+						log.Println(".restart file disappeared?")
 					}
 					if !fact.IsFactRunning() {
 						fact.SetAutoStart(true)
@@ -796,7 +796,7 @@ func MainLoops() {
 				} else if _, err := os.Stat(".qrestart"); !os.IsNotExist(err) {
 
 					if err := os.Remove(".qrestart"); err != nil {
-						logs.Log(".qrestart file disappeared?")
+						log.Println(".qrestart file disappeared?")
 					}
 					if !fact.IsFactRunning() {
 						fact.SetAutoStart(true)
@@ -819,7 +819,7 @@ func MainLoops() {
 					}
 				} else if _, err := os.Stat(".shutdown"); !os.IsNotExist(err) {
 					if err := os.Remove(".shutdown"); err != nil {
-						logs.Log(".shutdown disappeared?")
+						log.Println(".shutdown disappeared?")
 					}
 					if fact.IsFactRunning() {
 						fact.SetAutoStart(false)
@@ -927,27 +927,27 @@ func MainLoops() {
 //Delete old signal files
 func clearOldSignals() {
 	if err := os.Remove(".start"); err == nil {
-		logs.Log("old .start removed.")
+		log.Println("old .start removed.")
 	}
 	if err := os.Remove(".restart"); err == nil {
-		logs.Log("old .restart removed.")
+		log.Println("old .restart removed.")
 	}
 	if err := os.Remove(".qrestart"); err == nil {
-		logs.Log("old .qrestart removed.")
+		log.Println("old .qrestart removed.")
 	}
 	if err := os.Remove(".shutdown"); err == nil {
-		logs.Log("old .shutdown removed.")
+		log.Println("old .shutdown removed.")
 	}
 	if err := os.Remove(".upgrade"); err == nil {
-		logs.Log("old .upgrade removed.")
+		log.Println("old .upgrade removed.")
 	}
 	if err := os.Remove(".queue"); err == nil {
-		logs.Log("old .queue removed.")
+		log.Println("old .queue removed.")
 	}
 	if err := os.Remove(".reload"); err == nil {
-		logs.Log("old .reload removed.")
+		log.Println("old .reload removed.")
 	}
 	//if err := os.Remove(".newmap"); err == nil {
-	//	logs.Log("old .reload removed.")
+	//	log.Println("old .reload removed.")
 	//}
 }

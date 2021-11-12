@@ -16,7 +16,6 @@ import (
 	"./disc"
 	"./fact"
 	"./glob"
-	"./logs"
 	"./sclean"
 	"./support"
 	"github.com/bwmarrin/discordgo"
@@ -24,7 +23,8 @@ import (
 
 func main() {
 
-	fmt.Println("Version: " + constants.Version)
+	log.SetFlags(log.Lmicroseconds | log.Lshortfile)
+	log.Println("Version: " + constants.Version)
 	t := time.Now()
 
 	//Randomize starting color
@@ -57,7 +57,7 @@ func main() {
 	cmdb := exec.Command(cfg.Global.PathData.ShellPath, cfg.Global.PathData.LogCompScriptPath)
 	_, err := cmdb.CombinedOutput()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	//Create our log file names
@@ -67,7 +67,7 @@ func main() {
 	//Make log directory
 	errr := os.MkdirAll("log", os.ModePerm)
 	if errr != nil {
-		fmt.Println(errr)
+		log.Println(errr)
 	}
 
 	//Open log files
@@ -83,14 +83,17 @@ func main() {
 
 	//Handle file errors
 	if erra != nil {
-		logs.Log(fmt.Sprintf("An error occurred when attempting to create game log. Details: %s", erra))
+		log.Println(fmt.Sprintf("An error occurred when attempting to create game log. Details: %s", erra))
 		fact.DoExit()
 	}
 
 	if errb != nil {
-		logs.Log(fmt.Sprintf("An error occurred when attempting to create bot log. Details: %s", errb))
+		log.Println(fmt.Sprintf("An error occurred when attempting to create bot log. Details: %s", errb))
 		fact.DoExit()
 	}
+
+	//Set bot log file
+	log.SetOutput(bdesc)
 
 	//Start discord bot, start reading stdout
 	go func() {
@@ -103,12 +106,12 @@ func main() {
 	fact.LoadRecord()
 
 	if err := os.Remove("cw.lock"); err == nil {
-		logs.Log("Lockfile found, bot crashed?")
+		log.Println("Lockfile found, bot crashed?")
 	}
 
 	lfile, err := os.OpenFile("cw.lock", os.O_CREATE, 0666)
 	if err != nil {
-		logs.Log("Couldn't create lock file!!!")
+		log.Println("Couldn't create lock file!!!")
 	}
 	lfile.Close()
 
@@ -122,12 +125,12 @@ func main() {
 
 func startbot() {
 
-	logs.LogWithoutEcho("Starting bot...")
+	log.Println("Starting bot...")
 
 	bot, erra := discordgo.New("Bot " + cfg.Global.DiscordData.Token)
 
 	if erra != nil {
-		logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
+		log.Println(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
 		time.Sleep(30 * time.Second)
 		startbot()
 		return
@@ -138,7 +141,7 @@ func startbot() {
 	errb := bot.Open()
 
 	if errb != nil {
-		logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
+		log.Println(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
 		time.Sleep(30 * time.Second)
 		startbot()
 		return
@@ -157,11 +160,11 @@ func startbot() {
 	botstatus := fmt.Sprintf("%vhelp", cfg.Global.DiscordCommandPrefix)
 	errc := bot.UpdateGameStatus(0, botstatus)
 	if errc != nil {
-		fmt.Println(errc)
+		log.Println(errc)
 	}
 
 	bstring := "Loading: CW *v" + constants.Version + "*"
-	logs.Log(bstring)
+	log.Println(bstring)
 	fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
 	fact.UpdateChannelName()
 
@@ -169,7 +172,7 @@ func startbot() {
 	if cfg.Local.ChannelData.LogID != "" {
 		_, errd := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.LogID, &discordgo.ChannelEdit{Name: cfg.Local.ServerCallsign + "-" + cfg.Local.Name, Position: cfg.Local.ChannelData.Pos})
 		if errd != nil {
-			fmt.Println(errd)
+			log.Println(errd)
 		}
 	}
 

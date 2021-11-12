@@ -3,13 +3,11 @@ package cfg
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
-	"time"
 
 	"../constants"
-	"../glob"
 )
 
 var Local config
@@ -146,21 +144,21 @@ func WriteGCfg() bool {
 	enc.SetIndent("", "\t")
 
 	if err := enc.Encode(Global); err != nil {
-		log("WriteGCfg: enc.Encode failure")
+		log.Println("WriteGCfg: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(constants.CWGlobalConfig)
 
 	if err != nil {
-		log("WriteGCfg: os.Create failure")
+		log.Println("WriteGCfg: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(constants.CWGlobalConfig, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		log("WriteGCfg: WriteFile failure")
+		log.Println("WriteGCfg: WriteFile failure")
 	}
 
 	return true
@@ -172,7 +170,7 @@ func ReadGCfg() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		log("ReadGCfg: os.Stat failed")
+		log.Println("ReadGCfg: os.Stat failed")
 		return false
 
 	} else {
@@ -184,8 +182,8 @@ func ReadGCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &cfg)
 			if err != nil {
-				log("ReadGCfg: Unmashal failure")
-				log(err.Error())
+				log.Println("ReadGCfg: Unmashal failure")
+				log.Println(err.Error())
 				os.Exit(1)
 			}
 
@@ -193,7 +191,7 @@ func ReadGCfg() bool {
 
 			return true
 		} else {
-			log("ReadGCfg: ReadFile failure")
+			log.Println("ReadGCfg: ReadFile failure")
 			return false
 		}
 	}
@@ -210,21 +208,21 @@ func WriteLCfg() bool {
 	enc.SetIndent("", "\t")
 
 	if err := enc.Encode(Local); err != nil {
-		log("WriteLCfg: enc.Encode failure")
+		log.Println("WriteLCfg: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(constants.CWLocalConfig)
 
 	if err != nil {
-		log("WriteLCfg: os.Create failure")
+		log.Println("WriteLCfg: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(constants.CWLocalConfig, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		log("WriteLCfg: WriteFile failure")
+		log.Println("WriteLCfg: WriteFile failure")
 	}
 
 	return true
@@ -236,7 +234,7 @@ func ReadLCfg() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		log("ReadLCfg: os.Stat failed")
+		log.Println("ReadLCfg: os.Stat failed")
 		return false
 
 	} else {
@@ -248,8 +246,8 @@ func ReadLCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &cfg)
 			if err != nil {
-				log("ReadLCfg: Unmashal failure")
-				log(err.Error())
+				log.Println("ReadLCfg: Unmashal failure")
+				log.Println(err.Error())
 				os.Exit(1)
 			}
 
@@ -257,7 +255,7 @@ func ReadLCfg() bool {
 
 			return true
 		} else {
-			log("ReadLCfg: ReadFile failure")
+			log.Println("ReadLCfg: ReadFile failure")
 			return false
 		}
 	}
@@ -266,17 +264,4 @@ func ReadLCfg() bool {
 func CreateLCfg() config {
 	cfg := config{Version: "0.0.1"}
 	return cfg
-}
-
-func log(text string) {
-
-	t := time.Now()
-	date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
-
-	buf := fmt.Sprintf("%s %s", date, text)
-	_, err := glob.BotLogDesc.WriteString(buf + "\n")
-	if err != nil {
-		fmt.Println(err)
-	}
-	println(buf)
 }

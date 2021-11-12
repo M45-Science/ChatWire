@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"../disc"
 	"../fact"
 	"../glob"
-	"../logs"
 	"../sclean"
 	embed "github.com/Clinet/discordgo-embed"
 	"github.com/hpcloud/tail"
@@ -98,7 +98,7 @@ func Chat() {
 
 			t, err := tail.TailFile(glob.GameLogName, tail.Config{Follow: true})
 			if err != nil {
-				logs.LogWithoutEcho(fmt.Sprintf("An error occurred when attempting to tail logfile %s Details: %s", glob.GameLogName, err))
+				log.Println(fmt.Sprintf("An error occurred when attempting to tail logfile %s Details: %s", glob.GameLogName, err))
 				fact.DoExit()
 			}
 
@@ -121,7 +121,7 @@ func Chat() {
 
 				if linelen > 8192 {
 					//Message too long
-					logs.Log("Line from factorio was too long.")
+					log.Println("Line from factorio was too long.")
 					continue
 				}
 
@@ -233,7 +233,7 @@ func Chat() {
 						//COMMAND REPORTING
 						//*****************
 						if strings.HasPrefix(lineText, "[CMD]") {
-							logs.Log(lineText)
+							log.Println(lineText)
 							continue
 						}
 
@@ -245,7 +245,7 @@ func Chat() {
 								buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
 									cfg.Local.ServerCallsign+"-"+cfg.Local.Name, linelist[1], strings.Join(linelist[2:], " "))
 								fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
-								logs.Log(lineText)
+								log.Println(lineText)
 							}
 							continue
 						}
@@ -312,12 +312,12 @@ func Chat() {
 											codegood = true
 											//Do not break, process
 										} else if discid != "" {
-											logs.Log(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
+											log.Println(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
 											fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user.", pname))
 											codegood = false
 											continue
 										} else if factname != "" {
-											logs.Log(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
+											log.Println(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
 											fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user.", pname))
 											codegood = false
 											continue
@@ -347,7 +347,7 @@ func Chat() {
 												fact.LogCMS(cfg.Local.ChannelData.ChatID, pname+": Registration complete!")
 												continue
 											} else {
-												logs.Log("No guild info.")
+												log.Println("No guild info.")
 												fact.CMS(cfg.Local.ChannelData.ChatID, "Sorry, I couldn't find the guild info!")
 												continue
 											}
@@ -357,12 +357,12 @@ func Chat() {
 								} //End of loop
 								glob.PasswordListLock.Unlock()
 								if !codefound {
-									logs.Log(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
+									log.Println(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
 									fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 									continue
 								}
 							} else {
-								logs.Log("Internal error, [ACCESS] had wrong argument count.")
+								log.Println("Internal error, [ACCESS] had wrong argument count.")
 								continue
 							}
 							continue
@@ -624,7 +624,7 @@ func Chat() {
 								buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
 							} else { //Just in case
-								logs.Log("Loading map...")
+								log.Println("Loading map...")
 							}
 							continue
 						}
@@ -651,7 +651,7 @@ func Chat() {
 								if glob.ModLoadMessage == nil {
 									modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.LogID, "Loading mods...")
 									if cerr != nil {
-										logs.Log(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
+										log.Println(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
 										glob.ModLoadMessage = nil
 										glob.ModLoadString = constants.Unknown
 
@@ -664,7 +664,7 @@ func Chat() {
 										//_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.LogID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 
 										//if err != nil {
-										//	logs.Log(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
+										//	log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
 										//}
 									}
 								} else {
@@ -672,7 +672,7 @@ func Chat() {
 									glob.ModLoadString = glob.ModLoadString + ", " + strings.Join(notclist[2:4], "-")
 									//_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.LogID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 									//if err != nil {
-									//	logs.Log(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
+									//	log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
 									//}
 								}
 
@@ -779,7 +779,7 @@ func Chat() {
 						//*****************
 						if strings.HasPrefix(NoTC, "Info") {
 							if strings.Contains(NoTC, "DesyncedWaitingForMap") {
-								logs.Log("desync: " + NoTC)
+								log.Println("desync: " + NoTC)
 								continue
 							}
 						}
@@ -848,11 +848,11 @@ func Chat() {
 									out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
 
 									if errs != nil {
-										logs.Log(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+										log.Println(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
 										fact.SetAutoStart(false)
 										fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
 									} else {
-										logs.Log("Deleted corrupted savegame.")
+										log.Println("Deleted corrupted savegame.")
 										fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
 									}
 
@@ -938,7 +938,7 @@ func Chat() {
 									err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
 									if err != nil {
 										//On failure, send normal message
-										logs.Log("Failed to send chat embed.")
+										log.Println("Failed to send chat embed.")
 									} else {
 										//Stop if succeeds
 										continue

@@ -2,11 +2,11 @@ package disc
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"../glob"
-	"../logs"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -21,7 +21,7 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
 		if err != nil {
 
-			logs.LogWithoutEcho(fmt.Sprintf("SmartWriteDiscordEmbed: ERROR: %v", err))
+			log.Println(fmt.Sprintf("SmartWriteDiscordEmbed: ERROR: %v", err))
 		}
 
 		return err
@@ -41,7 +41,7 @@ func SmartWriteDiscord(ch string, text string) {
 
 		if err != nil {
 
-			logs.LogWithoutEcho(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
+			log.Println(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
 		}
 	} else {
 
@@ -57,7 +57,7 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 
 		if err != nil || ch == nil {
 
-			logs.LogWithoutEcho(fmt.Sprintf("SmartChannelCreate: ERROR: %v", err))
+			log.Println(fmt.Sprintf("SmartChannelCreate: ERROR: %v", err))
 		} else {
 			return ch
 		}
@@ -77,7 +77,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 
 		if err != nil {
 
-			logs.LogWithoutEcho(fmt.Sprintf("SmartRoleAdd: ERROR: %v", err))
+			log.Println(fmt.Sprintf("SmartRoleAdd: ERROR: %v", err))
 		}
 
 		return err
