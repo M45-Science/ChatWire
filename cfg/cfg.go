@@ -29,6 +29,9 @@ type config struct {
 	ResetScheduleText string
 	WriteStatsDisc    bool
 	ResetPingString   string
+	DefaultUPSRate    int
+	DisableBlueprints bool
+	HideAutosaves     bool
 
 	ChannelData    ChannelDataStruct
 	SlowConnect    SlowConnectStruct
@@ -108,6 +111,7 @@ type RoleDataStruct struct {
 	Nitro     string
 	Regular   string
 	Member    string
+	New       string
 }
 
 type MapPreviewDataStruct struct {

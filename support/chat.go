@@ -300,7 +300,7 @@ func Chat() {
 											newrole = cfg.Global.RoleData.Admin
 											plevel = 255
 										} else {
-											newrole = "nothing"
+											newrole = cfg.Global.RoleData.New
 											plevel = 0
 										}
 
@@ -648,7 +648,8 @@ func Chat() {
 
 								glob.ModLoadLock.Lock()
 
-								if glob.ModLoadMessage == nil {
+								//disabled
+								if glob.ModLoadMessage == nil && 1 == 2 {
 									modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.LogID, "Loading mods...")
 									if cerr != nil {
 										log.Println(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
@@ -727,6 +728,14 @@ func Chat() {
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 								fact.WriteFact("/cleanmap")
 							}
+							if cfg.Local.DefaultUPSRate > 0 && cfg.Local.DefaultUPSRate < 1000 {
+								fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
+							}
+							if cfg.Local.DisableBlueprints {
+								fact.WriteFact("/blueprints off")
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
+							}
 							continue
 						}
 
@@ -744,10 +753,12 @@ func Chat() {
 						//CAPTURE SAVE MESSAGES
 						//**********************
 						if strings.HasPrefix(NoTC, "Info AppManager") && strings.Contains(NoTC, "Saving to") {
-							savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
-							savmatch := savreg.FindStringSubmatch(NoTC)
-							if len(savmatch) > 1 {
-								fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+							if !cfg.Local.HideAutosaves {
+								savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
+								savmatch := savreg.FindStringSubmatch(NoTC)
+								if len(savmatch) > 1 {
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+								}
 							}
 							fact.SetSaveTimer()
 							continue

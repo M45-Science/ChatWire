@@ -3,7 +3,7 @@ Requirements:
 
 Linux
 
-Golang 1.15+
+Golang 1.17+
 
 ImageMagick
 

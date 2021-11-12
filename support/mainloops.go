@@ -28,6 +28,9 @@ import (
 
 func MainLoops() {
 
+	//Wait to start loops...
+	time.Sleep(time.Second)
+
 	go func() {
 
 		//**************
@@ -53,8 +56,8 @@ func MainLoops() {
 
 						fact.WriteFact("/time")
 					}
-					if nores == 300 {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for 5 minutes... rebooting.")
+					if nores == 120 {
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for over two minutes... rebooting.")
 						fact.SetRelaunchThrottle(0)
 						fact.QuitFactorio()
 					}
@@ -646,7 +649,7 @@ func MainLoops() {
 				time.Sleep(5 * time.Second)
 
 				timer := fact.GetFactQuitTimer()
-				if !timer.IsZero() && time.Since(timer) > (30*time.Second) {
+				if !timer.IsZero() && time.Since(timer) > (60*time.Second) {
 					fact.DoExit()
 					break
 				}
@@ -872,7 +875,7 @@ func MainLoops() {
 
 				if oldchname != chname {
 					fact.DoUpdateChannelName()
-					time.Sleep(time.Minute * 2)
+					time.Sleep(time.Minute * 5)
 				} else {
 
 					time.Sleep(5 * time.Second)

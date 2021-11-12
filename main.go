@@ -249,7 +249,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			cmess := sclean.StripControlAndSubSpecial(ctext)
 			cmess = sclean.RemoveDiscordMarkdown(cmess)
-			cmess = sclean.RemoveFactorioTags(cmess)
+			//cmess = sclean.RemoveFactorioTags(cmess)
 			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 			nbuf := ""
 
