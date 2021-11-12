@@ -152,7 +152,7 @@ func startbot() {
 		glob.DS = bot
 	}
 
-	bot.LogLevel = discordgo.LogInformational
+	bot.LogLevel = discordgo.LogWarning
 
 	time.Sleep(2 * time.Second)
 	commands.RegisterCommands()
