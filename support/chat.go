@@ -649,8 +649,8 @@ func Chat() {
 								glob.ModLoadLock.Lock()
 
 								//disabled
-								if glob.ModLoadMessage == nil && 1 == 2 {
-									modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.LogID, "Loading mods...")
+								if glob.ModLoadMessage == nil {
+									modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.ChatID, "Loading mods...")
 									if cerr != nil {
 										log.Println(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
 										glob.ModLoadMessage = nil
@@ -662,19 +662,19 @@ func Chat() {
 										if glob.ModLoadString == constants.Unknown {
 											glob.ModLoadString = strings.Join(notclist[2:4], "-")
 										}
-										//_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.LogID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
+										_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 
-										//if err != nil {
-										//	log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
-										//}
+										if err != nil {
+											log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
+										}
 									}
 								} else {
 
 									glob.ModLoadString = glob.ModLoadString + ", " + strings.Join(notclist[2:4], "-")
-									//_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.LogID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
-									//if err != nil {
-									//	log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
-									//}
+									_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
+									if err != nil {
+										log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
+									}
 								}
 
 								glob.ModLoadLock.Unlock()
@@ -798,7 +798,7 @@ func Chat() {
 						//CAPTURE CRASHES
 						//*****************
 						if strings.HasPrefix(NoTC, "Error") {
-							fact.CMS(cfg.Local.ChannelData.LogID, "error: "+NoTC)
+							fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
 							//Lock error
 							if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
 								fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
