@@ -833,7 +833,7 @@ func MainLoops() {
 			r1 := rand.New(s1)
 
 			for {
-				time.Sleep(15 * time.Minute)
+				time.Sleep(60 * time.Minute)
 				fact.CheckFactUpdate(false)
 
 				fuzz := r1.Intn(constants.SecondInMicro * 30)
