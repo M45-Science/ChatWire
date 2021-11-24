@@ -290,18 +290,18 @@ func RandomColor(justnumbers bool) string {
 
 	color := constants.Colors[glob.LastColor]
 
-	red := color.R + 0.1
-	green := color.G + 0.1
-	blue := color.B + 0.1
+	red := color.R + 0.2
+	green := color.G + 0.2
+	blue := color.B + 0.2
 
-	if red > 0.9 {
-		red = 0.9
+	if red > 1 {
+		red = 1
 	}
-	if green > 0.9 {
-		green = 0.9
+	if green > 1 {
+		green = 1
 	}
-	if blue > 0.9 {
-		blue = 0.9
+	if blue > 1 {
+		blue = 1
 	}
 
 	if justnumbers {
