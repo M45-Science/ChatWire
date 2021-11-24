@@ -260,7 +260,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			cordname = sclean.TruncateString(cordname, 25)
 			factuser = sclean.TruncateString(factuser, 25)
 
-			//If we find discord name, and discord name... and factorio name don't contain the same name
+			//Check if discord name contains factorio name, if not lets show both their names
 			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
 
 				nbuf = fmt.Sprintf("/cchat [color=0,1,1][DISCORD][/color] [color=1,1,0]@%s[/color] [color=0,0.5,0](%s):[/color] %s%s[/color]", cordname, factuser, fact.RandomColor(false), cmess)
