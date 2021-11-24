@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
-	"../../cfg"
-	"../../fact"
-	"../../support"
+	"github.com/Distortions81/M45-ChatWire/cfg"
+	"github.com/Distortions81/M45-ChatWire/fact"
+	"github.com/Distortions81/M45-ChatWire/support"
 	"github.com/bwmarrin/discordgo"
 )
 

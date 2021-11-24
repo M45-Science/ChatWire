@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"../../fact"
+	"github.com/Distortions81/M45-ChatWire/fact"
 	"github.com/bwmarrin/discordgo"
 )
 

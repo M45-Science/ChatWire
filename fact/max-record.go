@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"../cfg"
-	"../glob"
+	"github.com/Distortions81/M45-ChatWire/cfg"
+	"github.com/Distortions81/M45-ChatWire/glob"
 )
 
 func WriteRecord() {

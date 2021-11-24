@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"../constants"
+	"github.com/Distortions81/M45-ChatWire/constants"
 	"github.com/bwmarrin/discordgo"
-	//"github.com/sasha-s/go-sync"
 )
 
 var Uptime time.Time

@@ -8,9 +8,7 @@ import (
 )
 
 func LinuxSetProcessGroup(cmd *exec.Cmd) {
-	return
 }
 
 func CaptureErrorOut(cdesc *os.File) {
-	return
 }

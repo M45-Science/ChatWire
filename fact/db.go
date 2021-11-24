@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"../cfg"
-	"../constants"
-	"../glob"
-	"../sclean"
+	"github.com/Distortions81/M45-ChatWire/cfg"
+	"github.com/Distortions81/M45-ChatWire/constants"
+	"github.com/Distortions81/M45-ChatWire/glob"
+	"github.com/Distortions81/M45-ChatWire/sclean"
 	"github.com/fsnotify/fsnotify"
 )
 

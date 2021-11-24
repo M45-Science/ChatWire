@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"../cfg"
-	"../constants"
-	"../disc"
-	"../fact"
-	"../glob"
-	"../sclean"
 	embed "github.com/Clinet/discordgo-embed"
+	"github.com/Distortions81/M45-ChatWire/cfg"
+	"github.com/Distortions81/M45-ChatWire/constants"
+	"github.com/Distortions81/M45-ChatWire/disc"
+	"github.com/Distortions81/M45-ChatWire/fact"
+	"github.com/Distortions81/M45-ChatWire/glob"
+	"github.com/Distortions81/M45-ChatWire/sclean"
 	"github.com/hpcloud/tail"
 )
 

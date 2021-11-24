@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
-	"../../cfg"
-	"../../constants"
-	"../../disc"
-	"../../fact"
-	"../../glob"
+	"github.com/Distortions81/M45-ChatWire/cfg"
+	"github.com/Distortions81/M45-ChatWire/constants"
+	"github.com/Distortions81/M45-ChatWire/disc"
+	"github.com/Distortions81/M45-ChatWire/fact"
+	"github.com/Distortions81/M45-ChatWire/glob"
 	"github.com/bwmarrin/discordgo"
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
@@ -18,7 +18,7 @@ import (
 func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if !fact.IsFactRunning() {
-		s.ChannelMessageSend(m.ChannelID, "Factorio isn't currently running.")
+		_, _ = s.ChannelMessageSend(m.ChannelID, "Factorio isn't currently running.")
 		return
 	}
 	//Do before lock
