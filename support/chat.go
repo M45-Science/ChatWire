@@ -530,15 +530,6 @@ func Chat() {
 							}
 							continue
 						}
-						//*****************
-						//(ONLINE)
-						//*****************
-						//if strings.Contains(lineText, "(online)") {
-
-						//Upgrade or replace this...
-						//fact.CMS(cfg.Local.ChannelData.ChatID, lineText)
-						//continue
-						//}
 
 						//*****************
 						//Pause on catch-up
