@@ -363,7 +363,7 @@ func WritePlayers() {
 	glob.PlayerListLock.RLock()
 	for i := 0; i < glob.PlayerListMax; i++ {
 
-		if glob.PlayerList[i].Level > 0 {
+		if glob.PlayerList[i].Level >= 0 {
 
 			//Filter comma from names, just in case
 			name := strings.ReplaceAll(glob.PlayerList[i].Name, ",", "") //remove comma
