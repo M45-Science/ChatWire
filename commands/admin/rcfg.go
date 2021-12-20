@@ -17,8 +17,14 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	defer glob.GameMapLock.Unlock()
 
 	//Read global and local configs
-	cfg.ReadGCfg()
-	cfg.ReadLCfg()
+	if !cfg.ReadGCfg() {
+		fact.CMS(m.ChannelID, "Global config file seems to be invalid.")
+		return
+	}
+	if !cfg.ReadLCfg() {
+		fact.CMS(m.ChannelID, "Local config file seems to be invalid.")
+		return
+	}
 
 	//Re-Write global and local configs
 	cfg.WriteGCfg()
