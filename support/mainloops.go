@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -345,26 +344,6 @@ func MainLoops() {
 			}
 		}()
 
-		//**************
-		//Bot console
-		//**************
-		//go func() {
-		//return // Not being used, return
-
-		//Console := bufio.NewReader(os.Stdin)
-		//for {
-		//time.Sleep(100 * time.Millisecond)
-		//line, _, err := Console.ReadLine()
-		//if err != nil {
-		//	log.Println(fmt.Sprintf("%s: An error occurred when attempting to read the input to pass as input to the console Details: %s", time.Now(), err))
-		//	fact.SetFactRunning(false, true)
-		//	continue
-		//} else {
-		//	fact.WriteFact(string(line))
-		//}
-		//}
-		//}()
-
 		//**********************
 		//Check players online
 		//**********************
@@ -384,8 +363,6 @@ func MainLoops() {
 		//Delete expired registration codes
 		//**********************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 
 			for {
 				time.Sleep(30 * time.Second)
@@ -400,8 +377,6 @@ func MainLoops() {
 					}
 				}
 				glob.PasswordListLock.Unlock()
-				fuzz := r1.Intn(constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -442,19 +417,16 @@ func MainLoops() {
 		}()
 
 		//**********************************
-		//Read and write database regularly some ahole broke tail/fsnotify packages
+		//Read and write database regularly
 		//**********************************
 		go func() {
+			return
 			for {
-				s1 := rand.NewSource(time.Now().UnixNano())
-				r1 := rand.New(s1)
 
 				fact.LoadPlayers()
 				fact.WritePlayers()
 				time.Sleep(time.Minute * 15)
 
-				fuzz := r1.Intn(10 * constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -462,10 +434,8 @@ func MainLoops() {
 		//Save database, if marked dirty
 		//*******************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 			for {
-				time.Sleep(5 * time.Second)
+				time.Sleep(1 * time.Second)
 
 				glob.PlayerListDirtyLock.Lock()
 
@@ -476,11 +446,10 @@ func MainLoops() {
 						log.Println("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
+					//Sleep for a few seconds after writing.
+					time.Sleep(10 * time.Second)
 				}
 				glob.PlayerListDirtyLock.Unlock()
-
-				fuzz := r1.Intn(10 * constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -488,8 +457,6 @@ func MainLoops() {
 		//Save database, if last seen is marked dirty
 		//********************************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 			for {
 				time.Sleep(5 * time.Minute)
 				glob.PlayerListSeenDirtyLock.Lock()
@@ -504,10 +471,6 @@ func MainLoops() {
 					}()
 				}
 				glob.PlayerListSeenDirtyLock.Unlock()
-
-				fuzz := r1.Intn(10 * constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
-
 			}
 		}()
 
@@ -518,13 +481,11 @@ func MainLoops() {
 
 		//Read database, if the file was modifed
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 			updated := false
 
 			for {
 
-				time.Sleep(5 * time.Second)
+				time.Sleep(250 * time.Millisecond)
 
 				//Detect update
 				glob.PlayerListUpdatedLock.Lock()
@@ -539,11 +500,10 @@ func MainLoops() {
 
 					log.Println("Database file modified, loading.")
 					fact.LoadPlayers()
+
+					//Sleep after reading
 					time.Sleep(5 * time.Second)
 				}
-
-				fuzz := r1.Intn(constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 
 			}
 		}()
@@ -601,8 +561,6 @@ func MainLoops() {
 		//Reboot if queued, when server empty
 		//************************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 
 			for {
 				time.Sleep(1 * time.Second)
@@ -614,8 +572,6 @@ func MainLoops() {
 						break //We don't need to loop anymore
 					}
 				}
-				fuzz := r1.Intn(constants.SecondInMicro / 10)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -623,8 +579,6 @@ func MainLoops() {
 		//Eventually give up waiting for Factorio to quit
 		//************************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 
 			for {
 				time.Sleep(5 * time.Second)
@@ -634,8 +588,6 @@ func MainLoops() {
 					fact.DoExit()
 					break
 				}
-				fuzz := r1.Intn(constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -643,8 +595,6 @@ func MainLoops() {
 		//Bug players if there is an pending update
 		//************************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 
 			for {
 				time.Sleep(5 * time.Second)
@@ -680,8 +630,6 @@ func MainLoops() {
 						}
 					}
 				}
-				fuzz := r1.Intn(constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
@@ -690,10 +638,9 @@ func MainLoops() {
 		//*******************
 		clearOldSignals()
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
+
 			for {
-				time.Sleep(1 * time.Second)
+				time.Sleep(5 * time.Second)
 
 				// Look for signal files
 				if _, err := os.Stat(".upgrade"); !os.IsNotExist(err) {
@@ -819,8 +766,6 @@ func MainLoops() {
 						}()
 					}
 				}
-				fuzz := r1.Intn(constants.SecondInMicro)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 
 		}()
@@ -829,15 +774,10 @@ func MainLoops() {
 		// Check for factorio updates
 		//****************************
 		go func() {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
-
 			for {
 				time.Sleep(60 * time.Minute)
 				fact.CheckFactUpdate(false)
 
-				fuzz := r1.Intn(constants.SecondInMicro * 30)
-				time.Sleep(time.Duration(fuzz) * time.Microsecond)
 			}
 		}()
 
