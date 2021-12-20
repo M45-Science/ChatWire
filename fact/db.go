@@ -223,7 +223,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		Creation: t.Unix(),
 	}
 	glob.PlayerList[pname] = &newplayer
-
+	SetPlayerListDirty()
 	WhitelistPlayer(pname, level)
 }
 
@@ -262,7 +262,7 @@ func PlayerLevelGet(pname string) int {
 	glob.PlayerList[pname] = &newplayer
 
 	//Don't care about writing out new users often
-	SetPlayerListSeenDirty()
+	SetPlayerListDirty()
 	return 0
 }
 
@@ -289,9 +289,6 @@ func LoadPlayers() {
 				numitems := len(items)
 				if numitems == 5 {
 					pname := items[0]
-					pname = strings.ReplaceAll(pname, ",", "") //remove comma
-					pname = strings.ReplaceAll(pname, ":", "") //replace colon
-					pname = sclean.StripControlAndSubSpecial(pname)
 					playerlevel, _ := strconv.Atoi(items[1])
 					pid := items[2]
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
@@ -342,12 +339,7 @@ func WritePlayers() {
 	buffer = buffer + "db-v0.03:"
 	glob.PlayerListLock.RLock()
 	for _, player := range glob.PlayerList {
-
-		//Filter comma from names, just in case
-		name := strings.ReplaceAll(player.Name, ",", "") //remove comma
-		name = strings.ReplaceAll(name, ":", "")         //replace colon
-		name = sclean.StripControlAndSubSpecial(name)
-		buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", name, player.Level, player.ID, player.Creation, player.LastSeen)
+		buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", player.Name, player.Level, player.ID, player.Creation, player.LastSeen)
 	}
 	glob.PlayerListLock.RUnlock()
 
