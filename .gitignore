@@ -1,1 +1,5 @@
 M45-ChatWire.exe
+*.log
+*.bin
+*.json
+ChatWire
