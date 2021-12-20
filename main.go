@@ -24,6 +24,7 @@ import (
 
 func main() {
 
+	//Create our maps
 	playlist := make(map[string]*glob.PlayerData)
 	passlist := make(map[string]*glob.PassData)
 
@@ -47,13 +48,19 @@ func main() {
 
 	glob.Uptime = time.Now()
 
-	//Read global and local configs
-	cfg.ReadGCfg()
-	cfg.ReadLCfg()
-
-	//Re-Write global and local configs
-	cfg.WriteGCfg()
-	cfg.WriteLCfg()
+	//Read global and local configs, then write them back if they read correctly.
+	if cfg.ReadGCfg() {
+		cfg.WriteGCfg()
+	} else {
+		log.Println("ReadGCfg failed")
+		return
+	}
+	if cfg.ReadLCfg() {
+		cfg.WriteLCfg()
+	} else {
+		log.Println("ReadLCfg failed")
+		return
+	}
 
 	//Set autostart mode from config
 	if cfg.Local.AutoStart {
@@ -68,8 +75,8 @@ func main() {
 	}
 
 	//Create our log file names
-	glob.GameLogName = fmt.Sprintf("log/game-%v.log", t.Unix())
-	glob.BotLogName = fmt.Sprintf("log/bot-%v.log", t.Unix())
+	glob.GameLogName = fmt.Sprintf("log/game-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+	glob.BotLogName = fmt.Sprintf("log/bot-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 
 	//Make log directory
 	errr := os.MkdirAll("log", os.ModePerm)
