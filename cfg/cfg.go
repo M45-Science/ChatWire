@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Distortions81/M45-ChatWire/constants"
+	"ChatWire/constants"
 )
 
 var Local config

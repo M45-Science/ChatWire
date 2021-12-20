@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/disc"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
+	"ChatWire/cfg"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
@@ -31,23 +31,17 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	t := time.Now()
 
 	glob.PasswordListLock.Lock()
-	for i := 0; i <= glob.PasswordMax && i <= constants.MaxPasswords; i++ {
-		if glob.PasswordID[i] == m.Author.ID {
-			glob.PasswordList[i] = ""
-			glob.PasswordID[i] = ""
-			glob.PasswordTime[i] = 0
-
-			log.Println("Invalidating previous unused password...")
-
-		}
+	if glob.PassList[m.Author.ID] != nil {
+		delete(glob.PassList, m.Author.ID)
+		log.Println("Invalidating previous unused password...")
 	}
-	if glob.PasswordMax >= constants.MaxPasswords {
-		glob.PasswordMax = 0
+	np := glob.PassData{
+		Code:   password,
+		DiscID: m.Author.ID,
+		Time:   t.Unix(),
 	}
-	glob.PasswordList[glob.PasswordMax] = password
-	glob.PasswordID[glob.PasswordMax] = m.Author.ID
-	glob.PasswordTime[glob.PasswordMax] = t.Unix()
-	glob.PasswordMax++
+	glob.PassList[m.Author.ID] = &np
+
 	glob.PasswordListLock.Unlock()
 
 	servername := cfg.Local.ServerCallsign + "-" + cfg.Local.Name

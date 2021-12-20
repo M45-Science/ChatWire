@@ -9,50 +9,37 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/glob"
-	"github.com/Distortions81/M45-ChatWire/sclean"
-	"github.com/fsnotify/fsnotify"
+	"ChatWire/cfg"
+	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
+//Screw fsnotify
 func WatchDatabaseFile() {
 
 	go func() {
+		filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+
+		initialStat, err := os.Stat(filePath)
+		if err != nil {
+			return
+		}
+
 		for {
-			time.Sleep(time.Second)
-			watcher, err := fsnotify.NewWatcher()
+			stat, err := os.Stat(filePath)
 			if err != nil {
-				log.Println(fmt.Sprintf("fsnotify error: %v", err))
+				return
 			}
 
-			done := make(chan bool)
-
-			go func() {
-				for {
-					select {
-
-					case event := <-watcher.Events:
-						if event.Op&fsnotify.Write == fsnotify.Write {
-							SetPlayerListUpdated()
-							done <- true
-							return
-						}
-
-					case err := <-watcher.Errors:
-						log.Println(fmt.Sprintf("fsnotify error: %v", err))
-						done <- true
-						return
-					}
+			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
+				SetPlayerListUpdated()
+				initialStat, err = os.Stat(filePath)
+				if err != nil {
+					return
 				}
-			}()
-
-			if err := watcher.Add(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName); err != nil {
-				log.Println(fmt.Sprintf("fsnotify error: %v", err))
 			}
 
-			<-done
-			watcher.Close()
+			time.Sleep(1 * time.Second)
 		}
 
 	}()
@@ -100,26 +87,25 @@ func PlayerSetID(pname string, id string, level int) bool {
 
 	t := time.Now()
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Name == pname {
-			glob.PlayerList[i].ID = id
-			glob.PlayerList[i].Level = level
-			glob.PlayerList[i].LastSeen = t.Unix()
+	if glob.PlayerList[pname] != nil {
+		glob.PlayerList[pname].ID = id
+		glob.PlayerList[pname].Level = level
+		glob.PlayerList[pname].LastSeen = t.Unix()
 
-			SetPlayerListDirty()
-			return true
-		}
+		SetPlayerListDirty()
+		return true
 	}
 
 	//Not in list, add them
-	if glob.PlayerListMax < constants.MaxPlayers { //Don't go over max
-		glob.PlayerList[glob.PlayerListMax].Name = pname
-		glob.PlayerList[glob.PlayerListMax].Level = level
-		glob.PlayerList[glob.PlayerListMax].ID = id
-		glob.PlayerList[glob.PlayerListMax].LastSeen = t.Unix()
-		glob.PlayerList[glob.PlayerListMax].Creation = t.Unix()
-		glob.PlayerListMax++
+	newplayer := glob.PlayerData{
+
+		Name:     pname,
+		Level:    level,
+		ID:       id,
+		LastSeen: t.Unix(),
+		Creation: t.Unix(),
 	}
+	glob.PlayerList[pname] = &newplayer
 
 	SetPlayerListDirty()
 	return false
@@ -140,13 +126,11 @@ func UpdateSeen(pname string) {
 
 	t := time.Now()
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Name == pname {
-			glob.PlayerList[i].LastSeen = t.Unix()
+	if glob.PlayerList[pname] != nil {
+		glob.PlayerList[pname].LastSeen = t.Unix()
 
-			SetPlayerListSeenDirty()
-			return
-		}
+		SetPlayerListSeenDirty()
+		return
 	}
 }
 
@@ -166,32 +150,32 @@ func PlayerLevelSet(pname string, level int) bool {
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Name == pname {
+	if glob.PlayerList[pname] != nil {
 
-			glob.PlayerList[i].LastSeen = t.Unix()
+		glob.PlayerList[pname].LastSeen = t.Unix()
 
-			if glob.PlayerList[i].Level != level {
-				SetPlayerListDirty()
-			} else {
-				SetPlayerListSeenDirty()
-			}
-
-			glob.PlayerList[i].Level = level
-			return true
+		if glob.PlayerList[pname].Level != level {
+			SetPlayerListDirty()
+		} else {
+			SetPlayerListSeenDirty()
 		}
+
+		glob.PlayerList[pname].Level = level
+		return true
 	}
 
 	//Not in list, add them
-	if glob.PlayerListMax < constants.MaxPlayers { //Don't go over max
-		glob.PlayerList[glob.PlayerListMax].Name = pname
-		glob.PlayerList[glob.PlayerListMax].Level = level
-		glob.PlayerList[glob.PlayerListMax].LastSeen = t.Unix()
-		glob.PlayerList[glob.PlayerListMax].Creation = t.Unix()
-		glob.PlayerListMax++
+	newplayer := glob.PlayerData{
 
-		SetPlayerListDirty()
+		Name:     pname,
+		Level:    level,
+		ID:       "",
+		LastSeen: t.Unix(),
+		Creation: t.Unix(),
 	}
+	glob.PlayerList[pname] = &newplayer
+
+	SetPlayerListDirty()
 
 	return false
 }
@@ -206,45 +190,41 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	pname = strings.ReplaceAll(pname, ":", "") //replace colon
 	pname = sclean.StripControlAndSubSpecial(pname)
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Name == pname {
-
-			if level <= -254 {
-				glob.PlayerList[i].Level = level
-			} else if level == -1 && glob.PlayerList[i].Level != -1 {
-				glob.PlayerList[i].Level = level
-				WriteFact(fmt.Sprintf("/ban %s", pname))
-			} else if level > glob.PlayerList[i].Level {
-				glob.PlayerList[i].Level = level
-				WhitelistPlayer(pname, level)
-			}
-			if creation > glob.PlayerList[i].Creation {
-				glob.PlayerList[i].Creation = creation
-			}
-			if seen > glob.PlayerList[i].LastSeen {
-				glob.PlayerList[i].LastSeen = seen
-			}
-			if id != "" && id != glob.PlayerList[i].ID {
-				glob.PlayerList[i].ID = id
-			}
-			return
+	if glob.PlayerList[pname] != nil {
+		if level <= -254 {
+			glob.PlayerList[pname].Level = level
+		} else if level == -1 && glob.PlayerList[pname].Level != -1 {
+			glob.PlayerList[pname].Level = level
+			WriteFact(fmt.Sprintf("/ban %s", pname))
+		} else if level > glob.PlayerList[pname].Level {
+			glob.PlayerList[pname].Level = level
+			WhitelistPlayer(pname, level)
 		}
+		if creation > glob.PlayerList[pname].Creation {
+			glob.PlayerList[pname].Creation = creation
+		}
+		if seen > glob.PlayerList[pname].LastSeen {
+			glob.PlayerList[pname].LastSeen = seen
+		}
+		if id != "" && id != glob.PlayerList[pname].ID {
+			glob.PlayerList[pname].ID = id
+		}
+		return
 	}
 
 	//Not in list, add them
-	if glob.PlayerListMax < constants.MaxPlayers { //Don't go over max
-		pname = strings.ReplaceAll(pname, ",", "") //remove comma
-		pname = strings.ReplaceAll(pname, ":", "") //replace colon
-		pname = sclean.StripControlAndSubSpecial(pname)
-		glob.PlayerList[glob.PlayerListMax].Name = pname
-		glob.PlayerList[glob.PlayerListMax].Level = level
-		glob.PlayerList[glob.PlayerListMax].Creation = creation
-		glob.PlayerList[glob.PlayerListMax].LastSeen = seen
-		glob.PlayerList[glob.PlayerListMax].ID = id
-		glob.PlayerListMax++
+	t := time.Now()
+	newplayer := glob.PlayerData{
 
-		WhitelistPlayer(pname, level)
+		Name:     pname,
+		Level:    level,
+		ID:       "",
+		LastSeen: t.Unix(),
+		Creation: t.Unix(),
 	}
+	glob.PlayerList[pname] = &newplayer
+
+	WhitelistPlayer(pname, level)
 }
 
 func PlayerLevelGet(pname string) int {
@@ -261,25 +241,25 @@ func PlayerLevelGet(pname string) int {
 
 	t := time.Now()
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Name == pname {
+	if glob.PlayerList[pname] != nil {
 
-			//Found in list
-			glob.PlayerList[i].LastSeen = t.Unix()
-			level := glob.PlayerList[i].Level
-			SetPlayerListSeenDirty()
-			return level
-		}
+		//Found in list
+		glob.PlayerList[pname].LastSeen = t.Unix()
+		level := glob.PlayerList[pname].Level
+		SetPlayerListSeenDirty()
+		return level
 	}
 
 	//Not in list, add them
-	if glob.PlayerListMax < constants.MaxPlayers { //Don't go over max
-		glob.PlayerList[glob.PlayerListMax].Name = pname
-		glob.PlayerList[glob.PlayerListMax].Level = 0
-		glob.PlayerList[glob.PlayerListMax].LastSeen = t.Unix()
-		glob.PlayerList[glob.PlayerListMax].Creation = t.Unix()
-		glob.PlayerListMax++
+	newplayer := glob.PlayerData{
+
+		Name:     pname,
+		Level:    0,
+		ID:       "",
+		LastSeen: t.Unix(),
+		Creation: t.Unix(),
 	}
+	glob.PlayerList[pname] = &newplayer
 
 	//Don't care about writing out new users often
 	SetPlayerListSeenDirty()
@@ -361,16 +341,13 @@ func WritePlayers() {
 
 	buffer = buffer + "db-v0.03:"
 	glob.PlayerListLock.RLock()
-	for i := 0; i < glob.PlayerListMax; i++ {
+	for _, player := range glob.PlayerList {
 
-		if glob.PlayerList[i].Level >= 0 {
-
-			//Filter comma from names, just in case
-			name := strings.ReplaceAll(glob.PlayerList[i].Name, ",", "") //remove comma
-			name = strings.ReplaceAll(name, ":", "")                     //replace colon
-			name = sclean.StripControlAndSubSpecial(name)
-			buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", name, glob.PlayerList[i].Level, glob.PlayerList[i].ID, glob.PlayerList[i].Creation, glob.PlayerList[i].LastSeen)
-		}
+		//Filter comma from names, just in case
+		name := strings.ReplaceAll(player.Name, ",", "") //remove comma
+		name = strings.ReplaceAll(name, ":", "")         //replace colon
+		name = sclean.StripControlAndSubSpecial(name)
+		buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", name, player.Level, player.ID, player.Creation, player.LastSeen)
 	}
 	glob.PlayerListLock.RUnlock()
 

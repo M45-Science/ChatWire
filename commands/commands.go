@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/commands/admin"
-	"github.com/Distortions81/M45-ChatWire/commands/user"
-	"github.com/Distortions81/M45-ChatWire/fact"
+	"ChatWire/cfg"
+	"ChatWire/commands/admin"
+	"ChatWire/commands/user"
+	"ChatWire/fact"
+
 	"github.com/bwmarrin/discordgo"
 )
 

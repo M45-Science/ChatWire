@@ -13,14 +13,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/disc"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
-	"github.com/Distortions81/M45-ChatWire/platform"
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+
 	"github.com/bwmarrin/discordgo"
 )
+
+func LinuxSetProcessGroup(cmd *exec.Cmd) {
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+}
 
 //*******************
 //Main threads/loops
@@ -138,9 +142,8 @@ func MainLoops() {
 					log.Println("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
-					platform.LinuxSetProcessGroup(cmd)
-					//Used later on when binary is launched, redirects game stdout to file.
-					logwriter := io.Writer(glob.GameLogDesc)
+					LinuxSetProcessGroup(cmd)
+					logwriter := io.MultiWriter(glob.GameLogDesc, glob.GameBuffer)
 
 					cmd.Stdout = logwriter
 
@@ -199,18 +202,18 @@ func MainLoops() {
 					numother := 0
 
 					glob.PlayerListLock.RLock()
-					for i := 0; i <= glob.PlayerListMax; i++ {
-						if glob.PlayerList[i].ID != "" {
+					for _, player := range glob.PlayerList {
+						if player.ID != "" {
 							numreg++
 						}
 
-						if glob.PlayerList[i].Level == 0 {
+						if player.Level == 0 {
 							numnew++
-						} else if glob.PlayerList[i].Level == 1 {
+						} else if player.Level == 1 {
 							numtrust++
-						} else if glob.PlayerList[i].Level == 2 {
+						} else if player.Level == 2 {
 							numregulars++
-						} else if glob.PlayerList[i].Level == 255 {
+						} else if player.Level == 255 {
 							numadmin++
 						} else {
 							numother++
@@ -388,12 +391,10 @@ func MainLoops() {
 				t := time.Now()
 
 				glob.PasswordListLock.Lock()
-				for i := 0; i <= glob.PasswordMax && i <= constants.MaxPasswords; i++ {
-					if glob.PasswordList[i] != "" && (t.Unix()-glob.PasswordTime[i]) > 300 {
-						log.Println("Invalidating old unused access code for user: " + disc.GetNameFromID(glob.PasswordID[i], false))
-						glob.PasswordList[i] = ""
-						glob.PasswordID[i] = ""
-						glob.PasswordTime[i] = 0
+				for _, pass := range glob.PassList {
+					if (t.Unix() - pass.Time) > 300 {
+						log.Println("Invalidating old unused access code for user: " + disc.GetNameFromID(pass.DiscID, false))
+						delete(glob.PassList, pass.DiscID)
 					}
 				}
 				glob.PasswordListLock.Unlock()
@@ -439,8 +440,7 @@ func MainLoops() {
 		}()
 
 		//**********************************
-		//Read and write database regularly for safety
-		//I have seen fsnotify bug out
+		//Read and write database regularly some ahole broke tail/fsnotify packages
 		//**********************************
 		go func() {
 			for {

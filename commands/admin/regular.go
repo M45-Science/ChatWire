@@ -3,7 +3,8 @@ package admin
 import (
 	"fmt"
 
-	"github.com/Distortions81/M45-ChatWire/fact"
+	"ChatWire/fact"
+
 	"github.com/bwmarrin/discordgo"
 )
 

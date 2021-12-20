@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
+	"ChatWire/cfg"
+	"ChatWire/fact"
+	"ChatWire/glob"
+
 	"github.com/bwmarrin/discordgo"
 )
 

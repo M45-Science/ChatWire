@@ -3,8 +3,9 @@ package admin
 import (
 	"strings"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/fact"
+	"ChatWire/cfg"
+	"ChatWire/fact"
+
 	"github.com/bwmarrin/discordgo"
 )
 

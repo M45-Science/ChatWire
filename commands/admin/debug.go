@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
+	"ChatWire/constants"
+	"ChatWire/fact"
+	"ChatWire/glob"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -20,18 +21,18 @@ func Debug(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	numadmin := 0
 
 	glob.PlayerListLock.RLock()
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].ID != "" {
+	for _, player := range glob.PlayerList {
+		if player.ID != "" {
 			numreg++
 		}
 
-		if glob.PlayerList[i].Level == 0 {
+		if player.Level == 0 {
 			numnew++
-		} else if glob.PlayerList[i].Level == 1 {
+		} else if player.Level == 1 {
 			numtrust++
-		} else if glob.PlayerList[i].Level == 2 {
+		} else if player.Level == 2 {
 			numregulars++
-		} else if glob.PlayerList[i].Level == 255 {
+		} else if player.Level == 255 {
 			numadmin++
 		}
 	}
@@ -43,7 +44,7 @@ func Debug(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	//Could use a refresh
 	buf := "```"
-	buf = buf + fmt.Sprintf("Game time: %v, Logins today: %v, Players Known: %v\n", fact.GetGameTime(), fact.GetNumLogins(), glob.PlayerListMax)
+	buf = buf + fmt.Sprintf("Game time: %v, Logins today: %v, Players Known: %v\n", fact.GetGameTime(), fact.GetNumLogins(), len(glob.PlayerList))
 	buf = buf + fmt.Sprintf("Registered: %v, New: %v, Trusted: %v\n", numreg, numnew, numtrust)
 	buf = buf + fmt.Sprintf("Regulars: %v, Admins: %v, Uptime: %v\n", numregulars, numadmin, tnow.Sub(glob.Uptime.Round(time.Second)).String())
 	buf = buf + fmt.Sprintf("CW-Version: %v, Guild: %v, Log: %v\n", constants.Version, fact.GetGuildName(), glob.GameLogName)

@@ -1,7 +1,8 @@
 package admin
 
 import (
-	"github.com/Distortions81/M45-ChatWire/fact"
+	"ChatWire/fact"
+
 	"github.com/bwmarrin/discordgo"
 )
 

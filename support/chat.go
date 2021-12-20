@@ -1,6 +1,7 @@
 package support
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os/exec"
@@ -9,14 +10,14 @@ import (
 	"strings"
 	"time"
 
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+	"ChatWire/sclean"
+
 	embed "github.com/Clinet/discordgo-embed"
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/disc"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
-	"github.com/Distortions81/M45-ChatWire/sclean"
-	"github.com/hpcloud/tail"
 )
 
 // IsPatreon checks if user has patreon role
@@ -96,23 +97,16 @@ func Chat() {
 	go func() {
 		for {
 
-			t, err := tail.TailFile(glob.GameLogName, tail.Config{Follow: true})
-			if err != nil {
-				log.Println(fmt.Sprintf("An error occurred when attempting to tail logfile %s Details: %s", glob.GameLogName, err))
-				fact.DoExit()
-			}
+			reader := bufio.NewReader(glob.GameBuffer)
+			line, err := reader.ReadString('\n')
 
-			//*****************
-			//TAIL LOOP
-			//*****************
-			for line := range t.Lines {
-
+			if err != nil && line != "" {
 				//Strip stuff we don't want
-				lineText := sclean.StripControlAndSubSpecial(line.Text)
+				line := sclean.StripControlAndSubSpecial(line)
 
-				linelen := len(lineText)
+				linelen := len(line)
 				//Ignore blanks
-				if lineText == "" || linelen <= 1 {
+				if line == "" || linelen <= 1 {
 					continue
 				}
 
@@ -132,7 +126,7 @@ func Chat() {
 				//***************************************
 
 				//Timecode removal
-				trimmed := strings.TrimLeft(lineText, " ")
+				trimmed := strings.TrimLeft(line, " ")
 				words := strings.Split(trimmed, " ")
 				numwords := len(words)
 				NoTC := constants.Unknown
@@ -146,7 +140,7 @@ func Chat() {
 				}
 
 				//Seperate args -- for use with script output
-				linelist := strings.Split(lineText, " ")
+				linelist := strings.Split(line, " ")
 				linelistlen := len(linelist)
 
 				//Seperate args, notc -- for use with factorio subsystem output
@@ -158,7 +152,7 @@ func Chat() {
 				nodslistlen := len(nodslist)
 
 				//Lowercase converted
-				lowerline := strings.ToLower(lineText)
+				lowerline := strings.ToLower(line)
 				lowerlist := strings.Split(lowerline, " ")
 				lowerlistlen := len(lowerlist)
 
@@ -173,7 +167,7 @@ func Chat() {
 				//FILTERED AREA
 				//NO CMD, ESCAPED OR CONSOLE CHAT
 				//*********************************
-				if !strings.HasPrefix(lineText, "[CMD]") && !strings.HasPrefix(lineText, "~") && !strings.HasPrefix(lineText, "<server>") {
+				if !strings.HasPrefix(line, "[CMD]") && !strings.HasPrefix(line, "~") && !strings.HasPrefix(line, "<server>") {
 
 					//*****************
 					//NO CHAT AREA
@@ -232,20 +226,20 @@ func Chat() {
 						//*****************
 						//COMMAND REPORTING
 						//*****************
-						if strings.HasPrefix(lineText, "[CMD]") {
-							log.Println(lineText)
+						if strings.HasPrefix(line, "[CMD]") {
+							log.Println(line)
 							continue
 						}
 
 						//*****************
 						//USER REPORT
 						//*****************
-						if strings.HasPrefix(lineText, "[REPORT]") {
+						if strings.HasPrefix(line, "[REPORT]") {
 							if linelistlen >= 3 {
 								buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
 									cfg.Local.ServerCallsign+"-"+cfg.Local.Name, linelist[1], strings.Join(linelist[2:], " "))
 								fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
-								log.Println(lineText)
+								log.Println(line)
 							}
 							continue
 						}
@@ -253,7 +247,7 @@ func Chat() {
 						//*****************
 						//ACCESS
 						//*****************
-						if strings.HasPrefix(lineText, "[ACCESS]") {
+						if strings.HasPrefix(line, "[ACCESS]") {
 							if linelistlen == 4 {
 								//Format:
 								//print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter)
@@ -280,14 +274,12 @@ func Chat() {
 								plevel := 0
 
 								glob.PasswordListLock.Lock()
-								for i := 0; i <= glob.PasswordMax && i <= constants.MaxPasswords; i++ {
-									if glob.PasswordList[i] == code {
+								for i, pass := range glob.PassList {
+									if pass.Code == code {
 										codefound = true
 										//Delete password from list
-										glob.PasswordList[i] = ""
-										pid := glob.PasswordID[i]
-										glob.PasswordID[i] = ""
-										glob.PasswordTime[i] = 0
+										pid := pass.DiscID
+										delete(glob.PassList, i)
 
 										newrole := ""
 										if ptype == "trusted" {
@@ -371,7 +363,7 @@ func Chat() {
 						//***********************
 						//CAPTURE ONLINE PLAYERS
 						//***********************
-						if strings.HasPrefix(lineText, "Online players") {
+						if strings.HasPrefix(line, "Online players") {
 
 							if linelistlen > 2 {
 								poc := strings.Join(linelist[2:], " ")
@@ -465,7 +457,7 @@ func Chat() {
 						//*****************
 						//MSG AREA
 						//*****************
-						if strings.HasPrefix(lineText, "[MSG]") {
+						if strings.HasPrefix(line, "[MSG]") {
 
 							if linelistlen > 0 {
 								ctext := strings.Join(linelist[1:], " ")
@@ -487,23 +479,23 @@ func Chat() {
 
 								if trustname != "" {
 
-									if strings.Contains(lineText, " is now a member!") {
+									if strings.Contains(line, " is now a member!") {
 										fact.PlayerLevelSet(trustname, 1)
 										fact.AutoPromote(trustname)
 										continue
-									} else if strings.Contains(lineText, " is now a regular!") {
+									} else if strings.Contains(line, " is now a regular!") {
 										fact.PlayerLevelSet(trustname, 2)
 										fact.AutoPromote(trustname)
 										continue
-									} else if strings.Contains(lineText, " moved to Admins group.") {
+									} else if strings.Contains(line, " moved to Admins group.") {
 										fact.PlayerLevelSet(trustname, 255)
 										fact.AutoPromote(trustname)
 										continue
-									} else if strings.Contains(lineText, " to the map!") && strings.Contains(lineText, "Welcome ") {
+									} else if strings.Contains(line, " to the map!") && strings.Contains(line, "Welcome ") {
 										btrustname := linelist[2]
 										fact.AutoPromote(btrustname)
 										continue
-									} else if strings.Contains(lineText, " has nil permissions.") {
+									} else if strings.Contains(line, " has nil permissions.") {
 										fact.AutoPromote(trustname)
 										continue
 									}
@@ -540,7 +532,7 @@ func Chat() {
 
 							if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
-								if strings.Contains(lineText, "removing peer") {
+								if strings.Contains(line, "removing peer") {
 									fact.WriteFact("/p o c")
 
 									newtime := time.Now()
@@ -553,7 +545,7 @@ func Chat() {
 									}
 
 									//Fix for players leaving with no leave message
-								} else if strings.Contains(lineText, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
+								} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
 									if cfg.Local.SlowConnect.ConnectSpeed <= 0.0 {
 										fact.WriteFact("/gspeed 0.5")
 									} else {
@@ -565,7 +557,7 @@ func Chat() {
 									glob.ConnectPauseCount++
 									glob.ConnectPauseLock.Unlock()
 
-								} else if strings.Contains(lineText, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
+								} else if strings.Contains(line, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
 
 									glob.ConnectPauseLock.Lock()
 
@@ -963,17 +955,14 @@ func Chat() {
 				//*****************
 				//"/online"
 				//*****************
-				if strings.HasPrefix(lineText, "~") {
-					if strings.Contains(lineText, "Online:") {
-						fact.CMS(cfg.Local.ChannelData.ChatID, "`"+lineText+"`")
+				if strings.HasPrefix(line, "~") {
+					if strings.Contains(line, "Online:") {
+						fact.CMS(cfg.Local.ChannelData.ChatID, "`"+line+"`")
 						continue
 					}
 				}
 
 			}
-			//*****************
-			//END TAIL LOOP
-			//*****************
 		}
 	}()
 }

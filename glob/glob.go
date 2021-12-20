@@ -1,12 +1,14 @@
 package glob
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/constants"
+	"ChatWire/constants"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -40,6 +42,7 @@ var GameLogName = ""
 var BotLogName = ""
 var GameLogDesc *os.File
 var BotLogDesc *os.File
+var GameBuffer *bytes.Buffer
 
 var GameMapName = ""
 var GameMapPath = ""
@@ -79,7 +82,7 @@ var NumPlayersLock sync.RWMutex
 var RelaunchThrottle = 0
 var RelaunchThrottleLock sync.RWMutex
 
-type PList struct {
+type PlayerData struct {
 	Name     string
 	Level    int
 	ID       string
@@ -87,15 +90,17 @@ type PList struct {
 	LastSeen int64
 }
 
-var PlayerListMax = 0
-var PlayerList [constants.MaxPlayers + 1]PList
+var PlayerList map[string]*PlayerData
 var PlayerListLock sync.RWMutex
 var PlayerListWriteLock sync.Mutex
 
-var PasswordList [constants.MaxPasswords + 1]string
-var PasswordID [constants.MaxPasswords + 1]string
-var PasswordTime [constants.MaxPasswords + 1]int64
-var PasswordMax = 0
+type PassData struct {
+	Code   string
+	DiscID string
+	Time   int64
+}
+
+var PassList map[string]*PassData
 
 var NumLogins = 0
 var NumLoginsLock sync.RWMutex

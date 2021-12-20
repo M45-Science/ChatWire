@@ -6,24 +6,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/disc"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
-	"github.com/Distortions81/M45-ChatWire/sclean"
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+	"ChatWire/sclean"
+
 	"github.com/bwmarrin/discordgo"
 )
 
 //Last Seen
-type ByLastSeen []glob.PList
+type ByLastSeen []glob.PlayerData
 
 func (a ByLastSeen) Len() int           { return len(a) }
 func (a ByLastSeen) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByLastSeen) Less(i, j int) bool { return a[i].LastSeen > a[j].LastSeen }
 
 //Created time
-type ByNew []glob.PList
+type ByNew []glob.PlayerData
 
 func (a ByNew) Len() int           { return len(a) }
 func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -71,13 +72,13 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	if checkadmin(m) {
 		maxresults = constants.AdminWhoisResults
 	}
-	var slist []glob.PList
+	var slist []glob.PlayerData
 	argnum := len(args)
 
 	//Reconstruct list, to remove empty entries and to reduce lock time
 	glob.PlayerListLock.RLock()
-	for i := 0; i < glob.PlayerListMax; i++ {
-		slist = append(slist, glob.PlayerList[i])
+	for _, player := range glob.PlayerList {
+		slist = append(slist, *player)
 	}
 	glob.PlayerListLock.RUnlock()
 

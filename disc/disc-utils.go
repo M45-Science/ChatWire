@@ -6,7 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/glob"
+	"ChatWire/glob"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -156,11 +157,8 @@ func GetDiscordIDFromFactorioName(pname string) string {
 	glob.PlayerListLock.RLock()
 	defer glob.PlayerListLock.RUnlock()
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Level >= 0 && glob.PlayerList[i].Name == pname {
-
-			return glob.PlayerList[i].ID
-		}
+	if glob.PlayerList[pname] != nil {
+		return glob.PlayerList[pname].ID
 	}
 	return ""
 }
@@ -174,9 +172,9 @@ func GetFactorioNameFromDiscordID(id string) string {
 	glob.PlayerListLock.RLock()
 	defer glob.PlayerListLock.RUnlock()
 
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Level >= 0 && glob.PlayerList[i].ID == id {
-			return glob.PlayerList[i].Name
+	for i, player := range glob.PlayerList {
+		if glob.PlayerList[i].ID == id {
+			return player.Name
 		}
 	}
 	return ""

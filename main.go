@@ -10,14 +10,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/commands"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/disc"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
-	"github.com/Distortions81/M45-ChatWire/sclean"
-	"github.com/Distortions81/M45-ChatWire/support"
+	"ChatWire/cfg"
+	"ChatWire/commands"
+	"ChatWire/constants"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+	"ChatWire/sclean"
+	"ChatWire/support"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -77,9 +78,6 @@ func main() {
 	//Save descriptors, open/closed elsewhere
 	glob.GameLogDesc = gdesc
 	glob.BotLogDesc = bdesc
-
-	//Send stdout and stderr to our logfile, to capture panic errors and discordgo errors
-	//platform.CaptureErrorOut(bdesc)
 
 	//Handle file errors
 	if erra != nil {

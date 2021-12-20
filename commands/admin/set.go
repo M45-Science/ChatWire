@@ -4,9 +4,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/support"
+	"ChatWire/cfg"
+	"ChatWire/fact"
+	"ChatWire/support"
+
 	"github.com/bwmarrin/discordgo"
 )
 

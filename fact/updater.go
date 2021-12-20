@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/glob"
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/glob"
 )
 
 func CheckZip(filename string) bool {

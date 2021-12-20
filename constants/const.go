@@ -10,9 +10,6 @@ const CWGlobalConfig = "../cw-global-config.json"
 const CWLocalConfig = "cw-local-config.json"
 const WhitelistName = "server-whitelist.json"
 
-//Max player database size, pre-allocated
-const MaxPlayers = 5000
-
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 5
 

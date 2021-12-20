@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/fact"
-	"github.com/Distortions81/M45-ChatWire/glob"
+	"ChatWire/constants"
+	"ChatWire/fact"
+	"ChatWire/glob"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -19,13 +20,13 @@ func Info(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	numregulars := 0
 
 	glob.PlayerListLock.RLock()
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].ID != "" {
+	for _, player := range glob.PlayerList {
+		if player.ID != "" {
 			numreg++
 		}
-		if glob.PlayerList[i].Level == 1 {
+		if player.Level == 1 {
 			nummember++
-		} else if glob.PlayerList[i].Level == 2 {
+		} else if player.Level == 2 {
 			numregulars++
 		}
 	}

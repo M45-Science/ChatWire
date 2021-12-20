@@ -9,11 +9,12 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/Distortions81/M45-ChatWire/cfg"
-	"github.com/Distortions81/M45-ChatWire/constants"
-	"github.com/Distortions81/M45-ChatWire/disc"
-	"github.com/Distortions81/M45-ChatWire/glob"
-	"github.com/Distortions81/M45-ChatWire/sclean"
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/disc"
+	"ChatWire/glob"
+	"ChatWire/sclean"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -64,9 +65,9 @@ func WriteWhitelist() int {
 	glob.PlayerListLock.RLock()
 	var count = 0
 	var buf = "[\n"
-	for i := 0; i <= glob.PlayerListMax; i++ {
-		if glob.PlayerList[i].Level > 0 {
-			buf = buf + "\"" + glob.PlayerList[i].Name + "\",\n"
+	for _, player := range glob.PlayerList {
+		if player.Level > 0 {
+			buf = buf + "\"" + player.Name + "\",\n"
 			count = count + 1
 		}
 	}
