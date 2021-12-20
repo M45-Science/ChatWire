@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "492-12192021-0245p"
+const Version = "493-12202021-0124"
 const Unknown = "Unknown"
 
 //Config files
@@ -14,12 +14,8 @@ const WhitelistName = "server-whitelist.json"
 const PauseThresh = 5
 
 //Minimum time between logout saves
-const SaveThresh = 300
 const WhoisResults = 20
 const AdminWhoisResults = 40
-
-//Max number of registration passwords at once
-const MaxPasswords = 128
 
 //Maximum time to wait for factorio update download
 const FactorioUpdateCheckLimit = 15 * time.Minute
@@ -30,7 +26,6 @@ const FactorioUpdateProcessLimit = 10 * time.Minute
 //Maximum time before giving up on checking zipfile integrity
 const ZipIntegrityLimit = 5 * time.Minute
 
-//Used for fuzzy delay/timers
 const MinuteInMicro = 60000000
 const SecondInMicro = 1000000
 const TenthInMicro = 100000
@@ -38,9 +33,9 @@ const HundrethInMicro = 10000
 
 const WatchdogInterval = time.Second
 
-//Throttle to about X every 4 seconds
-const CMSRate = 2000 * time.Millisecond
-const CMSRestTime = 100 * time.Millisecond
+//Throttle chat, 1.5 seconds per message.
+const CMSRate = 500 * time.Millisecond
+const CMSRestTime = 1000 * time.Millisecond
 const CMSPollRate = 100 * time.Millisecond
 
 const NumColors = 17
