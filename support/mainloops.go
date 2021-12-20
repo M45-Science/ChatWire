@@ -1,6 +1,7 @@
 package support
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -143,6 +144,7 @@ func MainLoops() {
 					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
 					LinuxSetProcessGroup(cmd)
+					glob.GameBuffer = new(bytes.Buffer)
 					logwriter := io.MultiWriter(glob.GameLogDesc, glob.GameBuffer)
 
 					cmd.Stdout = logwriter

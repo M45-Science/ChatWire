@@ -24,6 +24,12 @@ import (
 
 func main() {
 
+	playlist := make(map[string]*glob.PlayerData)
+	passlist := make(map[string]*glob.PassData)
+
+	glob.PlayerList = playlist
+	glob.PassList = passlist
+
 	log.SetFlags(log.Lmicroseconds | log.Lshortfile)
 	log.Println("Version: " + constants.Version)
 	t := time.Now()

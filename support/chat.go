@@ -102,7 +102,7 @@ func Chat() {
 				if reader != nil {
 					line, err := reader.ReadString('\n')
 
-					if err != nil && line != "" {
+					if err == nil && line != "" {
 						//Strip stuff we don't want
 						line := sclean.StripControlAndSubSpecial(line)
 
