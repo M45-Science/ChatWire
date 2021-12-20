@@ -101,8 +101,10 @@ func MainLoops() {
 					var tempargs []string
 
 					rconport := cfg.Local.Port + cfg.Global.RconPortOffset
+					rconportStr := fmt.Sprintf("%v", rconport)
 					rconpass := cfg.Global.RconPass
 					port := cfg.Local.Port
+					postStr := fmt.Sprintf("%v", port)
 					serversettings := cfg.Global.PathData.FactorioServersRoot +
 						cfg.Global.PathData.FactorioHomePrefix +
 						cfg.Local.ServerCallsign + "/" +
@@ -110,13 +112,13 @@ func MainLoops() {
 
 					tempargs = append(tempargs, "--start-server-load-latest")
 					tempargs = append(tempargs, "--rcon-port")
-					tempargs = append(tempargs, fmt.Sprintf("%v", rconport))
+					tempargs = append(tempargs, rconportStr)
 
 					tempargs = append(tempargs, "--rcon-password")
 					tempargs = append(tempargs, rconpass)
 
 					tempargs = append(tempargs, "--port")
-					tempargs = append(tempargs, fmt.Sprintf("%v", port))
+					tempargs = append(tempargs, postStr)
 
 					tempargs = append(tempargs, "--server-settings")
 					tempargs = append(tempargs, serversettings)
@@ -139,8 +141,18 @@ func MainLoops() {
 					}
 
 					var cmd *exec.Cmd
-					log.Println("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+
+					/*Hide RCON password and port*/
+					for i, targ := range tempargs {
+						if targ == rconpass {
+							tempargs[i] = "***private***"
+						} else if targ == rconportStr {
+							//funny, and impossible port number
+							tempargs[i] = "69420"
+						}
+					}
+					log.Println("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 
 					LinuxSetProcessGroup(cmd)
 					glob.GameBuffer = new(bytes.Buffer)
