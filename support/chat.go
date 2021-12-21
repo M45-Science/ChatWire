@@ -95,7 +95,7 @@ func BoolToString(b bool) string {
 func Chat() {
 
 	go func() {
-		for {
+		for glob.ServerRunning {
 			if glob.GameBuffer != nil {
 				reader := bufio.NewScanner(glob.GameBuffer)
 				time.Sleep(time.Millisecond * 100)

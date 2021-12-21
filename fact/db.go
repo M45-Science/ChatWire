@@ -17,32 +17,29 @@ import (
 //Screw fsnotify
 func WatchDatabaseFile() {
 
-	go func() {
-		filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+	filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
 
-		initialStat, err := os.Stat(filePath)
+	initialStat, err := os.Stat(filePath)
+	if err != nil {
+		return
+	}
+
+	for glob.ServerRunning {
+		stat, err := os.Stat(filePath)
 		if err != nil {
 			return
 		}
 
-		for {
-			stat, err := os.Stat(filePath)
+		if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
+			SetPlayerListUpdated()
+			initialStat, err = os.Stat(filePath)
 			if err != nil {
 				return
 			}
-
-			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				SetPlayerListUpdated()
-				initialStat, err = os.Stat(filePath)
-				if err != nil {
-					return
-				}
-			}
-
-			time.Sleep(1 * time.Second)
 		}
 
-	}()
+		time.Sleep(1 * time.Second)
+	}
 }
 
 func IsPlayerListUpdated() bool {

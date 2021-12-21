@@ -12,6 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+var ServerRunning bool = true
 var Uptime time.Time
 
 var Guild *discordgo.Guild
