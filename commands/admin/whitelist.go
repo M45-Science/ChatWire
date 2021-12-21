@@ -9,8 +9,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//WriteWhitelist locks PlayerListLock (READ)
-func WriteWhitelist(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+//WriteWhitelistCMD locks PlayerListLock (READ)
+func WriteWhitelistCMD(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	//Write whitelist
 	if cfg.Local.SoftModOptions.DoWhitelist {
