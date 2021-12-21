@@ -171,16 +171,21 @@ func DoShowLocks(ch string) {
 
 func DoExit() {
 
-	//Stolen from $stat
+	//Show stats
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	mm := GetManMinutes()
 	log.Println(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
-	log.Println("Bot closing, load/save db, and waiting for locks...")
+	time.Sleep(3 * time.Second)
+	//This kills all loops!
+	glob.ServerRunning = false
 
+	log.Println("Bot closing, load/save db, and waiting for locks...")
 	LoadPlayers()
 	WritePlayers()
+
+	time.Sleep(1 * time.Second)
 
 	//File locks
 	glob.PlayerListWriteLock.Lock()
@@ -190,26 +195,15 @@ func DoExit() {
 	glob.GameLogDesc.Close()
 	glob.BotLogDesc.Close()
 
-	if err := os.Remove("cw.lock"); err != nil {
-		log.Println("Lock file missing???")
-	}
-
-	//Wait 30 seconds to clear buffer, then lock buffer
-	if glob.CMSBuffer != nil {
-		log.Println("Waiting for CMS buffer to finish, locking CMS buffer, and closing Discord session.")
-	}
-	for x := 0; glob.CMSBuffer != nil && x < 15; x++ {
-		time.Sleep(1 * time.Second)
-	}
-	log.Println("Locking CMS buffer.")
-	glob.CMSBufferLock.Lock()
+	_ = os.Remove("cw.lock")
+	//Logs are closed, don't report
 
 	if glob.DS != nil {
-		log.Println("Closing Discord session and exiting.")
 		glob.DS.Close()
 	}
 
-	log.Println("Goodbye.")
+	time.Sleep(5)
+	fmt.Println("Goodbye.")
 	os.Exit(1)
 }
 
