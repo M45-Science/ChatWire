@@ -702,17 +702,18 @@ func MainLoops() {
 				} else if _, err := os.Stat(".newmap"); !os.IsNotExist(err) {
 
 					filedata, err := ioutil.ReadFile(".newmap")
-					fstring := string(filedata)
-					fstring = strings.ReplaceAll(fstring, "\n", "") //replace newline
-					fstring = strings.ReplaceAll(fstring, "\r", "") //replace return
-
-					if err == nil && len(fstring) > 1 {
-						fact.Map_reset(fstring)
-					} else {
-						fact.Map_reset("")
-					}
 					if err := os.Remove(".newmap"); err != nil {
 						log.Println(".newmap file disappeared?")
+					} else if err == nil {
+						fstring := string(filedata)
+						fstring = strings.ReplaceAll(fstring, "\n", "") //replace newline
+						fstring = strings.ReplaceAll(fstring, "\r", "") //replace return
+
+						if len(fstring) > 1 {
+							fact.Map_reset(fstring)
+						} else {
+							fact.Map_reset("")
+						}
 					}
 				} else if _, err := os.Stat(".restart"); !os.IsNotExist(err) {
 
@@ -883,7 +884,7 @@ func clearOldSignals() {
 	if err := os.Remove(".reload"); err == nil {
 		log.Println("old .reload removed.")
 	}
-	//if err := os.Remove(".newmap"); err == nil {
-	//	log.Println("old .reload removed.")
-	//}
+	if err := os.Remove(".newmap"); err == nil {
+		log.Println("old .newmap removed.")
+	}
 }
