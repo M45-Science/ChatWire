@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -41,7 +40,7 @@ func MainLoops() {
 		//Game watchdog
 		//**************
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(constants.WatchdogInterval)
 
 				if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootBot() || fact.GetDoUpdateFactorio()) {
@@ -64,6 +63,9 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for over two minutes... rebooting.")
 						fact.SetRelaunchThrottle(0)
 						fact.QuitFactorio()
+						for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+							time.Sleep(time.Second)
+						}
 					}
 				} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update
@@ -134,7 +136,7 @@ func MainLoops() {
 						tempargs = append(tempargs, "true")
 					}
 
-					//WriteWhitelist
+					//Write or delete whitelist
 					count := fact.WriteWhitelist()
 					if count > 0 && cfg.Local.SoftModOptions.DoWhitelist {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, (fmt.Sprintf("Whitelist of %v players written.", count)))
@@ -203,7 +205,7 @@ func MainLoops() {
 
 		go func() {
 			time.Sleep(5 * time.Minute)
-			for {
+			for glob.ServerRunning {
 				time.Sleep(5 * time.Second)
 				if cfg.Local.WriteStatsDisc {
 
@@ -274,7 +276,7 @@ func MainLoops() {
 		//CMS Output from buffer, batched
 		//*******************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 
 				if glob.DS != nil {
 
@@ -362,7 +364,7 @@ func MainLoops() {
 		//Safety, in case player count gets off
 		//Also helps detect servers crash/dead while paused
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(5 * time.Minute)
 
 				if fact.IsFactRunning() {
@@ -376,7 +378,7 @@ func MainLoops() {
 		//**********************************
 		go func() {
 
-			for {
+			for glob.ServerRunning {
 				time.Sleep(30 * time.Second)
 
 				t := time.Now()
@@ -396,7 +398,7 @@ func MainLoops() {
 		//Pause on connect
 		//**********************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 
 				time.Sleep(5 * time.Second)
 				tn := time.Now()
@@ -433,7 +435,7 @@ func MainLoops() {
 		//**********************************
 		go func() {
 			return
-			for {
+			for glob.ServerRunning {
 
 				fact.LoadPlayers()
 				fact.WritePlayers()
@@ -446,7 +448,7 @@ func MainLoops() {
 		//Save database, if marked dirty
 		//*******************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(1 * time.Second)
 
 				glob.PlayerListDirtyLock.Lock()
@@ -469,7 +471,7 @@ func MainLoops() {
 		//Save database, if last seen is marked dirty
 		//********************************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(5 * time.Minute)
 				glob.PlayerListSeenDirtyLock.Lock()
 
@@ -489,13 +491,13 @@ func MainLoops() {
 		//***********************************
 		//Database file modifcation watching
 		//***********************************
-		fact.WatchDatabaseFile()
+		go fact.WatchDatabaseFile()
 
 		//Read database, if the file was modifed
 		go func() {
 			updated := false
 
-			for {
+			for glob.ServerRunning {
 
 				time.Sleep(250 * time.Millisecond)
 
@@ -525,7 +527,7 @@ func MainLoops() {
 		//Needed for Discord roles
 		//**************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(5 * time.Second)
 
 				glob.GuildLock.Lock()
@@ -574,13 +576,16 @@ func MainLoops() {
 		//************************************
 		go func() {
 
-			for {
+			for glob.ServerRunning {
 				time.Sleep(1 * time.Second)
 
 				if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
 					if fact.IsFactRunning() {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "No players currently online, performing scheduled reboot.")
 						fact.QuitFactorio()
+						for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+							time.Sleep(time.Second)
+						}
 						break //We don't need to loop anymore
 					}
 				}
@@ -592,7 +597,7 @@ func MainLoops() {
 		//************************************
 		go func() {
 
-			for {
+			for glob.ServerRunning {
 				time.Sleep(5 * time.Second)
 
 				timer := fact.GetFactQuitTimer()
@@ -608,7 +613,7 @@ func MainLoops() {
 		//************************************
 		go func() {
 
-			for {
+			for glob.ServerRunning {
 				time.Sleep(5 * time.Second)
 
 				if cfg.Local.AutoUpdate {
@@ -632,6 +637,9 @@ func MainLoops() {
 								fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
 								fact.SetUpdateWarnCounter(0)
 								fact.QuitFactorio()
+								for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+									time.Sleep(time.Second)
+								}
 
 								break //Stop looping
 							}
@@ -639,6 +647,9 @@ func MainLoops() {
 						} else {
 							fact.SetUpdateWarnCounter(0)
 							fact.QuitFactorio()
+							for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+								time.Sleep(time.Second)
+							}
 						}
 					}
 				}
@@ -648,148 +659,111 @@ func MainLoops() {
 		//*******************
 		//Check signal files
 		//*******************
-		clearOldSignals()
 		go func() {
+			clearOldSignals()
+			failureReported := false
+			for glob.ServerRunning {
 
-			for {
 				time.Sleep(5 * time.Second)
 
-				// Look for signal files
-				if _, err := os.Stat(".upgrade"); !os.IsNotExist(err) {
-					fact.SetAutoStart(false)
+				var err error
+				var errb error
 
-					if err := os.Remove(".upgrade"); err != nil {
-						log.Println(".upgrade disappeared?")
+				//Queued reboots, regardless of game state
+				if _, err = os.Stat(".queue"); err == nil {
+					if errb = os.Remove(".queue"); errb == nil {
+						if !fact.IsQueued() {
+							fact.SetQueued(true)
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Reboot queued!")
+						}
+					} else if errb != nil && !failureReported {
+						failureReported = true
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .queue file, ignoring.")
 					}
-					if fact.IsFactRunning() {
-						go func() {
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Updating Factorio!")
-
-							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
-								for x := 0; x < 3; x++ {
-									fact.WriteFact(fmt.Sprintf("/cchat  [SYSTEM] %sFactorio is shutting down in 30 seconds, to upgrade to a new version![/color]", fact.RandomColor(false)))
-								}
-								time.Sleep(30 * time.Second)
-							}
+				}
+				//Halt, regardless of game state
+				if _, err = os.Stat(".halt"); err == nil {
+					if errb = os.Remove(".halt"); errb == nil {
+						if fact.IsFactRunning() {
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting, closing Factorio.")
 							fact.QuitFactorio()
-						}()
-					}
-				} else if _, err := os.Stat(".queue"); !os.IsNotExist(err) {
-					if err := os.Remove(".queue"); err != nil {
-						log.Println(".queue file disappeared?")
-					}
-					if !fact.IsQueued() {
-						fact.SetQueued(true)
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Reboot queued!")
-					}
-				} else if _, err := os.Stat(".reload"); !os.IsNotExist(err) {
-
-					if err := os.Remove(".reload"); err != nil {
-						log.Println(".reload file disappeared?")
-					}
-					fact.LogCMS(cfg.Local.ChannelData.ChatID, "Rebooting!")
-					fact.SetBotReboot(true)
-					fact.QuitFactorio()
-				} else if _, err := os.Stat(".start"); !os.IsNotExist(err) {
-
-					if err := os.Remove(".start"); err != nil {
-						log.Println(".start file disappeared?")
-					}
-					if !fact.IsFactRunning() {
-						fact.SetAutoStart(true)
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
-					}
-				} else if _, err := os.Stat(".newmap"); !os.IsNotExist(err) {
-
-					filedata, err := ioutil.ReadFile(".newmap")
-					if err != nil {
-						if err := os.Remove(".newmap"); err != nil {
-							log.Println(".newmap file disappeared?")
-						} else {
-							fstring := string(filedata)
-							fstring = strings.ReplaceAll(fstring, "\n", "") //replace newline
-							fstring = strings.ReplaceAll(fstring, "\r", "") //replace return
-
-							if len(fstring) > 1 {
-								fact.Map_reset(fstring)
-							} else {
-								fact.Map_reset("")
+							for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+								time.Sleep(time.Second)
 							}
+							fact.DoExit()
+						} else {
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting.")
+							fact.DoExit()
+						}
+					} else if errb != nil && !failureReported {
+						failureReported = true
+						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .halt file, ignoring.")
+					}
+				}
+
+				//Only if game is running
+				if fact.IsFactRunning() {
+					//Stop game
+					if _, err = os.Stat(".stop"); err == nil {
+						if errb = os.Remove(".stop"); errb == nil {
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping (signal)!")
+							fact.SetAutoStart(false)
+							fact.QuitFactorio()
+						} else if errb != nil && !failureReported {
+							failureReported = true
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .stop file, ignoring.")
 						}
 					}
-				} else if _, err := os.Stat(".restart"); !os.IsNotExist(err) {
-
-					if err := os.Remove(".restart"); err != nil {
-						log.Println(".restart file disappeared?")
+					//New map
+					if _, err = os.Stat(".newmap"); err == nil {
+						if errb = os.Remove(".newmap"); errb == nil {
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping for map reset! (signal)")
+							fact.Map_reset("")
+						} else if errb != nil && !failureReported {
+							failureReported = true
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .stop file, ignoring.")
+						}
 					}
-					if !fact.IsFactRunning() {
-						fact.SetAutoStart(true)
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
-					} else {
-						fact.SetAutoStart(true)
-						fact.SetQueued(false)
-
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is restarting!")
-						go func() {
-							for x := 0; x < 3; x++ {
-								fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is rebooting in 30 seconds![/color]", fact.RandomColor(false)))
-							}
-							time.Sleep(30 * time.Second)
-							fact.QuitFactorio()
-						}()
-					}
-
-				} else if _, err := os.Stat(".qrestart"); !os.IsNotExist(err) {
-
-					if err := os.Remove(".qrestart"); err != nil {
-						log.Println(".qrestart file disappeared?")
-					}
-					if !fact.IsFactRunning() {
-						fact.SetAutoStart(true)
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is starting!")
-					} else {
-						fact.SetAutoStart(true)
-						fact.SetQueued(false)
-
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is quick restarting!")
-						go func() {
-							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
-								for x := 0; x < 3; x++ {
-									fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is rebooting in 5 seconds![/color]", fact.RandomColor(false)))
+					//Message
+					if _, err = os.Stat(".message"); err == nil {
+						data, errc := os.ReadFile(".message")
+						if errb = os.Remove(".message"); errb == nil {
+							if errc == nil && data != nil {
+								message := string(data)
+								msglen := len(message)
+								if msglen > 5 && msglen < 250 {
+									message = strings.ReplaceAll(message, "\n", "") //replace newline
+									message = strings.ReplaceAll(message, "\r", "") //replace return
+									fact.Map_reset(message)
+								} else {
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, ".message text is invalid, ignoring.")
 								}
-								time.Sleep(5 * time.Second)
 							}
-
-							fact.QuitFactorio()
-						}()
+						} else if errb != nil && !failureReported {
+							failureReported = true
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .message file, ignoring.")
+						}
 					}
-				} else if _, err := os.Stat(".shutdown"); !os.IsNotExist(err) {
-					if err := os.Remove(".shutdown"); err != nil {
-						log.Println(".shutdown disappeared?")
-					}
-					if fact.IsFactRunning() {
-						fact.SetAutoStart(false)
-						go func() {
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is shutting down for maintenance!")
-							if fact.IsFactRunning() && fact.GetNumPlayers() > 0 {
-								for x := 0; x < 3; x++ {
-									fact.WriteFact(fmt.Sprintf("/cchat [SYSTEM] %sFactorio is shutting down in 30 seconds, for system maintenance![/color]", fact.RandomColor(false)))
-								}
-								time.Sleep(30 * time.Second)
-							}
-							fact.QuitFactorio()
-						}()
+				} else { //Only if game is NOT running
+					//Start game
+					if _, err = os.Stat(".start"); err == nil {
+						if errb = os.Remove(".start"); errb == nil {
+							fact.SetAutoStart(true)
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio starting! (signal)")
+						} else if errb != nil && !failureReported {
+							failureReported = true
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .start file, ignoring.")
+						}
 					}
 				}
 			}
-
 		}()
 
 		//****************************
 		// Check for factorio updates
 		//****************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(60 * time.Minute)
 				fact.CheckFactUpdate(false)
 
@@ -801,7 +775,7 @@ func MainLoops() {
 		//****************************
 		go func() {
 
-			for {
+			for glob.ServerRunning {
 				fact.UpdateChannelName()
 
 				glob.UpdateChannelLock.Lock()
@@ -824,7 +798,7 @@ func MainLoops() {
 		//****************************
 		go func() {
 
-			for {
+			for glob.ServerRunning {
 				time.Sleep(time.Hour)
 				fact.UpdateChannelName()
 				fact.DoUpdateChannelName()
@@ -835,7 +809,7 @@ func MainLoops() {
 		// Capture man-minutes
 		//****************************
 		go func() {
-			for {
+			for glob.ServerRunning {
 				time.Sleep(time.Minute)
 				nump := fact.GetNumPlayers()
 
@@ -865,28 +839,22 @@ func MainLoops() {
 
 //Delete old signal files
 func clearOldSignals() {
-	if err := os.Remove(".start"); err == nil {
-		log.Println("old .start removed.")
-	}
-	if err := os.Remove(".restart"); err == nil {
-		log.Println("old .restart removed.")
-	}
-	if err := os.Remove(".qrestart"); err == nil {
-		log.Println("old .qrestart removed.")
-	}
-	if err := os.Remove(".shutdown"); err == nil {
-		log.Println("old .shutdown removed.")
-	}
-	if err := os.Remove(".upgrade"); err == nil {
-		log.Println("old .upgrade removed.")
-	}
 	if err := os.Remove(".queue"); err == nil {
 		log.Println("old .queue removed.")
 	}
-	if err := os.Remove(".reload"); err == nil {
-		log.Println("old .reload removed.")
+	if err := os.Remove(".stop"); err == nil {
+		log.Println("old .stop removed.")
 	}
 	if err := os.Remove(".newmap"); err == nil {
 		log.Println("old .newmap removed.")
+	}
+	if err := os.Remove(".message"); err == nil {
+		log.Println("old .message removed.")
+	}
+	if err := os.Remove(".start"); err == nil {
+		log.Println("old .start removed.")
+	}
+	if err := os.Remove(".halt"); err == nil {
+		log.Println("old .halt removed.")
 	}
 }
