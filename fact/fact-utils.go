@@ -62,36 +62,43 @@ func WhitelistPlayer(pname string, level int) {
 }
 
 func WriteWhitelist() int {
-	glob.PlayerListLock.RLock()
-	var count = 0
-	var buf = "[\n"
-	for _, player := range glob.PlayerList {
-		if player.Level > 0 {
-			buf = buf + "\"" + player.Name + "\",\n"
-			count = count + 1
-		}
-	}
-	lchar := len(buf)
-	buf = buf[0 : lchar-2]
-	buf = buf + "\n]\n"
-	glob.PlayerListLock.RUnlock()
 
 	wpath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix +
 		cfg.Local.ServerCallsign + "/" + constants.WhitelistName
-	_, err := os.Create(wpath)
 
-	if err != nil {
-		log.Println("WriteWhitelist: os.Create failure")
-		return -1
+	if cfg.Local.SoftModOptions.DoWhitelist {
+		glob.PlayerListLock.RLock()
+		var count = 0
+		var buf = "[\n"
+		for _, player := range glob.PlayerList {
+			if player.Level > 0 {
+				buf = buf + "\"" + player.Name + "\",\n"
+				count = count + 1
+			}
+		}
+		lchar := len(buf)
+		buf = buf[0 : lchar-2]
+		buf = buf + "\n]\n"
+		glob.PlayerListLock.RUnlock()
+
+		_, err := os.Create(wpath)
+
+		if err != nil {
+			log.Println("WriteWhitelist: os.Create failure")
+			return -1
+		}
+
+		err = ioutil.WriteFile(wpath, []byte(buf), 0644)
+
+		if err != nil {
+			log.Println("WriteWhitelist: WriteFile failure")
+			return -1
+		}
+		return count
+	} else {
+		_ = os.Remove(wpath)
 	}
-
-	err = ioutil.WriteFile(wpath, []byte(buf), 0644)
-
-	if err != nil {
-		log.Println("WriteWhitelist: WriteFile failure")
-		return -1
-	}
-	return count
+	return 0
 }
 
 func QuitFactorio() {
