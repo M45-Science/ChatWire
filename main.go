@@ -71,7 +71,7 @@ func main() {
 	cmdb := exec.Command(cfg.Global.PathData.ShellPath, cfg.Global.PathData.LogCompScriptPath)
 	_, err := cmdb.CombinedOutput()
 	if err != nil {
-		log.Println(err)
+		log.Println("Log compress not found>", err)
 	}
 
 	//Create our log file names
