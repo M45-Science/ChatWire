@@ -3,11 +3,11 @@ package admin
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/fact"
@@ -26,7 +26,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	vlen := len(version)
 
 	if vlen < 3 {
-		log.Println("Unable to determine factorio version.")
+		botlog.DoLog("Unable to determine factorio version.")
 		return
 	}
 
@@ -41,7 +41,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		from, erra := os.Open(glob.GameMapPath)
 		if erra != nil {
-			log.Println(fmt.Sprintf("An error occurred when attempting to the map to archive. Details: %s", erra))
+			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to the map to archive. Details: %s", erra))
 		}
 		defer from.Close()
 
@@ -49,18 +49,18 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
-			log.Println(err)
+			botlog.DoLog(err.Error())
 		}
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
-			log.Println(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
+			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
 		}
 		defer to.Close()
 
 		_, errc := io.Copy(to, from)
 		if errc != nil {
-			log.Println(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
+			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
 		}
 
 		var buf string

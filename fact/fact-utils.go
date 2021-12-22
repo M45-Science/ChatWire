@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
@@ -31,9 +31,9 @@ func DeleteOldSav() {
 	out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
 
 	if errs != nil {
-		log.Println(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+		botlog.DoLog(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	} else {
-		log.Println(fmt.Sprintf("Deleted old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+		botlog.DoLog(fmt.Sprintf("Deleted old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	}
 }
 
@@ -84,14 +84,14 @@ func WriteWhitelist() int {
 		_, err := os.Create(wpath)
 
 		if err != nil {
-			log.Println("WriteWhitelist: os.Create failure")
+			botlog.DoLog("WriteWhitelist: os.Create failure")
 			return -1
 		}
 
 		err = ioutil.WriteFile(wpath, []byte(buf), 0644)
 
 		if err != nil {
-			log.Println("WriteWhitelist: WriteFile failure")
+			botlog.DoLog("WriteWhitelist: WriteFile failure")
 			return -1
 		}
 		return count
@@ -163,22 +163,22 @@ func WriteFact(input string) {
 		plen := len(buf)
 
 		if plen > 2000 {
-			log.Println("Message to factorio, too long... Not sending.")
+			botlog.DoLog("Message to factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
-			log.Println("Message for factorio too short... Not sending.")
+			botlog.DoLog("Message for factorio too short... Not sending.")
 			return
 		}
 
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
-			log.Println(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
+			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
 			SetFactRunning(false, true)
 			return
 		}
 
 	} else {
-		log.Println("An error occurred when attempting to write to Factorio (nil pipe)")
+		botlog.DoLog("An error occurred when attempting to write to Factorio (nil pipe)")
 		SetFactRunning(false, true)
 		return
 	}
@@ -232,12 +232,12 @@ func AutoPromote(pname string) string {
 				if errrole {
 					errset := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, discid, regrole.ID)
 					if errset != nil {
-						log.Println(fmt.Sprintf("Couldn't set role %v for %v.", plevel, pname))
+						botlog.DoLog(fmt.Sprintf("Couldn't set role %v for %v.", plevel, pname))
 					}
 				}
 			} else {
 
-				log.Println("No guild data.")
+				botlog.DoLog("No guild data.")
 			}
 		}
 	}
@@ -282,7 +282,7 @@ func DoUpdateChannelName() {
 		_, aerr := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.ChatID, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.ChannelData.Pos})
 
 		if aerr != nil {
-			log.Println(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
+			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
 		}
 	}
 }

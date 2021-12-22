@@ -3,10 +3,10 @@ package fact
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/glob"
 )
@@ -21,7 +21,7 @@ func WriteRecord() {
 
 	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.RecordPlayersFilename)
 	if err != nil {
-		log.Println("Couldn't open max file, skipping...")
+		botlog.DoLog("Couldn't open max file, skipping...")
 		return
 	}
 	// close fo on exit and check for its returned error
@@ -36,7 +36,7 @@ func WriteRecord() {
 	err = ioutil.WriteFile(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.RecordPlayersFilename, []byte(buffer), 0644)
 
 	if err != nil {
-		log.Println("Couldn't write max file.")
+		botlog.DoLog("Couldn't write max file.")
 	}
 }
 
@@ -49,7 +49,7 @@ func LoadRecord() {
 
 	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.RecordPlayersFilename)
 	if err != nil {
-		log.Println("Couldn't read max file, skipping...")
+		botlog.DoLog("Couldn't read max file, skipping...")
 		return
 	}
 

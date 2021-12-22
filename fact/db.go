@@ -3,12 +3,12 @@ package fact
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/glob"
 	"ChatWire/sclean"
@@ -269,7 +269,7 @@ func LoadPlayers() {
 
 	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
 	if err != nil {
-		log.Println("Couldn't read db file, skipping...")
+		botlog.DoLog("Couldn't read db file, skipping...")
 		return
 	}
 
@@ -323,7 +323,7 @@ func WritePlayers() {
 
 	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
 	if err != nil {
-		log.Println("Couldn't open db file, skipping...")
+		botlog.DoLog("Couldn't open db file, skipping...")
 		return
 	}
 	// close fo on exit and check for its returned error
@@ -344,7 +344,7 @@ func WritePlayers() {
 	err = ioutil.WriteFile(nfilename, []byte(buffer), 0644)
 
 	if err != nil {
-		log.Println("Couldn't write db temp file.")
+		botlog.DoLog("Couldn't write db temp file.")
 		return
 	}
 
@@ -353,7 +353,7 @@ func WritePlayers() {
 	err = os.Rename(oldName, newName)
 
 	if err != nil {
-		log.Println("Couldn't rename db temp file.")
+		botlog.DoLog("Couldn't rename db temp file.")
 		return
 	}
 

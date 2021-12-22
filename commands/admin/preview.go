@@ -5,12 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -58,13 +58,13 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	}
 
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(args, " "))
-	log.Println(lbuf)
+	botlog.DoLog(lbuf)
 	cmd := exec.Command(fact.GetFactorioBinary(), args...)
 
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		log.Println(fmt.Sprintf("An error occurred when attempting to generate the preview. Details: %s", aerr))
+		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to generate the preview. Details: %s", aerr))
 	}
 
 	lines := strings.Split(string(out), "\n")
@@ -81,11 +81,11 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 
 	//Delete PNG, we don't need it now
 	if err := os.Remove(path); err != nil {
-		log.Println("png preview file not found...")
+		botlog.DoLog("png preview file not found...")
 	}
 
 	if berr != nil {
-		log.Println(fmt.Sprintf("An error occurred when attempting to convert the map preview. Details: %s", berr))
+		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to convert the map preview. Details: %s", berr))
 	}
 
 	buffer := "Preview failed."

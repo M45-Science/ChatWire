@@ -3,13 +3,13 @@ package support
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
@@ -213,7 +213,7 @@ func Chat() {
 							//COMMAND REPORTING
 							//*****************
 							if strings.HasPrefix(line, "[CMD]") {
-								log.Println(line)
+								botlog.DoLog(line)
 								continue
 							}
 
@@ -225,7 +225,7 @@ func Chat() {
 									buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
 										cfg.Local.ServerCallsign+"-"+cfg.Local.Name, linelist[1], strings.Join(linelist[2:], " "))
 									fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
-									log.Println(line)
+									botlog.DoLog(line)
 								}
 								continue
 							}
@@ -290,12 +290,12 @@ func Chat() {
 												codegood = true
 												//Do not break, process
 											} else if discid != "" {
-												log.Println(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
+												botlog.DoLog(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
 												fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user.", pname))
 												codegood = false
 												continue
 											} else if factname != "" {
-												log.Println(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
+												botlog.DoLog(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
 												fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user.", pname))
 												codegood = false
 												continue
@@ -325,7 +325,7 @@ func Chat() {
 													fact.LogCMS(cfg.Local.ChannelData.ChatID, pname+": Registration complete!")
 													continue
 												} else {
-													log.Println("No guild info.")
+													botlog.DoLog("No guild info.")
 													fact.CMS(cfg.Local.ChannelData.ChatID, "Sorry, I couldn't find the guild info!")
 													continue
 												}
@@ -335,12 +335,12 @@ func Chat() {
 									} //End of loop
 									glob.PasswordListLock.Unlock()
 									if !codefound {
-										log.Println(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
+										botlog.DoLog(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
 										fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 										continue
 									}
 								} else {
-									log.Println("Internal error, [ACCESS] had wrong argument count.")
+									botlog.DoLog("Internal error, [ACCESS] had wrong argument count.")
 									continue
 								}
 								continue
@@ -590,7 +590,7 @@ func Chat() {
 									buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
 									fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
 								} else { //Just in case
-									log.Println("Loading map...")
+									botlog.DoLog("Loading map...")
 								}
 								continue
 							}
@@ -618,7 +618,7 @@ func Chat() {
 									if glob.ModLoadMessage == nil {
 										modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.ChatID, "Loading mods...")
 										if cerr != nil {
-											log.Println(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
+											botlog.DoLog(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
 											glob.ModLoadMessage = nil
 											glob.ModLoadString = constants.Unknown
 
@@ -631,7 +631,7 @@ func Chat() {
 											_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 
 											if err != nil {
-												log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
+												botlog.DoLog(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
 											}
 										}
 									} else {
@@ -639,7 +639,7 @@ func Chat() {
 										glob.ModLoadString = glob.ModLoadString + ", " + strings.Join(notclist[2:4], "-")
 										_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 										if err != nil {
-											log.Println(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
+											botlog.DoLog(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
 										}
 									}
 
@@ -756,7 +756,7 @@ func Chat() {
 							//*****************
 							if strings.HasPrefix(NoTC, "Info") {
 								if strings.Contains(NoTC, "DesyncedWaitingForMap") {
-									log.Println("desync: " + NoTC)
+									botlog.DoLog("desync: " + NoTC)
 									continue
 								}
 							}
@@ -825,11 +825,11 @@ func Chat() {
 										out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
 
 										if errs != nil {
-											log.Println(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+											botlog.DoLog(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
 											fact.SetAutoStart(false)
 											fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
 										} else {
-											log.Println("Deleted corrupted savegame.")
+											botlog.DoLog("Deleted corrupted savegame.")
 											fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
 										}
 
@@ -915,7 +915,7 @@ func Chat() {
 										err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
 										if err != nil {
 											//On failure, send normal message
-											log.Println("Failed to send chat embed.")
+											botlog.DoLog("Failed to send chat embed.")
 										} else {
 											//Stop if succeeds
 											continue

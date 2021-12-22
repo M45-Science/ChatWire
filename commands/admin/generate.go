@@ -5,12 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -92,13 +92,13 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	}
 
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
-	log.Println(lbuf)
+	botlog.DoLog(lbuf)
 
 	cmd := exec.Command(fact.GetFactorioBinary(), factargs...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		log.Println(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
+		botlog.DoLog(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 	}
 
 	lines := strings.Split(string(out), "\n")

@@ -1,9 +1,9 @@
 package fact
 
 import (
-	"log"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/constants"
 	"ChatWire/glob"
 
@@ -213,7 +213,7 @@ func SetFactRunning(run bool, err bool) {
 
 	if run && GetNoResposeCount() >= 10 {
 		//CMS(cfg.Local.ChannelData.ChatID, "Server now appears to be responding again.")
-		log.Println("Server now appears to be responding again.")
+		botlog.DoLog("Server now appears to be responding again.")
 	}
 	SetNoResponseCount(0)
 

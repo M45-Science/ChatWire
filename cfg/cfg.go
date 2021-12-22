@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 
+	"ChatWire/botlog"
 	"ChatWire/constants"
 )
 
@@ -147,21 +147,21 @@ func WriteGCfg() bool {
 	enc.SetIndent("", "\t")
 
 	if err := enc.Encode(Global); err != nil {
-		log.Println("WriteGCfg: enc.Encode failure")
+		botlog.DoLog("WriteGCfg: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(constants.CWGlobalConfig)
 
 	if err != nil {
-		log.Println("WriteGCfg: os.Create failure")
+		botlog.DoLog("WriteGCfg: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(constants.CWGlobalConfig, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		log.Println("WriteGCfg: WriteFile failure")
+		botlog.DoLog("WriteGCfg: WriteFile failure")
 	}
 
 	return true
@@ -173,7 +173,7 @@ func ReadGCfg() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		log.Println("ReadGCfg: os.Stat failed")
+		botlog.DoLog("ReadGCfg: os.Stat failed")
 		return false
 
 	} else {
@@ -185,8 +185,8 @@ func ReadGCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &cfg)
 			if err != nil {
-				log.Println("ReadGCfg: Unmashal failure")
-				log.Println(err.Error())
+				botlog.DoLog("ReadGCfg: Unmashal failure")
+				botlog.DoLog(err.Error())
 				os.Exit(1)
 			}
 
@@ -194,7 +194,7 @@ func ReadGCfg() bool {
 
 			return true
 		} else {
-			log.Println("ReadGCfg: ReadFile failure")
+			botlog.DoLog("ReadGCfg: ReadFile failure")
 			return false
 		}
 	}
@@ -211,21 +211,21 @@ func WriteLCfg() bool {
 	enc.SetIndent("", "\t")
 
 	if err := enc.Encode(Local); err != nil {
-		log.Println("WriteLCfg: enc.Encode failure")
+		botlog.DoLog("WriteLCfg: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(constants.CWLocalConfig)
 
 	if err != nil {
-		log.Println("WriteLCfg: os.Create failure")
+		botlog.DoLog("WriteLCfg: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(constants.CWLocalConfig, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		log.Println("WriteLCfg: WriteFile failure")
+		botlog.DoLog("WriteLCfg: WriteFile failure")
 	}
 
 	return true
@@ -237,7 +237,7 @@ func ReadLCfg() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		log.Println("ReadLCfg: os.Stat failed")
+		botlog.DoLog("ReadLCfg: os.Stat failed")
 		return false
 
 	} else {
@@ -249,8 +249,8 @@ func ReadLCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &cfg)
 			if err != nil {
-				log.Println("ReadLCfg: Unmashal failure")
-				log.Println(err.Error())
+				botlog.DoLog("ReadLCfg: Unmashal failure")
+				botlog.DoLog(err.Error())
 				os.Exit(1)
 			}
 
@@ -258,7 +258,7 @@ func ReadLCfg() bool {
 
 			return true
 		} else {
-			log.Println("ReadLCfg: ReadFile failure")
+			botlog.DoLog("ReadLCfg: ReadFile failure")
 			return false
 		}
 	}

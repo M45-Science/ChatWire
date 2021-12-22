@@ -2,9 +2,9 @@ package user
 
 import (
 	"fmt"
-	"log"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -33,7 +33,7 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	glob.PasswordListLock.Lock()
 	if glob.PassList[m.Author.ID] != nil {
 		delete(glob.PassList, m.Author.ID)
-		log.Println("Invalidating previous unused password...")
+		botlog.DoLog("Invalidating previous unused password...")
 	}
 	np := glob.PassData{
 		Code:   password,

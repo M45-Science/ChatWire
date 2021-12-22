@@ -2,11 +2,11 @@ package fact
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/glob"
 )
@@ -175,13 +175,13 @@ func DoExit() {
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	mm := GetManMinutes()
-	log.Println(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
+	botlog.DoLog(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
 	time.Sleep(3 * time.Second)
 	//This kills all loops!
 	glob.ServerRunning = false
 
-	log.Println("Bot closing, load/save db, and waiting for locks...")
+	botlog.DoLog("Bot closing, load/save db, and waiting for locks...")
 	LoadPlayers()
 	WritePlayers()
 
@@ -191,7 +191,7 @@ func DoExit() {
 	glob.PlayerListWriteLock.Lock()
 	glob.RecordPlayersWriteLock.Lock()
 
-	log.Println("Closing log files.")
+	botlog.DoLog("Closing log files.")
 	glob.GameLogDesc.Close()
 	glob.BotLogDesc.Close()
 
@@ -223,7 +223,7 @@ func CMS(channel string, text string) {
 
 			glob.CMSBuffer = append(glob.CMSBuffer, item)
 		} else {
-			log.Println("CMS: Line too long! Discarding...")
+			botlog.DoLog("CMS: Line too long! Discarding...")
 		}
 	}
 
@@ -231,6 +231,6 @@ func CMS(channel string, text string) {
 }
 
 func LogCMS(channel string, text string) {
-	log.Println(text)
+	botlog.DoLog(text)
 	CMS(channel, text)
 }
