@@ -88,7 +88,7 @@ func MainLoops() {
 
 						if delay > 0 {
 							log.Println(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
-							for i := 0; i < delay*10 && throt > 0; i++ {
+							for i := 0; i < delay*11 && throt > 0; i++ {
 								time.Sleep(100 * time.Millisecond)
 							}
 						}
@@ -686,6 +686,7 @@ func MainLoops() {
 					if errb = os.Remove(".halt"); errb == nil {
 						if fact.IsFactRunning() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting, closing Factorio.")
+							fact.SetAutoStart(false)
 							fact.QuitFactorio()
 							for x := 0; x < 60 && fact.IsFactRunning(); x++ {
 								time.Sleep(time.Second)
@@ -703,10 +704,21 @@ func MainLoops() {
 
 				//Only if game is running
 				if fact.IsFactRunning() {
+					//Quick reboot
+					//This should eventually grab save name from file
+					if _, err = os.Stat(".qrestart"); err == nil {
+						if errb = os.Remove(".qrestart"); errb == nil {
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio quick restarting!")
+							fact.QuitFactorio()
+						} else if errb != nil && !failureReported {
+							failureReported = true
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .qrestart file, ignoring.")
+						}
+					}
 					//Stop game
 					if _, err = os.Stat(".stop"); err == nil {
 						if errb = os.Remove(".stop"); errb == nil {
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping (signal)!")
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping!")
 							fact.SetAutoStart(false)
 							fact.QuitFactorio()
 						} else if errb != nil && !failureReported {
@@ -717,7 +729,7 @@ func MainLoops() {
 					//New map
 					if _, err = os.Stat(".newmap"); err == nil {
 						if errb = os.Remove(".newmap"); errb == nil {
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping for map reset! (signal)")
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping for map reset!")
 							fact.Map_reset("")
 						} else if errb != nil && !failureReported {
 							failureReported = true
@@ -749,7 +761,7 @@ func MainLoops() {
 					if _, err = os.Stat(".start"); err == nil {
 						if errb = os.Remove(".start"); errb == nil {
 							fact.SetAutoStart(true)
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio starting! (signal)")
+							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio starting!")
 						} else if errb != nil && !failureReported {
 							failureReported = true
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .start file, ignoring.")
@@ -839,6 +851,9 @@ func MainLoops() {
 
 //Delete old signal files
 func clearOldSignals() {
+	if err := os.Remove(".qrestart"); err == nil {
+		log.Println("old .qrestart removed.")
+	}
 	if err := os.Remove(".queue"); err == nil {
 		log.Println("old .queue removed.")
 	}
