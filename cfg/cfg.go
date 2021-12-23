@@ -31,6 +31,7 @@ type config struct {
 	ResetPingString   string
 	DefaultUPSRate    int
 	DisableBlueprints bool
+	EnableCheats      bool
 	HideAutosaves     bool
 
 	ChannelData    ChannelDataStruct

@@ -44,5 +44,9 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		fact.WriteFact("/blueprints off")
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
 	}
+	if cfg.Local.EnableCheats {
+		fact.WriteFact("/enablecheats on")
+		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats are enabled.")
+	}
 
 }
