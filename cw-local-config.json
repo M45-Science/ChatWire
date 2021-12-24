@@ -1,0 +1,33 @@
+{
+	"Version": "",
+	"ServerCallsign": "test",
+	"Name": "t",
+	"Port": 5000,
+	"MapPreset": "rail-world",
+	"MapGenPreset": "",
+	"AutoStart": true,
+	"AutoUpdate": true,
+	"UpdateFactExp": false,
+	"ResetScheduleText": "",
+	"WriteStatsDisc": false,
+	"ResetPingString": "",
+	"DefaultUPSRate": 0,
+	"DisableBlueprints": false,
+	"EnableCheats": false,
+	"HideAutosaves": false,
+	"ChannelData": {
+		"Pos": 0,
+		"ChatID": "123456789"
+	},
+	"SlowConnect": {
+		"SlowConnect": false,
+		"DefaultSpeed": 1,
+		"ConnectSpeed": 0.5
+	},
+	"SoftModOptions": {
+		"DoWhitelist": false,
+		"RestrictMode": false,
+		"FriendlyFire": false,
+		"CleanMapOnBoot": false
+	}
+}
