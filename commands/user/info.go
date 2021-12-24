@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/support"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -44,7 +46,15 @@ func Info(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	buf = buf + fmt.Sprintf("Members     : %v\n", nummember)
 	buf = buf + fmt.Sprintf("Regulars    : %v\n", numregulars)
 	buf = buf + fmt.Sprintf("Registered  : %v", numreg)
-	buf = buf + "```\n"
+
+	if cfg.Local.MapGenPreset != "" {
+		buf = buf + fmt.Sprintf("Map-Gen Preset : %v\n", cfg.Local.MapGenPreset)
+	}
+	if cfg.Local.ResetScheduleText != "" {
+		buf = buf + fmt.Sprintf("Reset Schedule  : %v\n", cfg.Local.ResetScheduleText)
+	}
+	buf = buf + fmt.Sprintf("Slow Connect    : %v\n", support.BoolToString(cfg.Local.SlowConnect.SlowConnect))
+	buf = buf + "```"
 	fact.CMS(m.ChannelID, buf)
 
 }
