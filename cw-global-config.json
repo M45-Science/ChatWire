@@ -1,0 +1,60 @@
+{
+	"Version": "",
+	"RconPortOffset": 1000,
+	"RconPass": "rconpassword",
+	"DiscordData": {
+		"Token": "discord bot token",
+		"GuildID": "916844097883471923",
+		"StatTotalChannelID": "",
+		"StatMemberChannelID": "",
+		"StatRegularsChannelID": "",
+		"ReportChannelID": "",
+		"AnnounceChannelID": ""
+	},
+	"AdminData": {
+		"IDs": null,
+		"Names": null
+	},
+	"RoleData": {
+		"Moderator": "",
+		"Admin": "",
+		"Patreon": "",
+		"Nitro": "",
+		"Regular": "",
+		"Member": "",
+		"New": ""
+	},
+	"PathData": {
+		"FactorioServersRoot": "/home/user/fact-serv/",
+		"FactorioHomePrefix": "fact-",
+		"ChatWireHomePrefix": "cw-",
+		"FactorioBinary": "bin/x64/factorio",
+		"RecordPlayersFilename": "maxplayer.dat",
+		"SaveFilePath": "saves",
+		"ScriptInserterPath": "softmod-insert.sh",
+		"DBFileName": "players.dat",
+		"LogCompScriptPath": "scripts/compress-log.sh",
+		"FactUpdaterPath": "scripts/fact-update.py",
+		"FactUpdateCache": "upcache/",
+		"MapGenPath": "/home/user/fact-serv/map-presets/",
+		"MapPreviewPath": "/home/user/public_html/prev/",
+		"MapArchivePath": "/home/user/public_html/archive/",
+		"ImageMagickPath": "/usr/bin/convert",
+		"ShellPath": "/bin/bash",
+		"RMPath": "/bin/rm",
+		"FactUpdaterShell": "/usr/bin/python",
+		"ZipBinaryPath": "/usr/bin/unzip",
+		"MapPreviewURL": "https://mysite.com/~user/prev/",
+		"ArchiveURL": "https://mysite.com/~user/archive/"
+	},
+	"MapPreviewData": {
+		"Args": "",
+		"Res": "1024",
+		"Scale": "1",
+		"JPGQuality": "85",
+		"JPGScale": "1024x1024"
+	},
+	"DiscordCommandPrefix": "$",
+	"ResetPingString": "",
+	"AuthServerBans": true
+}
