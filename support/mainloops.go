@@ -158,7 +158,7 @@ func MainLoops() {
 
 					LinuxSetProcessGroup(cmd)
 					glob.GameBuffer = new(bytes.Buffer)
-					logwriter := io.MultiWriter(glob.GameLogDesc, glob.GameBuffer)
+					logwriter := io.MultiWriter(glob.GameBuffer)
 					cmd.Stdout = logwriter
 
 					tpipe, errp := cmd.StdinPipe()
