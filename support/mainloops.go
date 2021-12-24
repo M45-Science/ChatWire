@@ -728,7 +728,6 @@ func MainLoops() {
 					//New map
 					if _, err = os.Stat(".newmap"); err == nil {
 						if errb = os.Remove(".newmap"); errb == nil {
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping for map reset!")
 							fact.Map_reset("")
 						} else if errb != nil && !failureReported {
 							failureReported = true
