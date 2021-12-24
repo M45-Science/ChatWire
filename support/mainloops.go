@@ -456,7 +456,7 @@ func MainLoops() {
 					glob.PlayerListDirty = false
 					//Prevent recursive lock
 					go func() {
-						botlog.DoLog("Database marked dirty, saving.")
+						//botlog.DoLog("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
 					//Sleep for a few seconds after writing.
@@ -479,7 +479,7 @@ func MainLoops() {
 
 					//Prevent recursive lock
 					go func() {
-						botlog.DoLog("Database last seen flagged, saving.")
+						//botlog.DoLog("Database last seen flagged, saving.")
 						fact.WritePlayers()
 					}()
 				}
@@ -511,7 +511,7 @@ func MainLoops() {
 				if updated {
 					updated = false
 
-					botlog.DoLog("Database file modified, loading.")
+					//botlog.DoLog("Database file modified, loading.")
 					fact.LoadPlayers()
 
 					//Sleep after reading
