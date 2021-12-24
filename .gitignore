@@ -1,6 +1,6 @@
 M45-ChatWire.exe
 *.log
 *.bin
-*.json
+cw-local-config.json
 ChatWire
 cw.lock
