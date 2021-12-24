@@ -702,6 +702,10 @@ func Chat() {
 									fact.WriteFact("/blueprints off")
 									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
 								}
+								if cfg.Local.EnableCheats {
+									fact.WriteFact("/enablecheats on")
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
+								}
 								continue
 							}
 
