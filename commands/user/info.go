@@ -45,7 +45,7 @@ func Info(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	buf = buf + fmt.Sprintf("Players     : %v (Record %v)\n", fact.GetNumPlayers(), glob.RecordPlayers)
 	buf = buf + fmt.Sprintf("Members     : %v\n", nummember)
 	buf = buf + fmt.Sprintf("Regulars    : %v\n", numregulars)
-	buf = buf + fmt.Sprintf("Registered  : %v", numreg)
+	buf = buf + fmt.Sprintf("Registered  : %v\n", numreg)
 
 	if cfg.Local.MapGenPreset != "" {
 		buf = buf + fmt.Sprintf("Map-Gen Preset : %v\n", cfg.Local.MapGenPreset)
