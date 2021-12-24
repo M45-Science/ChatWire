@@ -101,7 +101,10 @@ func Chat() {
 				time.Sleep(time.Millisecond * 100)
 				for reader.Scan() {
 					line := reader.Text()
-
+					ll := len(line)
+					if ll <= 1 {
+						continue
+					}
 					//Server is alive
 					fact.SetFactRunning(true, false)
 
@@ -213,7 +216,7 @@ func Chat() {
 							//COMMAND REPORTING
 							//*****************
 							if strings.HasPrefix(line, "[CMD]") {
-								botlog.DoLog(line)
+								botlog.DoLogGame(line)
 								continue
 							}
 
@@ -221,11 +224,11 @@ func Chat() {
 							//USER REPORT
 							//*****************
 							if strings.HasPrefix(line, "[REPORT]") {
+								botlog.DoLogGame(line)
 								if linelistlen >= 3 {
 									buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
 										cfg.Local.ServerCallsign+"-"+cfg.Local.Name, linelist[1], strings.Join(linelist[2:], " "))
 									fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
-									botlog.DoLog(line)
 								}
 								continue
 							}
@@ -387,6 +390,7 @@ func Chat() {
 							//JOIN AREA
 							//*****************
 							if strings.HasPrefix(NoDS, "[JOIN]") {
+								botlog.DoLogGame(line)
 								fact.WriteFact("/p o c")
 
 								if nodslistlen > 1 {
@@ -420,6 +424,7 @@ func Chat() {
 							//LEAVE
 							//*****************
 							if strings.HasPrefix(NoDS, "[LEAVE]") {
+								botlog.DoLogGame(line)
 								fact.WriteFact("/p o c")
 
 								if nodslistlen > 1 {
@@ -444,6 +449,7 @@ func Chat() {
 							//MSG AREA
 							//*****************
 							if strings.HasPrefix(line, "[MSG]") {
+								botlog.DoLogGame(line)
 
 								if linelistlen > 0 {
 									ctext := strings.Join(linelist[1:], " ")
@@ -493,6 +499,7 @@ func Chat() {
 							//BAN
 							//*****************
 							if strings.HasPrefix(NoDS, "[BAN]") {
+								botlog.DoLogGame(line)
 
 								if nodslistlen > 1 {
 									trustname := nodslist[1]
@@ -566,6 +573,7 @@ func Chat() {
 							//MAP LOAD
 							//*****************
 							if strings.HasPrefix(NoTC, "Loading map") {
+								botlog.DoLogGame(line)
 
 								//Strip file path
 								if notclistlen > 3 {
@@ -598,6 +606,7 @@ func Chat() {
 							//RESET MOD MESSAGE
 							//******************
 							if strings.HasPrefix(NoTC, "Loading mod core") {
+
 								glob.ModLoadLock.Lock()
 								glob.ModLoadMessage = nil
 								glob.ModLoadString = constants.Unknown
@@ -609,6 +618,7 @@ func Chat() {
 							//*****************
 							if strings.HasPrefix(NoTC, "Loading mod") && strings.Contains(NoTC, "(data.lua)") &&
 								!strings.Contains(NoTC, "settings") && !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
+								botlog.DoLogGame(line)
 
 								if notclistlen > 4 && glob.DS != nil {
 
@@ -652,6 +662,7 @@ func Chat() {
 							//GOODBYE
 							//*****************
 							if strings.HasPrefix(NoTC, "Goodbye") {
+								botlog.DoLogGame(line)
 								//Factorio has completety closed, stop quit timer!
 								fact.StopFactQuitTimer()
 
@@ -666,6 +677,7 @@ func Chat() {
 							//*****************
 							// 5.164 Info RemoteCommandProcessor.cpp:131: Starting RCON interface at IP ADDR:({0.0.0.0:9100})
 							if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
+
 								fact.SetFactorioBooted(true)
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+glob.FactorioVersion+" is now online.")
 								fact.WriteFact("/p o c")
@@ -713,6 +725,7 @@ func Chat() {
 							//GET FACTORIO VERSION
 							//*********************
 							if strings.HasPrefix(NoTC, "Loading mod base") {
+								botlog.DoLogGame(line)
 								if notclistlen > 3 {
 									glob.FactorioVersion = notclist[3]
 								}
@@ -737,6 +750,7 @@ func Chat() {
 							//CAPTURE MAP NAME, ON EXIT
 							//**************************
 							if strings.HasPrefix(NoTC, "Info MainLoop") && strings.Contains(NoTC, "Saving map as") {
+								botlog.DoLogGame(line)
 
 								//Strip file path
 								if notclistlen > 5 {
@@ -759,7 +773,9 @@ func Chat() {
 							//CAPTURE DESYNC
 							//*****************
 							if strings.HasPrefix(NoTC, "Info") {
+
 								if strings.Contains(NoTC, "DesyncedWaitingForMap") {
+									botlog.DoLogGame(line)
 									botlog.DoLog("desync: " + NoTC)
 									continue
 								}
@@ -768,6 +784,8 @@ func Chat() {
 							//CAPTURE CRASHES
 							//*****************
 							if strings.HasPrefix(NoTC, "Error") {
+								botlog.DoLogGame(line)
+
 								fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
 								//Lock error
 								if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
@@ -854,6 +872,7 @@ func Chat() {
 						//FACTORIO CHAT MESSAGES
 						//***********************
 						if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
+							botlog.DoLogGame(line)
 
 							if nodslistlen > 1 {
 								nodslist[1] = strings.Replace(nodslist[1], ":", "", -1)
@@ -943,6 +962,7 @@ func Chat() {
 					//"/online"
 					//*****************
 					if strings.HasPrefix(line, "~") {
+						botlog.DoLogGame(line)
 						if strings.Contains(line, "Online:") {
 							fact.CMS(cfg.Local.ChannelData.ChatID, "`"+line+"`")
 							continue
