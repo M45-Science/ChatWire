@@ -103,16 +103,6 @@ func WriteWhitelist() int {
 
 func QuitFactorio() {
 
-	timer := GetFactQuitTimer()
-
-	//See if we have a quit timer or not, if we don't... start one.
-	if timer.IsZero() {
-		StartFactQuitTimer()
-	} else {
-		//We already have a timer going!
-		return
-	}
-
 	SetRelaunchThrottle(0)
 	SetNoResponseCount(0)
 

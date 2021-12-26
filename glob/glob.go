@@ -149,9 +149,6 @@ var LastTotalStat = ""
 var LastMemberStat = ""
 var LastRegularStat = ""
 
-var FactQuitTimerLock sync.Mutex
-var FactQuitTimer time.Time
-
 var UpdateWarnCounterLock sync.Mutex
 var UpdateWarnCounter = 0
 var UpdateGraceMinutes = 10
