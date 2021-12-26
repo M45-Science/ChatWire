@@ -428,21 +428,6 @@ func MainLoops() {
 				}
 			}
 		}()
-
-		//**********************************
-		//Read and write database regularly
-		//**********************************
-		go func() {
-			return
-			for glob.ServerRunning {
-
-				fact.LoadPlayers()
-				fact.WritePlayers()
-				time.Sleep(time.Minute * 15)
-
-			}
-		}()
-
 		//*******************************
 		//Save database, if marked dirty
 		//*******************************
@@ -456,7 +441,7 @@ func MainLoops() {
 					glob.PlayerListDirty = false
 					//Prevent recursive lock
 					go func() {
-						//botlog.DoLog("Database marked dirty, saving.")
+						botlog.DoLog("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
 					//Sleep for a few seconds after writing.
@@ -511,7 +496,7 @@ func MainLoops() {
 				if updated {
 					updated = false
 
-					//botlog.DoLog("Database file modified, loading.")
+					botlog.DoLog("Database file modified, loading.")
 					fact.LoadPlayers()
 
 					//Sleep after reading
@@ -587,22 +572,6 @@ func MainLoops() {
 						}
 						break //We don't need to loop anymore
 					}
-				}
-			}
-		}()
-
-		//************************************
-		//Eventually give up waiting for Factorio to quit
-		//************************************
-		go func() {
-
-			for glob.ServerRunning {
-				time.Sleep(5 * time.Second)
-
-				timer := fact.GetFactQuitTimer()
-				if !timer.IsZero() && time.Since(timer) > (60*time.Second) {
-					fact.DoExit()
-					break
 				}
 			}
 		}()
