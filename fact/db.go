@@ -19,23 +19,14 @@ func WatchDatabaseFile() {
 
 	filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
 
-	initialStat, err := os.Stat(filePath)
-	if err != nil {
-		return
-	}
+	initialStat, _ := os.Stat(filePath)
 
 	for glob.ServerRunning {
-		stat, err := os.Stat(filePath)
-		if err != nil {
-			return
-		}
+		stat, _ := os.Stat(filePath)
 
 		if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
 			SetPlayerListUpdated()
-			initialStat, err = os.Stat(filePath)
-			if err != nil {
-				return
-			}
+			initialStat, _ = os.Stat(filePath)
 		}
 
 		time.Sleep(1 * time.Second)
@@ -270,14 +261,14 @@ func LoadPlayers() {
 
 	if filedata != nil {
 		dblines := strings.Split(string(filedata), ":")
-		numlines := len(dblines)
+		dblen := len(dblines)
 
 		//Upgrade existing
 		if dblines[0] == "db-v0.03" {
 
 			glob.PlayerListLock.Lock()
-			for pos := 0; pos < numlines; pos++ {
-				items := strings.Split(string(dblines[pos]), ",")
+			for pos, line := range dblines {
+				items := strings.Split(string(line), ",")
 				numitems := len(items)
 				if numitems == 5 {
 					pname := items[0]
@@ -286,7 +277,7 @@ func LoadPlayers() {
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
 					seen, _ := strconv.ParseInt(items[4], 10, 64)
 					AddPlayer(pname, playerlevel, pid, creation, seen)
-				} else {
+				} else if pos != 0 && pos != dblen-1 {
 					botlog.DoLog(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
 				}
 			}
