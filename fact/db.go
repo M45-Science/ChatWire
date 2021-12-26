@@ -183,10 +183,6 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		return
 	}
 
-	pname = strings.ReplaceAll(pname, ",", "") //remove comma
-	pname = strings.ReplaceAll(pname, ":", "") //replace colon
-	pname = sclean.StripControlAndSubSpecial(pname)
-
 	if glob.PlayerList[pname] != nil {
 		if level <= -254 {
 			glob.PlayerList[pname].Level = level
@@ -220,7 +216,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		Creation: t.Unix(),
 	}
 	glob.PlayerList[pname] = &newplayer
-	SetPlayerListDirty()
+	//SetPlayerListDirty()
 	WhitelistPlayer(pname, level)
 }
 
@@ -258,7 +254,6 @@ func PlayerLevelGet(pname string) int {
 	}
 	glob.PlayerList[pname] = &newplayer
 
-	//Don't care about writing out new users often
 	SetPlayerListDirty()
 	return 0
 }
@@ -277,7 +272,7 @@ func LoadPlayers() {
 		dblines := strings.Split(string(filedata), ":")
 		numlines := len(dblines)
 
-		//Upgrade exsisting
+		//Upgrade existing
 		if dblines[0] == "db-v0.03" {
 
 			glob.PlayerListLock.Lock()
@@ -291,21 +286,6 @@ func LoadPlayers() {
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
 					seen, _ := strconv.ParseInt(items[4], 10, 64)
 					AddPlayer(pname, playerlevel, pid, creation, seen)
-				}
-			}
-			glob.PlayerListLock.Unlock()
-
-		} else if dblines[0] == "db-v0.02" {
-
-			glob.PlayerListLock.Lock()
-			for pos := 0; pos < numlines; pos++ {
-
-				items := strings.Split(string(dblines[pos]), ",")
-				numitems := len(items)
-				if numitems == 2 {
-					pname := items[0]
-					playerlevel, _ := strconv.Atoi(items[1])
-					AddPlayer(pname, playerlevel, "", 0, 0)
 				}
 			}
 			glob.PlayerListLock.Unlock()
