@@ -193,6 +193,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		tnow = tnow.Round(time.Second)
 
 		count := 0
+		buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 		for _, p := range slist {
 			if count > maxresults {
 				break
