@@ -663,8 +663,6 @@ func Chat() {
 							//*****************
 							if strings.HasPrefix(NoTC, "Goodbye") {
 								botlog.DoLogGame(line)
-								//Factorio has completety closed, stop quit timer!
-								fact.StopFactQuitTimer()
 
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
 								fact.SetFactorioBooted(false)
