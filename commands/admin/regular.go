@@ -17,6 +17,7 @@ func SetPlayerRegular(s *discordgo.Session, m *discordgo.MessageCreate, args []s
 		for i := 0; i < argnum; i++ {
 			pname := args[i]
 			fact.PlayerLevelSet(pname, 2)
+			fact.AutoPromote(pname)
 		}
 
 		fact.CMS(m.ChannelID, fmt.Sprintf("%d players given regulars status.", argnum))
