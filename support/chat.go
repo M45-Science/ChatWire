@@ -434,14 +434,6 @@ func Chat() {
 										fact.UpdateSeen(factname)
 									}(pname)
 								}
-								newtime := time.Now()
-								savetimer := fact.GetSaveTimer()
-
-								//Only save if time has passed
-								if newtime.Sub(savetimer) >= 60 {
-									fact.SetSaveTimer()
-									fact.SaveFactorio()
-								}
 								continue
 							}
 
@@ -526,13 +518,6 @@ func Chat() {
 										fact.WriteFact("/p o c")
 
 										newtime := time.Now()
-										savetimer := fact.GetSaveTimer()
-
-										//Only save if time has passed
-										if newtime.Sub(savetimer) >= 60 {
-											fact.SetSaveTimer()
-											fact.SaveFactorio()
-										}
 
 										//Fix for players leaving with no leave message
 									} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
@@ -741,7 +726,6 @@ func Chat() {
 										fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
 									}
 								}
-								fact.SetSaveTimer()
 								continue
 							}
 							//**************************

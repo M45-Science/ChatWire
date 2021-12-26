@@ -135,8 +135,6 @@ func SaveFactorio() {
 		} else {
 			WriteFact("/server-save")
 		}
-
-		SetSaveTimer()
 	}
 }
 

@@ -80,7 +80,6 @@ func main() {
 	//Find & set map types size
 	glob.MaxMapTypes = len(constants.MapTypes)
 
-	fact.SetSaveTimer()
 	fact.SetGameTime(constants.Unknown)
 
 	glob.Uptime = time.Now()

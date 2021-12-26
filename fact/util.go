@@ -61,11 +61,6 @@ func DoShowLocks(ch string) {
 	glob.GametimeLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GametimeLock")
 
-	glob.SaveTimerLock.Lock()
-	time.Sleep(time.Microsecond)
-	glob.SaveTimerLock.Unlock()
-	CMS(ch, time.Since(startTime).String()+": SaveTimerLock")
-
 	glob.FactIsRunningLock.Lock()
 	time.Sleep(time.Microsecond)
 	glob.FactIsRunningLock.Unlock()

@@ -61,9 +61,6 @@ var Gametime = constants.Unknown
 var GametimeString = constants.Unknown
 var GametimeLock sync.RWMutex
 
-var SaveTimer time.Time
-var SaveTimerLock sync.RWMutex
-
 var FactIsRunning = false
 var FactIsRunningLock sync.RWMutex
 

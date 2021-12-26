@@ -182,7 +182,6 @@ func MainLoops() {
 					fact.SetFactorioBooted(false)
 
 					fact.SetGameTime(constants.Unknown)
-					fact.SetSaveTimer()
 					fact.SetNoResponseCount(0)
 
 					err = cmd.Start()

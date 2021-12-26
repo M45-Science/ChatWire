@@ -1,8 +1,6 @@
 package fact
 
 import (
-	"time"
-
 	"ChatWire/botlog"
 	"ChatWire/constants"
 	"ChatWire/glob"
@@ -210,20 +208,6 @@ func IsFactRunning() bool {
 	glob.FactIsRunningLock.RLock()
 	temp := glob.FactIsRunning
 	glob.FactIsRunningLock.RUnlock()
-
-	return temp
-}
-
-func SetSaveTimer() {
-	glob.SaveTimerLock.Lock()
-	glob.SaveTimer = time.Now()
-	glob.SaveTimerLock.Unlock()
-}
-
-func GetSaveTimer() time.Time {
-	glob.SaveTimerLock.RLock()
-	temp := glob.SaveTimer
-	glob.SaveTimerLock.RUnlock()
 
 	return temp
 }
