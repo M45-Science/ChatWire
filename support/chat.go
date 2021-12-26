@@ -101,6 +101,8 @@ func Chat() {
 				time.Sleep(time.Millisecond * 100)
 				for reader.Scan() {
 					line := reader.Text()
+					line = strings.TrimSuffix(line, "\r")
+					line = strings.TrimSuffix(line, "\n")
 					ll := len(line)
 					if ll <= 1 {
 						continue
@@ -246,17 +248,8 @@ func Chat() {
 									code := linelist[3]
 
 									//Filter just in case, and so accidental spaces won't ruin passcodes
-									code = strings.ReplaceAll(code, ":", "")
-									code = strings.ReplaceAll(code, ",", "")
 									code = strings.ReplaceAll(code, " ", "")
-									code = strings.ReplaceAll(code, "\n", "")
-									code = strings.ReplaceAll(code, "\r", "")
-
-									pname = strings.ReplaceAll(pname, ":", "")
-									pname = strings.ReplaceAll(pname, ",", "")
 									pname = strings.ReplaceAll(pname, " ", "")
-									pname = strings.ReplaceAll(pname, "\n", "")
-									pname = strings.ReplaceAll(pname, "\r", "")
 
 									codegood := true
 									codefound := false
