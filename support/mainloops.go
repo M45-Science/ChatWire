@@ -94,6 +94,7 @@ func MainLoops() {
 						}
 					}
 
+					//Timer gets longer each reboot
 					fact.SetRelaunchThrottle(throt + 1)
 
 					//Prevent us from distrupting updates
@@ -393,7 +394,7 @@ func MainLoops() {
 		}()
 
 		//**********************************
-		//Pause on connect
+		//Slow-connect
 		//**********************************
 		go func() {
 			for glob.ServerRunning {
@@ -482,7 +483,7 @@ func MainLoops() {
 
 			for glob.ServerRunning {
 
-				time.Sleep(250 * time.Millisecond)
+				time.Sleep(1 * time.Millisecond)
 
 				//Detect update
 				glob.PlayerListUpdatedLock.Lock()
@@ -763,23 +764,11 @@ func MainLoops() {
 
 				if oldchname != chname {
 					fact.DoUpdateChannelName()
-					time.Sleep(time.Minute * 5)
+					time.Sleep(time.Minute * 1)
 				} else {
 
 					time.Sleep(5 * time.Second)
 				}
-			}
-		}()
-
-		//****************************
-		// Force refresh channel names
-		//****************************
-		go func() {
-
-			for glob.ServerRunning {
-				time.Sleep(time.Hour)
-				fact.UpdateChannelName()
-				fact.DoUpdateChannelName()
 			}
 		}()
 

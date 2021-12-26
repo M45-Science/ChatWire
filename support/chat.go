@@ -164,7 +164,7 @@ func Chat() {
 						if !strings.HasPrefix(NoDS, "[CHAT]") {
 
 							//*****************
-							//GET FACTORIO TIME, replace me
+							//GET FACTORIO TIME
 							//*****************
 							if strings.Contains(lowerline, " second") || strings.Contains(lowerline, " minute") || strings.Contains(lowerline, " hour") || strings.Contains(lowerline, " day") {
 
@@ -516,8 +516,6 @@ func Chat() {
 
 									if strings.Contains(line, "removing peer") {
 										fact.WriteFact("/p o c")
-
-										newtime := time.Now()
 
 										//Fix for players leaving with no leave message
 									} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
