@@ -199,7 +199,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		if seen > glob.PlayerList[pname].LastSeen {
 			glob.PlayerList[pname].LastSeen = seen
 		}
-		if id != "" && id != glob.PlayerList[pname].ID {
+		if id != "" {
 			glob.PlayerList[pname].ID = id
 		}
 		return
@@ -211,7 +211,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 
 		Name:     pname,
 		Level:    level,
-		ID:       "",
+		ID:       id,
 		LastSeen: t.Unix(),
 		Creation: t.Unix(),
 	}
@@ -286,6 +286,8 @@ func LoadPlayers() {
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
 					seen, _ := strconv.ParseInt(items[4], 10, 64)
 					AddPlayer(pname, playerlevel, pid, creation, seen)
+				} else {
+					botlog.DoLog(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
 				}
 			}
 			glob.PlayerListLock.Unlock()
