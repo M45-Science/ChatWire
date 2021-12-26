@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "497-12242021-0129p"
+const Version = "498-12262021-1212"
 const Unknown = "Unknown"
 
 //Config files
@@ -25,11 +25,6 @@ const FactorioUpdateProcessLimit = 10 * time.Minute
 
 //Maximum time before giving up on checking zipfile integrity
 const ZipIntegrityLimit = 5 * time.Minute
-
-const MinuteInMicro = 60000000
-const SecondInMicro = 1000000
-const TenthInMicro = 100000
-const HundrethInMicro = 10000
 
 const WatchdogInterval = time.Second
 
