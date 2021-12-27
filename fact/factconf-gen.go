@@ -86,9 +86,6 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.ResetScheduleText != "" {
 		tags = append(tags, "Map resets: "+cfg.Local.ResetScheduleText)
 	}
-	if cfg.Local.DefaultUPSRate > 0 {
-		tags = append(tags, "UPS: "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
-	}
 	if cfg.Local.EnableCheats {
 		tags = append(tags, "CHEATS ON")
 		tags = append(tags, "Sandbox")

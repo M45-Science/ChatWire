@@ -32,11 +32,6 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	} else {
 		buf = buf + fmt.Sprintf("%25v: %v\n", "Reset schedule", "not set")
 	}
-	if cfg.Local.DefaultUPSRate != 0 {
-		buf = buf + fmt.Sprintf("%25v: %v\n", "Default UPS", cfg.Local.DefaultUPSRate)
-	} else {
-		buf = buf + fmt.Sprintf("%25v: %v\n", "Default UPS", "not set")
-	}
 	buf = buf + fmt.Sprintf("%25v: %v\n", "Disable blueprints", support.BoolToString(cfg.Local.DisableBlueprints))
 	buf = buf + fmt.Sprintf("%25v: %v\n", "Enable cheats", support.BoolToString(cfg.Local.EnableCheats))
 	buf = buf + fmt.Sprintf("%25v: %v\n", "Hide autosaves", support.BoolToString(cfg.Local.HideAutosaves))
