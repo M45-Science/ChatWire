@@ -97,7 +97,7 @@ func SetFactorioBooted(isbooted bool) {
 	if isbooted {
 		glob.FactorioBootedAt = time.Now()
 	} else {
-		glob.FactorioBootedAt = time.Time
+		glob.FactorioBootedAt = time.Time{}
 	}
 	glob.FactorioBootedLock.Unlock()
 
