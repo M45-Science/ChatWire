@@ -190,7 +190,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 			glob.PlayerList[pname].Level = level
 		} else if level == -1 && glob.PlayerList[pname].Level != -1 {
 			glob.PlayerList[pname].Level = level
-			WriteFact(fmt.Sprintf("/ban %s", pname))
+			WriteFact(fmt.Sprintf("/ban %s banned on other M45 server", pname))
 		} else if level > glob.PlayerList[pname].Level {
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
