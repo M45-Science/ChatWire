@@ -4,6 +4,7 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/constants"
 	"ChatWire/glob"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -93,6 +94,11 @@ func GetRelaunchThrottle() int {
 func SetFactorioBooted(isbooted bool) {
 	glob.FactorioBootedLock.Lock()
 	glob.FactorioBooted = isbooted
+	if isbooted {
+		glob.FactorioBootedAt = time.Now()
+	} else {
+		glob.FactorioBootedAt = time.Time
+	}
 	glob.FactorioBootedLock.Unlock()
 
 }

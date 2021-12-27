@@ -105,6 +105,7 @@ var NumLoginsLock sync.RWMutex
 var UpdateChannelLock sync.Mutex
 
 var FactorioBooted = false
+var FactorioBootedAt time.Time
 var FactorioBootedLock sync.RWMutex
 
 var PlayerListUpdated = false
