@@ -16,20 +16,31 @@ import (
 
 //Screw fsnotify
 func WatchDatabaseFile() {
-
-	filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
-
-	initialStat, _ := os.Stat(filePath)
-
 	for glob.ServerRunning {
-		stat, _ := os.Stat(filePath)
+		time.Sleep(time.Second * 5)
 
-		if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-			SetPlayerListUpdated()
-			initialStat, _ = os.Stat(filePath)
+		filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+		initialStat, erra := os.Stat(filePath)
+
+		if erra != nil {
+			botlog.DoLog("WatchDatabaseFile: stat")
+			continue
 		}
 
-		time.Sleep(1 * time.Second)
+		for glob.ServerRunning && initialStat != nil {
+			stat, errb := os.Stat(filePath)
+			if errb != nil {
+				botlog.DoLog("WatchDatabaseFile: restat")
+				break
+			}
+
+			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
+				SetPlayerListUpdated()
+				break
+			}
+
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
 
