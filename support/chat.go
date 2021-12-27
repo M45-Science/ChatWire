@@ -681,20 +681,20 @@ func Chat() {
 									fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
 								}
 								if cfg.Local.SoftModOptions.CleanMapOnBoot {
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
+									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 									fact.WriteFact("/cleanmap")
 								}
 								if cfg.Local.DefaultUPSRate > 0 && cfg.Local.DefaultUPSRate < 1000 {
 									fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
+									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
 								}
 								if cfg.Local.DisableBlueprints {
 									fact.WriteFact("/blueprints off")
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
+									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
 								}
 								if cfg.Local.EnableCheats {
 									fact.WriteFact("/enablecheats on")
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
+									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
 								}
 								continue
 							}
