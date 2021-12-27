@@ -3,6 +3,7 @@ package botlog
 import (
 	"ChatWire/glob"
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -14,7 +15,13 @@ func DoLog(text string) {
 
 	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())
 	buf := fmt.Sprintf("%v: %15v:%5v: %v\n", date, filepath.Base(filename), line, text)
-	glob.BotLogDesc.WriteString(buf)
+	_, err := glob.BotLogDesc.WriteString(buf)
+	if err != nil {
+		fmt.Println("DoLog: WriteString failure")
+		glob.BotLogDesc.Close()
+		glob.BotLogDesc = nil
+		return
+	}
 }
 
 func DoLogGame(text string) {
@@ -22,5 +29,64 @@ func DoLogGame(text string) {
 
 	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())
 	buf := fmt.Sprintf("%v: %v\n", date, text)
-	glob.GameLogDesc.WriteString(buf)
+	_, err := glob.GameLogDesc.WriteString(buf)
+	if err != nil {
+		fmt.Println("DoLogGame: WriteString failure")
+		glob.GameLogDesc.Close()
+		glob.GameLogDesc = nil
+		return
+	}
+}
+
+func StartGameLog() {
+	t := time.Now()
+
+	//Create our log file names
+	glob.GameLogName = fmt.Sprintf("log/game-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+
+	//Make log directory
+	errr := os.MkdirAll("log", os.ModePerm)
+	if errr != nil {
+		fmt.Printf(errr.Error())
+		return
+	}
+
+	//Open log files
+	gdesc, erra := os.OpenFile(glob.GameLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	//Handle file errors
+	if erra != nil {
+		fmt.Printf(fmt.Sprintf("An error occurred when attempting to create game log. Details: %s", erra))
+		return
+	}
+
+	//Save descriptors, open/closed elsewhere
+	glob.GameLogDesc = gdesc
+
+}
+
+func StartBotLog() {
+	t := time.Now()
+
+	//Create our log file names
+	glob.BotLogName = fmt.Sprintf("log/bot-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+
+	//Make log directory
+	errr := os.MkdirAll("log", os.ModePerm)
+	if errr != nil {
+		fmt.Printf(errr.Error())
+		return
+	}
+
+	//Open log files
+	bdesc, errb := os.OpenFile(glob.BotLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	//Handle file errors
+	if errb != nil {
+		fmt.Printf(fmt.Sprintf("An error occurred when attempting to create bot log. Details: %s", errb))
+		return
+	}
+
+	//Save descriptors, open/closed elsewhere
+	glob.BotLogDesc = bdesc
 }
