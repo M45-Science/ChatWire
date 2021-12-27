@@ -71,6 +71,8 @@ func GenerateFactorioConfig() bool {
 	//patreon logic
 	//}
 
+	//Add some settings to tags, such as cheats, no blueprint, etc.
+
 	conf := FactConf{
 		Name:        servName,
 		Description: cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription,
