@@ -78,6 +78,12 @@ func MainLoops() {
 						botlog.DoLog("Soft-mod inserted into save file.")
 					}
 
+					if !fact.GenerateFactorioConfig() {
+						fact.SetAutoStart(false)
+						fact.DoExit()
+						return
+					}
+
 					time.Sleep(2 * time.Second)
 
 					//Relaunch Throttle

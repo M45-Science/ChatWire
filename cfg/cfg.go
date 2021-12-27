@@ -65,6 +65,8 @@ type GFactDataStruct struct {
 	Username  string
 	Token     string
 	Autosaves int
+
+	ServerDescription string
 }
 
 type LFactDataStruct struct {

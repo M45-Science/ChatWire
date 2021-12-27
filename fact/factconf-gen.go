@@ -1,37 +1,57 @@
 package fact
 
 import (
+	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 )
 
-type factConf struct {
-	name        string
-	description string
-	tags        []string
-
-	username                  string
-	token                     string
-	require_user_verivation   bool
-	max_heartbeats_per_second int
-	allow_commands            string
-
-	autosave_interval       int
-	autosave_slots          int
-	afk_autokick_interval   int
-	auto_pause              bool
-	only_admins_can_pause   bool
-	autosave_only_on_server bool
+type VisData struct {
+	Public bool `json:"public"`
+	Lan    bool `json:"lan"`
+	Steam  bool `json:"steam"`
 }
 
-func GenerateFactorioConfig() {
+type FactConf struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Tags        []string `json:"tags"`
+	Max_players int      `json:"max_players"`
+	Visibility  VisData  `json:"visibility"`
+
+	Username                  string `json:"username"`
+	Token                     string `json:"token"`
+	Require_user_verification bool   `json:"require_user_verification"`
+	Max_heartbeats_per_second int    `json:"max_heartbeats_per_second"`
+	Allow_commands            string `json:"allow_commands"`
+
+	Autosave_interval       int  `json:"autosave_interval"`
+	Autosave_slots          int  `json:"autosave_slots"`
+	Afk_autokick_interval   int  `json:"afk_autokick_interval"`
+	Auto_pause              bool `json:"auto_pause"`
+	Only_admins_can_pause   bool `json:"only_admins_can_pause"`
+	Autosave_only_on_server bool `json:"autosave_only_on_server"`
+}
+
+func GenerateFactorioConfig() bool {
+
+	servName := " [" + cfg.Global.GroupName + "] " + cfg.Local.ServerCallsign + "-" + cfg.Local.Name
+	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/server-settings.json"
 
 	heartbeats := 60
 	autosaves := 240
 	autosave_interval := 15
 	autokick := 30
 	resetSchedule := "Manually Reset"
+	mapPreset := cfg.Local.MapPreset
 
+	if cfg.Local.MapGenPreset != "" {
+		mapPreset = cfg.Local.MapGenPreset
+	}
 	if cfg.Local.DefaultUPSRate > 0 {
 		heartbeats = cfg.Local.DefaultUPSRate
 	}
@@ -49,30 +69,61 @@ func GenerateFactorioConfig() {
 	//patreon logic
 	//}
 
-	conf := factConf{
-		name:        "Factorio",
-		description: "",
-		tags: []string{
+	conf := FactConf{
+		Name:        servName,
+		Description: cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription,
+		Tags: []string{
 			cfg.Global.GroupName,
-			cfg.Local.MapGenPreset,
 			cfg.Local.Name,
+			mapPreset,
 			resetSchedule,
 			fmt.Sprintf("%v UPS", heartbeats),
 		},
+		Max_players: 0,
+		Visibility: VisData{
+			Public: true,
+			Lan:    false,
+			Steam:  true,
+		},
 
-		username:                  cfg.Global.FactorioData.Username,
-		token:                     cfg.Global.FactorioData.Token,
-		require_user_verivation:   true,
-		max_heartbeats_per_second: heartbeats,
-		allow_commands:            "admins-only",
+		Username:                  cfg.Global.FactorioData.Username,
+		Token:                     cfg.Global.FactorioData.Token,
+		Require_user_verification: true,
+		Max_heartbeats_per_second: heartbeats,
+		Allow_commands:            "admins-only",
 
-		autosave_interval:       autosave_interval,
-		autosave_slots:          autosaves,
-		afk_autokick_interval:   autokick,
-		auto_pause:              cfg.Local.FactorioData.Autopause,
-		only_admins_can_pause:   true,
-		autosave_only_on_server: true,
+		Autosave_interval:       autosave_interval,
+		Autosave_slots:          autosaves,
+		Afk_autokick_interval:   autokick,
+		Auto_pause:              cfg.Local.FactorioData.Autopause,
+		Only_admins_can_pause:   true,
+		Autosave_only_on_server: true,
 	}
 
-	//Write file
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	enc.SetIndent("", "\t")
+	enc.SetEscapeHTML(false)
+
+	if err := enc.Encode(conf); err != nil {
+		botlog.DoLog("GenerateFactorioConfig: enc.Encode failure")
+		return false
+	}
+
+	_, err := os.Create(path)
+
+	if err != nil {
+		botlog.DoLog("GenerateFactorioConfig: os.Create failure")
+		return false
+	}
+
+	err = ioutil.WriteFile(path, outbuf.Bytes(), 0644)
+
+	if err != nil {
+		botlog.DoLog("GenerateFactorioConfig: WriteFile failure")
+		return false
+	}
+
+	botlog.DoLog("Server settings json written.")
+	return true
 }
