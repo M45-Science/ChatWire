@@ -146,7 +146,7 @@ func MainLoops() {
 					//Write or delete whitelist
 					count := fact.WriteWhitelist()
 					if count > 0 && cfg.Local.SoftModOptions.DoWhitelist {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, (fmt.Sprintf("Whitelist of %v players written.", count)))
+						botlog.DoLog(fmt.Sprintf("Whitelist of %v players written.", count))
 					}
 
 					var cmd *exec.Cmd
@@ -571,7 +571,7 @@ func MainLoops() {
 
 				if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
 					if fact.IsFactRunning() {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "No players currently online, performing scheduled reboot.")
+						botlog.DoLog("No players currently online, performing scheduled reboot.")
 						fact.QuitFactorio()
 						for x := 0; x < 60 && fact.IsFactRunning(); x++ {
 							time.Sleep(time.Second)
@@ -648,7 +648,7 @@ func MainLoops() {
 					if errb = os.Remove(".queue"); errb == nil {
 						if !fact.IsQueued() {
 							fact.SetQueued(true)
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Reboot queued!")
+							botlog.DoLog("Reboot queued!")
 						}
 					} else if errb != nil && !failureReported {
 						failureReported = true
