@@ -161,6 +161,9 @@ type SoftModOptionsStruct struct {
 }
 
 func WriteGCfg() bool {
+	tempPath := constants.CWGlobalConfig + "." + Local.ServerCallsign + ".tmp"
+	finalPath := constants.CWGlobalConfig
+
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
@@ -172,17 +175,24 @@ func WriteGCfg() bool {
 		return false
 	}
 
-	_, err := os.Create(constants.CWGlobalConfig)
+	_, err := os.Create(tempPath)
 
 	if err != nil {
 		botlog.DoLog("WriteGCfg: os.Create failure")
 		return false
 	}
 
-	err = ioutil.WriteFile(constants.CWGlobalConfig, outbuf.Bytes(), 0644)
+	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		botlog.DoLog("WriteGCfg: WriteFile failure")
+	}
+
+	err = os.Rename(tempPath, finalPath)
+
+	if err != nil {
+		botlog.DoLog("Couldn't rename Gcfg file.")
+		return false
 	}
 
 	return true
@@ -227,6 +237,9 @@ func CreateGCfg() gconfig {
 }
 
 func WriteLCfg() bool {
+	tempPath := constants.CWLocalConfig + "." + Local.ServerCallsign + ".tmp"
+	finalPath := constants.CWLocalConfig
+
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
@@ -238,17 +251,24 @@ func WriteLCfg() bool {
 		return false
 	}
 
-	_, err := os.Create(constants.CWLocalConfig)
+	_, err := os.Create(tempPath)
 
 	if err != nil {
 		botlog.DoLog("WriteLCfg: os.Create failure")
 		return false
 	}
 
-	err = ioutil.WriteFile(constants.CWLocalConfig, outbuf.Bytes(), 0644)
+	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		botlog.DoLog("WriteLCfg: WriteFile failure")
+	}
+
+	err = os.Rename(tempPath, finalPath)
+
+	if err != nil {
+		botlog.DoLog("Couldn't rename Lcfg file.")
+		return false
 	}
 
 	return true
