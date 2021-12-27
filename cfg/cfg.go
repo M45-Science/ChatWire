@@ -164,6 +164,8 @@ func WriteGCfg() bool {
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
+	Global.Version = "0.0.1"
+
 	if err := enc.Encode(Global); err != nil {
 		botlog.DoLog("WriteGCfg: enc.Encode failure")
 		return false
@@ -227,6 +229,8 @@ func WriteLCfg() bool {
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
+
+	Local.Version = "0.0.1"
 
 	if err := enc.Encode(Local); err != nil {
 		botlog.DoLog("WriteLCfg: enc.Encode failure")
