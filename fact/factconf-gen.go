@@ -49,6 +49,7 @@ func GenerateFactorioConfig() bool {
 	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 	servDesc := cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription
 
+	//Defaults
 	heartbeats := 60
 	autosaves := 240
 	autosave_interval := 15
@@ -76,7 +77,7 @@ func GenerateFactorioConfig() bool {
 		tags = append(tags, "MEMBERS-ONLY")
 	}
 	if cfg.Local.SoftModOptions.FriendlyFire {
-		tags = append(tags, "NO FRIENDLY FIRE")
+		tags = append(tags, "FRIENDLY FIRE")
 	}
 	if cfg.Local.MapGenPreset != "" {
 		tags = append(tags, "Map gen: "+cfg.Local.MapGenPreset)
@@ -84,11 +85,10 @@ func GenerateFactorioConfig() bool {
 		tags = append(tags, "Map preset: "+cfg.Local.MapPreset)
 	}
 	if cfg.Local.ResetScheduleText != "" {
-		tags = append(tags, "Map resets: "+cfg.Local.ResetScheduleText)
+		tags = append(tags, "MAP RESETS: "+cfg.Local.ResetScheduleText)
 	}
 	if cfg.Local.EnableCheats {
-		tags = append(tags, "CHEATS ON")
-		tags = append(tags, "Sandbox")
+		tags = append(tags, "SANDBOX")
 	}
 	if cfg.Local.DisableBlueprints {
 		tags = append(tags, "NO BLUEPRINTS")
@@ -96,14 +96,11 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.SlowConnect.SlowConnect {
 		tags = append(tags, "slow-connect on")
 	}
-	if cfg.Local.FactorioData.Autopause {
-		tags = append(tags, "autopause on")
-	}
-	if cfg.Local.FactorioData.Autosave_interval > 0 {
-		tags = append(tags, "autosaves: "+fmt.Sprintf("%dm", cfg.Local.FactorioData.Autosave_interval))
+	if !cfg.Local.FactorioData.Autopause {
+		tags = append(tags, "AUTO-PAUSE OFF")
 	}
 	if cfg.Global.AuthServerBans {
-		tags = append(tags, "Auth-server bans enabled")
+		tags = append(tags, "AUTH-SERVER BANS ON")
 	}
 	if cfg.Global.FactorioData.Username != "" {
 		tags = append(tags, "Owner: "+cfg.Global.FactorioData.Username)
@@ -111,7 +108,7 @@ func GenerateFactorioConfig() bool {
 	tags = append(tags, fmt.Sprintf("%v:%v", cfg.Global.Domain, cfg.Local.Port))
 
 	conf := FactConf{
-		Comment:     "auto-generated! DO NOT MODIFY! Changes will be overwritten!",
+		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
 		Description: servDesc,
 		Tags:        tags,
