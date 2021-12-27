@@ -36,6 +36,7 @@ var DS *discordgo.Session
 var FactorioVersion = constants.Unknown
 var NewVersion = constants.Unknown
 var NewPatchName = constants.Unknown
+var LastSaveName = constants.Unknown
 
 var OldChanName = constants.Unknown
 var NewChanName = constants.Unknown

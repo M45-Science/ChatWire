@@ -45,7 +45,9 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		}
 	}
 	glob.PlayerListLock.RUnlock()
-
+	if glob.LastSaveName != constants.Unknown {
+		buf = buf + fmt.Sprintf("%25v: %v\n", "Save name", glob.LastSaveName)
+	}
 	buf = buf + fmt.Sprintf("%25v: %v\n", "Map time", glob.GametimeString)
 	buf = buf + fmt.Sprintf("%25v: %v (most ever %v)\n", "Players online", fact.GetNumPlayers(), glob.RecordPlayers)
 	//buf = buf + fmt.Sprintf("%25v: %v\n", "Members", nummember)

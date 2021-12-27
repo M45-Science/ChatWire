@@ -565,6 +565,7 @@ func Chat() {
 									glob.GameMapLock.Lock()
 									glob.GameMapName = filename
 									glob.GameMapPath = fullpath
+									glob.LastSaveName = filename
 									glob.GameMapLock.Unlock()
 
 									fsize := 0.0
@@ -718,7 +719,10 @@ func Chat() {
 									savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
 									savmatch := savreg.FindStringSubmatch(NoTC)
 									if len(savmatch) > 1 {
-										fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+										if !cfg.Local.HideAutosaves {
+											fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+										}
+										glob.LastSaveName = savmatch[1]
 									}
 								}
 								continue
@@ -742,6 +746,7 @@ func Chat() {
 									glob.GameMapLock.Unlock()
 
 									botlog.DoLog(fmt.Sprintf("Map saved as: " + filename))
+									glob.LastSaveName = filename
 
 								}
 								continue
