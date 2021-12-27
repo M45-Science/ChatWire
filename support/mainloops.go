@@ -744,6 +744,30 @@ func MainLoops() {
 			}
 		}()
 
+		/* Check if log file deleted, if so fix */
+		go func() {
+
+			for glob.ServerRunning {
+				time.Sleep(time.Minute)
+
+				var err error
+				if _, err = os.Stat(glob.BotLogName); err != nil {
+
+					glob.BotLogDesc.Close()
+					glob.BotLogDesc = nil
+					botlog.StartBotLog()
+					botlog.DoLog("BotLog file was deleted, recreated.")
+				}
+
+				if _, err = os.Stat(glob.GameLogName); err != nil {
+					glob.GameLogDesc.Close()
+					glob.GameLogDesc = nil
+					botlog.StartGameLog()
+					botlog.DoLogGame("GameLog file was deleted, recreated.")
+				}
+			}
+		}()
+
 		//****************************
 		// Check for factorio updates
 		//****************************
