@@ -180,7 +180,7 @@ func AutoPromote(pname string) string {
 		if plevel == -1 {
 			newusername = " *(Banned)*"
 
-			WriteFact(fmt.Sprintf("/ban %s auto-ban", pname))
+			WriteFact(fmt.Sprintf("/ban %s previously banned", pname))
 		} else if plevel == 1 {
 			newusername = " *(Member)*"
 
