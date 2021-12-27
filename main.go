@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -24,44 +23,14 @@ import (
 )
 
 func main() {
-
-	log.SetFlags(log.Lmicroseconds | log.Lshortfile)
-	t := time.Now()
+	botlog.StartBotLog()
+	botlog.StartGameLog()
 
 	//Saves a ton of space!
 	cmdb := exec.Command(cfg.Global.PathData.ShellPath, cfg.Global.PathData.LogCompScriptPath)
 	_, err := cmdb.CombinedOutput()
 	if err != nil {
 		botlog.DoLog(err.Error())
-	}
-
-	//Create our log file names
-	glob.GameLogName = fmt.Sprintf("log/game-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
-	glob.BotLogName = fmt.Sprintf("log/bot-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
-
-	//Make log directory
-	errr := os.MkdirAll("log", os.ModePerm)
-	if errr != nil {
-		botlog.DoLog(errr.Error())
-	}
-
-	//Open log files
-	gdesc, erra := os.OpenFile(glob.GameLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	bdesc, errb := os.OpenFile(glob.BotLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-
-	//Save descriptors, open/closed elsewhere
-	glob.GameLogDesc = gdesc
-	glob.BotLogDesc = bdesc
-
-	//Handle file errors
-	if erra != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create game log. Details: %s", erra))
-		fact.DoExit()
-	}
-
-	if errb != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create bot log. Details: %s", errb))
-		fact.DoExit()
 	}
 
 	botlog.DoLog("Version: " + constants.Version)
