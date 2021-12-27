@@ -12,6 +12,8 @@ Binary needs to be able to create files and directories in its own directory, an
 
 Discord token, guildid and channelid, and also factorio username and token are required.
 
+
+
 Default path layout:
 
 A 'base' folder the chatwire folder resides in.
