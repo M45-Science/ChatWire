@@ -57,13 +57,11 @@ func main() {
 	if cfg.ReadGCfg() {
 		cfg.WriteGCfg()
 	} else {
-		botlog.DoLog("ReadGCfg failed")
 		return
 	}
 	if cfg.ReadLCfg() {
 		cfg.WriteLCfg()
 	} else {
-		botlog.DoLog("ReadLCfg failed")
 		return
 	}
 
@@ -108,7 +106,7 @@ func startbot() {
 
 	if erra != nil {
 		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
-		time.Sleep(30 * time.Second)
+		time.Sleep(time.Minute * 5)
 		startbot()
 		return
 	}
@@ -119,7 +117,7 @@ func startbot() {
 
 	if errb != nil {
 		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
-		time.Sleep(30 * time.Second)
+		time.Sleep(time.Minute)
 		startbot()
 		return
 	}
