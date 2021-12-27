@@ -195,7 +195,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
 		}
-		if creation > glob.PlayerList[pname].Creation {
+		if creation > 0 {
 			glob.PlayerList[pname].Creation = creation
 		}
 		if seen > glob.PlayerList[pname].LastSeen {
