@@ -76,14 +76,16 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				//Loop all files
 				var tempf []fs.FileInfo
 				for _, f := range files {
-					tempf = append(tempf, f)
+					if strings.HasPrefix(f.Name(), "_autosave") && strings.HasSuffix(f.Name(), ".zip") {
+						tempf = append(tempf, f)
+					}
 				}
 
 				sort.Slice(tempf, func(i, j int) bool {
 					return tempf[i].ModTime().Before(tempf[j].ModTime())
 				})
 
-				maxList := 20
+				maxList := 40
 				for _, f := range tempf {
 					maxList--
 					if maxList <= 0 {
