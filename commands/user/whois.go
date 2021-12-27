@@ -68,6 +68,8 @@ func checkadmin(m *discordgo.MessageCreate) bool {
 
 func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
+	layoutUS := "01-02-06 3:04 PM"
+
 	maxresults := constants.WhoisResults
 	if checkadmin(m) {
 		maxresults = constants.AdminWhoisResults
@@ -92,7 +94,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 		sort.Sort(ByLastSeen(slist))
 
-		buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
 		tnow := time.Now()
 		tnow = tnow.Round(time.Second)
@@ -105,7 +107,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					lseen = constants.Unknown
 				} else {
 					ltime := time.Unix(p.LastSeen, 0)
-					lseen = tnow.Sub(ltime.Round(time.Second)).String()
+					lseen = ltime.Format(layoutUS)
 				}
 
 				joined := ""
@@ -113,9 +115,9 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					joined = constants.Unknown
 				} else {
 					jtime := time.Unix(p.Creation, 0)
-					joined = tnow.Sub(jtime.Round(time.Second)).String()
+					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 				count++
 			}
 		}
@@ -125,7 +127,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 		sort.Sort(ByNew(slist))
 
-		buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
 		tnow := time.Now()
 		tnow = tnow.Round(time.Second)
@@ -138,7 +140,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					lseen = constants.Unknown
 				} else {
 					ltime := time.Unix(p.LastSeen, 0)
-					lseen = tnow.Sub(ltime.Round(time.Second)).String()
+					lseen = ltime.Format(layoutUS)
 				}
 
 				joined := ""
@@ -146,9 +148,9 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					joined = constants.Unknown
 				} else {
 					jtime := time.Unix(p.Creation, 0)
-					joined = tnow.Sub(jtime.Round(time.Second)).String()
+					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 				count++
 			}
 		}
@@ -158,7 +160,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 		sort.Sort(ByNew(slist))
 
-		buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
 		tnow := time.Now()
 		tnow = tnow.Round(time.Second)
@@ -172,7 +174,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						lseen = constants.Unknown
 					} else {
 						ltime := time.Unix(p.LastSeen, 0)
-						lseen = tnow.Sub(ltime.Round(time.Second)).String()
+						lseen = ltime.Format(layoutUS)
 					}
 
 					joined := ""
@@ -180,20 +182,18 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						joined = constants.Unknown
 					} else {
 						jtime := time.Unix(p.Creation, 0)
-						joined = tnow.Sub(jtime.Round(time.Second)).String()
+						joined = jtime.Format(layoutUS)
 					}
-					buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 					count++
 				}
 			}
 		}
 
 	} else {
-		tnow := time.Now()
-		tnow = tnow.Round(time.Second)
 
 		count := 0
-		buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 		for _, p := range slist {
 			if count > maxresults {
 				break
@@ -205,7 +205,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					lseen = constants.Unknown
 				} else {
 					ltime := time.Unix(p.LastSeen, 0)
-					lseen = tnow.Sub(ltime.Round(time.Second)).String()
+					lseen = ltime.Format(layoutUS)
 				}
 
 				joined := ""
@@ -213,9 +213,9 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					joined = constants.Unknown
 				} else {
 					jtime := time.Unix(p.Creation, 0)
-					joined = tnow.Sub(jtime.Round(time.Second)).String()
+					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %12s : %12s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
 			}
 		}
 		if buf == "" {

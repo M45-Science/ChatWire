@@ -208,17 +208,15 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	}
 
 	//Not in list, add them
-	t := time.Now()
 	newplayer := glob.PlayerData{
 
 		Name:     pname,
 		Level:    level,
 		ID:       id,
-		LastSeen: t.Unix(),
-		Creation: t.Unix(),
+		LastSeen: seen,
+		Creation: creation,
 	}
 	glob.PlayerList[pname] = &newplayer
-	//SetPlayerListDirty()
 	WhitelistPlayer(pname, level)
 }
 
