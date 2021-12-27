@@ -43,6 +43,7 @@ type config struct {
 
 type gconfig struct {
 	Version string
+	Domain  string
 
 	RconPortOffset int
 	RconPass       string

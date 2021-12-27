@@ -44,17 +44,13 @@ func GenerateFactorioConfig() bool {
 
 	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
+	servDesc := cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription
 
 	heartbeats := 60
 	autosaves := 240
 	autosave_interval := 15
 	autokick := 30
-	resetSchedule := "Manually Reset"
-	mapPreset := cfg.Local.MapPreset
 
-	if cfg.Local.MapGenPreset != "" {
-		mapPreset = cfg.Local.MapGenPreset
-	}
 	if cfg.Local.DefaultUPSRate > 0 {
 		heartbeats = cfg.Local.DefaultUPSRate
 	}
@@ -64,9 +60,6 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.FactorioData.Autosave_interval > 0 {
 		autosave_interval = cfg.Local.FactorioData.Autosave_interval
 	}
-	if cfg.Local.ResetScheduleText != "" {
-		resetSchedule = cfg.Local.ResetScheduleText
-	}
 
 	//for pos, patreon := range glob.PlayerList {
 	//patreon logic
@@ -74,16 +67,53 @@ func GenerateFactorioConfig() bool {
 
 	//Add some settings to tags, such as cheats, no blueprint, etc.
 
+	var tags []string
+
+	if cfg.Local.SoftModOptions.DoWhitelist {
+		tags = append(tags, "MEMBERS-ONLY")
+	}
+	if cfg.Local.SoftModOptions.FriendlyFire {
+		tags = append(tags, "NO FRIENDLY FIRE")
+	}
+	if cfg.Local.MapGenPreset != "" {
+		tags = append(tags, "Map gen: "+cfg.Local.MapGenPreset)
+	} else if cfg.Local.MapPreset != "" {
+		tags = append(tags, "Map preset: "+cfg.Local.MapPreset)
+	}
+	if cfg.Local.ResetScheduleText != "" {
+		tags = append(tags, "Map resets: "+cfg.Local.ResetScheduleText)
+	}
+	if cfg.Local.DefaultUPSRate > 0 {
+		tags = append(tags, "UPS: "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
+	}
+	if cfg.Local.EnableCheats {
+		tags = append(tags, "CHEATS ON")
+		tags = append(tags, "Sandbox")
+	}
+	if cfg.Local.DisableBlueprints {
+		tags = append(tags, "NO BLUEPRINTS")
+	}
+	if cfg.Local.SlowConnect.SlowConnect {
+		tags = append(tags, "slow-connect on")
+	}
+	if cfg.Local.FactorioData.Autopause {
+		tags = append(tags, "autopause on")
+	}
+	if cfg.Local.FactorioData.Autosave_interval > 0 {
+		tags = append(tags, "autosaves: "+fmt.Sprintf("%dm", cfg.Local.FactorioData.Autosave_interval))
+	}
+	if cfg.Global.AuthServerBans {
+		tags = append(tags, "Auth-server bans enabled")
+	}
+	if cfg.Global.FactorioData.Username != "" {
+		tags = append(tags, "Owner: "+cfg.Global.FactorioData.Username)
+	}
+	tags = append(tags, fmt.Sprintf("%v:%v", cfg.Global.Domain, cfg.Local.Port))
+
 	conf := FactConf{
 		Name:        servName,
-		Description: cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription,
-		Tags: []string{
-			cfg.Global.GroupName,
-			cfg.Local.Name,
-			mapPreset,
-			resetSchedule,
-			fmt.Sprintf("%v UPS", heartbeats),
-		},
+		Description: servDesc,
+		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
 			Public: true,
