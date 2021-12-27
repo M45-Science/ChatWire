@@ -43,8 +43,10 @@ type FactConf struct {
 
 func GenerateFactorioConfig() bool {
 
+	tempPath := constants.ServSettingsName + ".tmp"
+	finalPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
+
 	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
 	servDesc := cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription
 
 	heartbeats := 60
@@ -147,17 +149,23 @@ func GenerateFactorioConfig() bool {
 		return false
 	}
 
-	_, err := os.Create(path)
+	_, err := os.Create(tempPath)
 
 	if err != nil {
 		botlog.DoLog("GenerateFactorioConfig: os.Create failure")
 		return false
 	}
 
-	err = ioutil.WriteFile(path, outbuf.Bytes(), 0644)
+	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		botlog.DoLog("GenerateFactorioConfig: WriteFile failure")
+		return false
+	}
+
+	err = os.Rename(tempPath, finalPath)
+	if err != nil {
+		botlog.DoLog("GenerateFactorioConfig: Rename failure")
 		return false
 	}
 
