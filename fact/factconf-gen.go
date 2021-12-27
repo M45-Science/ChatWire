@@ -20,6 +20,7 @@ type VisData struct {
 }
 
 type FactConf struct {
+	Comment     string   `json:"_comment"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Tags        []string `json:"tags"`
@@ -111,6 +112,7 @@ func GenerateFactorioConfig() bool {
 	tags = append(tags, fmt.Sprintf("%v:%v", cfg.Global.Domain, cfg.Local.Port))
 
 	conf := FactConf{
+		Comment:     "auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
 		Description: servDesc,
 		Tags:        tags,
