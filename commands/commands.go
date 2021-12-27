@@ -47,30 +47,24 @@ func CheckAdmin(m *discordgo.MessageCreate) bool {
 func RegisterCommands() {
 	// Admin Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Stop", Command: admin.StopServer, Admin: true, Help: "Stops Factorio"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Restart", Command: admin.Restart, Admin: true, Help: "Restarts Factorio"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Start", Command: admin.Restart, Admin: true, Help: "Restarts Factorio"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "RebootCW", Command: admin.Reload, Admin: true, Help: "Reboots bot & Factorio"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Queue", Command: admin.Queue, Admin: true, Help: "Reloads bot, and Factorio when server is empty."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "ForceRebootCW", Command: admin.Reboot, Admin: true, Help: "Force close bot, don't use this."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, Admin: true, Help: "Tell Factorio to save map"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Archive", Command: admin.ArchiveMap, Admin: true, Help: "Archive current map"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Rand", Command: admin.RandomMap, Admin: true, Help: "Make a new random map preview"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Gen", Command: admin.Generate, Admin: true, Help: "Makes a new map from preview"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "RandomMap", Command: admin.RandomMap, Admin: true, Help: "Make a new random map preview"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "MakeMap", Command: admin.Generate, Admin: true, Help: "Makes a new map from preview"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "NewMap", Command: admin.NewMap, Admin: true, Help: "Quickly stop server, archive, generate map and reboot."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Pset", Command: admin.SetPlayerLevel, Admin: true, Help: "Set: player level"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Regular", Command: admin.SetPlayerRegular, Admin: true, Help: "Set: players to regular"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Member", Command: admin.SetPlayerMember, Admin: true, Help: "Set: players to member"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "UpdateFact", Command: admin.Update, Admin: true, Help: "Update Factorio or type CANCEL"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rcfg", Command: admin.ReloadConfig, Admin: true, Help: "Reload config file"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Set", Command: admin.Set, Admin: true, Help: "Change server settings."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Locks", Command: admin.ShowLocks, Admin: true, Help: "(debug)Check Mutex Locks"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Debug", Command: admin.Debug, Admin: true, Help: "Shows debug info"})
 
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, Admin: false, Help: "Show player info"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: user.PlayersOnline, Admin: false, Help: "Show players online"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Info", Command: user.Info, Admin: false, Help: "Show game & server info"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Mods", Command: user.ModsList, Admin: false, Help: "Show installed game-mods"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Info", Command: user.ShowSettings, Admin: false, Help: "Show game & server info"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Register", Command: user.AccessServer, Admin: false, Help: "Link your Discord and Factorio accounts."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, Admin: false, Help: "You are here"})
 }
