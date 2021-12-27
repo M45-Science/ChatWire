@@ -489,7 +489,7 @@ func MainLoops() {
 
 			for glob.ServerRunning {
 
-				time.Sleep(1 * time.Millisecond)
+				time.Sleep(1 * time.Second)
 
 				//Detect update
 				glob.PlayerListUpdatedLock.Lock()
