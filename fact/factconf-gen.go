@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"ChatWire/constants"
 )
@@ -41,7 +42,7 @@ type FactConf struct {
 
 func GenerateFactorioConfig() bool {
 
-	servName := " [" + cfg.Global.GroupName + "] " + cfg.Local.ServerCallsign + "-" + cfg.Local.Name
+	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
 
 	heartbeats := 60
