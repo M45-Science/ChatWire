@@ -18,6 +18,7 @@ import (
 	"ChatWire/sclean"
 
 	embed "github.com/Clinet/discordgo-embed"
+	"github.com/bwmarrin/discordgo"
 )
 
 // IsPatreon checks if user has patreon role
@@ -572,7 +573,7 @@ func Chat() {
 									}
 
 									buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
+									botlog.DoLog(buf)
 								} else { //Just in case
 									botlog.DoLog("Loading map...")
 								}
@@ -596,13 +597,16 @@ func Chat() {
 								!strings.Contains(NoTC, "settings") && !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
 								botlog.DoLogGame(line)
 
+								var cerr error
+								var err error
+								var modmess *discordgo.Message
+
 								if notclistlen > 4 && glob.DS != nil {
 
 									glob.ModLoadLock.Lock()
 
-									//disabled
 									if glob.ModLoadMessage == nil {
-										modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.ChatID, "Loading mods...")
+										//modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.ChatID, "Loading mods...")
 										if cerr != nil {
 											botlog.DoLog(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
 											glob.ModLoadMessage = nil
@@ -614,7 +618,7 @@ func Chat() {
 											if glob.ModLoadString == constants.Unknown {
 												glob.ModLoadString = strings.Join(notclist[2:4], "-")
 											}
-											_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
+											//_, err = glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 
 											if err != nil {
 												botlog.DoLog(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
@@ -623,7 +627,7 @@ func Chat() {
 									} else {
 
 										glob.ModLoadString = glob.ModLoadString + ", " + strings.Join(notclist[2:4], "-")
-										_, err := glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
+										//_, err = glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
 										if err != nil {
 											botlog.DoLog(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
 										}
@@ -640,7 +644,7 @@ func Chat() {
 							if strings.HasPrefix(NoTC, "Goodbye") {
 								botlog.DoLogGame(line)
 
-								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
+								botlog.DoLog("Factorio is now offline.")
 								fact.SetFactorioBooted(false)
 								fact.SetFactRunning(false, false)
 								continue
@@ -737,7 +741,7 @@ func Chat() {
 									glob.GameMapPath = fullpath
 									glob.GameMapLock.Unlock()
 
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, "Map saved as: "+filename)
+									botlog.DoLog(fmt.Sprintf("Map saved as: " + filename))
 
 								}
 								continue
