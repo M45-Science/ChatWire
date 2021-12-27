@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"ChatWire/constants"
 )
 
 type VisData struct {
@@ -40,7 +42,7 @@ type FactConf struct {
 func GenerateFactorioConfig() bool {
 
 	servName := " [" + cfg.Global.GroupName + "] " + cfg.Local.ServerCallsign + "-" + cfg.Local.Name
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/server-settings.json"
+	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
 
 	heartbeats := 60
 	autosaves := 240

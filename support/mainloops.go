@@ -117,7 +117,7 @@ func MainLoops() {
 					serversettings := cfg.Global.PathData.FactorioServersRoot +
 						cfg.Global.PathData.FactorioHomePrefix +
 						cfg.Local.ServerCallsign + "/" +
-						"server-settings.json"
+						constants.ServSettingsName
 
 					tempargs = append(tempargs, "--start-server-load-latest")
 					tempargs = append(tempargs, "--rcon-port")
