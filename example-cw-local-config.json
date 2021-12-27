@@ -1,12 +1,12 @@
 {
-	"Version": "",
-	"ServerCallsign": "test",
-	"Name": "t",
-	"Port": 5000,
-	"MapPreset": "rail-world",
+	"Version": "0.0.1",
+	"ServerCallsign": "a",
+	"Name": "unnamed",
+	"Port": 34197,
+	"MapPreset": "default",
 	"MapGenPreset": "",
-	"AutoStart": true,
-	"AutoUpdate": true,
+	"AutoStart": false,
+	"AutoUpdate": false,
 	"UpdateFactExp": false,
 	"ResetScheduleText": "",
 	"WriteStatsDisc": false,
@@ -15,14 +15,18 @@
 	"DisableBlueprints": false,
 	"EnableCheats": false,
 	"HideAutosaves": false,
+	"FactorioData": {
+		"Autosave_interval": 0,
+		"Autopause": false
+	},
 	"ChannelData": {
 		"Pos": 0,
-		"ChatID": "123456789"
+		"ChatID": "MY DISCORD CHANNEL ID"
 	},
 	"SlowConnect": {
 		"SlowConnect": false,
-		"DefaultSpeed": 1,
-		"ConnectSpeed": 0.5
+		"DefaultSpeed": 0,
+		"ConnectSpeed": 0
 	},
 	"SoftModOptions": {
 		"DoWhitelist": false,

@@ -1,10 +1,18 @@
 {
-	"Version": "",
-	"RconPortOffset": 1000,
-	"RconPass": "rconpassword",
+	"Version": "0.0.1",
+	"Domain": "private",
+	"RconPortOffset": 10000,
+	"RconPass": "",
+	"GroupName": "abc",
+	"FactorioData": {
+		"Username": "MY FACTORIO USERNAME",
+		"Token": "MY FACTORIO TOKEN",
+		"Autosaves": 0,
+		"ServerDescription": ""
+	},
 	"DiscordData": {
-		"Token": "discord bot token",
-		"GuildID": "916844097883471923",
+		"Token": "MY DISCORD BOT TOKEN",
+		"GuildID": "MY DISCORD GUILD/SERVER ID",
 		"StatTotalChannelID": "",
 		"StatMemberChannelID": "",
 		"StatRegularsChannelID": "",
@@ -25,36 +33,36 @@
 		"New": ""
 	},
 	"PathData": {
-		"FactorioServersRoot": "/home/user/fact-serv/",
+		"FactorioServersRoot": "/home/user/github",
 		"FactorioHomePrefix": "fact-",
 		"ChatWireHomePrefix": "cw-",
 		"FactorioBinary": "bin/x64/factorio",
-		"RecordPlayersFilename": "maxplayer.dat",
+		"RecordPlayersFilename": "most-player.dat",
 		"SaveFilePath": "saves",
-		"ScriptInserterPath": "softmod-insert.sh",
-		"DBFileName": "players.dat",
-		"LogCompScriptPath": "scripts/compress-log.sh",
-		"FactUpdaterPath": "scripts/fact-update.py",
-		"FactUpdateCache": "upcache/",
-		"MapGenPath": "/home/user/fact-serv/map-presets/",
-		"MapPreviewPath": "/home/user/public_html/prev/",
-		"MapArchivePath": "/home/user/public_html/archive/",
+		"ScriptInserterPath": "",
+		"DBFileName": "playerdb.dat",
+		"LogCompScriptPath": "",
+		"FactUpdaterPath": "",
+		"FactUpdateCache": "/home/user/github/update-cache/",
+		"MapGenPath": "map-gen-json",
+		"MapPreviewPath": "/home/user/github/public_html/map-preview/",
+		"MapArchivePath": "/home/user/github/public_html/archive/",
 		"ImageMagickPath": "/usr/bin/convert",
 		"ShellPath": "/bin/bash",
 		"RMPath": "/bin/rm",
-		"FactUpdaterShell": "/usr/bin/python",
+		"FactUpdaterShell": "",
 		"ZipBinaryPath": "/usr/bin/unzip",
-		"MapPreviewURL": "https://mysite.com/~user/prev/",
-		"ArchiveURL": "https://mysite.com/~user/archive/"
+		"MapPreviewURL": "http://private/~username/map-preview/",
+		"ArchiveURL": "http://private/~username/archive/"
 	},
 	"MapPreviewData": {
 		"Args": "",
-		"Res": "1024",
-		"Scale": "1",
-		"JPGQuality": "85",
-		"JPGScale": "1024x1024"
+		"Res": "",
+		"Scale": "",
+		"JPGQuality": "",
+		"JPGScale": ""
 	},
 	"DiscordCommandPrefix": "$",
 	"ResetPingString": "",
-	"AuthServerBans": true
+	"AuthServerBans": false
 }
