@@ -34,6 +34,8 @@ type config struct {
 	EnableCheats      bool
 	HideAutosaves     bool
 
+	FactorioData LFactDataStruct
+
 	ChannelData    ChannelDataStruct
 	SlowConnect    SlowConnectStruct
 	SoftModOptions SoftModOptionsStruct
@@ -45,6 +47,8 @@ type gconfig struct {
 	RconPortOffset int
 	RconPass       string
 
+	GroupName      string
+	FactorioData   GFactDataStruct
 	DiscordData    DiscordDataStruct
 	AdminData      AdminData
 	RoleData       RoleDataStruct
@@ -55,6 +59,17 @@ type gconfig struct {
 	ResetPingString      string
 
 	AuthServerBans bool
+}
+
+type GFactDataStruct struct {
+	Username  string
+	Token     string
+	Autosaves int
+}
+
+type LFactDataStruct struct {
+	Autosave_interval int
+	Autopause         bool
 }
 
 type AdminData struct {
