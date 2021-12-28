@@ -197,7 +197,6 @@ func DoExit() {
 		glob.DS.Close()
 	}
 
-	time.Sleep(5)
 	fmt.Println("Goodbye.")
 	os.Exit(1)
 }
