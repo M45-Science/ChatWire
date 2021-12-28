@@ -19,7 +19,7 @@ import (
 
 func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
-	layoutUS := "01/02 03:04 PM"
+	layoutUS := "01/02 03:04 PM MST"
 	argnum := len(args)
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
 
@@ -72,7 +72,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				rangeBuf := ""
 				fileNames := ""
 				lastNum := -1
-				step := 2
+				step := 1
 				//Loop all files
 				var tempf []fs.FileInfo
 				for _, f := range files {
@@ -82,7 +82,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				}
 
 				sort.Slice(tempf, func(i, j int) bool {
-					return tempf[i].ModTime().Before(tempf[j].ModTime())
+					return tempf[i].ModTime().After(tempf[j].ModTime())
 				})
 
 				maxList := 40
@@ -108,10 +108,10 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						modDate := f.ModTime().Local().Format(layoutUS)
 						//Not first file add commas/newlines
 						if fileNames != "" {
-							if step%3 == 0 {
+							if step%2 == 0 {
 								fileNames = fileNames + "\n"
 							} else {
-								fileNames = fileNames + ", "
+								fileNames = fileNames + ",   "
 							}
 						}
 						//Add to list with mod date
@@ -119,7 +119,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 						//autosave number range list
 						//If number is not sequential, save end of range and print it
-						if fNum != lastNum+1 {
+						if fNum != lastNum-1 {
 							//If we just started, add prefix, otherwise add dash and the end of the range, with comma for next item.
 							if rangeBuf == "" {
 								rangeBuf = "Autosaves: "
@@ -141,11 +141,8 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				}
 				return
 			}
-			fact.CMS(m.ChannelID, "I didn't find a valid number, or `list`.")
-			return
 		}
-	} else {
-		fact.CMS(m.ChannelID, "Please supply a autosave number.")
 	}
 
+	fact.CMS(m.ChannelID, "Not a valid autosave number, try `list`.")
 }
