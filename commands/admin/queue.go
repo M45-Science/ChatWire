@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Restart saves and restarts the server
+//Reboot when server is empty
 func Queue(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if !fact.IsQueued() {

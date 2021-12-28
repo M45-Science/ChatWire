@@ -219,6 +219,24 @@ func ReadGCfg() bool {
 		newcfg := CreateGCfg()
 		Global = newcfg
 
+		//Automatic global defaults
+		if Global.PathData.DBFileName == "" {
+			Global.PathData.DBFileName = "playerdb.dat"
+			_, err := os.Create(Global.PathData.DBFileName)
+			if err != nil {
+				botlog.DoLog("Could not create playerdb.dat")
+				return false
+			}
+		}
+		if Global.PathData.MapGenPath == "" {
+			Global.PathData.MapGenPath = "map-gen-json"
+
+			err := os.MkdirAll(Global.PathData.FactorioServersRoot+"/"+Global.PathData.MapGenPath, os.ModePerm)
+			if err != nil {
+				botlog.DoLog("Could not create map-gen-json directory.")
+				return false
+			}
+		}
 		if Global.Domain == "" {
 			Global.Domain = "private"
 		}
@@ -246,7 +264,6 @@ func ReadGCfg() bool {
 			}
 		}
 
-		//Automatic config
 		if Global.PathData.FactorioHomePrefix == "" {
 			Global.PathData.FactorioHomePrefix = "fact-"
 		}
@@ -258,14 +275,6 @@ func ReadGCfg() bool {
 		}
 		if Global.PathData.SaveFilePath == "" {
 			Global.PathData.SaveFilePath = "saves"
-		}
-		if Global.PathData.DBFileName == "" {
-			Global.PathData.DBFileName = "playerdb.dat"
-			_, err := os.Create(Global.PathData.DBFileName)
-			if err != nil {
-				botlog.DoLog("Could not create playerdb.dat")
-				return false
-			}
 		}
 		if Global.PathData.FactUpdateCache == "" {
 			Global.PathData.FactUpdateCache = Global.PathData.FactorioServersRoot + "/update-cache/"
@@ -291,15 +300,6 @@ func ReadGCfg() bool {
 		if Global.PathData.ShellPath == "" {
 			Global.PathData.ShellPath = "/bin/bash"
 		}
-		if Global.PathData.MapGenPath == "" {
-			Global.PathData.MapGenPath = "map-gen-json"
-
-			err := os.MkdirAll(Global.PathData.FactorioServersRoot+"/"+Global.PathData.MapGenPath, os.ModePerm)
-			if err != nil {
-				botlog.DoLog("Could not create map-gen-json directory.")
-				return false
-			}
-		}
 		if Global.PathData.ZipBinaryPath == "" {
 			Global.PathData.ZipBinaryPath = "/usr/bin/unzip"
 		}
@@ -323,8 +323,7 @@ func ReadGCfg() bool {
 			Global.FactorioData.Token = "MY FACTORIO TOKEN"
 		}
 		return true
-	} else {
-
+	} else { //Otherwise just read in the config
 		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
 
 		if file != nil && err == nil {
@@ -400,6 +399,7 @@ func ReadLCfg() bool {
 		newcfg := CreateLCfg()
 		Local = newcfg
 
+		//Automatical local defaults
 		if Local.Name == "" {
 			Local.Name = "unnamed"
 		}
@@ -415,7 +415,7 @@ func ReadLCfg() bool {
 		}
 		WriteLCfg()
 		return true
-	} else {
+	} else { //Just read the config
 
 		file, err := ioutil.ReadFile(constants.CWLocalConfig)
 
@@ -431,7 +431,7 @@ func ReadLCfg() bool {
 
 			Local = newcfg
 
-			//Automatic config
+			//Automatic local defaults
 			found := false
 			for _, t := range constants.MapTypes {
 				if Local.MapPreset == t {

@@ -41,7 +41,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		from, erra := os.Open(glob.GameMapPath)
 		if erra != nil {
-			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to the map to archive. Details: %s", erra))
+			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
 		}
 		defer from.Close()
 

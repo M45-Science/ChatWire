@@ -10,7 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Archive map
+//Reload config files
 func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	glob.GameMapLock.Lock()

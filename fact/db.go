@@ -44,6 +44,7 @@ func WatchDatabaseFile() {
 	}
 }
 
+//Check if DB has been updated
 func IsPlayerListUpdated() bool {
 	glob.PlayerListUpdatedLock.Lock()
 	reply := glob.PlayerListUpdated
@@ -52,25 +53,28 @@ func IsPlayerListUpdated() bool {
 	return reply
 }
 
+//Set DB as updated
 func SetPlayerListUpdated() {
 	glob.PlayerListUpdatedLock.Lock()
 	glob.PlayerListUpdated = true
 	glob.PlayerListUpdatedLock.Unlock()
 }
 
+//Mark DB dirty
 func SetPlayerListDirty() {
 	glob.PlayerListDirtyLock.Lock()
 	glob.PlayerListDirty = true
 	glob.PlayerListDirtyLock.Unlock()
 }
 
+//Mark DB as SeenDirty (low priority)
 func SetPlayerListSeenDirty() {
 	glob.PlayerListSeenDirtyLock.Lock()
 	glob.PlayerListSeenDirty = true
 	glob.PlayerListSeenDirtyLock.Unlock()
 }
 
-//Always marks db dirty, important
+//Get playerID (Discord), add to db if not found
 func PlayerSetID(pname string, id string, level int) bool {
 
 	if id == "" || pname == "" {
@@ -110,7 +114,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 	return false
 }
 
-//Faster
+//Saw player (low priority)
 func UpdateSeen(pname string) {
 	if pname == "" {
 		return
@@ -133,6 +137,7 @@ func UpdateSeen(pname string) {
 	}
 }
 
+//Set player level, add to db if not found
 func PlayerLevelSet(pname string, level int) bool {
 	if pname == "" {
 		return false
@@ -179,7 +184,9 @@ func PlayerLevelSet(pname string, level int) bool {
 	return false
 }
 
-//Expects locked db, only used for LoadPlayers
+//**********************************************
+//Expects locked db, only used for LoadPlayers()
+//**********************************************
 func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	if pname == "" {
 		return
@@ -220,6 +227,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	WhitelistPlayer(pname, level)
 }
 
+//Get player level, add to db if not found
 func PlayerLevelGet(pname string) int {
 	if pname == "" {
 		return 0
@@ -258,6 +266,7 @@ func PlayerLevelGet(pname string) int {
 	return 0
 }
 
+//Load database
 func LoadPlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
@@ -296,6 +305,7 @@ func LoadPlayers() {
 	}
 }
 
+//Save database
 func WritePlayers() {
 	//Write to file
 	glob.PlayerListWriteLock.Lock()

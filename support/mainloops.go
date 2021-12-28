@@ -34,7 +34,7 @@ func MainLoops() {
 	//Wait to start loops...
 	time.Sleep(time.Second)
 
-	go func() {
+	go func() { //nested for 'reasons'
 
 		//**************
 		//Game watchdog
@@ -43,6 +43,7 @@ func MainLoops() {
 			for glob.ServerRunning {
 				time.Sleep(constants.WatchdogInterval)
 
+				//Check for Factorio updates
 				if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootBot() || fact.GetDoUpdateFactorio()) {
 					if fact.GetDoUpdateFactorio() {
 						fact.FactUpdate()
@@ -63,7 +64,7 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for over two minutes... rebooting.")
 						fact.SetRelaunchThrottle(0)
 						fact.QuitFactorio()
-						for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+						for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 							time.Sleep(time.Second)
 						}
 					}
@@ -78,6 +79,7 @@ func MainLoops() {
 						botlog.DoLog("Soft-mod inserted into save file.")
 					}
 
+					//Generate config file for Factorio server, if it fails stop everything.
 					if !fact.GenerateFactorioConfig() {
 						fact.SetAutoStart(false)
 						fact.DoExit()
@@ -86,7 +88,7 @@ func MainLoops() {
 
 					time.Sleep(2 * time.Second)
 
-					//Relaunch Throttle
+					//Relaunch Throttling
 					throt := fact.GetRelaunchThrottle()
 					if throt > 0 {
 
@@ -99,7 +101,6 @@ func MainLoops() {
 							}
 						}
 					}
-
 					//Timer gets longer each reboot
 					fact.SetRelaunchThrottle(throt + 1)
 
@@ -109,6 +110,7 @@ func MainLoops() {
 					var err error
 					var tempargs []string
 
+					//Factorio launch parameters
 					rconport := cfg.Local.Port + cfg.Global.RconPortOffset
 					rconportStr := fmt.Sprintf("%v", rconport)
 					rconpass := cfg.Global.RconPass
@@ -149,6 +151,7 @@ func MainLoops() {
 						botlog.DoLog(fmt.Sprintf("Whitelist of %v players written.", count))
 					}
 
+					//Run Factorio
 					var cmd *exec.Cmd
 					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
@@ -164,12 +167,14 @@ func MainLoops() {
 					botlog.DoLog("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 
 					LinuxSetProcessGroup(cmd)
+					//Connect Factorio stdout to a buffer for processing
 					glob.GameBuffer = new(bytes.Buffer)
 					logwriter := io.MultiWriter(glob.GameBuffer)
 					cmd.Stdout = logwriter
-
+					//Stdin
 					tpipe, errp := cmd.StdinPipe()
 
+					//Factorio is not happy.
 					if errp != nil {
 						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 						//close lock
@@ -178,21 +183,15 @@ func MainLoops() {
 						return
 					}
 
+					//Save pipe
 					if tpipe != nil && err == nil {
 						glob.PipeLock.Lock()
 						glob.Pipe = tpipe
 						glob.PipeLock.Unlock()
 					}
 
-					//Pre-launch prep
-					fact.SetFactRunning(true, false)
-					fact.SetFactorioBooted(false)
-
-					fact.SetGameTime(constants.Unknown)
-					fact.SetNoResponseCount(0)
-
+					//Handle launch errors
 					err = cmd.Start()
-
 					if err != nil {
 						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 						//close lock
@@ -200,6 +199,13 @@ func MainLoops() {
 						fact.DoExit()
 						return
 					}
+
+					//Okay, factorio is running now, prep
+					fact.SetFactRunning(true, false)
+					fact.SetFactorioBooted(false)
+
+					fact.SetGameTime(constants.Unknown)
+					fact.SetNoResponseCount(0)
 					botlog.DoLog("Factorio booting...")
 
 					//close lock
@@ -208,6 +214,9 @@ func MainLoops() {
 			}
 		}()
 
+		//*******************************
+		//Discord stats update
+		//*******************************
 		go func() {
 			time.Sleep(5 * time.Minute)
 			for glob.ServerRunning {
@@ -278,7 +287,7 @@ func MainLoops() {
 		}()
 
 		//*******************************
-		//CMS Output from buffer, batched
+		//Send buffered messages to Discord, batched.
 		//*******************************
 		go func() {
 			for glob.ServerRunning {
@@ -399,9 +408,9 @@ func MainLoops() {
 			}
 		}()
 
-		//**********************************
-		//Slow-connect
-		//**********************************
+		//****************************************************
+		//Slow-connect, helps players catch up on large maps
+		//****************************************************
 		go func() {
 			for glob.ServerRunning {
 
@@ -457,9 +466,9 @@ func MainLoops() {
 			}
 		}()
 
-		//********************************************
-		//Save database, if last seen is marked dirty
-		//********************************************
+		//**********************************************************
+		//Save database (less often), if last seen is marked dirty
+		//**********************************************************
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(5 * time.Minute)
@@ -573,7 +582,7 @@ func MainLoops() {
 					if fact.IsFactRunning() {
 						botlog.DoLog("No players currently online, performing scheduled reboot.")
 						fact.QuitFactorio()
-						for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+						for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 							time.Sleep(time.Second)
 						}
 						break //We don't need to loop anymore
@@ -582,9 +591,9 @@ func MainLoops() {
 			}
 		}()
 
-		//************************************
+		//*******************************************
 		//Bug players if there is an pending update
-		//************************************
+		//*******************************************
 		go func() {
 
 			for glob.ServerRunning {
@@ -611,7 +620,7 @@ func MainLoops() {
 								fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
 								fact.SetUpdateWarnCounter(0)
 								fact.QuitFactorio()
-								for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+								for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 									time.Sleep(time.Second)
 								}
 
@@ -621,7 +630,7 @@ func MainLoops() {
 						} else {
 							fact.SetUpdateWarnCounter(0)
 							fact.QuitFactorio()
-							for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+							for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 								time.Sleep(time.Second)
 							}
 						}
@@ -662,7 +671,7 @@ func MainLoops() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting, closing Factorio.")
 							fact.SetAutoStart(false)
 							fact.QuitFactorio()
-							for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+							for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 								time.Sleep(time.Second)
 							}
 							fact.DoExit()
@@ -744,7 +753,9 @@ func MainLoops() {
 			}
 		}()
 
-		/* Check if log file deleted, if so fix */
+		//*********************************
+		//Fix lost connection to log files
+		//*********************************
 		go func() {
 
 			for glob.ServerRunning {
@@ -828,7 +839,7 @@ func MainLoops() {
 	fact.SetBotReboot(false)
 	fact.SetQueued(false)
 	fact.QuitFactorio()
-	for x := 0; x < 60 && fact.IsFactRunning(); x++ {
+	for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 		time.Sleep(time.Second)
 	}
 	fact.DoExit()

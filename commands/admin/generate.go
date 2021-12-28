@@ -39,6 +39,7 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		ourseed = glob.LastMapSeed
 	}
 
+	//If seed given
 	if argnum > 0 {
 		arg := args[0]
 		pnum := 0

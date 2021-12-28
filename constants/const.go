@@ -14,7 +14,7 @@ const ServSettingsName = "server-settings.json"
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 5
 
-//Minimum time between logout saves
+//Max results to return
 const WhoisResults = 20
 const AdminWhoisResults = 40
 
@@ -27,6 +27,13 @@ const FactorioUpdateProcessLimit = 10 * time.Minute
 //Maximum time before giving up on checking zipfile integrity
 const ZipIntegrityLimit = 5 * time.Minute
 
+//Maximum time to wait for Factorio to close
+const MaxFactorioCloseWait = 60
+
+//Maximum number of autosaves to display in the 'rewind list' command
+const MaxRewindResults = 40
+
+//How often to check if Factorio server is alive
 const WatchdogInterval = time.Second
 
 //Throttle chat, 1.5 seconds per message.
@@ -34,6 +41,7 @@ const CMSRate = 500 * time.Millisecond
 const CMSRestTime = 1000 * time.Millisecond
 const CMSPollRate = 100 * time.Millisecond
 
+//Used for chat colors in-game
 const NumColors = 17
 
 var Colors = [...]struct {
@@ -60,4 +68,5 @@ var Colors = [...]struct {
 	{0.66, 0.66, 0.66}, //GRAY
 }
 
+//Factorio map preset names
 var MapTypes = [...]string{"custom", "default", "rich-resources", "marathon", "death-world", "death-world-marathon", "rail-world", "ribbon-world", "island"}

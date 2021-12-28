@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Restart saves and restarts the server
+//Reboots Factorio only
 func Restart(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.CMS(m.ChannelID, "Now starting!")

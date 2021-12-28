@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// online executes /p o on the server.
+//executes /online on the server, response handled in chat.go
 func PlayersOnline(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if fact.IsFactRunning() {

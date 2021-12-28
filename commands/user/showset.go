@@ -50,9 +50,6 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	}
 	buf = buf + fmt.Sprintf("%25v: %v\n", "Map time", glob.GametimeString)
 	buf = buf + fmt.Sprintf("%25v: %v (most ever %v)\n", "Players online", fact.GetNumPlayers(), glob.RecordPlayers)
-	//buf = buf + fmt.Sprintf("%25v: %v\n", "Members", nummember)
-	//buf = buf + fmt.Sprintf("%25v: %v\n", "Regulars", numregulars)
-	//buf = buf + fmt.Sprintf("%25v: %v\n", "Registered", numreg)
 
 	/* SETTINGS */
 	buf = buf + "\nSettings:\n"

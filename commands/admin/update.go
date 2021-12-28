@@ -9,6 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//Update Factorio
 func Update(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	argnum := len(args)
 

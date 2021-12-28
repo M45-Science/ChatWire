@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//Normal bot log
 func DoLog(text string) {
 	ctime := time.Now()
 	_, filename, line, _ := runtime.Caller(1)
@@ -24,6 +25,7 @@ func DoLog(text string) {
 	}
 }
 
+//Game log
 func DoLogGame(text string) {
 	ctime := time.Now()
 
@@ -38,6 +40,7 @@ func DoLogGame(text string) {
 	}
 }
 
+//Prep everything for the game log
 func StartGameLog() {
 	t := time.Now()
 
@@ -65,6 +68,7 @@ func StartGameLog() {
 
 }
 
+//Prep everything for the bot log
 func StartBotLog() {
 	t := time.Now()
 

@@ -12,11 +12,13 @@ import (
 	"time"
 
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+//Load a different save-game
 func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	layoutUS := "01/02 03:04 PM MST"
@@ -32,6 +34,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				fact.CMS(m.ChannelID, "That isn't an acceptable number.")
 				return
 			} else {
+				//Check if file is valid and found
 				autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
 				_, err := os.Stat(path + "/" + autoSaveStr)
 				notfound := os.IsNotExist(err)
@@ -41,6 +44,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				} else {
 					fact.SetAutoStart(false)
 					fact.QuitFactorio()
+
 					for x := 0; x < 60 && fact.IsFactRunning(); x++ {
 						time.Sleep(time.Millisecond * 100)
 						if x == 59 {
@@ -48,10 +52,11 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 							return
 						}
 					}
+					//Touch file
 					currentTime := time.Now().Local()
 					err = os.Chtimes(path+"/"+autoSaveStr, currentTime, currentTime)
 					if err != nil {
-						fact.CMS(m.ChannelID, "Was unable to load the autosave.")
+						fact.CMS(m.ChannelID, "Unable to load the autosave.")
 					}
 					fact.CMS(m.ChannelID, fmt.Sprintf("Loading autosave%v", num))
 					fact.SetAutoStart(true)
@@ -85,7 +90,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					return tempf[i].ModTime().After(tempf[j].ModTime())
 				})
 
-				maxList := 40
+				maxList := constants.MaxRewindResults
 				for _, f := range tempf {
 					maxList--
 					if maxList <= 0 {
