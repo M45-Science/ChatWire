@@ -2,6 +2,7 @@ package fact
 
 import (
 	"ChatWire/botlog"
+	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/glob"
 	"time"
@@ -12,6 +13,68 @@ import (
 //************************
 //LOCK HANDLER FUNCTIONS
 //************************
+
+func UpdatePatreonList() {
+	glob.PatreonLock.Lock()
+	if glob.DS != nil {
+		g := glob.Guild
+		if g != nil {
+			glob.PatreonList = []string{}
+			for _, m := range g.Members {
+				for _, r := range m.Roles {
+					if r == cfg.Global.RoleData.Patreon {
+						glob.PatreonList = append(glob.PatreonList, m.User.Username)
+					}
+				}
+			}
+		}
+	}
+	glob.PatreonLock.Unlock()
+}
+
+func UpdateNitroList() {
+	glob.NitroLock.Lock()
+	if glob.DS != nil {
+		g := glob.Guild
+		if g != nil {
+			glob.Nitrolist = []string{}
+			for _, m := range g.Members {
+				for _, r := range m.Roles {
+					if r == cfg.Global.RoleData.Nitro {
+						glob.Nitrolist = append(glob.Nitrolist, m.User.Username)
+					}
+				}
+			}
+		}
+	}
+	glob.NitroLock.Unlock()
+}
+
+func UpdateModeratorList() {
+	glob.ModeratorLock.Lock()
+	if glob.DS != nil {
+		g := glob.Guild
+		if g != nil {
+			glob.Nitrolist = []string{}
+			for _, m := range g.Members {
+				for _, r := range m.Roles {
+					if r == cfg.Global.RoleData.Moderator {
+						glob.ModeratorList = append(glob.ModeratorList, m.User.Username)
+					}
+				}
+			}
+		}
+	}
+	glob.ModeratorLock.Unlock()
+}
+
+func GetPatreonList() []string {
+	glob.PatreonLock.Lock()
+	temp := glob.PatreonList
+	glob.PatreonLock.Unlock()
+
+	return temp
+}
 
 func GetUpdateWarnCounter() int {
 	glob.UpdateWarnCounterLock.Lock()

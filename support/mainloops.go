@@ -563,6 +563,13 @@ func MainLoops() {
 						glob.Guildname = nguild.Name
 						botlog.DoLog("Guild data linked.")
 
+						for !fact.IsFactorioBooted() {
+							time.Sleep(time.Second)
+						}
+						fact.UpdatePatreonList()
+						fact.UpdateNitroList()
+						fact.UpdateModeratorList()
+
 						glob.GuildLock.Unlock()
 						break
 					}
