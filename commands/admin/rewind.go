@@ -2,6 +2,7 @@ package admin
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/fact"
@@ -43,20 +45,44 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					fact.SetAutoStart(false)
 					fact.QuitFactorio()
 
-					for x := 0; x < 60 && fact.IsFactRunning(); x++ {
-						time.Sleep(time.Millisecond * 100)
-						if x == 59 {
+					for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
+						time.Sleep(time.Second)
+						if x == (constants.MaxFactorioCloseWait - 1) {
 							fact.CMS(m.ChannelID, "Factorio may be frozen, canceling rewind.")
 							return
 						}
 					}
-					//Touch file
-					currentTime := time.Now().Local()
-					err = os.Chtimes(path+"/"+autoSaveStr, currentTime, currentTime)
-					if err != nil {
-						fact.CMS(m.ChannelID, "Unable to load the autosave.")
+					selSaveName := path + "/" + autoSaveStr
+					from, erra := os.Open(selSaveName)
+					if erra != nil {
+						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to open the selected rewind map. Details: %s", erra))
 					}
+					defer from.Close()
+
+					newmappath := path + "/" + cfg.Local.Name + "_new.zip"
+					_, err := os.Stat(newmappath)
+					if !os.IsNotExist(err) {
+						err = os.Remove(newmappath)
+						if err != nil {
+							botlog.DoLog(fmt.Sprintf("An error occurred when attempting to remove the new map. Details: %s", err))
+							return
+						}
+					}
+					to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
+					if errb != nil {
+						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the new rewind map. Details: %s", errb))
+						return
+					}
+					defer to.Close()
+
+					_, errc := io.Copy(to, from)
+					if errc != nil {
+						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to write the new rewind map. Details: %s", errc))
+						return
+					}
+
 					fact.CMS(m.ChannelID, fmt.Sprintf("Loading autosave%v", num))
+					time.Sleep(time.Second * 1)
 					fact.SetAutoStart(true)
 					return
 				}
