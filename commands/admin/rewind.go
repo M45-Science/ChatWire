@@ -38,6 +38,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 				if notfound {
 					fact.CMS(m.ChannelID, "I don't see that autosave.")
+					return
 				} else {
 					fact.SetAutoStart(false)
 					fact.QuitFactorio()
