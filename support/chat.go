@@ -18,7 +18,6 @@ import (
 	"ChatWire/sclean"
 
 	embed "github.com/Clinet/discordgo-embed"
-	"github.com/bwmarrin/discordgo"
 )
 
 // IsPatreon checks if user has patreon role
@@ -580,61 +579,18 @@ func Chat() {
 								}
 								continue
 							}
-							//******************
-							//RESET MOD MESSAGE
-							//******************
-							if strings.HasPrefix(NoTC, "Loading mod core") {
-
-								glob.ModLoadLock.Lock()
-								glob.ModLoadMessage = nil
-								glob.ModLoadString = constants.Unknown
-								glob.ModLoadLock.Unlock()
-								continue
-							}
 							//*****************
 							//LOADING MOD
 							//*****************
-							if strings.HasPrefix(NoTC, "Loading mod") && strings.Contains(NoTC, "(data.lua)") &&
-								!strings.Contains(NoTC, "settings") && !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
-								botlog.DoLogGame(line)
+							if strings.HasPrefix(NoTC, "Loading mod") && strings.HasSuffix(NoTC, "(data.lua)") {
 
-								var cerr error
-								var err error
-								var modmess *discordgo.Message
+								if !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
+									botlog.DoLogGame(line)
 
-								if notclistlen > 4 && glob.DS != nil {
-
-									glob.ModLoadLock.Lock()
-
-									if glob.ModLoadMessage == nil {
-										//modmess, cerr := glob.DS.ChannelMessageSend(cfg.Local.ChannelData.ChatID, "Loading mods...")
-										if cerr != nil {
-											botlog.DoLog(fmt.Sprintf("An error occurred when attempting to send mod load message. Details: %s", cerr))
-											glob.ModLoadMessage = nil
-											glob.ModLoadString = constants.Unknown
-
-										} else {
-											glob.ModLoadMessage = modmess
-
-											if glob.ModLoadString == constants.Unknown {
-												glob.ModLoadString = strings.Join(notclist[2:4], "-")
-											}
-											//_, err = glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
-
-											if err != nil {
-												botlog.DoLog(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
-											}
-										}
-									} else {
-
-										glob.ModLoadString = glob.ModLoadString + ", " + strings.Join(notclist[2:4], "-")
-										//_, err = glob.DS.ChannelMessageEdit(cfg.Local.ChannelData.ChatID, glob.ModLoadMessage.ID, "Loading mods: "+glob.ModLoadString)
-										if err != nil {
-											botlog.DoLog(fmt.Sprintf("An error occurred when attempting to edit mod load message. Details: %s", err))
-										}
-									}
-
-									glob.ModLoadLock.Unlock()
+									modName := strings.TrimPrefix(NoTC, "Loading mod ")
+									modName = strings.TrimSuffix(modName, " (data.lua)")
+									modName = strings.ReplaceAll(modName, " ", "-")
+									fact.AddModLoadString(modName)
 								}
 								continue
 							}
@@ -708,7 +664,6 @@ func Chat() {
 								if notclistlen > 3 {
 									glob.FactorioVersion = notclist[3]
 								}
-								continue
 							}
 
 							//**********************
