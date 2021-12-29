@@ -140,16 +140,16 @@ func GenerateFactorioConfig() bool {
 	c := "/config set"
 	if IsFactorioBooted() {
 		WriteFact(c + " name " + servName)
-		WriteFact(c + " max-players " + "0")
-		WriteFact(c + " visibility-public " + "true")
-		WriteFact(c + " visibility-steam " + "true")
-		WriteFact(c + " visibility-lan " + "false")
-		WriteFact(c + " require-user-verification " + "true")
-		WriteFact(c + " allow-commands " + "admins-only")
+		//		WriteFact(c + " max-players " + "0")
+		//		WriteFact(c + " visibility-public " + "true")
+		//		WriteFact(c + " visibility-steam " + "true")
+		//		WriteFact(c + " visibility-lan " + "false")
+		//		WriteFact(c + " require-user-verification " + "true")
+		//		WriteFact(c + " allow-commands " + "admins-only")
 		WriteFact(c + " autosave-interval " + strconv.Itoa(autosave_interval))
 		WriteFact(c + " afk-auto-kick " + strconv.Itoa(autokick))
-		WriteFact(c + " only-admins-can-pause " + "true")
-		WriteFact(c + " autosave-only-on-server " + "true")
+		//		WriteFact(c + " only-admins-can-pause " + "true")
+		//		WriteFact(c + " autosave-only-on-server " + "true")
 
 	}
 
