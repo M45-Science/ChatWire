@@ -201,6 +201,8 @@ func MainLoops() {
 					}
 
 					//Okay, factorio is running now, prep
+					fact.SetModLoadString(constants.Unknown)
+					glob.ModLoadString = constants.Unknown //Reset loaded mod list
 					fact.SetFactRunning(true, false)
 					fact.SetFactorioBooted(false)
 
