@@ -33,6 +33,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			cfg.Local.Name = arg2
 			fact.CMS(m.ChannelID, "Name set to: "+cfg.Local.ServerCallsign+"-"+arg2)
 			cfg.WriteLCfg()
+			fact.GenerateFactorioConfig()
 			fact.DoUpdateChannelName()
 		} else if arg1 == "port" && arg2 != "" {
 			num, err := strconv.Atoi(arg2)
@@ -40,6 +41,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				fact.CMS(m.ChannelID, "Changing port to: "+arg2)
 				cfg.Local.Port = num
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			} else {
 				fact.CMS(m.ChannelID, "Invalid port number")
 			}
@@ -47,33 +49,40 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			fact.CMS(m.ChannelID, "Changing map preset to: "+arg2)
 			cfg.Local.MapPreset = arg2
 			cfg.WriteLCfg()
+			fact.GenerateFactorioConfig()
 		} else if arg1 == "mapgenpreset" && arg2 != "" {
 			fact.CMS(m.ChannelID, "Changing map-gen preset to: "+arg2)
 			cfg.Local.MapGenPreset = arg2
 			cfg.WriteLCfg()
+			fact.GenerateFactorioConfig()
 		} else if arg1 == "autostart" && arg2 != "" {
 			res, lerr := handlebool("Auto start", arg2, m)
 			if !lerr {
 				cfg.Local.AutoStart = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else if arg1 == "autoupdate" && arg2 != "" {
 			res, lerr := handlebool("Auto update", arg2, m)
 			if !lerr {
 				cfg.Local.AutoUpdate = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else if arg1 == "updateexp" && arg2 != "" {
 			res, lerr := handlebool("Update factorio to experimental version", arg2, m)
 			if !lerr {
 				cfg.Local.UpdateFactExp = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
+
 			}
 		} else if arg1 == "slowconnect" && arg2 != "" {
 			res, lerr := handlebool("Slow connect", arg2, m)
 			if !lerr {
 				cfg.Local.SlowConnect.SlowConnect = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else if arg1 == "defaultspeed" && arg2 != "" {
 			num, err := strconv.ParseFloat(arg2, 64)
@@ -81,6 +90,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				fact.CMS(m.ChannelID, "Changing default speed to: "+arg2)
 				cfg.Local.SlowConnect.DefaultSpeed = float32(num)
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			} else {
 				fact.CMS(m.ChannelID, "Valid speeds: 0.1 to 10.0")
 			}
@@ -90,6 +100,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				fact.CMS(m.ChannelID, "Changing connect speed to: "+arg2)
 				cfg.Local.SlowConnect.ConnectSpeed = float32(num)
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			} else {
 				fact.CMS(m.ChannelID, "Valid speeds: 0.1 to 10.0")
 			}
@@ -98,24 +109,28 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			if !lerr {
 				cfg.Local.SoftModOptions.DoWhitelist = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else if arg1 == "restrictmode" && arg2 != "" {
 			res, lerr := handlebool("Restrict mode", arg2, m)
 			if !lerr {
 				cfg.Local.SoftModOptions.RestrictMode = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else if arg1 == "friendlyfire" && arg2 != "" {
 			res, lerr := handlebool("Friendly fire", arg2, m)
 			if !lerr {
 				cfg.Local.SoftModOptions.FriendlyFire = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else if arg1 == "cleanmaponboot" && arg2 != "" {
 			res, lerr := handlebool("Clean map on boot", arg2, m)
 			if !lerr {
 				cfg.Local.SoftModOptions.CleanMapOnBoot = res
 				cfg.WriteLCfg()
+				fact.GenerateFactorioConfig()
 			}
 		} else {
 			fact.CMS(m.ChannelID, "No setting with that name!")
