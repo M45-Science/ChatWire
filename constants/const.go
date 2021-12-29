@@ -10,6 +10,8 @@ const CWGlobalConfig = "../cw-global-config.json"
 const CWLocalConfig = "cw-local-config.json"
 const WhitelistName = "server-whitelist.json"
 const ServSettingsName = "server-settings.json"
+const ModsQueueFolder = "mods-queue"
+const ModsFolder = "mods"
 
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 5

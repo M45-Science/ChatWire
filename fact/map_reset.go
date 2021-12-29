@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -176,5 +177,36 @@ func Map_reset(data string) {
 		pingstr = cfg.Global.ResetPingString
 	}
 	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
+
+	qPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
+		constants.ModsQueueFolder + "/"
+	modPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
+		constants.ModsFolder + "/"
+	files, err := ioutil.ReadDir(qPath)
+	if err != nil {
+		botlog.DoLog(err.Error())
+		return
+	}
+	_, err = os.Stat(qPath)
+	notfound := os.IsNotExist(err)
+
+	if notfound {
+		_, err = os.Create(qPath)
+		if err != nil {
+			botlog.DoLog(err.Error())
+			return
+		}
+	} else {
+		for _, f := range files {
+			if strings.HasSuffix(f.Name(), ".zip") {
+				err := os.Rename(qPath+f.Name(), modPath+f.Name())
+				if err != nil {
+					botlog.DoLog(err.Error())
+					return
+				}
+			}
+		}
+	}
+
 	DoExit()
 }
