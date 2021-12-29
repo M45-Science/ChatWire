@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"ChatWire/constants"
@@ -47,7 +48,6 @@ func GenerateFactorioConfig() bool {
 	finalPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
 
 	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
-	servDesc := cfg.Global.GroupName + "\n" + cfg.Global.FactorioData.ServerDescription
 
 	//Defaults
 	heartbeats := 60
@@ -69,48 +69,52 @@ func GenerateFactorioConfig() bool {
 	//patreon logic
 	//}
 
-	//Add some settings to tags, such as cheats, no blueprint, etc.
+	//Add some settings to descrLines, such as cheats, no blueprint, etc.
 
-	var tags []string
+	var descrLines []string
 
+	descrLines = strings.Split(cfg.Global.FactorioData.ServerDescription, "\n")
 	if cfg.Local.SoftModOptions.DoWhitelist {
-		tags = append(tags, "MEMBERS-ONLY")
+		descrLines = append(descrLines, "MEMBERS-ONLY")
 	}
 	if cfg.Local.SoftModOptions.FriendlyFire {
-		tags = append(tags, "FRIENDLY FIRE")
+		descrLines = append(descrLines, "FRIENDLY FIRE")
 	}
 	if cfg.Local.MapGenPreset != "" {
-		tags = append(tags, "Map gen: "+cfg.Local.MapGenPreset)
+		descrLines = append(descrLines, "Map gen: "+cfg.Local.MapGenPreset)
 	} else if cfg.Local.MapPreset != "" {
-		tags = append(tags, "Map preset: "+cfg.Local.MapPreset)
+		descrLines = append(descrLines, "Map preset: "+cfg.Local.MapPreset)
 	}
 	if cfg.Local.ResetScheduleText != "" {
-		tags = append(tags, "MAP RESETS: "+cfg.Local.ResetScheduleText)
+		descrLines = append(descrLines, "MAP RESETS: "+cfg.Local.ResetScheduleText)
 	}
 	if cfg.Local.EnableCheats {
-		tags = append(tags, "SANDBOX")
+		descrLines = append(descrLines, "SANDBOX")
 	}
 	if cfg.Local.DisableBlueprints {
-		tags = append(tags, "NO BLUEPRINTS")
+		descrLines = append(descrLines, "NO BLUEPRINTS")
 	}
 	if cfg.Local.SlowConnect.SlowConnect {
-		tags = append(tags, "slow-connect on")
+		descrLines = append(descrLines, "slow-connect on")
 	}
 	if !cfg.Local.FactorioData.Autopause {
-		tags = append(tags, "AUTO-PAUSE OFF")
+		descrLines = append(descrLines, "AUTO-PAUSE OFF")
 	}
 	if cfg.Global.AuthServerBans {
-		tags = append(tags, "AUTH-SERVER BANS ON")
+		descrLines = append(descrLines, "AUTH-SERVER BANS ON")
 	}
 	if cfg.Global.FactorioData.Username != "" {
-		tags = append(tags, "Owner: "+cfg.Global.FactorioData.Username)
+		descrLines = append(descrLines, "Owner: "+cfg.Global.FactorioData.Username)
 	}
-	tags = append(tags, fmt.Sprintf("%v:%v", cfg.Global.Domain, cfg.Local.Port))
+	descrLines = append(descrLines, fmt.Sprintf("%v:%v", cfg.Global.Domain, cfg.Local.Port))
+
+	var tags []string
+	tags = append(tags, cfg.Global.GroupName)
 
 	conf := FactConf{
 		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
-		Description: servDesc,
+		Description: strings.Join(descrLines, "\n"),
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
@@ -131,6 +135,22 @@ func GenerateFactorioConfig() bool {
 		Auto_pause:              cfg.Local.FactorioData.Autopause,
 		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
+	}
+
+	c := "/config set"
+	if IsFactorioBooted() {
+		WriteFact(c + " name " + servName)
+		//		WriteFact(c + " max-players " + "0")
+		//		WriteFact(c + " visibility-public " + "true")
+		//		WriteFact(c + " visibility-steam " + "true")
+		//		WriteFact(c + " visibility-lan " + "false")
+		//		WriteFact(c + " require-user-verification " + "true")
+		//		WriteFact(c + " allow-commands " + "admins-only")
+		WriteFact(c + " autosave-interval " + strconv.Itoa(autosave_interval))
+		WriteFact(c + " afk-auto-kick " + strconv.Itoa(autokick))
+		//		WriteFact(c + " only-admins-can-pause " + "true")
+		//		WriteFact(c + " autosave-only-on-server " + "true")
+
 	}
 
 	outbuf := new(bytes.Buffer)

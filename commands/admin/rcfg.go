@@ -6,6 +6,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/support"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -41,12 +42,14 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
 	}
 	if cfg.Local.DisableBlueprints {
-		fact.WriteFact("/blueprints off")
+		fact.WriteFact("/blueprints " + support.BoolToString(!cfg.Local.DisableBlueprints))
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
 	}
 	if cfg.Local.EnableCheats {
-		fact.WriteFact("/enablecheats on")
-		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats are enabled.")
+		fact.WriteFact("/enablecheats " + support.BoolToString(cfg.Local.EnableCheats))
+		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
 	}
+	//This also uses /config to live change settings.
+	fact.GenerateFactorioConfig()
 
 }
