@@ -582,8 +582,12 @@ func MainLoops() {
 						fact.UpdateRoleList()
 						if fact.IsFactorioBooted() {
 							glob.RoleListLock.Lock()
-							fact.WriteFact("/patreonlist " + strings.Join(glob.PatreonList, ","))
-							fact.WriteFact("/nitrolist " + strings.Join(glob.NitroList, ","))
+							if len(glob.PatreonList) > 0 {
+								fact.WriteFact("/patreonlist " + strings.Join(glob.PatreonList, ","))
+							}
+							if len(glob.NitroList) > 0 {
+								fact.WriteFact("/nitrolist " + strings.Join(glob.NitroList, ","))
+							}
 							glob.RoleListLock.Unlock()
 						}
 						time.Sleep(time.Minute * 15)
