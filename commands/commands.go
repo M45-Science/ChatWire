@@ -31,7 +31,7 @@ var CL Commands
 // CheckAdmin checks if the user attempting to run an admin command is an admin
 func CheckAdmin(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
-		if role == cfg.Global.RoleData.Moderator {
+		if role == cfg.Global.RoleData.ModeratorRoleID {
 			return true
 		}
 	}

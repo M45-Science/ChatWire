@@ -31,7 +31,7 @@ func IsPatreon(id string) bool {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				for _, r := range m.Roles {
-					if r == cfg.Global.RoleData.Patreon {
+					if r == cfg.Global.RoleData.PatreonRoleID {
 						return true
 					}
 				}
@@ -52,7 +52,7 @@ func IsNitro(id string) bool {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				for _, r := range m.Roles {
-					if r == cfg.Global.RoleData.Nitro {
+					if r == cfg.Global.RoleData.NitroRoleID {
 						return true
 					}
 				}
@@ -265,16 +265,16 @@ func Chat() {
 
 											newrole := ""
 											if ptype == "trusted" {
-												newrole = cfg.Global.RoleData.Member
+												newrole = cfg.Global.RoleData.MemberRoleName
 												plevel = 1
 											} else if ptype == "regular" {
-												newrole = cfg.Global.RoleData.Regular
+												newrole = cfg.Global.RoleData.RegularRoleName
 												plevel = 2
 											} else if ptype == "admin" {
-												newrole = cfg.Global.RoleData.Admin
+												newrole = cfg.Global.RoleData.AdminRoleName
 												plevel = 255
 											} else {
-												newrole = cfg.Global.RoleData.New
+												newrole = cfg.Global.RoleData.NewRoleName
 												plevel = 0
 											}
 
