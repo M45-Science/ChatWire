@@ -562,11 +562,6 @@ func MainLoops() {
 						glob.Guild = nguild
 						glob.Guildname = nguild.Name
 						botlog.DoLog("Guild data linked.")
-
-						for !fact.IsFactorioBooted() {
-							time.Sleep(time.Second)
-						}
-						fact.UpdateRoleList()
 						glob.GuildLock.Unlock()
 						break
 					}
@@ -580,17 +575,18 @@ func MainLoops() {
 		//Get Discord roles
 		//**************************
 		go func() {
+			time.Sleep(time.Minute)
 			for glob.ServerRunning {
 				if glob.DS != nil {
 					if glob.Guild != nil {
-						time.Sleep(time.Minute)
 						fact.UpdateRoleList()
-					}
-					if fact.IsFactorioBooted() {
-						glob.RoleListLock.Lock()
-						fact.WriteFact("/patreonlist " + strings.Join(glob.NitroList, ","))
-						fact.WriteFact("/nitrolist " + strings.Join(glob.NitroList, ","))
-						glob.RoleListLock.Unlock()
+						if fact.IsFactorioBooted() {
+							glob.RoleListLock.Lock()
+							fact.WriteFact("/patreonlist " + strings.Join(glob.PatreonList, ","))
+							fact.WriteFact("/nitrolist " + strings.Join(glob.NitroList, ","))
+							glob.RoleListLock.Unlock()
+						}
+						time.Sleep(time.Minute * 15)
 					}
 				}
 			}
