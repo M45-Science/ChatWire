@@ -30,10 +30,7 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		num, err := strconv.Atoi(args[0])
 		//Seems to be a number
 		if err == nil {
-			if num < 0 || num > 9999 {
-				fact.CMS(m.ChannelID, "That isn't an acceptable number.")
-				return
-			} else {
+			if num > 0 || num < 9999 {
 				//Check if file is valid and found
 				autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
 				_, err := os.Stat(path + "/" + autoSaveStr)
@@ -60,10 +57,9 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					}
 					fact.CMS(m.ChannelID, fmt.Sprintf("Loading autosave%v", num))
 					fact.SetAutoStart(true)
-
+					return
 				}
 			}
-			//Not a number
 		} else {
 			//List all autosaves
 			if strings.EqualFold(args[0], "list") {
@@ -150,4 +146,5 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	}
 
 	fact.CMS(m.ChannelID, "Not a valid autosave number, try `list`.")
+	return
 }
