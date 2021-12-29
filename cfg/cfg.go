@@ -128,13 +128,14 @@ type DiscordDataStruct struct {
 }
 
 type RoleDataStruct struct {
-	Moderator string
-	Admin     string
-	Patreon   string
-	Nitro     string
-	Regular   string
-	Member    string
-	New       string
+	ModeratorRoleID string
+	PatreonRoleID   string
+	NitroRoleID     string
+
+	AdminRoleName   string
+	RegularRoleName string
+	MemberRoleName  string
+	NewRoleName     string
 }
 
 type MapPreviewDataStruct struct {
