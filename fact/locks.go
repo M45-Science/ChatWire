@@ -16,21 +16,21 @@ import (
 
 func UpdateRoleList() {
 	glob.RoleListLock.Lock()
-	if glob.DS != nil {
-		g := glob.Guild
-		if g != nil {
-			glob.PatreonList = []string{}
-			glob.NitroList = []string{}
-			glob.ModeratorList = []string{}
-			for _, m := range g.Members {
-				for _, r := range m.Roles {
-					if r == cfg.Global.RoleData.Patreon {
-						glob.PatreonList = append(glob.PatreonList, m.User.Username)
-					} else if r == cfg.Global.RoleData.Nitro {
-						glob.NitroList = append(glob.NitroList, m.User.Username)
-					} else if r == cfg.Global.RoleData.Moderator {
-						glob.ModeratorList = append(glob.ModeratorList, m.User.Username)
-					}
+	g := glob.Guild
+
+	if g != nil {
+		glob.NitroList = []string{}
+		glob.PatreonList = []string{}
+		glob.ModeratorList = []string{}
+
+		for _, m := range g.Members {
+			for _, r := range m.Roles {
+				if r == cfg.Global.RoleData.NitroRoleID {
+					glob.NitroList = append(glob.NitroList, m.User.Username)
+				} else if r == cfg.Global.RoleData.PatreonRoleID {
+					glob.PatreonList = append(glob.PatreonList, m.User.Username)
+				} else if r == cfg.Global.RoleData.ModeratorRoleID {
+					glob.ModeratorList = append(glob.ModeratorList, m.User.Username)
 				}
 			}
 		}
