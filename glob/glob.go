@@ -31,16 +31,9 @@ type CMSBuf struct {
 
 /* Discord role member-lists */
 var PatreonList []string
-var PatreonSent bool
-var PatreonLock sync.Mutex
-
-var Nitrolist []string
-var NitroSent bool
-var NitroLock sync.Mutex
-
+var NitroList []string
 var ModeratorList []string
-var ModeratorSent bool
-var ModeratorLock sync.Mutex
+var RoleListLock sync.Mutex
 
 /*To-Discord message buffer*/
 var CMSBuffer []CMSBuf

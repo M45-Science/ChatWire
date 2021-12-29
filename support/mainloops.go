@@ -566,16 +566,33 @@ func MainLoops() {
 						for !fact.IsFactorioBooted() {
 							time.Sleep(time.Second)
 						}
-						fact.UpdatePatreonList()
-						fact.UpdateNitroList()
-						fact.UpdateModeratorList()
-
+						fact.UpdateRoleList()
 						glob.GuildLock.Unlock()
 						break
 					}
 				}
 
 				glob.GuildLock.Unlock()
+			}
+		}()
+
+		//**************************
+		//Get Discord roles
+		//**************************
+		go func() {
+			for glob.ServerRunning {
+				if glob.DS != nil {
+					if glob.Guild != nil {
+						time.Sleep(time.Minute)
+						fact.UpdateRoleList()
+					}
+					if fact.IsFactorioBooted() {
+						glob.RoleListLock.Lock()
+						fact.WriteFact("/patreonlist " + strings.Join(glob.NitroList, ","))
+						fact.WriteFact("/nitrolist " + strings.Join(glob.NitroList, ","))
+						glob.RoleListLock.Unlock()
+					}
+				}
 			}
 		}()
 
