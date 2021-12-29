@@ -119,6 +119,26 @@ func IsFactorioBooted() bool {
 	return false
 }
 
+func SetModLoadString(str string) {
+	glob.ModLoadLock.Lock()
+	glob.ModLoadString = str
+	glob.ModLoadLock.Unlock()
+}
+
+func AddModLoadString(str string) {
+	glob.ModLoadLock.Lock()
+	glob.ModLoadString = glob.ModLoadString + ", " + str
+	glob.ModLoadLock.Unlock()
+}
+
+func GetModLoadString() string {
+	glob.ModLoadLock.Lock()
+	temp := glob.ModLoadString
+	glob.ModLoadLock.Unlock()
+
+	return temp
+}
+
 func SetNumPlayers(num int) {
 	glob.NumPlayersLock.Lock()
 	glob.NumPlayers = num
