@@ -42,7 +42,7 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
 	}
 	if cfg.Local.DisableBlueprints {
-		fact.WriteFact("/blueprint " + support.BoolToString(!cfg.Local.DisableBlueprints))
+		fact.WriteFact("/blueprints " + support.BoolToString(!cfg.Local.DisableBlueprints))
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
 	}
 	if cfg.Local.EnableCheats {
