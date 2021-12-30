@@ -575,22 +575,28 @@ func MainLoops() {
 		//Get Discord roles
 		//**************************
 		go func() {
-			time.Sleep(time.Minute)
+			cfg.ReadRoleList()
 			for glob.ServerRunning {
+				time.Sleep(time.Second)
 				if glob.DS != nil {
 					if glob.Guild != nil {
-						fact.UpdateRoleList()
+						time.Sleep(time.Second * 15)
+						cfg.UpdateRoleList()
 						if fact.IsFactorioBooted() {
+
 							glob.RoleListLock.Lock()
-							if len(glob.PatreonList) > 0 {
-								fact.WriteFact("/patreonlist " + strings.Join(glob.PatreonList, ","))
+							if len(glob.RoleList.Patreons) > 0 {
+								fact.WriteFact("/patreonlist " + strings.Join(glob.RoleList.Patreons, ","))
 							}
-							if len(glob.NitroList) > 0 {
-								fact.WriteFact("/nitrolist " + strings.Join(glob.NitroList, ","))
+							if len(glob.RoleList.NitroBooster) > 0 {
+								fact.WriteFact("/nitrolist " + strings.Join(glob.RoleList.NitroBooster, ","))
 							}
 							glob.RoleListLock.Unlock()
+
+							if len(glob.RoleList.Patreons) > 0 {
+								time.Sleep(time.Minute * 5)
+							}
 						}
-						time.Sleep(time.Minute * 15)
 					}
 				}
 			}

@@ -29,11 +29,16 @@ type CMSBuf struct {
 	Text    string
 }
 
+type RoleListData struct {
+	Version      string
+	Patreons     []string
+	NitroBooster []string
+	Moderators   []string
+}
+
 /* Discord role member-lists */
-var PatreonList []string
-var NitroList []string
-var ModeratorList []string
 var RoleListLock sync.Mutex
+var RoleList RoleListData
 
 /*To-Discord message buffer*/
 var CMSBuffer []CMSBuf

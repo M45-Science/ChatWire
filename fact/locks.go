@@ -2,7 +2,6 @@ package fact
 
 import (
 	"ChatWire/botlog"
-	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/glob"
 	"time"
@@ -13,30 +12,6 @@ import (
 //************************
 //LOCK HANDLER FUNCTIONS
 //************************
-
-func UpdateRoleList() {
-	glob.RoleListLock.Lock()
-	g := glob.Guild
-
-	if g != nil {
-		glob.NitroList = []string{}
-		glob.PatreonList = []string{}
-		glob.ModeratorList = []string{}
-
-		for _, m := range g.Members {
-			for _, r := range m.Roles {
-				if r == cfg.Global.RoleData.NitroRoleID {
-					glob.NitroList = append(glob.NitroList, m.User.Username)
-				} else if r == cfg.Global.RoleData.PatreonRoleID {
-					glob.PatreonList = append(glob.PatreonList, m.User.Username)
-				} else if r == cfg.Global.RoleData.ModeratorRoleID {
-					glob.ModeratorList = append(glob.ModeratorList, m.User.Username)
-				}
-			}
-		}
-	}
-	glob.RoleListLock.Unlock()
-}
 
 func GetUpdateWarnCounter() int {
 	glob.UpdateWarnCounterLock.Lock()
