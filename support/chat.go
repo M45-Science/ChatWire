@@ -614,7 +614,9 @@ func Chat() {
 							if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 
 								fact.SetFactorioBooted(true)
+								fact.SetFactRunning(true, false)
 								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+glob.FactorioVersion+" is now online.")
+								time.Sleep(time.Second)
 								fact.WriteFact("/p o c")
 
 								fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
