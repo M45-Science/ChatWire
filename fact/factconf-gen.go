@@ -3,6 +3,7 @@ package fact
 import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/glob"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -114,7 +115,7 @@ func GenerateFactorioConfig() bool {
 	conf := FactConf{
 		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
-		Description: strings.Join(descrLines, "\n"),
+		Description: strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(glob.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(glob.RoleList.NitroBooster, ", ") + "[/color]\n[color=red]Moderators: " + strings.Join(glob.RoleList.Moderators, ", ") + "[/color]\n",
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
