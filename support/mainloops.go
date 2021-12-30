@@ -48,7 +48,7 @@ func MainLoops() {
 					if fact.GetDoUpdateFactorio() {
 						fact.FactUpdate()
 					}
-					fact.DoExit()
+					fact.DoExit(false)
 				} else if fact.IsFactRunning() { //Currently running normally
 
 					nores := 0
@@ -82,7 +82,7 @@ func MainLoops() {
 					//Generate config file for Factorio server, if it fails stop everything.
 					if !fact.GenerateFactorioConfig() {
 						fact.SetAutoStart(false)
-						fact.DoExit()
+						fact.DoExit(true)
 						return
 					}
 
@@ -179,7 +179,7 @@ func MainLoops() {
 						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 						//close lock
 						glob.FactorioLaunchLock.Unlock()
-						fact.DoExit()
+						fact.DoExit(true)
 						return
 					}
 
@@ -196,7 +196,7 @@ func MainLoops() {
 						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 						//close lock
 						glob.FactorioLaunchLock.Unlock()
-						fact.DoExit()
+						fact.DoExit(true)
 						return
 					}
 
@@ -706,10 +706,10 @@ func MainLoops() {
 							for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 								time.Sleep(time.Second)
 							}
-							fact.DoExit()
+							fact.DoExit(false)
 						} else {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting.")
-							fact.DoExit()
+							fact.DoExit(false)
 						}
 					} else if errb != nil && !failureReported {
 						failureReported = true
@@ -874,7 +874,7 @@ func MainLoops() {
 	for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
 		time.Sleep(time.Second)
 	}
-	fact.DoExit()
+	fact.DoExit(false)
 }
 
 //Delete old signal files

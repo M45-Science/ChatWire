@@ -334,7 +334,7 @@ func ReadGCfg() bool {
 			if err != nil {
 				botlog.DoLog("ReadGCfg: Unmashal failure")
 				botlog.DoLog(err.Error())
-				os.Exit(1)
+				return false
 			}
 
 			Global = newcfg
@@ -427,7 +427,7 @@ func ReadLCfg() bool {
 			if err != nil {
 				botlog.DoLog("ReadLCfg: Unmashal failure")
 				botlog.DoLog(err.Error())
-				os.Exit(1)
+				return false
 			}
 
 			Local = newcfg

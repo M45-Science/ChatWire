@@ -57,11 +57,13 @@ func main() {
 	if cfg.ReadGCfg() {
 		cfg.WriteGCfg()
 	} else {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		return
 	}
 	if cfg.ReadLCfg() {
 		cfg.WriteLCfg()
 	} else {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		return
 	}
 
@@ -106,7 +108,7 @@ func startbot() {
 
 	if erra != nil {
 		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
-		time.Sleep(time.Minute * 5)
+		time.Sleep(time.Minute)
 		startbot()
 		return
 	}
@@ -241,4 +243,44 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 	}
+}
+
+func DoExit(delay bool) {
+
+	//Show stats
+	tnow := time.Now()
+	tnow = tnow.Round(time.Second)
+	mm := fact.GetManMinutes()
+	botlog.DoLog(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
+
+	time.Sleep(3 * time.Second)
+	//This kills all loops!
+	glob.ServerRunning = false
+
+	botlog.DoLog("Bot closing, load/save db, and waiting for locks...")
+	fact.LoadPlayers()
+	fact.WritePlayers()
+
+	time.Sleep(1 * time.Second)
+
+	//File locks
+	glob.PlayerListWriteLock.Lock()
+	glob.RecordPlayersWriteLock.Lock()
+
+	botlog.DoLog("Closing log files.")
+	glob.GameLogDesc.Close()
+	glob.BotLogDesc.Close()
+
+	_ = os.Remove("cw.lock")
+	//Logs are closed, don't report
+
+	if glob.DS != nil {
+		glob.DS.Close()
+	}
+
+	fmt.Println("Goodbye.")
+	if delay {
+		time.Sleep(time.Minute)
+	}
+	os.Exit(1)
 }

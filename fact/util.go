@@ -8,8 +8,49 @@ import (
 
 	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/glob"
 )
+
+func DoExit(delay bool) {
+
+	//Show stats
+	tnow := time.Now()
+	tnow = tnow.Round(time.Second)
+	mm := GetManMinutes()
+	botlog.DoLog(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
+
+	time.Sleep(3 * time.Second)
+	//This kills all loops!
+	glob.ServerRunning = false
+
+	botlog.DoLog("Bot closing, load/save db, and waiting for locks...")
+	LoadPlayers()
+	WritePlayers()
+
+	time.Sleep(1 * time.Second)
+
+	//File locks
+	glob.PlayerListWriteLock.Lock()
+	glob.RecordPlayersWriteLock.Lock()
+
+	botlog.DoLog("Closing log files.")
+	glob.GameLogDesc.Close()
+	glob.BotLogDesc.Close()
+
+	_ = os.Remove("cw.lock")
+	//Logs are closed, don't report
+
+	if glob.DS != nil {
+		glob.DS.Close()
+	}
+
+	fmt.Println("Goodbye.")
+	if delay {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+	}
+	os.Exit(1)
+}
 
 func GetFactorioBinary() string {
 	bloc := ""
@@ -162,43 +203,6 @@ func DoShowLocks(ch string) {
 	CMS(ch, time.Since(startTime).String()+": ConnectPauseLock")
 
 	CMS(ch, "Complete.")
-}
-
-func DoExit() {
-
-	//Show stats
-	tnow := time.Now()
-	tnow = tnow.Round(time.Second)
-	mm := GetManMinutes()
-	botlog.DoLog(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
-
-	time.Sleep(3 * time.Second)
-	//This kills all loops!
-	glob.ServerRunning = false
-
-	botlog.DoLog("Bot closing, load/save db, and waiting for locks...")
-	LoadPlayers()
-	WritePlayers()
-
-	time.Sleep(1 * time.Second)
-
-	//File locks
-	glob.PlayerListWriteLock.Lock()
-	glob.RecordPlayersWriteLock.Lock()
-
-	botlog.DoLog("Closing log files.")
-	glob.GameLogDesc.Close()
-	glob.BotLogDesc.Close()
-
-	_ = os.Remove("cw.lock")
-	//Logs are closed, don't report
-
-	if glob.DS != nil {
-		glob.DS.Close()
-	}
-
-	fmt.Println("Goodbye.")
-	os.Exit(1)
 }
 
 func CMS(channel string, text string) {

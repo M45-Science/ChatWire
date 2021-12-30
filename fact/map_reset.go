@@ -225,5 +225,5 @@ func Map_reset(data string) {
 		}
 	}
 
-	DoExit()
+	DoExit(false)
 }

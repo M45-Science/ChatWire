@@ -16,6 +16,7 @@ const RoleListFile = "../cw-rolelist.dat"
 
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 5
+const ErrorDelayShutdown = 60
 
 //Max results to return
 const WhoisResults = 20

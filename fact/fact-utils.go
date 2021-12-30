@@ -117,10 +117,6 @@ func QuitFactorio() {
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting...[/color]", RandomColor(false)))
 		time.Sleep(5 * time.Second)
 		WriteFact("/quit")
-	} else {
-		//Not running, just reboot
-		DoExit()
-		return
 	}
 }
 
