@@ -142,7 +142,7 @@ func startbot() {
 
 	bstring := "Loading: CW *v" + constants.Version + "*"
 	botlog.DoLog(bstring)
-	fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
+	//fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
 	fact.UpdateChannelName()
 }
 

@@ -601,7 +601,7 @@ func Chat() {
 							if strings.HasPrefix(NoTC, "Goodbye") {
 								botlog.DoLogGame(line)
 
-								botlog.DoLog("Factorio is now offline.")
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
 								fact.SetFactorioBooted(false)
 								fact.SetFactRunning(false, false)
 								continue
