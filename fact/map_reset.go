@@ -201,16 +201,15 @@ func Map_reset(data string) {
 			if strings.HasSuffix(f.Name(), ".zip") {
 
 				//Delete mods queued up to be deleted
-				if strings.HasPrefix(strings.ToLower(f.Name()), "deleteme-") {
-					err = os.Remove(modPath + f.Name())
+				if strings.HasPrefix(f.Name(), "deleteme-") {
+
+					err = os.Remove(modPath + strings.TrimPrefix(f.Name(), "deleteme-"))
 					if err != nil {
 						botlog.DoLog(err.Error())
-						return
 					}
 					err = os.Remove(qPath + f.Name())
 					if err != nil {
 						botlog.DoLog(err.Error())
-						return
 					}
 				} else {
 
@@ -218,7 +217,6 @@ func Map_reset(data string) {
 					err := os.Rename(qPath+f.Name(), modPath+f.Name())
 					if err != nil {
 						botlog.DoLog(err.Error())
-						return
 					}
 				}
 			}
