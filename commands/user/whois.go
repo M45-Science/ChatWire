@@ -66,6 +66,7 @@ func checkadmin(m *discordgo.MessageCreate) bool {
 	return false
 }
 
+// Get info on a specific player
 func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	layoutUS := "01-02-06 3:04 PM"

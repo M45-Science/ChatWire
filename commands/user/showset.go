@@ -12,6 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//Show useful info about a server and it's settings
 func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	buf := "```"

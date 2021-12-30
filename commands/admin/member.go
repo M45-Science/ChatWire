@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// StopServer saves and stops the server.
+//Give a player members status
 func SetPlayerMember(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	argnum := len(args)
