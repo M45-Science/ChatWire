@@ -47,6 +47,8 @@ func Map_reset(data string) {
 	newstr := sclean.StripControlAndSubSpecial(data)
 	newstr = sclean.RemoveFactorioTags(newstr)
 
+	//If factorio is running, and there is a argument... echo it
+	//Otherwise, stop factorio and generate a new map
 	if IsFactRunning() {
 		if newstr != "" {
 			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(newstr))
@@ -60,21 +62,23 @@ func Map_reset(data string) {
 	}
 
 	//Wait for server to stop if running
-	for IsFactRunning() {
-		time.Sleep(1 * time.Second)
+	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
+		time.Sleep(time.Second)
 	}
 
+	//Prevent another map reset from accidently running at the same time
 	glob.GameMapLock.Lock()
 	defer glob.GameMapLock.Unlock()
 
+	//Get factorio version, for archive folder name
 	version := strings.Split(glob.FactorioVersion, ".")
 	vlen := len(version)
-
 	if vlen < 3 {
 		botlog.DoLog("Unable to determine factorio version.")
 		return
 	}
 
+	//Only proceed if we were running a map, and we know our factorio version.
 	if glob.GameMapPath != "" && glob.FactorioVersion != constants.Unknown {
 		shortversion := strings.Join(version[0:2], ".")
 
