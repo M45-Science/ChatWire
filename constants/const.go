@@ -12,6 +12,7 @@ const WhitelistName = "server-whitelist.json"
 const ServSettingsName = "server-settings.json"
 const ModsQueueFolder = "mods-queue"
 const ModsFolder = "mods"
+const RoleListFile = "../cw-rolelist.dat"
 
 //Number of repeated time reports before we assume server is paused
 const PauseThresh = 5
