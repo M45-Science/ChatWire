@@ -653,6 +653,16 @@ func Chat() {
 									fact.WriteFact("/enablecheats on")
 									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
 								}
+
+								//Patreon list
+								glob.RoleListLock.Lock()
+								if len(glob.RoleList.Patreons) > 0 {
+									fact.WriteFact("/patreonlist " + strings.Join(glob.RoleList.Patreons, ","))
+								}
+								if len(glob.RoleList.NitroBooster) > 0 {
+									fact.WriteFact("/nitrolist " + strings.Join(glob.RoleList.NitroBooster, ","))
+								}
+								glob.RoleListLock.Unlock()
 								continue
 							}
 

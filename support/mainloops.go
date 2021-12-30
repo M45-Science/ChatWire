@@ -580,9 +580,8 @@ func MainLoops() {
 				time.Sleep(time.Second)
 				if glob.DS != nil {
 					if glob.Guild != nil {
-						time.Sleep(time.Second * 15)
-						cfg.UpdateRoleList()
 						if fact.IsFactorioBooted() {
+							time.Sleep(time.Minute * 5)
 
 							glob.RoleListLock.Lock()
 							if len(glob.RoleList.Patreons) > 0 {
@@ -591,11 +590,9 @@ func MainLoops() {
 							if len(glob.RoleList.NitroBooster) > 0 {
 								fact.WriteFact("/nitrolist " + strings.Join(glob.RoleList.NitroBooster, ","))
 							}
-							glob.RoleListLock.Unlock()
 
-							if len(glob.RoleList.Patreons) > 0 {
-								time.Sleep(time.Minute * 5)
-							}
+							cfg.UpdateRoleList()
+							glob.RoleListLock.Unlock()
 						}
 					}
 				}
