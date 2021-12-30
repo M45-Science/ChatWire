@@ -590,9 +590,9 @@ func MainLoops() {
 							if len(glob.RoleList.NitroBooster) > 0 {
 								fact.WriteFact("/nitrolist " + strings.Join(glob.RoleList.NitroBooster, ","))
 							}
+							glob.RoleListLock.Unlock()
 
 							cfg.UpdateRoleList()
-							glob.RoleListLock.Unlock()
 						}
 					}
 				}
