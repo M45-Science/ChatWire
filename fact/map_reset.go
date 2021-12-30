@@ -199,10 +199,27 @@ func Map_reset(data string) {
 	} else {
 		for _, f := range files {
 			if strings.HasSuffix(f.Name(), ".zip") {
-				err := os.Rename(qPath+f.Name(), modPath+f.Name())
-				if err != nil {
-					botlog.DoLog(err.Error())
-					return
+
+				//Delete mods queued up to be deleted
+				if strings.HasPrefix(strings.ToLower(f.Name()), "deleteme-") {
+					err = os.Remove(modPath + f.Name())
+					if err != nil {
+						botlog.DoLog(err.Error())
+						return
+					}
+					err = os.Remove(qPath + f.Name())
+					if err != nil {
+						botlog.DoLog(err.Error())
+						return
+					}
+				} else {
+
+					//Otherwise, install new mod
+					err := os.Rename(qPath+f.Name(), modPath+f.Name())
+					if err != nil {
+						botlog.DoLog(err.Error())
+						return
+					}
 				}
 			}
 		}
