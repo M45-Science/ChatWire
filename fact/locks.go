@@ -127,7 +127,11 @@ func SetModLoadString(str string) {
 
 func AddModLoadString(str string) {
 	glob.ModLoadLock.Lock()
-	glob.ModLoadString = glob.ModLoadString + ", " + str
+	if glob.ModLoadString == constants.Unknown {
+		glob.ModLoadString = str
+	} else {
+		glob.ModLoadString = glob.ModLoadString + ", " + str
+	}
 	glob.ModLoadLock.Unlock()
 }
 
