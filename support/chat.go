@@ -163,7 +163,7 @@ func Chat() {
 						//*****************
 						//NO CHAT AREA
 						//*****************
-						if !strings.HasPrefix(NoDS, "[CHAT]") {
+						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") {
 
 							//*****************
 							//GET FACTORIO TIME
