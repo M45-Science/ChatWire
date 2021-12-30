@@ -14,7 +14,7 @@ Launching will create default auto-config and save them.
 
 Binary needs to be able to create files and directories in its own directory, and up one directory.
 
-Discord token, guildid and channelid, and also factorio username and token are required.
+Discord token, guild-id and channel-id are required, as well as Factorio username and token are required.
 
 
 --
@@ -27,7 +27,7 @@ A 'base' folder the chatwire folder resides in.
 
 
 For ChatWire:
-/something/cw-a/ChatWire-Binary-here
+/something/cw-a/ChatWire-binary-here
 
 Factorio:
 /something/fact-a/
