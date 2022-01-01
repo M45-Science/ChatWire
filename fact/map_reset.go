@@ -189,7 +189,6 @@ func Map_reset(data string) {
 	files, err := ioutil.ReadDir(qPath)
 	if err != nil {
 		botlog.DoLog(err.Error())
-		return
 	}
 	_, err = os.Stat(qPath)
 	notfound := os.IsNotExist(err)
@@ -198,7 +197,6 @@ func Map_reset(data string) {
 		_, err = os.Create(qPath)
 		if err != nil {
 			botlog.DoLog(err.Error())
-			return
 		}
 	} else {
 		for _, f := range files {
