@@ -11,7 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func VoteReind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	//layoutUS := "01/02 03:04 PM MST"
 	argnum := len(args)
@@ -21,7 +21,7 @@ func VoteReind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 		if player.ID != "" && player.Level == 2 && player.ID == m.Author.ID {
 			//vote
 		} else {
-			fact.CMS(m.ChannelID, "You must registered, and a regular to use this command.")
+			fact.CMS(m.ChannelID, "You must be `REGISTERED`, AND a `REGULAR` to use this command.")
 			return
 		}
 	}
