@@ -67,6 +67,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: user.PlayersOnline, Admin: false, Help: "Show players online"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Info", Command: user.ShowSettings, Admin: false, Help: "Show game & server info"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Register", Command: user.AccessServer, Admin: false, Help: "Link your Discord and Factorio accounts."})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Vote-rewind", Command: user.VoteRewind, Admin: false, Help: "Vote to rewind to: <autosave number>"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, Admin: false, Help: "You are here"})
 }
 
@@ -102,6 +103,10 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			buf = buf + fmt.Sprintf("%s%-12s %s %s\n", cfg.Global.
 				DiscordCommandPrefix, strings.ToLower(command.Name), admin, command.Help)
 		}
+		buf = buf + "```\nAdmin Command options:\n"
+
+		buf = buf + "rewind <autosave number>\n"
+		buf = buf + "set <verbose>\n"
 	} else {
 		for _, command := range CL.CommandList {
 			if !command.Admin {
@@ -109,9 +114,17 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					DiscordCommandPrefix, strings.ToLower(command.Name), command.Help)
 			}
 		}
+
 	}
 
-	buf = buf + "\n```"
+	buf = buf + "```\nCommand options:\n"
+
+	buf = buf + "whois <recent,new,registered,factorio/discord name (autosearch)>\n"
+	buf = buf + "info verbose\n"
+	buf = buf + "vote-rewind <autosave number> (regular, registered only)\n"
+	buf = buf + "set <no argument> (this will show all options)\n"
+	buf = buf + "update cancel stop a pending update\n"
+	buf = buf + "Any commands that require an argument will show help if no argument is supplied.\n"
 
 	fact.CMS(m.ChannelID, buf)
 }
