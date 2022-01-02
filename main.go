@@ -23,21 +23,6 @@ import (
 )
 
 func main() {
-	botlog.StartBotLog()
-	botlog.StartGameLog()
-
-	//Saves a ton of space!
-	if cfg.Global.PathData.LogCompScriptPath != "" {
-		cmdb := exec.Command(cfg.Global.PathData.ShellPath,
-			cfg.Global.PathData.LogCompScriptPath,
-			cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/logs/*.log")
-		_, err := cmdb.CombinedOutput()
-		if err != nil {
-			botlog.DoLog(err.Error())
-		}
-	}
-
-	botlog.DoLog("Version: " + constants.Version)
 	//Randomize starting color
 	var src = rand.NewSource(time.Now().UnixNano())
 	var r = rand.New(src)
@@ -67,6 +52,20 @@ func main() {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		return
 	}
+	//Saves a ton of space!
+	if cfg.Global.PathData.LogCompScriptPath != "" {
+		cmdb := exec.Command(cfg.Global.PathData.ShellPath,
+			cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.LogCompScriptPath,
+			cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/logs/*.log")
+		_, err := cmdb.CombinedOutput()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+
+	botlog.StartBotLog()
+	botlog.StartGameLog()
+	botlog.DoLog("Version: " + constants.Version)
 
 	cfg.ReadRoleList()
 
