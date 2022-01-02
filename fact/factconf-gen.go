@@ -63,8 +63,11 @@ func GenerateFactorioConfig() bool {
 	if cfg.Global.FactorioData.Autosaves > 0 {
 		autosaves = cfg.Global.FactorioData.Autosaves
 	}
-	if cfg.Local.FactorioData.Autosave_interval > 0 {
-		autosave_interval = cfg.Local.FactorioData.Autosave_interval
+	if cfg.Local.FactorioData.AutoSaveMinutes > 0 {
+		autosave_interval = cfg.Local.FactorioData.AutoSaveMinutes
+	}
+	if cfg.Local.FactorioData.AFKKickMinutes > 0 {
+		autokick = cfg.Local.FactorioData.AFKKickMinutes
 	}
 
 	//for pos, patreon := range glob.PlayerList {
@@ -99,7 +102,7 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.SlowConnect.SlowConnect {
 		descrLines = append(descrLines, "slow-connect on")
 	}
-	if !cfg.Local.FactorioData.Autopause {
+	if !cfg.Local.FactorioData.AutoPause {
 		descrLines = append(descrLines, "AUTO-PAUSE OFF")
 	}
 	if cfg.Global.AuthServerBans {
@@ -134,7 +137,7 @@ func GenerateFactorioConfig() bool {
 		Autosave_interval:       autosave_interval,
 		Autosave_slots:          autosaves,
 		Afk_autokick_interval:   autokick,
-		Auto_pause:              cfg.Local.FactorioData.Autopause,
+		Auto_pause:              cfg.Local.FactorioData.AutoPause,
 		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
 	}
@@ -142,6 +145,7 @@ func GenerateFactorioConfig() bool {
 	c := "/config set"
 	if IsFactorioBooted() {
 		WriteFact(c + " name " + servName)
+		//WriteFact(c + " description " + strings.Join(descrLines, " ")) //No way to do newline =/
 		//		WriteFact(c + " max-players " + "0")
 		//		WriteFact(c + " visibility-public " + "true")
 		//		WriteFact(c + " visibility-steam " + "true")
@@ -152,7 +156,6 @@ func GenerateFactorioConfig() bool {
 		WriteFact(c + " afk-auto-kick " + strconv.Itoa(autokick))
 		//		WriteFact(c + " only-admins-can-pause " + "true")
 		//		WriteFact(c + " autosave-only-on-server " + "true")
-
 	}
 
 	outbuf := new(bytes.Buffer)
