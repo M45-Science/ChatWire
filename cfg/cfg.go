@@ -78,8 +78,9 @@ type GFactDataStruct struct {
 
 //Local Factorio settings
 type LFactDataStruct struct {
-	Autosave_interval int
-	Autopause         bool
+	AutoSaveMinutes int
+	AutoPause       bool
+	AFKKickMinutes  int
 }
 
 //Global, these are paths we need
