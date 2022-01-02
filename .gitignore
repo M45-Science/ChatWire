@@ -5,3 +5,4 @@ cw-local-config.json
 ChatWire
 cw.lock
 *.zip
+*.sh
