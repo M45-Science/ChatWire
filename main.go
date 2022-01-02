@@ -64,6 +64,8 @@ func main() {
 		return
 	}
 
+	cfg.ReadRoleList()
+
 	//Set autostart mode from config
 	if cfg.Local.AutoStart {
 		fact.SetAutoStart(true)

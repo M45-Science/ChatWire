@@ -575,7 +575,6 @@ func MainLoops() {
 		//Get Discord roles
 		//**************************
 		go func() {
-			cfg.ReadRoleList()
 			for glob.ServerRunning {
 				time.Sleep(time.Second)
 				if disc.DS != nil {

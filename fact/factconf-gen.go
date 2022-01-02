@@ -70,10 +70,6 @@ func GenerateFactorioConfig() bool {
 		autokick = cfg.Local.FactorioData.AFKKickMinutes
 	}
 
-	//for pos, patreon := range glob.PlayerList {
-	//patreon logic
-	//}
-
 	//Add some settings to descrLines, such as cheats, no blueprint, etc.
 
 	var descrLines []string
@@ -116,6 +112,7 @@ func GenerateFactorioConfig() bool {
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
 
+	cfg.RoleListLock.Lock()
 	conf := FactConf{
 		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
@@ -141,6 +138,7 @@ func GenerateFactorioConfig() bool {
 		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
 	}
+	cfg.RoleListLock.Unlock()
 
 	c := "/config set"
 	if IsFactorioBooted() {
