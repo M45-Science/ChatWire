@@ -82,7 +82,7 @@ var SettingList = []SettingListData{
 		Desc: "Map generation preset",
 		Type: "string",
 
-		MinStrLen: 4,
+		MinStrLen: 0,
 		MaxStrLen: 64,
 
 		CheckString: CheckMapGen,
@@ -214,6 +214,9 @@ func GetMapGenNames() []string {
 //See if this map gen exists
 func CheckMapGen(text string) bool {
 
+	if text == "" {
+		return true
+	}
 	genNames := GetMapGenNames()
 	for _, name := range genNames {
 		if strings.EqualFold(name, text) {

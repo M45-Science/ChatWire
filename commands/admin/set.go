@@ -30,23 +30,32 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		buf := ""
 		for _, setting := range SettingList {
 			data := ""
+			limits := ""
 			if setting.Type == "string" {
 				data = *setting.SData
+				if setting.ValidStrings != nil {
+					limits = "(valid check)"
+				} else if setting.CheckString != nil {
+					limits = "(valid check)"
+				}
 			} else if setting.Type == "int" {
-				data = fmt.Sprintf("%d", *setting.IData)
+				data = fmt.Sprintf("%v", *setting.IData)
+				limits = fmt.Sprintf("(%v-%v)", setting.MinInt, setting.MaxInt)
 			} else if setting.Type == "bool" {
 				data = support.BoolToString(*setting.BData)
 			} else if setting.Type == "float32" {
-				data = fmt.Sprintf("%f", *setting.FData32)
+				data = fmt.Sprintf("%v", *setting.FData32)
+				limits = fmt.Sprintf("(%v-%v)", setting.MinF32, setting.MaxF32)
 			} else if setting.Type == "float64" {
-				data = fmt.Sprintf("%f", *setting.FData64)
+				data = fmt.Sprintf("%v", *setting.FData64)
+				limits = fmt.Sprintf("(%v-%v)", setting.MinF64, setting.MaxF64)
 			}
 			if data == "" {
 				data = "(empty)"
 			}
-			buf = buf + fmt.Sprintf("%v\n`%v: %v`\n", setting.Desc, setting.Name, data)
+			buf = buf + fmt.Sprintf("%v\n`%v: %v %v`\n", setting.Desc, setting.Name, data, limits)
 		}
-		buf = buf + "\n`set <setting>` will show options."
+		buf = buf + "\n`set <setting>` will show options. (EMPTY) can be used to blank a string.\n"
 		fact.CMS(m.ChannelID, buf)
 	} else if arg1 != "" {
 		found := false
@@ -54,6 +63,9 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			if strings.EqualFold(setting.Name, arg1) {
 				found = true
 				if setting.Type == "string" {
+					if arg2thru == "(EMPTY)" {
+						arg2thru = ""
+					}
 					if len(setting.ValidStrings) > 0 {
 						foundValid := false
 						for _, validstring := range setting.ValidStrings {
@@ -74,7 +86,6 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						}
 					} else if setting.CheckString != nil {
 						if !setting.CheckString(arg2thru) {
-							fact.CMS(m.ChannelID, "Invalid string.")
 							if setting.ListString != nil {
 								buf := "```"
 								buf = buf + "Valid options below:\n"
