@@ -32,8 +32,9 @@ type SettingListData struct {
 	MaxStrLen    int
 	MinStrLen    int
 
-	CheckString func(string) bool
-	ListString  func() []string
+	CheckString       func(string) bool
+	ListString        func() []string
+	FactUpdateCommand string
 }
 
 //List of datatypes for settings
@@ -55,6 +56,8 @@ var SettingList = []SettingListData{
 		MaxStrLen: 64,
 		MinStrLen: 4,
 		SData:     &cfg.Local.Name,
+
+		FactUpdateCommand: "/cname",
 	},
 	{
 		Name: "Port",
@@ -119,21 +122,24 @@ var SettingList = []SettingListData{
 		MinStrLen: 4,
 		MaxStrLen: 256,
 
-		SData: &cfg.Local.ResetScheduleText,
+		SData:             &cfg.Local.ResetScheduleText,
+		FactUpdateCommand: "/resetint",
 	},
 	{
 		Name: "DisableBlueprints",
 		Desc: "Disable blueprints",
 		Type: "bool",
 
-		BData: &cfg.Local.DisableBlueprints,
+		BData:             &cfg.Local.DisableBlueprints,
+		FactUpdateCommand: "/blueprints",
 	},
 	{
 		Name: "EnableCheats",
 		Desc: "Enable cheats",
 		Type: "bool",
 
-		BData: &cfg.Local.EnableCheats,
+		BData:             &cfg.Local.EnableCheats,
+		FactUpdateCommand: "/cheats",
 	},
 	{
 		Name: "HideAutosaves",
@@ -182,6 +188,8 @@ var SettingList = []SettingListData{
 		Type: "bool",
 
 		BData: &cfg.Local.SoftModOptions.RestrictMode,
+
+		FactUpdateCommand: "/restrict",
 	},
 	{
 		Name: "FriendlyFire",
@@ -189,6 +197,35 @@ var SettingList = []SettingListData{
 		Type: "bool",
 
 		BData: &cfg.Local.SoftModOptions.FriendlyFire,
+
+		FactUpdateCommand: "/friendlyfire",
+	},
+	{
+		Name: "AFKKickMinutes",
+		Desc: "How many minutes before a player is kicked for being AFK",
+		Type: "int",
+
+		MaxInt: 120,
+		MinInt: 5,
+
+		IData: &cfg.Local.FactorioData.AFKKickMinutes,
+	},
+	{
+		Name: "AutoSaveMinutes",
+		Desc: "How many minutes between autosaves",
+		Type: "int",
+
+		MaxInt: 30,
+		MinInt: 5,
+
+		IData: &cfg.Local.FactorioData.AutoSaveMinutes,
+	},
+	{
+		Name: "AutoPause",
+		Desc: "Pause when no players online.",
+		Type: "bool",
+
+		BData: &cfg.Local.FactorioData.AutoPause,
 	},
 }
 
