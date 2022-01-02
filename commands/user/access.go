@@ -15,6 +15,7 @@ import (
 )
 
 //AccessServer locks PasswordListLock
+//This allows players to register, for discord roles and in-game perks
 func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if !fact.IsFactRunning() {

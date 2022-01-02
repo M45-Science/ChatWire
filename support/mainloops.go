@@ -583,14 +583,14 @@ func MainLoops() {
 						if fact.IsFactorioBooted() {
 							time.Sleep(time.Minute * 5)
 
-							glob.RoleListLock.Lock()
-							if len(glob.RoleList.Patreons) > 0 {
-								fact.WriteFact("/patreonlist " + strings.Join(glob.RoleList.Patreons, ","))
+							cfg.RoleListLock.Lock()
+							if len(cfg.RoleList.Patreons) > 0 {
+								fact.WriteFact("/patreonlist " + strings.Join(cfg.RoleList.Patreons, ","))
 							}
-							if len(glob.RoleList.NitroBooster) > 0 {
-								fact.WriteFact("/nitrolist " + strings.Join(glob.RoleList.NitroBooster, ","))
+							if len(cfg.RoleList.NitroBooster) > 0 {
+								fact.WriteFact("/nitrolist " + strings.Join(cfg.RoleList.NitroBooster, ","))
 							}
-							glob.RoleListLock.Unlock()
+							cfg.RoleListLock.Unlock()
 
 							cfg.UpdateRoleList()
 						}

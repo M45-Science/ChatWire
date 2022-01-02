@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+/* Send embeded message */
 func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
 	if ch == "" || embed == nil {
@@ -31,6 +32,7 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 	return fmt.Errorf("error")
 }
 
+/*Send normal message to a channel*/
 func SmartWriteDiscord(ch string, text string) {
 
 	if ch == "" || text == "" {
@@ -51,6 +53,7 @@ func SmartWriteDiscord(ch string, text string) {
 	}
 }
 
+/* Create a Discord channel */
 func SmartChannelCreate(id string) *discordgo.Channel {
 
 	if DS != nil {
@@ -71,6 +74,7 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 	return nil
 }
 
+/* Give a user a role */
 func SmartRoleAdd(gid string, uid string, rid string) error {
 
 	if DS != nil {
@@ -87,6 +91,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 	return fmt.Errorf("error")
 }
 
+/* See if a role exists */
 func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 
 	if g != nil && name != "" {
@@ -148,6 +153,7 @@ func GetDiscordAvatarFromId(id string, size int) string {
 	return ""
 }
 
+/* Look up DiscordID, from Factorio name. Only works for players that have registered */
 func GetDiscordIDFromFactorioName(pname string) string {
 
 	if pname == "" {
@@ -163,6 +169,7 @@ func GetDiscordIDFromFactorioName(pname string) string {
 	return ""
 }
 
+/* Look up Factorio name, from DiscordID. Only works for players that have registered */
 func GetFactorioNameFromDiscordID(id string) string {
 
 	if id == "" {

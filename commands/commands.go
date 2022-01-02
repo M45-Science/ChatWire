@@ -35,11 +35,6 @@ func CheckAdmin(m *discordgo.MessageCreate) bool {
 			return true
 		}
 	}
-	for _, admin := range cfg.Global.AdminData.IDs {
-		if m.Author.ID == admin {
-			return true
-		}
-	}
 	return false
 }
 

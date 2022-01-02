@@ -4,16 +4,29 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/constants"
 	"ChatWire/disc"
-	"ChatWire/glob"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"sync"
 )
 
+/* Cache of Players with specific Discord roles*/
+type RoleListData struct {
+	Version      string
+	Patreons     []string
+	NitroBooster []string
+	Moderators   []string
+}
+
+/* Discord role member-lists */
+var RoleListLock sync.Mutex
+var RoleList RoleListData
+
+//Cache a list of users with specific Discord roles
 func WriteRoleList() bool {
-	glob.RoleListLock.Lock()
-	defer glob.RoleListLock.Unlock()
+	RoleListLock.Lock()
+	defer RoleListLock.Unlock()
 
 	tempPath := constants.RoleListFile + "." + Local.ServerCallsign + ".tmp"
 	finalPath := constants.RoleListFile
@@ -22,44 +35,46 @@ func WriteRoleList() bool {
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
-	glob.RoleList.Version = "0.0.1"
+	RoleList.Version = "0.0.1"
 
-	if err := enc.Encode(glob.RoleList); err != nil {
-		botlog.DoLog("WriteRoleList: enc.Encode failure")
+	if err := enc.Encode(RoleList); err != nil {
+		botlog.DoLog("Writecfg.RoleList: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		botlog.DoLog("WriteRoleList: os.Create failure")
+		botlog.DoLog("Writecfg.RoleList: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		botlog.DoLog("WriteRoleList: WriteFile failure")
+		botlog.DoLog("Writecfg.RoleList: WriteFile failure")
 	}
 
 	err = os.Rename(tempPath, finalPath)
 
 	if err != nil {
-		botlog.DoLog("Couldn't rename rolelist file.")
+		botlog.DoLog("Couldn't rename RoleList file.")
 		return false
 	}
 
 	return true
 }
 
-func CreateRoleList() glob.RoleListData {
-	newcfg := glob.RoleListData{Version: "0.0.1"}
+//Create a new RoleList
+func CreateRoleList() RoleListData {
+	newcfg := RoleListData{Version: "0.0.1"}
 	return newcfg
 }
 
+//Read in cached list of Discord users with specific roles
 func ReadRoleList() bool {
-	glob.RoleListLock.Lock()
-	defer glob.RoleListLock.Unlock()
+	RoleListLock.Lock()
+	defer RoleListLock.Unlock()
 
 	_, err := os.Stat(constants.RoleListFile)
 	notfound := os.IsNotExist(err)
@@ -67,11 +82,11 @@ func ReadRoleList() bool {
 	if notfound {
 		botlog.DoLog("ReadGCfg: os.Stat failed, auto-defaults generated.")
 		newcfg := CreateRoleList()
-		glob.RoleList = newcfg
+		RoleList = newcfg
 
 		_, err := os.Create(constants.RoleListFile)
 		if err != nil {
-			botlog.DoLog("Could not create rolelist.")
+			botlog.DoLog("Could not create RoleList.")
 			return false
 		}
 		return true
@@ -83,43 +98,44 @@ func ReadRoleList() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("ReadRoleList: Unmashal failure")
+				botlog.DoLog("Readcfg.RoleList: Unmashal failure")
 				return false
 			}
 
-			botlog.DoLog("ReadRoleList: Successfully read.")
-			glob.RoleList = newcfg
+			botlog.DoLog("Readcfg.RoleList: Successfully read.")
+			RoleList = newcfg
 
 			return true
 		} else {
-			botlog.DoLog("ReadRoleList: ReadFile failure")
+			botlog.DoLog("Readcfg.RoleList: ReadFile failure")
 			return false
 		}
 	}
 }
 
+//Check with Discord, get updated list of users
 func UpdateRoleList() {
-	glob.RoleListLock.Lock()
-	defer glob.RoleListLock.Unlock()
+	RoleListLock.Lock()
+	defer RoleListLock.Unlock()
 	g := disc.Guild
 
 	if g != nil {
-		glob.RoleList.NitroBooster = []string{}
-		glob.RoleList.Patreons = []string{}
-		glob.RoleList.Moderators = []string{}
+		RoleList.NitroBooster = []string{}
+		RoleList.Patreons = []string{}
+		RoleList.Moderators = []string{}
 
 		for _, m := range g.Members {
 			for _, r := range m.Roles {
 				if r == Global.RoleData.NitroRoleID {
-					glob.RoleList.NitroBooster = append(glob.RoleList.NitroBooster, m.User.Username)
+					RoleList.NitroBooster = append(RoleList.NitroBooster, m.User.Username)
 				} else if r == Global.RoleData.PatreonRoleID {
-					glob.RoleList.Patreons = append(glob.RoleList.Patreons, m.User.Username)
+					RoleList.Patreons = append(RoleList.Patreons, m.User.Username)
 				} else if r == Global.RoleData.ModeratorRoleID {
-					glob.RoleList.Moderators = append(glob.RoleList.Moderators, m.User.Username)
+					RoleList.Moderators = append(RoleList.Moderators, m.User.Username)
 				}
 			}
 		}
-		if len(glob.RoleList.Patreons) > 0 {
+		if len(RoleList.Patreons) > 0 {
 			go WriteRoleList()
 		}
 	}

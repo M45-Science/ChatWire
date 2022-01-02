@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//Change server settings
 func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	arglen := len(args)

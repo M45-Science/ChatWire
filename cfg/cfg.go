@@ -17,6 +17,7 @@ import (
 var Local config
 var Global gconfig
 
+//Local config
 type config struct {
 	Version string
 
@@ -45,6 +46,7 @@ type config struct {
 	SoftModOptions SoftModOptionsStruct
 }
 
+//Global config (shared with other servers)
 type gconfig struct {
 	Version string
 	Domain  string
@@ -55,7 +57,6 @@ type gconfig struct {
 	GroupName      string
 	FactorioData   GFactDataStruct
 	DiscordData    DiscordDataStruct
-	AdminData      AdminData
 	RoleData       RoleDataStruct
 	PathData       PathDataStruct
 	MapPreviewData MapPreviewDataStruct
@@ -66,6 +67,7 @@ type gconfig struct {
 	AuthServerBans bool
 }
 
+//Global Factorio data
 type GFactDataStruct struct {
 	Username  string
 	Token     string
@@ -74,17 +76,13 @@ type GFactDataStruct struct {
 	ServerDescription string
 }
 
+//Local Factorio settings
 type LFactDataStruct struct {
 	Autosave_interval int
 	Autopause         bool
 }
 
-type AdminData struct {
-	IDs   []string
-	Names []string
-}
-
-//Global
+//Global, these are paths we need
 //bor = based on root
 //boh = based on home
 //ap = absolute path
@@ -115,6 +113,7 @@ type PathDataStruct struct {
 	ArchiveURL       string
 }
 
+//Discord-specific data global
 type DiscordDataStruct struct {
 	Token   string
 	GuildID string
@@ -127,6 +126,7 @@ type DiscordDataStruct struct {
 	AnnounceChannelID string
 }
 
+//Discord role info, global
 type RoleDataStruct struct {
 	ModeratorRoleID string
 	PatreonRoleID   string
@@ -138,6 +138,7 @@ type RoleDataStruct struct {
 	NewRoleName     string
 }
 
+//Map preview generation settings, global
 type MapPreviewDataStruct struct {
 	Args       string
 	Res        string
@@ -146,18 +147,20 @@ type MapPreviewDataStruct struct {
 	JPGScale   string
 }
 
-//Local
+//Discord data, per-server
 type ChannelDataStruct struct {
 	Pos    int
 	ChatID string
 }
 
+//Local, Factorio setting
 type SlowConnectStruct struct {
 	SlowConnect  bool
 	DefaultSpeed float32
 	ConnectSpeed float32
 }
 
+//Local soft-mod options
 type SoftModOptionsStruct struct {
 	DoWhitelist    bool
 	RestrictMode   bool
@@ -203,6 +206,7 @@ func WriteGCfg() bool {
 	return true
 }
 
+//Used for map names
 func randomBase64String(l int) string {
 	buff := make([]byte, int(math.Ceil(float64(l)/float64(1.33333333333))))
 	rand.Read(buff)
@@ -210,6 +214,7 @@ func randomBase64String(l int) string {
 	return str[:l] // strip 1 extra character we get from odd length results
 }
 
+//Read global/shared server config data
 func ReadGCfg() bool {
 
 	_, err := os.Stat(constants.CWGlobalConfig)
@@ -347,11 +352,13 @@ func ReadGCfg() bool {
 	}
 }
 
+//Make new empty gconfig data
 func CreateGCfg() gconfig {
 	newcfg := gconfig{Version: "0.0.1"}
 	return newcfg
 }
 
+//Write local server settings file
 func WriteLCfg() bool {
 	tempPath := constants.CWLocalConfig + "." + Local.ServerCallsign + ".tmp"
 	finalPath := constants.CWLocalConfig
@@ -390,6 +397,7 @@ func WriteLCfg() bool {
 	return true
 }
 
+//Read local server settings file
 func ReadLCfg() bool {
 
 	_, err := os.Stat(constants.CWLocalConfig)
@@ -414,7 +422,7 @@ func ReadLCfg() bool {
 			botlog.DoLog("ReadLCfg: ChatID not set, thist MUST be set to a valid Discord channel ID!")
 			Local.ChannelData.ChatID = "MY DISCORD CHANNEL ID"
 		}
-		WriteLCfg()
+		WriteLCfg() //Write the defaults
 		return true
 	} else { //Just read the config
 
@@ -453,6 +461,7 @@ func ReadLCfg() bool {
 	}
 }
 
+//Make empty local config
 func CreateLCfg() config {
 	newcfg := config{Version: "0.0.1"}
 	return newcfg

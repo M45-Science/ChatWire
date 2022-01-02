@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//Allow regulars to vote to rewind the map
 func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	//layoutUS := "01/02 03:04 PM MST"
@@ -40,7 +41,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					fact.CMS(m.ChannelID, "I don't see that autosave.")
 					return
 				} else {
-					//add vote
+					fact.CMS(m.ChannelID, "Not Yet Implented (in-progress)")
 				}
 			}
 		}

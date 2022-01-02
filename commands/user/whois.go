@@ -16,6 +16,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+/* SORT FUNCTIONS */
 //Last Seen
 type ByLastSeen []glob.PlayerData
 
@@ -30,6 +31,7 @@ func (a ByNew) Len() int           { return len(a) }
 func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
+//Replace me!! TODO
 func levelToString(level int) string {
 
 	name := "Error"
@@ -55,11 +57,6 @@ func levelToString(level int) string {
 func checkadmin(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.ModeratorRoleID {
-			return true
-		}
-	}
-	for _, admin := range cfg.Global.AdminData.IDs {
-		if m.Author.ID == admin {
 			return true
 		}
 	}
@@ -90,6 +87,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	if argnum < 1 {
 		fact.CMS(m.ChannelID, "**Arguments:** <option>\n\n```options:\nrecent (recently online)\nnew (by time joined)\nregistered (recently registered)\n<factorio/discord name search>```")
 		return
+		/* SHOW RECENTLY SEEN USERS */
 	} else if strings.ToLower(args[0]) == "recent" {
 		buf = "Recently online:\n"
 
@@ -122,7 +120,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 				count++
 			}
 		}
-
+		/* SHOW PLAYERS THAT JUST JOINED */
 	} else if strings.ToLower(args[0]) == "new" {
 		buf = "Recently joined:\n"
 
@@ -156,6 +154,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			}
 		}
 
+		/* SHOW PLAYERS THAT REGISTERED */
 	} else if strings.ToLower(args[0]) == "registered" {
 		buf = "Recently joined and registered:\n"
 
@@ -192,7 +191,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		}
 
 	} else {
-
+		/*STANDARD WHOIS SEARCH*/
 		count := 0
 		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 		for _, p := range slist {

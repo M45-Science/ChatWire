@@ -18,8 +18,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+/* Delete old sav-*.zip, gen-*.zip files, to save space. */
 func DeleteOldSav() {
-	//Delete old sav-*.zip, gen-*.zip files, to save space.
 	patha := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/sav-*.zip"
 	pathb := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-*.zip"
 
@@ -37,20 +37,7 @@ func DeleteOldSav() {
 	}
 }
 
-func FactorioIsOffline(err bool) {
-
-	if IsFactorioBooted() {
-		if err {
-			LogCMS(cfg.Local.ChannelData.ChatID, "Factorio encountered an error, and is now offline.")
-		} else {
-			LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
-		}
-	}
-
-	SetNumPlayers(0)
-	SetFactorioBooted(false)
-}
-
+/* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
 	if IsFactRunning() {
 		if cfg.Local.SoftModOptions.DoWhitelist {
@@ -61,6 +48,7 @@ func WhitelistPlayer(pname string, level int) {
 	}
 }
 
+/* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
 	wpath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix +
@@ -101,6 +89,7 @@ func WriteWhitelist() int {
 	return 0
 }
 
+/* Quit factorio */
 func QuitFactorio() {
 
 	SetRelaunchThrottle(0)
@@ -120,7 +109,7 @@ func QuitFactorio() {
 	}
 }
 
-//Disabled
+//Tell Factorio to save the map
 func SaveFactorio() {
 
 	if IsFactorioBooted() && 1 == 2 {
@@ -134,6 +123,7 @@ func SaveFactorio() {
 	}
 }
 
+/* Send a string to Factorio, via stdin */
 func WriteFact(input string) {
 	PipeLock.Lock()
 	defer PipeLock.Unlock()
@@ -168,6 +158,7 @@ func WriteFact(input string) {
 	}
 }
 
+/* Promote a player to the level they have, in Factorio and on Discord */
 func AutoPromote(pname string) string {
 	newusername := " *(New Player)* "
 
@@ -230,6 +221,7 @@ func AutoPromote(pname string) string {
 
 }
 
+/* Update our channel name, but don't send it yet */
 func UpdateChannelName() {
 
 	var newchname string
@@ -247,6 +239,7 @@ func UpdateChannelName() {
 
 }
 
+/* When appropriate, actually update the channel name */
 func DoUpdateChannelName() {
 
 	if disc.DS == nil {
@@ -271,6 +264,7 @@ func DoUpdateChannelName() {
 	}
 }
 
+/* Get a random color, used for Factorio text */
 func RandomColor(justnumbers bool) string {
 	var buf string
 

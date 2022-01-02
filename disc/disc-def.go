@@ -29,3 +29,11 @@ type CMSBuf struct {
 	Channel string
 	Text    string
 }
+
+/* Cache of Players with specific Discord roles*/
+type RoleListData struct {
+	Version      string
+	Patreons     []string
+	NitroBooster []string
+	Moderators   []string
+}

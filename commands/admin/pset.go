@@ -9,6 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//Set a player's level. Needs to support level names, and have useful help/errors
 func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	argnum := len(args)

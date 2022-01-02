@@ -228,9 +228,6 @@ func SetFactRunning(run bool, err bool) {
 
 	if wasrun != run {
 		UpdateChannelName()
-		if !run {
-			FactorioIsOffline(err)
-		}
 		return
 	}
 }

@@ -36,6 +36,7 @@ type SettingListData struct {
 	ListString  func() []string
 }
 
+//List of datatypes for settings
 var SettingType = []string{
 	"string",
 	"int",
@@ -44,6 +45,7 @@ var SettingType = []string{
 	"float64",
 }
 
+//List of settings
 var SettingList = []SettingListData{
 	{
 		Name: "Name",
@@ -190,6 +192,7 @@ var SettingList = []SettingListData{
 	},
 }
 
+//Get list of map generation presets, because an invalid one will make map generation fail
 func GetMapGenNames() []string {
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.MapGenPath
 	files, err := ioutil.ReadDir(path)
@@ -208,6 +211,7 @@ func GetMapGenNames() []string {
 	return output
 }
 
+//See if this map gen exists
 func CheckMapGen(text string) bool {
 
 	genNames := GetMapGenNames()

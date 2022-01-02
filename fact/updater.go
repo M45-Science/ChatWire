@@ -12,6 +12,7 @@ import (
 	"ChatWire/constants"
 )
 
+/* Check if Factorio update zip is valid */
 func CheckZip(filename string) bool {
 
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ZipIntegrityLimit)
@@ -38,6 +39,7 @@ func CheckZip(filename string) bool {
 	return false
 }
 
+/* Check if there is a new Factorio update */
 func CheckFactUpdate(logNoUpdate bool) {
 
 	if cfg.Global.PathData.FactUpdaterPath != "" {
@@ -140,6 +142,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 }
 
+/* Update Factorio */
 func FactUpdate() {
 
 	UpdateFactorioLock.Lock()

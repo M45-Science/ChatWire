@@ -6,13 +6,25 @@ import (
 	"time"
 )
 
+/* Player database */
+type PlayerData struct {
+	Name     string
+	Level    int
+	ID       string
+	Creation int64
+	LastSeen int64
+}
+
+/* Registrarion codes */
+type PassData struct {
+	Code   string
+	DiscID string
+	Time   int64
+}
+
 /* Server status */
 var ServerRunning bool = true
 var Uptime time.Time
-
-/* Discord role member-lists */
-var RoleListLock sync.Mutex
-var RoleList RoleListData
 
 /* Log data */
 var GameLogName = ""
@@ -28,10 +40,12 @@ var DoRebootBotLock sync.RWMutex
 var RelaunchThrottle = 0
 var RelaunchThrottleLock sync.RWMutex
 
+/* Player database */
 var PlayerList map[string]*PlayerData
 var PlayerListLock sync.RWMutex
 var PlayerListWriteLock sync.Mutex
 
+/* Registration codes */
 var PassList map[string]*PassData
 var PasswordListLock sync.RWMutex
 

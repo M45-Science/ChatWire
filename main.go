@@ -178,14 +178,13 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 		//Chat message handling
-		if fact.IsFactorioBooted() { // Don't bother if we arne't running...
+		if fact.IsFactorioBooted() { // Don't bother if Factorio isn't running...
 			if !strings.HasPrefix(ctext, "!") { //block mee6 commands
 
 				alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
 				cmess := sclean.StripControlAndSubSpecial(ctext)
 				cmess = sclean.RemoveDiscordMarkdown(cmess)
-				//cmess = sclean.RemoveFactorioTags(cmess)
 				dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 				nbuf := ""
 
@@ -225,8 +224,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				}
 
 				//Cap name length
-				cordname = sclean.TruncateString(cordname, 25)
-				factuser = sclean.TruncateString(factuser, 25)
+				cordname = sclean.TruncateString(cordname, 32)
+				factuser = sclean.TruncateString(factuser, 32)
 
 				//Check if discord name contains factorio name, if not lets show both their names
 				if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {

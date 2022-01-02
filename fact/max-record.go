@@ -11,6 +11,7 @@ import (
 	"ChatWire/glob"
 )
 
+//Write record of max number of players online
 func WriteRecord() {
 	//Write to file
 	glob.RecordPlayersWriteLock.Lock()
@@ -40,6 +41,7 @@ func WriteRecord() {
 	}
 }
 
+//Read record of max number of players online
 func LoadRecord() {
 	glob.RecordPlayersWriteLock.Lock()
 	defer glob.RecordPlayersWriteLock.Unlock()
