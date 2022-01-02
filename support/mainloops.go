@@ -71,12 +71,14 @@ func MainLoops() {
 				} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() { //Isn't running, but we should be
 					//Dont relaunch if we are set to auto update
 
-					command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
-					out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
-					if errs != nil {
-						botlog.DoLog(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
-					} else {
-						botlog.DoLog("Soft-mod inserted into save file.")
+					if cfg.Global.PathData.ScriptInserterPath != "" {
+						command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
+						out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
+						if errs != nil {
+							botlog.DoLog(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
+						} else {
+							botlog.DoLog("Soft-mod inserted into save file.")
+						}
 					}
 
 					//Generate config file for Factorio server, if it fails stop everything.
