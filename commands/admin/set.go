@@ -62,6 +62,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		for _, setting := range SettingList {
 			if strings.EqualFold(setting.Name, arg1) {
 				found = true
+				/* STRING TYPE */
 				if setting.Type == "string" {
 					if arg2thru == "(EMPTY)" {
 						arg2thru = ""
@@ -105,7 +106,14 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						fact.CMS(m.ChannelID, "String too long. Maximum length: "+strconv.Itoa(setting.MaxStrLen))
 					}
 					*setting.SData = arg2thru
+					cfg.WriteLCfg()
+					fact.GenerateFactorioConfig()
 					fact.CMS(m.ChannelID, fmt.Sprintf("Set %v to %v", setting.Name, arg2thru))
+					if setting.FactUpdateCommand != "" {
+						fact.WriteFact(setting.FactUpdateCommand + " " + arg2thru)
+						fact.CMS(m.ChannelID, "Live-updated setting on Factorio.")
+					}
+					/* INTEGER TYPE  */
 				} else if setting.Type == "int" {
 					val, err := strconv.Atoi(arg2thru)
 					if err != nil {
@@ -119,7 +127,12 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						cfg.WriteLCfg()
 						fact.GenerateFactorioConfig()
 						fact.CMS(m.ChannelID, fmt.Sprintf("Set %v to %v", setting.Name, val))
+						if setting.FactUpdateCommand != "" {
+							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							fact.CMS(m.ChannelID, "Live-updated setting on Factorio.")
+						}
 					}
+					/* BOOL TYPE */
 				} else if setting.Type == "bool" {
 					val, err := support.StringToBool(arg2thru)
 					if err == true {
@@ -130,7 +143,12 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						cfg.WriteLCfg()
 						fact.GenerateFactorioConfig()
 						fact.CMS(m.ChannelID, fmt.Sprintf("%v is now %v", setting.Name, support.BoolToString(val)))
+						if setting.FactUpdateCommand != "" {
+							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", support.BoolToString(val)))
+							fact.CMS(m.ChannelID, "Live-updated setting on Factorio.")
+						}
 					}
+					/* FLOAT32 TYPE */
 				} else if setting.Type == "float32" {
 					val64, err := strconv.ParseFloat(arg2thru, 32)
 					val := float32(val64)
@@ -146,7 +164,12 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						cfg.WriteLCfg()
 						fact.GenerateFactorioConfig()
 						fact.CMS(m.ChannelID, fmt.Sprintf("Set %v to %v", setting.Name, val))
+						if setting.FactUpdateCommand != "" {
+							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							fact.CMS(m.ChannelID, "Live-updated setting on Factorio.")
+						}
 					}
+					/* FLOAT64 TYPE */
 				} else if setting.Type == "float64" {
 					val, err := strconv.ParseFloat(arg2thru, 64)
 					if err != nil {
@@ -160,7 +183,12 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						cfg.WriteLCfg()
 						fact.GenerateFactorioConfig()
 						fact.CMS(m.ChannelID, fmt.Sprintf("Set %v to %v", setting.Name, val))
+						if setting.FactUpdateCommand != "" {
+							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							fact.CMS(m.ChannelID, "Live-updated setting on Factorio.")
+						}
 					}
+
 				} else {
 					fact.CMS(m.ChannelID, fmt.Sprintf("Unknown type %v for %v", setting.Type, setting.Name))
 				}
