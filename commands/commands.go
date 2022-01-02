@@ -92,7 +92,7 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 //Display help, based on user level
 func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
-	buf := "Help:\n```\n"
+	buf := "```"
 
 	if CheckAdmin(m) {
 		for _, command := range CL.CommandList {
@@ -100,31 +100,16 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			if command.Admin {
 				admin = "(Admin)"
 			}
-			buf = buf + fmt.Sprintf("%s%-12s %s %s\n", cfg.Global.
-				DiscordCommandPrefix, strings.ToLower(command.Name), admin, command.Help)
+			buf = buf + fmt.Sprintf("%14v %v %v\n", strings.ToLower(command.Name), admin, command.Help)
 		}
-		buf = buf + "```\nAdmin Command options:\n"
-
-		buf = buf + "rewind <autosave number>\n"
-		buf = buf + "set <verbose>\n"
 	} else {
 		for _, command := range CL.CommandList {
 			if !command.Admin {
-				buf = buf + fmt.Sprintf("%s%-12s %s\n", cfg.Global.
-					DiscordCommandPrefix, strings.ToLower(command.Name), command.Help)
+				buf = buf + fmt.Sprintf("%14v %v\n", strings.ToLower(command.Name), command.Help)
 			}
 		}
 
 	}
-
-	buf = buf + "```\nCommand options:\n"
-
-	buf = buf + "whois <recent,new,registered,factorio/discord name (autosearch)>\n"
-	buf = buf + "info verbose\n"
-	buf = buf + "vote-rewind <autosave number> (regular, registered only)\n"
-	buf = buf + "set <no argument> (this will show all options)\n"
-	buf = buf + "update cancel stop a pending update\n"
-	buf = buf + "Any commands that require an argument will show help if no argument is supplied.\n"
-
+	buf = buf + "```"
 	fact.CMS(m.ChannelID, buf)
 }
