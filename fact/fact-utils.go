@@ -135,13 +135,13 @@ func SaveFactorio() {
 }
 
 func WriteFact(input string) {
-	glob.PipeLock.Lock()
-	defer glob.PipeLock.Unlock()
+	PipeLock.Lock()
+	defer PipeLock.Unlock()
 
 	//Clean string
 	buf := sclean.StripControlAndSubSpecial(input)
 
-	gpipe := glob.Pipe
+	gpipe := Pipe
 	if gpipe != nil {
 
 		plen := len(buf)
@@ -209,7 +209,7 @@ func AutoPromote(pname string) string {
 
 			guild := GetGuild()
 
-			if guild != nil && glob.DS != nil {
+			if guild != nil && disc.DS != nil {
 
 				errrole, regrole := disc.RoleExists(guild, newrole)
 
@@ -241,29 +241,29 @@ func UpdateChannelName() {
 		newchname = fmt.Sprintf("%v🟢%v", nump, cfg.Local.ServerCallsign+"-"+cfg.Local.Name)
 	}
 
-	glob.UpdateChannelLock.Lock()
-	glob.NewChanName = newchname
-	glob.UpdateChannelLock.Unlock()
+	disc.UpdateChannelLock.Lock()
+	disc.NewChanName = newchname
+	disc.UpdateChannelLock.Unlock()
 
 }
 
 func DoUpdateChannelName() {
 
-	if glob.DS == nil {
+	if disc.DS == nil {
 		return
 	}
 
-	glob.UpdateChannelLock.Lock()
-	chname := glob.NewChanName
-	oldchname := glob.OldChanName
-	glob.UpdateChannelLock.Unlock()
+	disc.UpdateChannelLock.Lock()
+	chname := disc.NewChanName
+	oldchname := disc.OldChanName
+	disc.UpdateChannelLock.Unlock()
 
 	if chname != oldchname && cfg.Local.ChannelData.ChatID != "" {
-		glob.UpdateChannelLock.Lock()
-		glob.OldChanName = glob.NewChanName
-		glob.UpdateChannelLock.Unlock()
+		disc.UpdateChannelLock.Lock()
+		disc.OldChanName = disc.NewChanName
+		disc.UpdateChannelLock.Unlock()
 
-		_, aerr := glob.DS.ChannelEditComplex(cfg.Local.ChannelData.ChatID, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.ChannelData.Pos})
+		_, aerr := disc.DS.ChannelEditComplex(cfg.Local.ChannelData.ChatID, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.ChannelData.Pos})
 
 		if aerr != nil {
 			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))

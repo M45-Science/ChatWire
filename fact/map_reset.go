@@ -15,7 +15,6 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
-	"ChatWire/glob"
 	"ChatWire/sclean"
 )
 
@@ -68,11 +67,11 @@ func Map_reset(data string) {
 	}
 
 	//Prevent another map reset from accidently running at the same time
-	glob.GameMapLock.Lock()
-	defer glob.GameMapLock.Unlock()
+	GameMapLock.Lock()
+	defer GameMapLock.Unlock()
 
 	//Get factorio version, for archive folder name
-	version := strings.Split(glob.FactorioVersion, ".")
+	version := strings.Split(FactorioVersion, ".")
 	vlen := len(version)
 	if vlen < 3 {
 		botlog.DoLog("Unable to determine factorio version.")
@@ -80,7 +79,7 @@ func Map_reset(data string) {
 	}
 
 	//Only proceed if we were running a map, and we know our factorio version.
-	if glob.GameMapPath != "" && glob.FactorioVersion != constants.Unknown {
+	if GameMapPath != "" && FactorioVersion != constants.Unknown {
 		shortversion := strings.Join(version[0:2], ".")
 
 		t := time.Now()
@@ -89,7 +88,7 @@ func Map_reset(data string) {
 		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
 		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
 
-		from, erra := os.Open(glob.GameMapPath)
+		from, erra := os.Open(GameMapPath)
 		if erra != nil {
 			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
 			return

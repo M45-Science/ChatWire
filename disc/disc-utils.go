@@ -17,8 +17,8 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 		return nil
 	}
 
-	if glob.DS != nil {
-		_, err := glob.DS.ChannelMessageSendEmbed(ch, embed)
+	if DS != nil {
+		_, err := DS.ChannelMessageSendEmbed(ch, embed)
 
 		if err != nil {
 
@@ -37,8 +37,8 @@ func SmartWriteDiscord(ch string, text string) {
 		return
 	}
 
-	if glob.DS != nil {
-		_, err := glob.DS.ChannelMessageSend(ch, text)
+	if DS != nil {
+		_, err := DS.ChannelMessageSend(ch, text)
 
 		if err != nil {
 
@@ -53,8 +53,8 @@ func SmartWriteDiscord(ch string, text string) {
 
 func SmartChannelCreate(id string) *discordgo.Channel {
 
-	if glob.DS != nil {
-		ch, err := glob.DS.UserChannelCreate(id)
+	if DS != nil {
+		ch, err := DS.UserChannelCreate(id)
 
 		if err != nil || ch == nil {
 
@@ -73,8 +73,8 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 
 func SmartRoleAdd(gid string, uid string, rid string) error {
 
-	if glob.DS != nil {
-		err := glob.DS.GuildMemberRoleAdd(gid, uid, rid)
+	if DS != nil {
+		err := DS.GuildMemberRoleAdd(gid, uid, rid)
 
 		if err != nil {
 
@@ -109,10 +109,10 @@ func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 
 //Discord name from discordid
 func GetNameFromID(id string, disc bool) string {
-	if id == "" || glob.DS == nil {
+	if id == "" || DS == nil {
 		return ""
 	}
-	g := glob.Guild
+	g := Guild
 
 	if g != nil {
 		for _, m := range g.Members {
@@ -132,10 +132,10 @@ func GetNameFromID(id string, disc bool) string {
 //Discord avatar from discordid
 func GetDiscordAvatarFromId(id string, size int) string {
 
-	if id == "" || glob.DS == nil {
+	if id == "" || DS == nil {
 		return ""
 	}
-	g := glob.Guild
+	g := Guild
 
 	if g != nil {
 		for _, m := range g.Members {

@@ -11,7 +11,6 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/fact"
-	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -19,10 +18,10 @@ import (
 //Archive map
 func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
-	glob.GameMapLock.Lock()
-	defer glob.GameMapLock.Unlock()
+	fact.GameMapLock.Lock()
+	defer fact.GameMapLock.Unlock()
 
-	version := strings.Split(glob.FactorioVersion, ".")
+	version := strings.Split(fact.FactorioVersion, ".")
 	vlen := len(version)
 
 	if vlen < 3 {
@@ -30,7 +29,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		return
 	}
 
-	if glob.GameMapPath != "" && glob.FactorioVersion != constants.Unknown {
+	if fact.GameMapPath != "" && fact.FactorioVersion != constants.Unknown {
 		shortversion := strings.Join(version[0:2], ".")
 
 		t := time.Now()
@@ -39,7 +38,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
 		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
 
-		from, erra := os.Open(glob.GameMapPath)
+		from, erra := os.Open(fact.GameMapPath)
 		if erra != nil {
 			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
 		}

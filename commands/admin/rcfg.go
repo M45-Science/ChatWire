@@ -5,7 +5,6 @@ import (
 
 	"ChatWire/cfg"
 	"ChatWire/fact"
-	"ChatWire/glob"
 	"ChatWire/support"
 
 	"github.com/bwmarrin/discordgo"
@@ -14,8 +13,8 @@ import (
 //Reload config files
 func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
-	glob.GameMapLock.Lock()
-	defer glob.GameMapLock.Unlock()
+	fact.GameMapLock.Lock()
+	defer fact.GameMapLock.Unlock()
 
 	//Read global and local configs
 	if !cfg.ReadGCfg() {

@@ -3,6 +3,7 @@ package cfg
 import (
 	"ChatWire/botlog"
 	"ChatWire/constants"
+	"ChatWire/disc"
 	"ChatWire/glob"
 	"bytes"
 	"encoding/json"
@@ -100,7 +101,7 @@ func ReadRoleList() bool {
 func UpdateRoleList() {
 	glob.RoleListLock.Lock()
 	defer glob.RoleListLock.Unlock()
-	g := glob.Guild
+	g := disc.Guild
 
 	if g != nil {
 		glob.RoleList.NitroBooster = []string{}

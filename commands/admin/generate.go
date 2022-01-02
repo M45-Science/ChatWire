@@ -13,7 +13,6 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/fact"
-	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -26,8 +25,8 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		return
 	}
 
-	glob.FactorioLaunchLock.Lock()
-	defer glob.FactorioLaunchLock.Unlock()
+	fact.FactorioLaunchLock.Lock()
+	defer fact.FactorioLaunchLock.Unlock()
 
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
@@ -35,8 +34,8 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	MapPreset := cfg.Local.MapPreset
 
-	if glob.LastMapSeed > 0 {
-		ourseed = glob.LastMapSeed
+	if fact.LastMapSeed > 0 {
+		ourseed = fact.LastMapSeed
 	}
 
 	//If seed given

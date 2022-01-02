@@ -123,7 +123,7 @@ func startbot() {
 
 	if bot != nil && erra == nil && errb == nil {
 		//Save discord descriptor here
-		glob.DS = bot
+		disc.DS = bot
 	}
 
 	bot.LogLevel = discordgo.LogWarning

@@ -13,7 +13,6 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/fact"
-	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -26,8 +25,8 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 		return
 	}
 
-	glob.FactorioLaunchLock.Lock()
-	defer glob.FactorioLaunchLock.Unlock()
+	fact.FactorioLaunchLock.Lock()
+	defer fact.FactorioLaunchLock.Unlock()
 
 	fact.CMS(m.ChannelID, "Generating map preview...")
 
@@ -36,10 +35,10 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	ourseed := uint64(t.UnixNano())
 	buf := new(bytes.Buffer)
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
-	glob.LastMapSeed = ourseed
+	fact.LastMapSeed = ourseed
 	MapPreset := cfg.Local.MapPreset
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	glob.LastMapCode = ourcode
+	fact.LastMapCode = ourcode
 
 	path := fmt.Sprintf("%s%s.png", cfg.Global.PathData.MapPreviewPath, ourcode)
 	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.PathData.MapPreviewPath, ourcode)

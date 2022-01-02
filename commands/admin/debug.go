@@ -11,7 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//StatServer locks PlayerListLock (READ)
+//Debug command
 func Debug(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	numreg := 0

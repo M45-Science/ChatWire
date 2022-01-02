@@ -22,10 +22,10 @@ import (
 
 // IsPatreon checks if user has patreon role
 func IsPatreon(id string) bool {
-	if id == "" || glob.DS == nil {
+	if id == "" || disc.DS == nil {
 		return false
 	}
-	g := glob.Guild
+	g := disc.Guild
 
 	if g != nil {
 		for _, m := range g.Members {
@@ -43,10 +43,10 @@ func IsPatreon(id string) bool {
 
 // IsNitro checks if user has nitro role
 func IsNitro(id string) bool {
-	if id == "" || glob.DS == nil {
+	if id == "" || disc.DS == nil {
 		return false
 	}
-	g := glob.Guild
+	g := disc.Guild
 
 	if g != nil {
 		for _, m := range g.Members {
@@ -96,8 +96,8 @@ func Chat() {
 
 	go func() {
 		for glob.ServerRunning {
-			if glob.GameBuffer != nil {
-				reader := bufio.NewScanner(glob.GameBuffer)
+			if fact.GameBuffer != nil {
+				reader := bufio.NewScanner(fact.GameBuffer)
 				time.Sleep(time.Millisecond * 100)
 				for reader.Scan() {
 					line := reader.Text()
@@ -148,11 +148,11 @@ func Chat() {
 					lowerlistlen := len(lowerlist)
 
 					//Decrement every time we see activity, if we see time not progressing, add two
-					glob.PausedTicksLock.Lock()
-					if glob.PausedTicks > 0 {
-						glob.PausedTicks--
+					fact.PausedTicksLock.Lock()
+					if fact.PausedTicks > 0 {
+						fact.PausedTicks--
 					}
-					glob.PausedTicksLock.Unlock()
+					fact.PausedTicksLock.Unlock()
 
 					//********************************
 					//FILTERED AREA
@@ -193,22 +193,22 @@ func Chat() {
 									newtime := fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
 
 									//Pause detection
-									glob.GametimeLock.Lock()
-									glob.PausedTicksLock.Lock()
+									fact.GametimeLock.Lock()
+									fact.PausedTicksLock.Lock()
 
-									if glob.LastGametime == glob.Gametime {
-										if glob.PausedTicks <= constants.PauseThresh {
-											glob.PausedTicks = glob.PausedTicks + 2
+									if fact.LastGametime == fact.Gametime {
+										if fact.PausedTicks <= constants.PauseThresh {
+											fact.PausedTicks = fact.PausedTicks + 2
 										}
 									} else {
-										glob.PausedTicks = 0
+										fact.PausedTicks = 0
 									}
-									glob.LastGametime = glob.Gametime
-									glob.GametimeString = lowerline
-									glob.Gametime = newtime
+									fact.LastGametime = fact.Gametime
+									fact.GametimeString = lowerline
+									fact.Gametime = newtime
 
-									glob.PausedTicksLock.Unlock()
-									glob.GametimeLock.Unlock()
+									fact.PausedTicksLock.Unlock()
+									fact.GametimeLock.Unlock()
 								}
 								//This might block stuff by accident, don't do it
 								//continue
@@ -312,7 +312,7 @@ func Chat() {
 
 													erradd := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, pid, regrole.ID)
 
-													if erradd != nil || glob.DS == nil {
+													if erradd != nil || disc.DS == nil {
 														fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I couldn't assign the Discord role '%s'.", newrole))
 														fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, coundn't assign role '%s' Let the moderators know!", newrole, pname))
 														continue
@@ -518,19 +518,19 @@ func Chat() {
 											fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.ConnectSpeed))
 										}
 
-										glob.ConnectPauseLock.Lock()
-										glob.ConnectPauseTimer = tn.Unix()
-										glob.ConnectPauseCount++
-										glob.ConnectPauseLock.Unlock()
+										fact.ConnectPauseLock.Lock()
+										fact.ConnectPauseTimer = tn.Unix()
+										fact.ConnectPauseCount++
+										fact.ConnectPauseLock.Unlock()
 
 									} else if strings.Contains(line, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
 
-										glob.ConnectPauseLock.Lock()
+										fact.ConnectPauseLock.Lock()
 
-										glob.ConnectPauseCount--
-										if glob.ConnectPauseCount <= 0 {
-											glob.ConnectPauseCount = 0
-											glob.ConnectPauseTimer = 0
+										fact.ConnectPauseCount--
+										if fact.ConnectPauseCount <= 0 {
+											fact.ConnectPauseCount = 0
+											fact.ConnectPauseTimer = 0
 
 											if cfg.Local.SlowConnect.DefaultSpeed >= 0.0 {
 												fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.DefaultSpeed))
@@ -539,7 +539,7 @@ func Chat() {
 											}
 										}
 
-										glob.ConnectPauseLock.Unlock()
+										fact.ConnectPauseLock.Unlock()
 									}
 
 								}
@@ -561,11 +561,11 @@ func Chat() {
 									regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 									filename := regaa.ReplaceAllString(fullpath, "")
 
-									glob.GameMapLock.Lock()
-									glob.GameMapName = filename
-									glob.GameMapPath = fullpath
-									glob.LastSaveName = filename
-									glob.GameMapLock.Unlock()
+									fact.GameMapLock.Lock()
+									fact.GameMapName = filename
+									fact.GameMapPath = fullpath
+									fact.LastSaveName = filename
+									fact.GameMapLock.Unlock()
 
 									fsize := 0.0
 									if sizei > 0 {
@@ -615,7 +615,7 @@ func Chat() {
 
 								fact.SetFactorioBooted(true)
 								fact.SetFactRunning(true, false)
-								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+glob.FactorioVersion+" is now online.")
+								fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+fact.FactorioVersion+" is now online.")
 								time.Sleep(time.Second)
 								fact.WriteFact("/p o c")
 
@@ -674,7 +674,7 @@ func Chat() {
 							if strings.HasPrefix(NoTC, "Loading mod base") {
 								botlog.DoLogGame(line)
 								if notclistlen > 3 {
-									glob.FactorioVersion = notclist[3]
+									fact.FactorioVersion = notclist[3]
 								}
 							}
 
@@ -689,7 +689,7 @@ func Chat() {
 										if !cfg.Local.HideAutosaves {
 											fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
 										}
-										glob.LastSaveName = savmatch[1]
+										fact.LastSaveName = savmatch[1]
 									}
 								}
 								continue
@@ -707,13 +707,13 @@ func Chat() {
 									filename := regaa.ReplaceAllString(fullpath, "")
 									filename = strings.Replace(filename, ":", "", -1)
 
-									glob.GameMapLock.Lock()
-									glob.GameMapName = filename
-									glob.GameMapPath = fullpath
-									glob.GameMapLock.Unlock()
+									fact.GameMapLock.Lock()
+									fact.GameMapName = filename
+									fact.GameMapPath = fullpath
+									fact.GameMapLock.Unlock()
 
 									botlog.DoLog(fmt.Sprintf("Map saved as: " + filename))
-									glob.LastSaveName = filename
+									fact.LastSaveName = filename
 
 								}
 								continue
@@ -785,9 +785,9 @@ func Chat() {
 									}
 									//Corrupt savegame
 									if strings.Contains(NoTC, "Closing file") {
-										glob.GameMapLock.Lock()
-										path := glob.GameMapPath
-										glob.GameMapLock.Unlock()
+										fact.GameMapLock.Lock()
+										path := fact.GameMapPath
+										fact.GameMapLock.Unlock()
 
 										var tempargs []string
 										tempargs = append(tempargs, "-f")

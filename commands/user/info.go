@@ -26,12 +26,12 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	buf = buf + fmt.Sprintf("%25v: %v-%v\n", "Server name", cfg.Local.ServerCallsign, cfg.Local.Name)
 	buf = buf + fmt.Sprintf("%25v: m45sci.xyz:%v\n", "Address", cfg.Local.Port)
 	buf = buf + fmt.Sprintf("%25v: %v\n", "ChatWire version", constants.Version)
-	buf = buf + fmt.Sprintf("%25v: %v\n", "Factorio version", glob.FactorioVersion)
+	buf = buf + fmt.Sprintf("%25v: %v\n", "Factorio version", fact.FactorioVersion)
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	buf = buf + fmt.Sprintf("%25v: %v\n", "ChatWire up-time", tnow.Sub(glob.Uptime.Round(time.Second)).String())
-	if !glob.FactorioBootedAt.IsZero() && fact.IsFactorioBooted() {
-		buf = buf + fmt.Sprintf("%25v: %v\n", "Factorio up-time", tnow.Sub(glob.FactorioBootedAt.Round(time.Second)).String())
+	if !fact.FactorioBootedAt.IsZero() && fact.IsFactorioBooted() {
+		buf = buf + fmt.Sprintf("%25v: %v\n", "Factorio up-time", tnow.Sub(fact.FactorioBootedAt.Round(time.Second)).String())
 	} else {
 		buf = buf + fmt.Sprintf("%25v: %v\n", "Factorio up-time", "not running")
 	}
@@ -51,10 +51,10 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		}
 	}
 	glob.PlayerListLock.RUnlock()
-	if glob.LastSaveName != constants.Unknown || verbose {
-		buf = buf + fmt.Sprintf("%25v: %v\n", "Save name", glob.LastSaveName)
+	if fact.LastSaveName != constants.Unknown || verbose {
+		buf = buf + fmt.Sprintf("%25v: %v\n", "Save name", fact.LastSaveName)
 	}
-	buf = buf + fmt.Sprintf("%25v: %v\n", "Map time", glob.GametimeString)
+	buf = buf + fmt.Sprintf("%25v: %v\n", "Map time", fact.GametimeString)
 	buf = buf + fmt.Sprintf("%25v: %v (most ever %v)\n", "Players online", fact.GetNumPlayers(), glob.RecordPlayers)
 
 	/* SETTINGS */
@@ -110,8 +110,8 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		buf = buf + fmt.Sprintf("%25v: %vm\n", "Autosaves", cfg.Local.FactorioData.Autosave_interval)
 	}
 
-	if glob.ModLoadString != constants.Unknown {
-		buf = buf + "\nMod list: " + glob.ModLoadString + "\n"
+	if fact.ModLoadString != constants.Unknown {
+		buf = buf + "\nMod list: " + fact.ModLoadString + "\n"
 	}
 
 	buf = buf + "\n```"

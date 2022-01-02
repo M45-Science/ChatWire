@@ -9,6 +9,7 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -41,8 +42,8 @@ func DoExit(delay bool) {
 	_ = os.Remove("cw.lock")
 	//Logs are closed, don't report
 
-	if glob.DS != nil {
-		glob.DS.Close()
+	if disc.DS != nil {
+		disc.DS.Close()
 	}
 
 	fmt.Println("Goodbye.")
@@ -67,49 +68,49 @@ func GetFactorioBinary() string {
 func DoShowLocks(ch string) {
 	var startTime = time.Now()
 
-	glob.GuildLock.Lock()
+	disc.GuildLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.GuildLock.Unlock()
+	disc.GuildLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GuildLock")
 
-	glob.CMSBufferLock.Lock()
+	disc.CMSBufferLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.CMSBufferLock.Unlock()
-	CMS(ch, time.Since(startTime).String()+": CMSBufferLock")
+	disc.CMSBufferLock.Unlock()
+	CMS(ch, time.Since(startTime).String()+": desc.CMSBufferLock")
 
-	glob.PipeLock.Lock()
+	PipeLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.PipeLock.Unlock()
+	PipeLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PipeLock")
 
-	glob.GameMapLock.Lock()
+	GameMapLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.GameMapLock.Unlock()
+	GameMapLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GameMapLock")
 
-	glob.ModLoadLock.Lock()
+	ModLoadLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.ModLoadLock.Unlock()
+	ModLoadLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ModLoadLock")
 
-	glob.PausedTicksLock.Lock()
+	PausedTicksLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.PausedTicksLock.Unlock()
+	PausedTicksLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": PausedTicksLock")
 
-	glob.GametimeLock.Lock()
+	GametimeLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.GametimeLock.Unlock()
+	GametimeLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": GametimeLock")
 
-	glob.FactIsRunningLock.Lock()
+	FactIsRunningLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.FactIsRunningLock.Unlock()
+	FactIsRunningLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactIsRunningLock")
 
-	glob.FactAutoStartLock.Lock()
+	FactAutoStartLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.FactAutoStartLock.Unlock()
+	FactAutoStartLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactAutoStartLock")
 
 	glob.DoRebootBotLock.Lock()
@@ -117,9 +118,9 @@ func DoShowLocks(ch string) {
 	glob.DoRebootBotLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": DoRebootBotLock")
 
-	glob.NumPlayersLock.Lock()
+	NumPlayersLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.NumPlayersLock.Unlock()
+	NumPlayersLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": NumPlayersLock")
 
 	glob.RelaunchThrottleLock.Lock()
@@ -142,9 +143,9 @@ func DoShowLocks(ch string) {
 	glob.NumLoginsLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": NumLoginsLock")
 
-	glob.FactorioBootedLock.Lock()
+	FactorioBootedLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.FactorioBootedLock.Unlock()
+	FactorioBootedLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactorioBootedLock")
 
 	glob.PlayerListUpdatedLock.Lock()
@@ -177,29 +178,29 @@ func DoShowLocks(ch string) {
 	glob.NoResponseCountLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": NoResponseCountLock")
 
-	glob.FactorioLaunchLock.Lock()
+	FactorioLaunchLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.FactorioLaunchLock.Unlock()
+	FactorioLaunchLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": FactorioLaunchLock")
 
-	glob.UpdateFactorioLock.Lock()
+	UpdateFactorioLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.UpdateFactorioLock.Unlock()
+	UpdateFactorioLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": UpdateFactorioLock")
 
-	glob.DoUpdateFactorioLock.Lock()
+	DoUpdateFactorioLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.DoUpdateFactorioLock.Unlock()
+	DoUpdateFactorioLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": DoUpdateFactorioLock")
 
-	glob.ManMinutesLock.Lock()
+	ManMinutesLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.ManMinutesLock.Unlock()
+	ManMinutesLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ManMinutesLock")
 
-	glob.ConnectPauseLock.Lock()
+	ConnectPauseLock.Lock()
 	time.Sleep(time.Microsecond)
-	glob.ConnectPauseLock.Unlock()
+	ConnectPauseLock.Unlock()
 	CMS(ch, time.Since(startTime).String()+": ConnectPauseLock")
 
 	CMS(ch, "Complete.")
@@ -210,22 +211,22 @@ func CMS(channel string, text string) {
 	//Split at newlines, so we can batch neatly
 	lines := strings.Split(text, "\n")
 
-	glob.CMSBufferLock.Lock()
+	disc.CMSBufferLock.Lock()
 
 	for _, line := range lines {
 
 		if len(line) <= 2000 {
-			var item glob.CMSBuf
+			var item disc.CMSBuf
 			item.Channel = channel
 			item.Text = line
 
-			glob.CMSBuffer = append(glob.CMSBuffer, item)
+			disc.CMSBuffer = append(disc.CMSBuffer, item)
 		} else {
 			botlog.DoLog("CMS: Line too long! Discarding...")
 		}
 	}
 
-	glob.CMSBufferLock.Unlock()
+	disc.CMSBufferLock.Unlock()
 }
 
 func LogCMS(channel string, text string) {

@@ -10,7 +10,6 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
-	"ChatWire/glob"
 )
 
 func CheckZip(filename string) bool {
@@ -43,8 +42,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 	if cfg.Global.PathData.FactUpdaterPath != "" {
 
-		glob.UpdateFactorioLock.Lock()
-		defer glob.UpdateFactorioLock.Unlock()
+		UpdateFactorioLock.Lock()
+		defer UpdateFactorioLock.Unlock()
 
 		//Give up on check/download after a while
 		ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
@@ -94,8 +93,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 						if linelen > 1 && strings.Contains(line, ".zip") {
 
 							//Only trigger on a new patch file
-							if line != glob.NewPatchName {
-								glob.NewPatchName = line
+							if line != NewPatchName {
+								NewPatchName = line
 
 								if numwords > 1 &&
 									CheckZip(words[1]) {
@@ -106,7 +105,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 								} else {
 									os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
 									//Purge patch name so we attempt check again
-									glob.NewPatchName = constants.Unknown
+									NewPatchName = constants.Unknown
 									botlog.DoLog("fact update check: Factorio update zip invalid... purging cache.")
 								}
 							}
@@ -122,8 +121,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 							SetDoUpdateFactorio(true)
 
 							//Don't message, unless this is actually a unique new version
-							if glob.NewVersion != newversion {
-								glob.NewVersion = newversion
+							if NewVersion != newversion {
+								NewVersion = newversion
 
 								CMS(cfg.Local.ChannelData.ChatID, messdisc)
 
@@ -143,8 +142,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 func FactUpdate() {
 
-	glob.UpdateFactorioLock.Lock()
-	defer glob.UpdateFactorioLock.Unlock()
+	UpdateFactorioLock.Lock()
+	defer UpdateFactorioLock.Unlock()
 
 	//Give up on patching eventually
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
@@ -157,8 +156,8 @@ func FactUpdate() {
 
 	if !IsFactRunning() {
 		//Keep us from stepping on a factorio launch or update
-		glob.FactorioLaunchLock.Lock()
-		defer glob.FactorioLaunchLock.Unlock()
+		FactorioLaunchLock.Lock()
+		defer FactorioLaunchLock.Unlock()
 
 		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", GetFactorioBinary()}
 		if cfg.Local.UpdateFactExp {

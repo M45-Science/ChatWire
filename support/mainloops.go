@@ -105,7 +105,7 @@ func MainLoops() {
 					fact.SetRelaunchThrottle(throt + 1)
 
 					//Prevent us from distrupting updates
-					glob.FactorioLaunchLock.Lock()
+					fact.FactorioLaunchLock.Lock()
 
 					var err error
 					var tempargs []string
@@ -168,8 +168,8 @@ func MainLoops() {
 
 					LinuxSetProcessGroup(cmd)
 					//Connect Factorio stdout to a buffer for processing
-					glob.GameBuffer = new(bytes.Buffer)
-					logwriter := io.MultiWriter(glob.GameBuffer)
+					fact.GameBuffer = new(bytes.Buffer)
+					logwriter := io.MultiWriter(fact.GameBuffer)
 					cmd.Stdout = logwriter
 					//Stdin
 					tpipe, errp := cmd.StdinPipe()
@@ -178,16 +178,16 @@ func MainLoops() {
 					if errp != nil {
 						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 						//close lock
-						glob.FactorioLaunchLock.Unlock()
+						fact.FactorioLaunchLock.Unlock()
 						fact.DoExit(true)
 						return
 					}
 
 					//Save pipe
 					if tpipe != nil && err == nil {
-						glob.PipeLock.Lock()
-						glob.Pipe = tpipe
-						glob.PipeLock.Unlock()
+						fact.PipeLock.Lock()
+						fact.Pipe = tpipe
+						fact.PipeLock.Unlock()
 					}
 
 					//Handle launch errors
@@ -195,14 +195,14 @@ func MainLoops() {
 					if err != nil {
 						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 						//close lock
-						glob.FactorioLaunchLock.Unlock()
+						fact.FactorioLaunchLock.Unlock()
 						fact.DoExit(true)
 						return
 					}
 
 					//Okay, factorio is running now, prep
 					fact.SetModLoadString(constants.Unknown)
-					glob.ModLoadString = constants.Unknown //Reset loaded mod list
+					fact.ModLoadString = constants.Unknown //Reset loaded mod list
 					fact.SetFactRunning(true, false)
 					fact.SetFactorioBooted(false)
 
@@ -211,7 +211,7 @@ func MainLoops() {
 					botlog.DoLog("Factorio booting...")
 
 					//close lock
-					glob.FactorioLaunchLock.Unlock()
+					fact.FactorioLaunchLock.Unlock()
 				}
 			}
 		}()
@@ -257,7 +257,7 @@ func MainLoops() {
 					regularstat := fmt.Sprintf("regulars-%v", numregulars)
 
 					if glob.LastTotalStat != totalstat && cfg.Global.DiscordData.StatTotalChannelID != "" {
-						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
+						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
 						glob.LastTotalStat = totalstat
 						if err != nil {
 							botlog.DoLog(err.Error())
@@ -266,7 +266,7 @@ func MainLoops() {
 					}
 
 					if glob.LastMemberStat != memberstat && cfg.Global.DiscordData.StatMemberChannelID != "" {
-						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
+						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
 						glob.LastMemberStat = memberstat
 						if err != nil {
 							botlog.DoLog(err.Error())
@@ -275,7 +275,7 @@ func MainLoops() {
 					}
 
 					if glob.LastRegularStat != regularstat && cfg.Global.DiscordData.StatRegularsChannelID != "" {
-						_, err := glob.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
+						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
 						glob.LastRegularStat = regularstat
 						if err != nil {
 							botlog.DoLog(err.Error())
@@ -294,25 +294,25 @@ func MainLoops() {
 		go func() {
 			for glob.ServerRunning {
 
-				if glob.DS != nil {
+				if disc.DS != nil {
 
 					//Check if buffer is active
 					active := false
-					glob.CMSBufferLock.Lock()
-					if glob.CMSBuffer != nil {
+					disc.CMSBufferLock.Lock()
+					if disc.CMSBuffer != nil {
 						active = true
 					}
-					glob.CMSBufferLock.Unlock()
+					disc.CMSBufferLock.Unlock()
 
 					//If buffer is active, sleep and wait for it to fill up
 					if active {
 						time.Sleep(constants.CMSRate)
 
 						//Waited for buffer to fill up, grab and clear buffers
-						glob.CMSBufferLock.Lock()
-						lcopy := glob.CMSBuffer
-						glob.CMSBuffer = nil
-						glob.CMSBufferLock.Unlock()
+						disc.CMSBufferLock.Lock()
+						lcopy := disc.CMSBuffer
+						disc.CMSBuffer = nil
+						disc.CMSBufferLock.Unlock()
 
 						if lcopy != nil {
 
@@ -421,12 +421,12 @@ func MainLoops() {
 
 				if cfg.Local.SlowConnect.SlowConnect {
 
-					glob.ConnectPauseLock.Lock()
+					fact.ConnectPauseLock.Lock()
 
-					if glob.ConnectPauseTimer > 0 {
-						if tn.Unix()-glob.ConnectPauseTimer >= 120 {
-							glob.ConnectPauseTimer = 0
-							glob.ConnectPauseCount = 0
+					if fact.ConnectPauseTimer > 0 {
+						if tn.Unix()-fact.ConnectPauseTimer >= 120 {
+							fact.ConnectPauseTimer = 0
+							fact.ConnectPauseCount = 0
 
 							buf := "Catch-up taking over two minutes, returning to normal speed."
 							fact.CMS(cfg.Local.ChannelData.ChatID, buf)
@@ -440,7 +440,7 @@ func MainLoops() {
 						}
 					}
 
-					glob.ConnectPauseLock.Unlock()
+					fact.ConnectPauseLock.Unlock()
 
 				}
 			}
@@ -531,16 +531,16 @@ func MainLoops() {
 			for glob.ServerRunning {
 				time.Sleep(5 * time.Second)
 
-				glob.GuildLock.Lock()
+				disc.GuildLock.Lock()
 
 				//Get guild id, if we need it
 
-				if glob.Guild == nil && glob.DS != nil {
+				if disc.Guild == nil && disc.DS != nil {
 					// Attempt to get the guild from the state,
 					// If there is an error, fall back to the restapi.
-					nguild, err := glob.DS.State.Guild(cfg.Global.DiscordData.GuildID)
+					nguild, err := disc.DS.State.Guild(cfg.Global.DiscordData.GuildID)
 					if err != nil {
-						nguild, err = glob.DS.Guild(cfg.Global.DiscordData.GuildID)
+						nguild, err = disc.DS.Guild(cfg.Global.DiscordData.GuildID)
 						if err != nil {
 							//botlog.DoLog("Failed to get guild data, will retry...")
 							return
@@ -550,24 +550,24 @@ func MainLoops() {
 					if err != nil {
 						botlog.DoLog(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
 
-						glob.GuildLock.Unlock()
+						disc.GuildLock.Unlock()
 						continue
 					}
 					if nguild == nil || err != nil {
-						glob.Guildname = constants.Unknown
+						disc.Guildname = constants.Unknown
 						botlog.DoLog("Guild data came back nil.")
 					} else {
 
 						//Guild found, exit loop
-						glob.Guild = nguild
-						glob.Guildname = nguild.Name
+						disc.Guild = nguild
+						disc.Guildname = nguild.Name
 						botlog.DoLog("Guild data linked.")
-						glob.GuildLock.Unlock()
+						disc.GuildLock.Unlock()
 						break
 					}
 				}
 
-				glob.GuildLock.Unlock()
+				disc.GuildLock.Unlock()
 			}
 		}()
 
@@ -578,8 +578,8 @@ func MainLoops() {
 			cfg.ReadRoleList()
 			for glob.ServerRunning {
 				time.Sleep(time.Second)
-				if glob.DS != nil {
-					if glob.Guild != nil {
+				if disc.DS != nil {
+					if disc.Guild != nil {
 						if fact.IsFactorioBooted() {
 							time.Sleep(time.Minute * 5)
 
@@ -629,14 +629,14 @@ func MainLoops() {
 				time.Sleep(5 * time.Second)
 
 				if cfg.Local.AutoUpdate {
-					if fact.IsFactRunning() && glob.NewVersion != constants.Unknown {
+					if fact.IsFactRunning() && fact.NewVersion != constants.Unknown {
 						if fact.GetNumPlayers() > 0 {
 
 							numwarn := fact.GetUpdateWarnCounter()
 
 							//Warn users
 							if numwarn < glob.UpdateGraceMinutes {
-								msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", glob.NewVersion, glob.UpdateGraceMinutes-numwarn)
+								msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 								fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
 							}
@@ -827,10 +827,10 @@ func MainLoops() {
 			for glob.ServerRunning {
 				fact.UpdateChannelName()
 
-				glob.UpdateChannelLock.Lock()
-				chname := glob.NewChanName
-				oldchname := glob.OldChanName
-				glob.UpdateChannelLock.Unlock()
+				disc.UpdateChannelLock.Lock()
+				chname := disc.NewChanName
+				oldchname := disc.OldChanName
+				disc.UpdateChannelLock.Unlock()
 
 				if oldchname != chname {
 					fact.DoUpdateChannelName()
@@ -850,11 +850,11 @@ func MainLoops() {
 				time.Sleep(time.Minute)
 				nump := fact.GetNumPlayers()
 
-				glob.ManMinutesLock.Lock()
+				fact.ManMinutesLock.Lock()
 				if nump > 0 {
-					glob.ManMinutes = (glob.ManMinutes + nump)
+					fact.ManMinutes = (fact.ManMinutes + nump)
 				}
-				glob.ManMinutesLock.Unlock()
+				fact.ManMinutesLock.Unlock()
 			}
 		}()
 	}()
