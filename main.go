@@ -27,10 +27,14 @@ func main() {
 	botlog.StartGameLog()
 
 	//Saves a ton of space!
-	cmdb := exec.Command(cfg.Global.PathData.ShellPath, cfg.Global.PathData.LogCompScriptPath)
-	_, err := cmdb.CombinedOutput()
-	if err != nil {
-		botlog.DoLog(err.Error())
+	if cfg.Global.PathData.LogCompScriptPath != "" {
+		cmdb := exec.Command(cfg.Global.PathData.ShellPath,
+			cfg.Global.PathData.LogCompScriptPath,
+			cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/logs/*.log")
+		_, err := cmdb.CombinedOutput()
+		if err != nil {
+			botlog.DoLog(err.Error())
+		}
 	}
 
 	botlog.DoLog("Version: " + constants.Version)
