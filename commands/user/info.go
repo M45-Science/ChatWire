@@ -103,11 +103,11 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	if !cfg.Local.SoftModOptions.RestrictMode || verbose {
 		buf = buf + fmt.Sprintf("%25v: %v\n", "New Player Restrictions", support.BoolToString(cfg.Local.SoftModOptions.RestrictMode))
 	}
-	if !cfg.Local.FactorioData.Autopause || verbose {
-		buf = buf + fmt.Sprintf("%25v: %v\n", "Auto Pause", support.BoolToString(cfg.Local.FactorioData.Autopause))
+	if !cfg.Local.FactorioData.AutoPause || verbose {
+		buf = buf + fmt.Sprintf("%25v: %v\n", "Auto Pause", support.BoolToString(cfg.Local.FactorioData.AutoPause))
 	}
-	if cfg.Local.FactorioData.Autosave_interval < 10 || cfg.Local.FactorioData.Autosave_interval > 15 || verbose {
-		buf = buf + fmt.Sprintf("%25v: %vm\n", "Autosaves", cfg.Local.FactorioData.Autosave_interval)
+	if cfg.Local.FactorioData.AutoSaveMinutes < 10 || cfg.Local.FactorioData.AutoSaveMinutes > 15 || verbose {
+		buf = buf + fmt.Sprintf("%25v: %vm\n", "Autosaves", cfg.Local.FactorioData.AutoSaveMinutes)
 	}
 
 	if fact.ModLoadString != constants.Unknown {
