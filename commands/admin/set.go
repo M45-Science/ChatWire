@@ -31,22 +31,22 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		for _, setting := range SettingList {
 			data := ""
 			limits := ""
-			if setting.Type == "string" {
+			if setting.Type == TYPE_STRING {
 				data = *setting.SData
 				if setting.ValidStrings != nil {
 					limits = "(valid check)"
 				} else if setting.CheckString != nil {
 					limits = "(valid check)"
 				}
-			} else if setting.Type == "int" {
+			} else if setting.Type == TYPE_INT {
 				data = fmt.Sprintf("%v", *setting.IData)
 				limits = fmt.Sprintf("(%v-%v)", setting.MinInt, setting.MaxInt)
-			} else if setting.Type == "bool" {
+			} else if setting.Type == TYPE_BOOL {
 				data = support.BoolToString(*setting.BData)
-			} else if setting.Type == "float32" {
+			} else if setting.Type == TYPE_F32 {
 				data = fmt.Sprintf("%v", *setting.FData32)
 				limits = fmt.Sprintf("(%v-%v)", setting.MinF32, setting.MaxF32)
-			} else if setting.Type == "float64" {
+			} else if setting.Type == TYPE_F64 {
 				data = fmt.Sprintf("%v", *setting.FData64)
 				limits = fmt.Sprintf("(%v-%v)", setting.MinF64, setting.MaxF64)
 			}
@@ -63,7 +63,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			if strings.EqualFold(setting.Name, arg1) {
 				found = true
 				/* STRING TYPE */
-				if setting.Type == "string" {
+				if setting.Type == TYPE_STRING {
 					if arg2thru == "(EMPTY)" {
 						arg2thru = ""
 					}
@@ -114,7 +114,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						fact.CMS(m.ChannelID, "Live-updated setting on Factorio.")
 					}
 					/* INTEGER TYPE  */
-				} else if setting.Type == "int" {
+				} else if setting.Type == TYPE_INT {
 					val, err := strconv.Atoi(arg2thru)
 					if err != nil {
 						fact.CMS(m.ChannelID, fmt.Sprintf("Invalid value for %v. Numbers only!", setting.Name))
@@ -133,7 +133,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						}
 					}
 					/* BOOL TYPE */
-				} else if setting.Type == "bool" {
+				} else if setting.Type == TYPE_BOOL {
 					val, err := support.StringToBool(arg2thru)
 					if err == true {
 						fact.CMS(m.ChannelID, fmt.Sprintf("Invalid value for %v. Must be true/on/t/1 or false/off/f/0!", setting.Name))
@@ -149,7 +149,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						}
 					}
 					/* FLOAT32 TYPE */
-				} else if setting.Type == "float32" {
+				} else if setting.Type == TYPE_F32 {
 					val64, err := strconv.ParseFloat(arg2thru, 32)
 					val := float32(val64)
 
@@ -170,7 +170,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						}
 					}
 					/* FLOAT64 TYPE */
-				} else if setting.Type == "float64" {
+				} else if setting.Type == TYPE_F64 {
 					val, err := strconv.ParseFloat(arg2thru, 64)
 					if err != nil {
 						fact.CMS(m.ChannelID, fmt.Sprintf("Invalid value for %v. Must be a number!", setting.Name))

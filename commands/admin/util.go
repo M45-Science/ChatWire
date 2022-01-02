@@ -8,11 +8,17 @@ import (
 	"strings"
 )
 
+const TYPE_STRING = 0
+const TYPE_INT = 1
+const TYPE_BOOL = 2
+const TYPE_F32 = 3
+const TYPE_F64 = 4
+
 //Used for $set command
 type SettingListData struct {
 	Name string
 	Desc string
-	Type string
+	Type int
 
 	SData   *string
 	IData   *int
@@ -38,12 +44,12 @@ type SettingListData struct {
 }
 
 //List of datatypes for settings
-var SettingType = []string{
-	"string",
-	"int",
-	"bool",
-	"float32",
-	"float64",
+var SettingType = []int{
+	TYPE_STRING,
+	TYPE_INT,
+	TYPE_BOOL,
+	TYPE_F32,
+	TYPE_F64,
 }
 
 //List of settings
@@ -51,7 +57,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "Name",
 		Desc: "Server name",
-		Type: "string",
+		Type: TYPE_STRING,
 
 		MaxStrLen: 64,
 		MinStrLen: 4,
@@ -62,7 +68,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "Port",
 		Desc: "Server port",
-		Type: "int",
+		Type: TYPE_INT,
 
 		MaxInt: 65535 - cfg.Global.RconPortOffset,
 		MinInt: 1024,
@@ -72,7 +78,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "MapPreset",
 		Desc: "Map preset",
-		Type: "string",
+		Type: TYPE_STRING,
 
 		MaxStrLen:    64,
 		MinStrLen:    4,
@@ -83,7 +89,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "MapGenPreset",
 		Desc: "Map generation preset",
-		Type: "string",
+		Type: TYPE_STRING,
 
 		MinStrLen: 0,
 		MaxStrLen: 64,
@@ -96,28 +102,28 @@ var SettingList = []SettingListData{
 	{
 		Name: "AutoStart",
 		Desc: "Start factorio on boot",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.AutoStart,
 	},
 	{
 		Name: "AutoUpdate",
 		Desc: "Auto-update factorio",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.AutoUpdate,
 	},
 	{
 		Name: "UpdateFactExp",
 		Desc: "Update factorio to experimental releases",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.UpdateFactExp,
 	},
 	{
 		Name: "ResetScheduleText",
 		Desc: "This is the text displayed that descrbes when the map will be reset",
-		Type: "string",
+		Type: TYPE_STRING,
 
 		MinStrLen: 4,
 		MaxStrLen: 256,
@@ -128,7 +134,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "DisableBlueprints",
 		Desc: "Disable blueprints",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData:             &cfg.Local.DisableBlueprints,
 		FactUpdateCommand: "/blueprints",
@@ -136,7 +142,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "EnableCheats",
 		Desc: "Enable cheats",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData:             &cfg.Local.EnableCheats,
 		FactUpdateCommand: "/cheats",
@@ -144,21 +150,21 @@ var SettingList = []SettingListData{
 	{
 		Name: "HideAutosaves",
 		Desc: "Hide autosaves from Discord.",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.HideAutosaves,
 	},
 	{
 		Name: "SlowConnect",
 		Desc: "Lowers game speed while players are connecting, for large maps.",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.SlowConnect.SlowConnect,
 	},
 	{
 		Name: "DefaultSpeed",
 		Desc: "Speed set by SlowConnect after player is done connecting.",
-		Type: "float32",
+		Type: TYPE_F32,
 
 		MaxF32: 10.0,
 		MinF32: 0.1,
@@ -168,7 +174,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "ConnectSpeed",
 		Desc: "Speed set by SlowConnect while player is connecting.",
-		Type: "float32",
+		Type: TYPE_F32,
 
 		MaxF32: 10.0,
 		MinF32: 0.1,
@@ -178,14 +184,14 @@ var SettingList = []SettingListData{
 	{
 		Name: "DoWhitelist",
 		Desc: "Members-only mode",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.SoftModOptions.DoWhitelist,
 	},
 	{
 		Name: "RestrictMode",
 		Desc: "Turns on new-player restrictions.",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.SoftModOptions.RestrictMode,
 
@@ -194,7 +200,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "FriendlyFire",
 		Desc: "Friendly fire on/off",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.SoftModOptions.FriendlyFire,
 
@@ -203,7 +209,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "AFKKickMinutes",
 		Desc: "How many minutes before a player is kicked for being AFK",
-		Type: "int",
+		Type: TYPE_INT,
 
 		MaxInt: 120,
 		MinInt: 5,
@@ -213,7 +219,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "AutoSaveMinutes",
 		Desc: "How many minutes between autosaves",
-		Type: "int",
+		Type: TYPE_INT,
 
 		MaxInt: 30,
 		MinInt: 5,
@@ -223,7 +229,7 @@ var SettingList = []SettingListData{
 	{
 		Name: "AutoPause",
 		Desc: "Pause when no players online.",
-		Type: "bool",
+		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.FactorioData.AutoPause,
 	},
