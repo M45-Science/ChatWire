@@ -160,7 +160,6 @@ var NoResponseCount = 0
 var NoResponseCountLock sync.RWMutex
 
 /*  Map gen data */
-var MaxMapTypes = 0
 var LastMapSeed uint64 = 0
 var LastMapCode = ""
 

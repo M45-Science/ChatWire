@@ -46,9 +46,6 @@ func main() {
 	glob.PlayerList = playlist
 	glob.PassList = passlist
 
-	//Find & set map types size
-	glob.MaxMapTypes = len(constants.MapTypes)
-
 	fact.SetGameTime(constants.Unknown)
 
 	glob.Uptime = time.Now()

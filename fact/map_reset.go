@@ -25,7 +25,7 @@ func GetMapTypeNum(mapt string) int {
 	if cfg.Local.MapGenPreset != "" {
 		return 0
 	}
-	for i = 0; i < glob.MaxMapTypes; i = i + 1 {
+	for i = 0; i < len(constants.MapTypes); i = i + 1 {
 		if strings.EqualFold(constants.MapTypes[i], mapt) {
 			return i
 		}
@@ -35,7 +35,8 @@ func GetMapTypeNum(mapt string) int {
 
 func GetMapTypeName(num int) string {
 
-	if num < glob.MaxMapTypes && num >= 0 {
+	numMaps := len(constants.MapTypes)
+	if num >= 0 && num < numMaps {
 		return constants.MapTypes[num]
 	}
 	return "Error"
