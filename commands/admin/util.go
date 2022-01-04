@@ -14,7 +14,7 @@ const TYPE_BOOL = 2
 const TYPE_F32 = 3
 const TYPE_F64 = 4
 
-//Used for $set command
+//Used for set command
 type SettingListData struct {
 	Name string
 	Desc string
@@ -33,6 +33,11 @@ type SettingListData struct {
 	MinInt int
 	MinF32 float32
 	MinF64 float64
+
+	DefInt  int
+	DefF32  float32
+	DefF64  float64
+	DefBool bool
 
 	ValidStrings []string
 	MaxStrLen    int
@@ -56,7 +61,7 @@ var SettingType = []int{
 var SettingList = []SettingListData{
 	{
 		Name: "Name",
-		Desc: "Server name",
+		Desc: "Name",
 		Type: TYPE_STRING,
 
 		MaxStrLen: 64,
@@ -67,7 +72,7 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name: "Port",
-		Desc: "Server port",
+		Desc: "Port",
 		Type: TYPE_INT,
 
 		MaxInt: 65535 - cfg.Global.RconPortOffset,
@@ -88,7 +93,7 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name: "MapGenPreset",
-		Desc: "Map generation preset",
+		Desc: "Map generator",
 		Type: TYPE_STRING,
 
 		MinStrLen: 0,
@@ -101,28 +106,34 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name: "AutoStart",
-		Desc: "Start factorio on boot",
+		Desc: "Start on boot",
 		Type: TYPE_BOOL,
+
+		DefBool: true,
 
 		BData: &cfg.Local.AutoStart,
 	},
 	{
 		Name: "AutoUpdate",
-		Desc: "Auto-update factorio",
+		Desc: "Auto-update Factorio",
 		Type: TYPE_BOOL,
+
+		DefBool: true,
 
 		BData: &cfg.Local.AutoUpdate,
 	},
 	{
 		Name: "UpdateFactExp",
-		Desc: "Update factorio to experimental releases",
+		Desc: "Update Factorio to experimental",
 		Type: TYPE_BOOL,
+
+		DefBool: false,
 
 		BData: &cfg.Local.UpdateFactExp,
 	},
 	{
 		Name: "ResetScheduleText",
-		Desc: "This is the text displayed that descrbes when the map will be reset",
+		Desc: "Map reset schedule",
 		Type: TYPE_STRING,
 
 		MinStrLen: 4,
@@ -133,103 +144,122 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name: "DisableBlueprints",
-		Desc: "Disable blueprints",
+		Desc: "Blueprints disabled",
 		Type: TYPE_BOOL,
+
+		DefBool: false,
 
 		BData:             &cfg.Local.DisableBlueprints,
 		FactUpdateCommand: "/blueprints",
 	},
 	{
 		Name: "EnableCheats",
-		Desc: "Enable cheats",
+		Desc: "Cheats enabled",
 		Type: TYPE_BOOL,
+
+		DefBool: false,
 
 		BData:             &cfg.Local.EnableCheats,
 		FactUpdateCommand: "/cheats",
 	},
 	{
 		Name: "HideAutosaves",
-		Desc: "Hide autosaves from Discord.",
+		Desc: "Hide autosaves(Discord)",
 		Type: TYPE_BOOL,
+
+		DefBool: false,
 
 		BData: &cfg.Local.HideAutosaves,
 	},
 	{
 		Name: "SlowConnect",
-		Desc: "Lowers game speed while players are connecting, for large maps.",
+		Desc: "Slow on connect",
 		Type: TYPE_BOOL,
+
+		DefBool: false,
 
 		BData: &cfg.Local.SlowConnect.SlowConnect,
 	},
 	{
 		Name: "DefaultSpeed",
-		Desc: "Speed set by SlowConnect after player is done connecting.",
+		Desc: "Speed while playing",
 		Type: TYPE_F32,
 
 		MaxF32: 10.0,
 		MinF32: 0.1,
+		DefF32: 1.0,
 
 		FData32: &cfg.Local.SlowConnect.DefaultSpeed,
 	},
 	{
 		Name: "ConnectSpeed",
-		Desc: "Speed set by SlowConnect while player is connecting.",
+		Desc: "Speed while connecting",
 		Type: TYPE_F32,
 
 		MaxF32: 10.0,
 		MinF32: 0.1,
+		DefF32: 0.5,
 
 		FData32: &cfg.Local.SlowConnect.ConnectSpeed,
 	},
 	{
 		Name: "DoWhitelist",
-		Desc: "Members-only mode",
+		Desc: "Members-only",
 		Type: TYPE_BOOL,
+
+		DefBool: false,
 
 		BData: &cfg.Local.SoftModOptions.DoWhitelist,
 	},
 	{
 		Name: "RestrictMode",
-		Desc: "Turns on new-player restrictions.",
+		Desc: "New player restrictions",
 		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.SoftModOptions.RestrictMode,
+
+		DefBool: false,
 
 		FactUpdateCommand: "/restrict",
 	},
 	{
 		Name: "FriendlyFire",
-		Desc: "Friendly fire on/off",
+		Desc: "Friendly fire",
 		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.SoftModOptions.FriendlyFire,
+
+		DefBool: false,
 
 		FactUpdateCommand: "/friendlyfire",
 	},
 	{
 		Name: "AFKKickMinutes",
-		Desc: "How many minutes before a player is kicked for being AFK",
+		Desc: "AFK kick minutes",
 		Type: TYPE_INT,
 
 		MaxInt: 120,
 		MinInt: 5,
+		DefInt: 15,
 
 		IData: &cfg.Local.FactorioData.AFKKickMinutes,
 	},
 	{
 		Name: "AutoSaveMinutes",
-		Desc: "How many minutes between autosaves",
+		Desc: "Autosave minutes",
 		Type: TYPE_INT,
 
 		MaxInt: 30,
 		MinInt: 5,
+		DefInt: 10,
 
 		IData: &cfg.Local.FactorioData.AutoSaveMinutes,
 	},
 	{
-		Name: "AutoPause",
-		Desc: "Pause when no players online.",
-		Type: TYPE_BOOL,
+		Name:    "AutoPause",
+		Desc:    "Pause when empty",
+		Type:    TYPE_BOOL,
+		DefBool: true,
 
 		BData: &cfg.Local.FactorioData.AutoPause,
 	},
