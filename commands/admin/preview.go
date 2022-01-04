@@ -21,7 +21,7 @@ import (
 func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []string) {
 
 	if fact.IsFactRunning() {
-		fact.CMS(m.ChannelID, "Stop server first! ($stop)")
+		fact.CMS(m.ChannelID, "Stop server first! ("+cfg.Global.DiscordCommandPrefix+"stop)")
 		return
 	}
 
