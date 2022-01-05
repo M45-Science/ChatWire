@@ -54,6 +54,10 @@ func DoExit(delay bool) {
 	os.Exit(1)
 }
 
+func AddFactColor(color string, text string) string {
+	return fmt.Sprintf("[color=%v]%v[/color]", color, text)
+}
+
 /* Generate full path to Factorio binary */
 func GetFactorioBinary() string {
 	bloc := ""
