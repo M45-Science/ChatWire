@@ -76,10 +76,10 @@ func GenerateFactorioConfig() bool {
 
 	descrLines = strings.Split(cfg.Global.FactorioData.ServerDescription, "\n")
 	if cfg.Local.SoftModOptions.DoWhitelist {
-		descrLines = append(descrLines, "MEMBERS-ONLY")
+		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
 	}
 	if cfg.Local.SoftModOptions.FriendlyFire {
-		descrLines = append(descrLines, "FRIENDLY FIRE")
+		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
 	}
 	if cfg.Local.MapGenPreset != "" {
 		descrLines = append(descrLines, "Map gen: "+cfg.Local.MapGenPreset)
@@ -90,16 +90,16 @@ func GenerateFactorioConfig() bool {
 		descrLines = append(descrLines, "MAP RESETS: "+cfg.Local.ResetScheduleText)
 	}
 	if cfg.Local.EnableCheats {
-		descrLines = append(descrLines, "SANDBOX")
+		descrLines = append(descrLines, AddFactColor("red", "SANDBOX"))
 	}
 	if cfg.Local.DisableBlueprints {
-		descrLines = append(descrLines, "NO BLUEPRINTS")
+		descrLines = append(descrLines, AddFactColor("blue", "NO BLUEPRINTS"))
 	}
 	if cfg.Local.SlowConnect.SlowConnect {
-		descrLines = append(descrLines, "slow-connect on")
+		descrLines = append(descrLines, AddFactColor("green", "Slow-connect on"))
 	}
 	if !cfg.Local.FactorioData.AutoPause {
-		descrLines = append(descrLines, "AUTO-PAUSE OFF")
+		descrLines = append(descrLines, AddFactColor("orange", "AUTO-PAUSE OFF"))
 	}
 	if cfg.Global.AuthServerBans {
 		descrLines = append(descrLines, "AUTH-SERVER BANS ON")
