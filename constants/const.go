@@ -15,7 +15,7 @@ const ModsFolder = "mods"
 const RoleListFile = "../RoleList.dat"
 
 const PauseThresh = 5               //Number of repeated time reports before we assume server is paused
-const ErrorDelayShutdown = 60       //Max time to wait for factorio to close and save
+const ErrorDelayShutdown = 30       //If we close on error, sleep this long before exiting
 const RestartLimitMinutes = 5       //If cw.lock is newer than this, sleep
 const RestartLimitSleepMinutes = 15 //cw.lock is new, sleep this long then exit.
 

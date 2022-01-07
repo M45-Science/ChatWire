@@ -48,7 +48,7 @@ func MainLoops() {
 					if fact.GetDoUpdateFactorio() {
 						fact.FactUpdate()
 					}
-					fact.DoExit(false)
+					fact.DoExit(true)
 				} else if fact.IsFactRunning() { //Currently running normally
 
 					nores := 0
@@ -84,7 +84,7 @@ func MainLoops() {
 					//Generate config file for Factorio server, if it fails stop everything.
 					if !fact.GenerateFactorioConfig() {
 						fact.SetAutoStart(false)
-						fact.DoExit(true)
+						fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to generate config file for Factorio server.")
 						return
 					}
 
