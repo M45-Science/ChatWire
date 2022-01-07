@@ -14,9 +14,10 @@ const ModsQueueFolder = "mods-queue"
 const ModsFolder = "mods"
 const RoleListFile = "../RoleList.dat"
 
-//Number of repeated time reports before we assume server is paused
-const PauseThresh = 5
-const ErrorDelayShutdown = 60
+const PauseThresh = 5               //Number of repeated time reports before we assume server is paused
+const ErrorDelayShutdown = 60       //Max time to wait for factorio to close and save
+const RestartLimitMinutes = 5       //If cw.lock is newer than this, sleep
+const RestartLimitSleepMinutes = 15 //cw.lock is new, sleep this long then exit.
 
 //Max results to return
 const WhoisResults = 20

@@ -40,7 +40,7 @@ func main() {
 	//Blank game time
 	fact.SetGameTime(constants.Unknown)
 	//Mark uptime start
-	glob.Uptime = time.Now()
+	glob.Uptime = time.Now().Round(time.Second)
 
 	//Read global and local configs, then write them back if they read correctly.
 	if cfg.ReadGCfg() {
@@ -90,9 +90,36 @@ func main() {
 	fact.LoadPlayers()
 	fact.LoadRecord()
 
+	bstr, err := ioutil.ReadFile("cw.lock")
+	if err == nil {
+		lastTimeStr := strings.TrimSpace(string(bstr))
+		lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
+		if err != nil {
+			botlog.DoLog("Unable to parse cw.lock: " + err.Error())
+		} else {
+			botlog.DoLog("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
+
+			//Recent lockfile, probable crash loop
+			if lastTime.Sub(glob.Uptime) < (constants.RestartLimitMinutes * time.Minute) {
+				msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
+
+				botlog.DoLog(msg)
+				go func(msg string) {
+					for disc.DS == nil {
+						time.Sleep(time.Second)
+					}
+					disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, msg)
+				}(msg)
+
+				time.Sleep(constants.RestartLimitMinutes * time.Minute)
+				botlog.DoLog("Sleep done, exiting.")
+				return
+			}
+		}
+	}
+
 	//If lockfile found, we are already running or crashed
 	if err := os.Remove("cw.lock"); err == nil {
-		botlog.DoLog("Lockfile found, possible dupe or crash.")
 		//return
 		//Proceed anyway, process is managed by systemd
 	} else {
@@ -109,7 +136,7 @@ func main() {
 		return //Okay, somthing is probably wrong
 	}
 	lfile.Close()
-	buf := fmt.Sprintf("%v\n", time.Now().UnixMicro())
+	buf := fmt.Sprintf("%v\n", time.Now().Round(time.Second).Format(time.RFC3339Nano))
 	ioutil.WriteFile("cw.lock", []byte(buf), 0644)
 
 	//All threads/loops in here.
