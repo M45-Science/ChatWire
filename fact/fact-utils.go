@@ -360,7 +360,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 				}
 			}
 			//Add to list with mod date
-			fileNames = fileNames + fmt.Sprintf("(%15v ): #%3v", modDate, fNum)
+			fileNames = fileNames + fmt.Sprintf("(%15v ): autosave #%3v", modDate, fNum)
 
 			//autosave number range list
 			//If number is not sequential, save end of range and print it

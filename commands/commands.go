@@ -46,7 +46,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Pset", Command: admin.SetPlayerLevel, Admin: true, Help: "Set: player level"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rcfg", Command: admin.ReloadConfig, Admin: true, Help: "Reload config file"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Set", Command: admin.Set, Admin: true, Help: "Change server settings."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, Admin: true, Help: "Quick autosave rollack to <num>, no arg for list."})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, Admin: true, Help: "See autosaves & votes: rewind list  To Vote: rewind <autosave number>"})
 
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, Admin: false, Help: "Show player info"})

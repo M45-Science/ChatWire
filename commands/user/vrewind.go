@@ -33,6 +33,16 @@ var numRewind int = 0
 func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	argnum := len(args)
 
+	_, err := strconv.Atoi(args[0])
+	if argnum == 0 || err != nil {
+		fact.ShowRewindList(s, m)
+		buf, _ := getVotes()
+		if buf != "" {
+			fact.CMS(m.ChannelID, buf)
+		}
+		return
+	}
+
 	//Only if allowed
 	if !disc.CheckRegular(m) && !disc.CheckModerator(m) {
 		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.RoleData.RegularRoleName)+"` Discord role to use this command.")
@@ -43,7 +53,11 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	if argnum == 1 {
 
 		//Make sure the autosave exists.
+		arg := args[0]
+		arg = strings.TrimSpace(arg)
+		arg = strings.TrimPrefix(arg, "#")
 		num, err := strconv.Atoi(args[0])
+
 		if err != nil {
 			fact.CMS(m.ChannelID, "Not a valid autosave number.")
 			return
@@ -137,12 +151,6 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			return
 		}
 
-	} else {
-		fact.ShowRewindList(s, m)
-		buf, _ := getVotes()
-		if buf != "" {
-			fact.CMS(m.ChannelID, buf)
-		}
 	}
 
 }
@@ -176,13 +184,13 @@ func getVotes() (string, int) {
 			buf = buf + v.Name + " (Expired)\n"
 		}
 	}
-	buf = buf + fmt.Sprintf("```\n`Valid votes: %v -- (need %v total)`", count, constants.VotesNeededRewind)
+	buf = buf + fmt.Sprintf("```\n`Valid votes: %v -- (need %v total)`\n", count, constants.VotesNeededRewind)
 
 	autoSaveList = []asData{}
 	for _, v := range votes {
-		for _, a := range autoSaveList {
+		for apos, a := range autoSaveList {
 			if v.AutosaveNum == a.Autosave {
-				a.Count++
+				autoSaveList[apos] = asData{Autosave: a.Autosave, Count: a.Count + 1}
 				continue
 			}
 		}
@@ -200,5 +208,6 @@ func getVotes() (string, int) {
 	if count == 0 {
 		buf = ""
 	}
+	buf = buf + "Syntax: `$vote-rewind <autosave number>`"
 	return buf, count
 }
