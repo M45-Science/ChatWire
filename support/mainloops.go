@@ -574,7 +574,7 @@ func MainLoops() {
 		}()
 
 		//**************************
-		//Get Discord roles
+		//Update patreon/nitro players
 		//**************************
 		go func() {
 			for glob.ServerRunning {
@@ -612,9 +612,6 @@ func MainLoops() {
 					if fact.IsFactRunning() {
 						botlog.DoLog("No players currently online, performing scheduled reboot.")
 						fact.QuitFactorio()
-						for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-							time.Sleep(time.Second)
-						}
 						break //We don't need to loop anymore
 					}
 				}
@@ -639,7 +636,7 @@ func MainLoops() {
 							if numwarn < glob.UpdateGraceMinutes {
 								msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-								fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
+								fact.WriteFact("/cchat " + fact.AddFactColor("red", msg))
 							}
 							time.Sleep(1 * time.Minute)
 
@@ -647,22 +644,16 @@ func MainLoops() {
 							if numwarn > glob.UpdateGraceMinutes {
 								msg := "(SYSTEM) Rebooting for Factorio update."
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-								fact.WriteFact("/cchat [color=red]" + msg + "[/color]")
+								fact.WriteFact("/cchat " + fact.AddFactColor("red", msg))
 								fact.SetUpdateWarnCounter(0)
 								fact.QuitFactorio()
-								for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-									time.Sleep(time.Second)
-								}
-
 								break //Stop looping
 							}
 							fact.SetUpdateWarnCounter(numwarn + 1)
 						} else {
 							fact.SetUpdateWarnCounter(0)
 							fact.QuitFactorio()
-							for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-								time.Sleep(time.Second)
-							}
+							break //Stop looping
 						}
 					}
 				}
@@ -789,7 +780,7 @@ func MainLoops() {
 		go func() {
 
 			for glob.ServerRunning {
-				time.Sleep(time.Minute)
+				time.Sleep(time.Second * 15)
 
 				var err error
 				if _, err = os.Stat(glob.BotLogName); err != nil {

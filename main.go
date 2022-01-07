@@ -32,11 +32,13 @@ func main() {
 	playlist := make(map[string]*glob.PlayerData)
 	passlist := make(map[string]*glob.PassData)
 
+	//Assign to globals
 	glob.PlayerList = playlist
 	glob.PassList = passlist
 
+	//Blank game time
 	fact.SetGameTime(constants.Unknown)
-
+	//Mark uptime start
 	glob.Uptime = time.Now()
 
 	//Read global and local configs, then write them back if they read correctly.
@@ -52,7 +54,8 @@ func main() {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		return
 	}
-	//Saves a ton of space!
+
+	//Compress old logs
 	if cfg.Global.PathData.LogCompScriptPath != "" {
 		cmdb := exec.Command(cfg.Global.PathData.ShellPath,
 			cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.LogCompScriptPath,
@@ -63,10 +66,12 @@ func main() {
 		}
 	}
 
+	//Start logs
 	botlog.StartBotLog()
 	botlog.StartGameLog()
 	botlog.DoLog("Version: " + constants.Version)
 
+	//Read in cached discord role data
 	cfg.ReadRoleList()
 
 	//Set autostart mode from config
@@ -74,31 +79,37 @@ func main() {
 		fact.SetAutoStart(true)
 	}
 
-	//Start discord bot, start reading stdout
-	go func() {
-		startbot()
-	}()
+	//Start discord bot, don't wait for it.
+	//We want Factorio online even if Discord is down.
+	go startbot()
+	//Loop to read Factorio stdout, runs in a goroutine
 	support.Chat()
 
-	//Load player database and max online records
+	//Load player database and max-online records
 	fact.LoadPlayers()
 	fact.LoadRecord()
 
+	//If lockfile found, we are already running or crashed
 	if err := os.Remove("cw.lock"); err == nil {
-		botlog.DoLog("Lockfile found, bot crashed?")
+		botlog.DoLog("Lockfile found, possible dupe or crash.")
+		//return
+		//Proceed anyway, process is managed by systemd
+	} else {
+		botlog.DoLog("Unable to delete old lockfile, exiting.")
+		return
 	}
 
+	//Make lockfile
 	lfile, err := os.OpenFile("cw.lock", os.O_CREATE, 0666)
 	if err != nil {
 		botlog.DoLog("Couldn't create lock file!!!")
+		return //Okay, somthing is probably wrong
 	}
-	lfile.Close()
-
-	go func() {
-		fact.CheckFactUpdate(true)
-	}()
+	lfile.WriteString(time.Now().String() + "\n")
+	defer lfile.Close() //Only close on exit
 
 	//All threads/loops in here.
+	//If autostart is enabled, we will boot Factorio.
 	support.MainLoops()
 }
 

@@ -44,15 +44,16 @@ func GetMapTypeName(num int) string {
 //Generate map
 func Map_reset(data string) {
 
-	newstr := sclean.StripControlAndSubSpecial(data)
-	newstr = sclean.RemoveFactorioTags(newstr)
+	//Prevent another map reset from accidently running at the same time
+	GameMapLock.Lock()
+	defer GameMapLock.Unlock()
 
 	//If factorio is running, and there is a argument... echo it
 	//Otherwise, stop factorio and generate a new map
 	if IsFactRunning() {
-		if newstr != "" {
-			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(newstr))
-			WriteFact("/cchat [color=red](SYSTEM) " + newstr + "[/color]")
+		if data != "" {
+			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(data))
+			WriteFact("/cchat " + AddFactColor("red", data))
 			return
 		} else {
 			CMS(cfg.Local.ChannelData.ChatID, "Stopping server, for map reset.")
@@ -65,10 +66,6 @@ func Map_reset(data string) {
 	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
 		time.Sleep(time.Second)
 	}
-
-	//Prevent another map reset from accidently running at the same time
-	GameMapLock.Lock()
-	defer GameMapLock.Unlock()
 
 	//Get factorio version, for archive folder name
 	version := strings.Split(FactorioVersion, ".")

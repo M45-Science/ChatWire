@@ -11,6 +11,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
 /* Prgram shutdown */
@@ -55,6 +56,15 @@ func DoExit(delay bool) {
 }
 
 func AddFactColor(color string, text string) string {
+	text = sclean.StripControlAndSubSpecial(text)
+	text = sclean.RemoveDiscordMarkdown(text)
+	text = sclean.RemoveFactorioTags(text)
+
+	color = sclean.StripControlAndSubSpecial(color)
+	color = sclean.RemoveFactorioTags(color)
+	color = strings.TrimSpace(color)
+	color = strings.ToLower(color)
+
 	return fmt.Sprintf("[color=%v]%v[/color]", color, text)
 }
 
