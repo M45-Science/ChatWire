@@ -96,6 +96,9 @@ func main() {
 	fact.LoadPlayers()
 	fact.LoadRecord()
 
+	//Load old votes
+	user.ReadRewindVotes()
+
 	bstr, err := ioutil.ReadFile("cw.lock")
 	if err == nil {
 		lastTimeStr := strings.TrimSpace(string(bstr))

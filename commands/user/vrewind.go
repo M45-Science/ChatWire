@@ -1,12 +1,15 @@
 package user
 
 import (
+	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -108,6 +111,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					votes[vpos].Voided = false
 					votes[vpos].Expired = false
 					fact.CMS(m.ChannelID, "You have changed your vote to autosave #"+strconv.Itoa(num))
+					WriteRewindVotes()
 					getVotes()
 				}
 
@@ -123,6 +127,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		newVote := rewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, Time: time.Now(), AutosaveNum: num}
 		votes = append(votes, newVote)
 		fact.CMS(m.ChannelID, "You have voted to rewind the map to autosave #"+args[0])
+		WriteRewindVotes()
 		if _, c := getVotes(); c < constants.VotesNeededRewind {
 			//Not enough votes yet
 			buf, _ := getVotes()
@@ -156,6 +161,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 				v.Voided = true
 			}
 			fact.CMS(m.ChannelID, "Rewinding the map to autosave #"+strconv.Itoa(asnum))
+			WriteRewindVotes()
 			fact.DoRewindMap(s, m, args[0])
 			return
 		}
@@ -219,4 +225,29 @@ func getVotes() (string, int) {
 	}
 	buf = buf + "Syntax: `$vote-rewind <autosave number>`"
 	return buf, count
+}
+
+func WriteRewindVotes() {
+	var buf []byte
+	buf, _ = json.Marshal(votes)
+	err := ioutil.WriteFile(constants.VoteRewindFile, buf, 0644)
+	if err != nil {
+		botlog.DoLog(err.Error())
+	}
+}
+
+func ReadRewindVotes() {
+	buf, err := ioutil.ReadFile(constants.VoteRewindFile)
+	if err != nil {
+		botlog.DoLog(err.Error())
+		return
+	}
+	newVotes := []rewindVoteData{}
+	err = json.Unmarshal(buf, &newVotes)
+	if err != nil {
+		botlog.DoLog(err.Error())
+		return
+	}
+
+	votes = newVotes
 }

@@ -13,6 +13,7 @@ const ServSettingsName = "server-settings.json"
 const ModsQueueFolder = "mods-queue"
 const ModsFolder = "mods"
 const RoleListFile = "../RoleList.dat"
+const VoteRewindFile = "vote-rewind.dat"
 
 const PauseThresh = 5               //Number of repeated time reports before we assume server is paused
 const ErrorDelayShutdown = 30       //If we close on error, sleep this long before exiting
