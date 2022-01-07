@@ -273,7 +273,7 @@ func Chat() {
 												newrole = cfg.Global.RoleData.RegularRoleName
 												plevel = 2
 											} else if ptype == "admin" {
-												newrole = cfg.Global.RoleData.AdminRoleName
+												newrole = cfg.Global.RoleData.ModeratorRoleName
 												plevel = 255
 											} else {
 												newrole = cfg.Global.RoleData.NewRoleName
@@ -645,28 +645,28 @@ func Chat() {
 									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
 									fact.WriteFact("/cleanmap")
 								}
-								if cfg.Local.DefaultUPSRate > 0 && cfg.Local.DefaultUPSRate < 1000 {
-									fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.DefaultUPSRate))
+								if cfg.Local.SoftModOptions.DefaultUPSRate > 0 && cfg.Local.SoftModOptions.DefaultUPSRate < 1000 {
+									fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.SoftModOptions.DefaultUPSRate))
 									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
 								}
-								if cfg.Local.DisableBlueprints {
+								if cfg.Local.SoftModOptions.DisableBlueprints {
 									fact.WriteFact("/blueprints off")
 									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
 								}
-								if cfg.Local.EnableCheats {
+								if cfg.Local.SoftModOptions.EnableCheats {
 									fact.WriteFact("/enablecheats on")
 									//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
 								}
 
 								//Patreon list
-								cfg.RoleListLock.Lock()
-								if len(cfg.RoleList.Patreons) > 0 {
-									fact.WriteFact("/patreonlist " + strings.Join(cfg.RoleList.Patreons, ","))
+								disc.RoleListLock.Lock()
+								if len(disc.RoleList.Patreons) > 0 {
+									fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
 								}
-								if len(cfg.RoleList.NitroBooster) > 0 {
-									fact.WriteFact("/nitrolist " + strings.Join(cfg.RoleList.NitroBooster, ","))
+								if len(disc.RoleList.NitroBooster) > 0 {
+									fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 								}
-								cfg.RoleListLock.Unlock()
+								disc.RoleListLock.Unlock()
 								continue
 							}
 
