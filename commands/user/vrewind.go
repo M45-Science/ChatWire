@@ -87,6 +87,14 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			return
 		}
 
+		//Cooldown
+		if time.Since(LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
+			fact.CMS(m.ChannelID, "The map was rewound "+time.Since(LastRewindTime).Round(time.Second).String()+" ago,")
+			left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(LastRewindTime)
+			fact.CMS(m.ChannelID, fmt.Sprintf("so it can not be rewound again for another %v", left.Round(time.Second).String()))
+			return
+		}
+
 		//Autosave exists, handle votes
 		var v rewindVoteData = rewindVoteData{}
 		vpos := 0
@@ -100,7 +108,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					votes[vpos].Voided = false
 					votes[vpos].Expired = false
 					fact.CMS(m.ChannelID, "You have changed your vote to autosave #"+strconv.Itoa(num))
-					return
+					getVotes()
 				}
 
 				if left > 0 {
@@ -109,14 +117,6 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 				return
 			}
-		}
-
-		//Cooldown
-		if time.Since(LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
-			fact.CMS(m.ChannelID, "The map was rewound "+time.Since(LastRewindTime).Round(time.Second).String()+" ago,")
-			left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(LastRewindTime)
-			fact.CMS(m.ChannelID, fmt.Sprintf("so it can not be rewound again for another %v", left.Round(time.Second).String()))
-			return
 		}
 
 		//Create new vote
@@ -206,13 +206,13 @@ func getVotes() (string, int) {
 		autoSaveList = append(autoSaveList, asData{Autosave: v.AutosaveNum, Count: 1})
 	}
 
-	if len(autoSaveList) > 1 {
-		buf = buf + "Number of votes for each autosave:\n```"
-		for _, v := range autoSaveList {
-			buf = buf + fmt.Sprintf("%v: %v\n", v.Autosave, v.Count)
-		}
-		buf = buf + "```"
-	}
+	//if len(autoSaveList) > 1 {
+	//	buf = buf + "Number of votes for each autosave:\n```"
+	//	for _, v := range autoSaveList {
+	//		buf = buf + fmt.Sprintf("%v: %v\n", v.Autosave, v.Count)
+	//	}
+	//	buf = buf + "```"
+	//}
 
 	if count == 0 {
 		buf = ""
