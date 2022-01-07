@@ -149,7 +149,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData:             &cfg.Local.DisableBlueprints,
+		BData:             &cfg.Local.SoftModOptions.DisableBlueprints,
 		FactUpdateCommand: "/blueprints",
 	},
 	{
@@ -159,7 +159,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData:             &cfg.Local.EnableCheats,
+		BData:             &cfg.Local.SoftModOptions.EnableCheats,
 		FactUpdateCommand: "/cheats",
 	},
 	{
@@ -209,7 +209,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData: &cfg.Local.SoftModOptions.DoWhitelist,
+		BData: &cfg.Local.DoWhitelist,
 	},
 	{
 		Name: "RestrictMode",
