@@ -34,10 +34,8 @@ type config struct {
 	ResetScheduleText string
 	WriteStatsDisc    bool
 	ResetPingString   string
-	DefaultUPSRate    int
-	DisableBlueprints bool
-	EnableCheats      bool
 	HideAutosaves     bool
+	DoWhitelist       bool
 
 	FactorioData LFactDataStruct
 
@@ -69,6 +67,7 @@ type gconfig struct {
 
 //Global Factorio data
 type GFactDataStruct struct {
+	Comment   string
 	Username  string
 	Token     string
 	Autosaves int
@@ -116,6 +115,7 @@ type PathDataStruct struct {
 
 //Discord-specific data global
 type DiscordDataStruct struct {
+	Comment string
 	Token   string
 	GuildID string
 
@@ -129,18 +129,25 @@ type DiscordDataStruct struct {
 
 //Discord role info, global
 type RoleDataStruct struct {
+	ModeratorRoleName string
+	RegularRoleName   string
+	MemberRoleName    string
+	NewRoleName       string
+	PatreonRoleName   string
+	NitroRoleName     string
+
+	Comment         string
 	ModeratorRoleID string
+	RegularRoleID   string
+	MemberRoleID    string
+	NewRoleID       string
 	PatreonRoleID   string
 	NitroRoleID     string
-
-	AdminRoleName   string
-	RegularRoleName string
-	MemberRoleName  string
-	NewRoleName     string
 }
 
 //Map preview generation settings, global
 type MapPreviewDataStruct struct {
+	Comment    string
 	Args       string
 	Res        string
 	Scale      string
@@ -150,8 +157,9 @@ type MapPreviewDataStruct struct {
 
 //Discord data, per-server
 type ChannelDataStruct struct {
-	Pos    int
-	ChatID string
+	Comment string
+	Pos     int
+	ChatID  string
 }
 
 //Local, Factorio setting
@@ -163,10 +171,12 @@ type SlowConnectStruct struct {
 
 //Local soft-mod options
 type SoftModOptionsStruct struct {
-	DoWhitelist    bool
-	RestrictMode   bool
-	FriendlyFire   bool
-	CleanMapOnBoot bool
+	RestrictMode      bool
+	FriendlyFire      bool
+	CleanMapOnBoot    bool
+	DefaultUPSRate    int
+	DisableBlueprints bool
+	EnableCheats      bool
 }
 
 func WriteGCfg() bool {
@@ -355,7 +365,11 @@ func ReadGCfg() bool {
 
 //Make new empty gconfig data
 func CreateGCfg() gconfig {
-	newcfg := gconfig{Version: "0.0.1"}
+	newcfg := gconfig{Version: "0.0.2"}
+	newcfg.FactorioData.Comment = "THESE ARE REQUIRED!"
+	newcfg.DiscordData.Comment = "TOKEN AND GUILD ID ARE REQUIRED!"
+	newcfg.RoleData.Comment = "THESE IDS ARE AUTOMATIC! DO NOT EDIT! ONLY SUPPLY ROLE NAMES!"
+	newcfg.MapPreviewData.Comment = "https://wiki.factorio.com/Command_line_parameters"
 	return newcfg
 }
 
@@ -464,6 +478,7 @@ func ReadLCfg() bool {
 
 //Make empty local config
 func CreateLCfg() config {
-	newcfg := config{Version: "0.0.1"}
+	newcfg := config{Version: "0.0.2"}
+	newcfg.ChannelData.Comment = "CHANNEL ID REQUIRED! POSITION IS OPTIONAL!"
 	return newcfg
 }
