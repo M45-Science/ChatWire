@@ -116,11 +116,10 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					usedExistingVote = true
 				}
 
-				if left > 0 {
-					fact.CMS(m.ChannelID, "You can not vote again yet, you must wait another "+left.Round(time.Second).String())
+				if left > 0 && !usedExistingVote {
+					fact.CMS(m.ChannelID, "You have already voted for that autosave.")
+					return
 				}
-
-				return
 			}
 		}
 
@@ -144,7 +143,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			asnum := 0
 			for _, as := range autoSaveList {
 				if as.Count >= constants.VotesNeededRewind {
-					fact.CMS(m.ChannelID, "Players voted to rewind map to autosave #"+strconv.Itoa(as.Autosave))
+					//fact.CMS(m.ChannelID, "Players voted to rewind map to autosave #"+strconv.Itoa(as.Autosave))
 					found = true
 					asnum = as.Autosave
 				}
@@ -161,12 +160,12 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			numRewind++
 
 			//Mark all votes as voided
-			for _, v := range votes {
-				v.Voided = true
+			for vpos, _ := range votes {
+				votes[vpos].Voided = true
 			}
 			fact.CMS(m.ChannelID, "Rewinding the map to autosave #"+strconv.Itoa(asnum))
 			WriteRewindVotes()
-			fact.DoRewindMap(s, m, args[0])
+			fact.DoRewindMap(s, m, strconv.Itoa(asnum))
 			return
 		}
 
