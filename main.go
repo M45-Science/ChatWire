@@ -32,7 +32,7 @@ func main() {
 
 	//Set up rewind cooldown
 	now := time.Now()
-	then := now.Add(time.Duration(-constants.RewindCooldownMinutes) * time.Minute)
+	then := now.Add(time.Duration(-constants.RewindCooldownMinutes+1) * time.Minute)
 	user.LastRewindTime = then.Round(time.Second)
 
 	//Create our maps
