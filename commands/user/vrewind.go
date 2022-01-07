@@ -181,6 +181,9 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			return
 		}
 
+	} else {
+		fact.CMS(m.ChannelID, "Invalid arguments.")
+		return
 	}
 
 }
@@ -196,7 +199,7 @@ func getVotes() (string, int) {
 	for vpos, v := range votes {
 		if v.Voided {
 			buf = buf + fmt.Sprintf("%v: autosave #%v (%v ago)", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
-			buf = buf + " (voided/cast))\n"
+			buf = buf + " (voided/cast)\n"
 		} else if time.Since(v.Time) > (constants.VoteLifetime * time.Minute) {
 			//Expired vote
 			votes[vpos].Expired = true
