@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -107,8 +108,9 @@ func main() {
 		botlog.DoLog("Couldn't create lock file!!!")
 		return //Okay, somthing is probably wrong
 	}
-	lfile.WriteString(time.Now().String() + "\n")
-	defer lfile.Close() //Only close on exit
+	lfile.Close()
+	buf := fmt.Sprintf("%v\n", time.Now().UnixMicro())
+	ioutil.WriteFile("cw.lock", []byte(buf), 0644)
 
 	//All threads/loops in here.
 	//If autostart is enabled, we will boot Factorio.
