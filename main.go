@@ -73,7 +73,7 @@ func main() {
 	botlog.DoLog("Version: " + constants.Version)
 
 	//Read in cached discord role data
-	cfg.ReadRoleList()
+	disc.ReadRoleList()
 
 	//Set autostart mode from config
 	if cfg.Local.AutoStart {
@@ -111,6 +111,7 @@ func main() {
 					disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, msg)
 				}(msg)
 
+				_ = os.Remove("cw.lock")
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
 				botlog.DoLog("Sleep done, exiting.")
 				return
