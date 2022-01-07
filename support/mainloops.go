@@ -142,14 +142,14 @@ func MainLoops() {
 					}
 
 					//Whitelist
-					if cfg.Local.SoftModOptions.DoWhitelist {
+					if cfg.Local.DoWhitelist {
 						tempargs = append(tempargs, "--use-server-whitelist")
 						tempargs = append(tempargs, "true")
 					}
 
 					//Write or delete whitelist
 					count := fact.WriteWhitelist()
-					if count > 0 && cfg.Local.SoftModOptions.DoWhitelist {
+					if count > 0 && cfg.Local.DoWhitelist {
 						botlog.DoLog(fmt.Sprintf("Whitelist of %v players written.", count))
 					}
 
@@ -538,38 +538,87 @@ func MainLoops() {
 				//Get guild id, if we need it
 
 				if disc.Guild == nil && disc.DS != nil {
+					var nguild *discordgo.Guild
+					var err error
+
 					// Attempt to get the guild from the state,
 					// If there is an error, fall back to the restapi.
-					nguild, err := disc.DS.State.Guild(cfg.Global.DiscordData.GuildID)
+					nguild, err = disc.DS.State.Guild(cfg.Global.DiscordData.GuildID)
 					if err != nil {
 						nguild, err = disc.DS.Guild(cfg.Global.DiscordData.GuildID)
 						if err != nil {
-							//botlog.DoLog("Failed to get guild data, will retry...")
-							return
+							botlog.DoLog("Failed to get valid guild data, giving up.")
+							disc.GuildLock.Unlock()
+							break
 						}
 					}
 
 					if err != nil {
 						botlog.DoLog(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
-
 						disc.GuildLock.Unlock()
-						continue
+						break
 					}
 					if nguild == nil || err != nil {
 						disc.Guildname = constants.Unknown
 						botlog.DoLog("Guild data came back nil.")
+						disc.GuildLock.Unlock()
+						break
 					} else {
 
 						//Guild found, exit loop
 						disc.Guild = nguild
 						disc.Guildname = nguild.Name
 						botlog.DoLog("Guild data linked.")
-						disc.GuildLock.Unlock()
-						break
 					}
 				}
 
+				//Update role IDs
+				if disc.Guild != nil {
+					changed := false
+					for _, role := range disc.Guild.Roles {
+						if cfg.Global.RoleData.ModeratorRoleName != "" &&
+							role.Name == cfg.Global.RoleData.ModeratorRoleName &&
+							role.ID != "" && cfg.Global.RoleData.ModeratorRoleID != role.ID {
+							cfg.Global.RoleData.ModeratorRoleID = role.ID
+							changed = true
+
+						} else if cfg.Global.RoleData.RegularRoleName != "" &&
+							role.Name == cfg.Global.RoleData.RegularRoleName &&
+							role.ID != "" && cfg.Global.RoleData.RegularRoleID != role.ID {
+							cfg.Global.RoleData.RegularRoleID = role.ID
+							changed = true
+
+						} else if cfg.Global.RoleData.MemberRoleName != "" &&
+							role.Name == cfg.Global.RoleData.MemberRoleName &&
+							role.ID != "" && cfg.Global.RoleData.MemberRoleID != role.ID {
+							cfg.Global.RoleData.MemberRoleID = role.ID
+							changed = true
+
+						} else if cfg.Global.RoleData.NewRoleName != "" &&
+							role.Name == cfg.Global.RoleData.NewRoleName &&
+							role.ID != "" && cfg.Global.RoleData.NewRoleID != role.ID {
+							cfg.Global.RoleData.NewRoleID = role.ID
+							changed = true
+						} else if cfg.Global.RoleData.PatreonRoleName != "" &&
+							role.Name == cfg.Global.RoleData.PatreonRoleName &&
+							role.ID != "" && cfg.Global.RoleData.PatreonRoleID != role.ID {
+							cfg.Global.RoleData.PatreonRoleID = role.ID
+							changed = true
+						} else if cfg.Global.RoleData.NitroRoleName != "" &&
+							role.Name == cfg.Global.RoleData.NitroRoleName &&
+							role.ID != "" && cfg.Global.RoleData.NitroRoleID != role.ID {
+							cfg.Global.RoleData.NitroRoleID = role.ID
+							changed = true
+						}
+					}
+					if changed {
+						botlog.DoLog("Role IDs updated.")
+						cfg.WriteGCfg()
+					}
+				}
 				disc.GuildLock.Unlock()
+
+				time.Sleep(time.Minute * 5)
 			}
 		}()
 
@@ -584,16 +633,16 @@ func MainLoops() {
 						if fact.IsFactorioBooted() {
 							time.Sleep(time.Minute * 5)
 
-							cfg.RoleListLock.Lock()
-							if len(cfg.RoleList.Patreons) > 0 {
-								fact.WriteFact("/patreonlist " + strings.Join(cfg.RoleList.Patreons, ","))
+							disc.RoleListLock.Lock()
+							if len(disc.RoleList.Patreons) > 0 {
+								fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
 							}
-							if len(cfg.RoleList.NitroBooster) > 0 {
-								fact.WriteFact("/nitrolist " + strings.Join(cfg.RoleList.NitroBooster, ","))
+							if len(disc.RoleList.NitroBooster) > 0 {
+								fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 							}
-							cfg.RoleListLock.Unlock()
+							disc.RoleListLock.Unlock()
 
-							cfg.UpdateRoleList()
+							disc.UpdateRoleList()
 						}
 					}
 				}
@@ -856,6 +905,7 @@ func MainLoops() {
 
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
+	_ = os.Remove("cw.lock")
 	fact.SetAutoStart(false)
 	fact.SetBotReboot(false)
 	fact.SetQueued(false)
