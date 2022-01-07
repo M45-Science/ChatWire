@@ -5,6 +5,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"fmt"
 	"os"
 	"strconv"
@@ -33,19 +34,27 @@ var numRewind int = 0
 func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	argnum := len(args)
 
-	_, err := strconv.Atoi(args[0])
-	if argnum == 0 || err != nil {
-		fact.ShowRewindList(s, m)
-		buf, _ := getVotes()
-		if buf != "" {
-			fact.CMS(m.ChannelID, buf)
-		}
+	if !fact.IsFactorioBooted() || !fact.IsFactRunning() || !glob.ServerRunning {
+		fact.CMS(m.ChannelID, "Factorio isn't running!")
 		return
 	}
 
 	//Only if allowed
 	if !disc.CheckRegular(m) && !disc.CheckModerator(m) {
 		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.RoleData.RegularRoleName)+"` Discord role to use this command.")
+		return
+	}
+
+	var err error
+	if argnum > 0 {
+		_, err = strconv.Atoi(args[0])
+	}
+	if argnum == 0 || err != nil {
+		fact.ShowRewindList(s, m)
+		buf, _ := getVotes()
+		if buf != "" {
+			fact.CMS(m.ChannelID, buf)
+		}
 		return
 	}
 
@@ -56,7 +65,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		arg := args[0]
 		arg = strings.TrimSpace(arg)
 		arg = strings.TrimPrefix(arg, "#")
-		num, err := strconv.Atoi(args[0])
+		num, err := strconv.Atoi(arg)
 
 		if err != nil {
 			fact.CMS(m.ChannelID, "Not a valid autosave number.")
