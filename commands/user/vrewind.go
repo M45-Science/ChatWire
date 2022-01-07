@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -28,6 +29,7 @@ type rewindVoteData struct {
 	Expired bool
 }
 
+var voteRewindLock sync.Mutex
 var votes []rewindVoteData
 var autoSaveList []asData
 var LastRewindTime time.Time
@@ -35,6 +37,9 @@ var numRewind int = 0
 
 //Allow regulars to vote to rewind the map
 func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	voteRewindLock.Lock()
+	defer voteRewindLock.Unlock()
+
 	argnum := len(args)
 
 	if !fact.IsFactorioBooted() || !fact.IsFactRunning() || !glob.ServerRunning {
