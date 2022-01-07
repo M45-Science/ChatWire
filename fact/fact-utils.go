@@ -311,7 +311,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	//We can't read saves dir
 	if err != nil {
 		log.Fatal(err)
-		CMS(m.ChannelID, "Something went wrong, sorry.")
+		CMS(m.ChannelID, "Error: Unable to read autosave directory.")
 	}
 
 	rangeBuf := ""
@@ -382,7 +382,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if lastNum == -1 {
 		CMS(m.ChannelID, "No autosaves found.")
 	} else {
-		CMS(m.ChannelID, rangeBuf+"\n\n"+fileNames+"\n```")
+		CMS(m.ChannelID, "```"+fileNames+"```")
 	}
 }
 
