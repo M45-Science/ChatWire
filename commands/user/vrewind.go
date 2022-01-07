@@ -2,8 +2,8 @@ package user
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
-	"ChatWire/glob"
 	"fmt"
 	"os"
 	"strconv"
@@ -18,13 +18,9 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	argnum := len(args)
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
 
-	for _, player := range glob.PlayerList {
-		if player.ID != "" && player.Level == 2 && player.ID == m.Author.ID {
-			//vote
-		} else {
-			fact.CMS(m.ChannelID, "You must be `REGISTERED`, AND a `REGULAR` to use this command.")
-			return
-		}
+	if !disc.CheckRegular(m) && !disc.CheckModerator(m) {
+		fact.CMS(m.ChannelID, "You must have the `"+cfg.Global.RoleData.RegularRoleName+"` Discord role to use this command.")
+		return
 	}
 	//Correct number of arguments (1)
 	if argnum == 1 {
@@ -45,6 +41,8 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 				}
 			}
 		}
+	} else {
+		fact.ShowRewindList(s, m)
 	}
 
 }
