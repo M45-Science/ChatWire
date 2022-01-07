@@ -6,10 +6,51 @@ import (
 	"time"
 
 	"ChatWire/botlog"
+	"ChatWire/cfg"
 	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
+
+// CheckAdmin checks if the user attempting to run an admin command is an admin
+func CheckModerator(m *discordgo.MessageCreate) bool {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.ModeratorRoleID {
+			return true
+		}
+	}
+	return false
+}
+
+// CheckAdmin checks if the user attempting to run an admin command is an admin
+func CheckRegular(m *discordgo.MessageCreate) bool {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.RegularRoleID {
+			return true
+		}
+	}
+	return false
+}
+
+// CheckAdmin checks if the user attempting to run an admin command is an admin
+func CheckMember(m *discordgo.MessageCreate) bool {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.MemberRoleID {
+			return true
+		}
+	}
+	return false
+}
+
+// CheckAdmin checks if the user attempting to run an admin command is an admin
+func CheckNew(m *discordgo.MessageCreate) bool {
+	for _, role := range m.Member.Roles {
+		if role == cfg.Global.RoleData.NewRoleID {
+			return true
+		}
+	}
+	return false
+}
 
 /* Send embeded message */
 func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
