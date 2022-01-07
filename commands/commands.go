@@ -7,6 +7,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/commands/user"
+	"ChatWire/disc"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
@@ -28,16 +29,6 @@ type Command struct {
 // CL is a Commands interface.
 var CL Commands
 
-// CheckAdmin checks if the user attempting to run an admin command is an admin
-func CheckAdmin(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.RoleData.ModeratorRoleID {
-			return true
-		}
-	}
-	return false
-}
-
 // RegisterCommands registers the commands on start up.
 func RegisterCommands() {
 	// Admin Commands
@@ -55,7 +46,7 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Pset", Command: admin.SetPlayerLevel, Admin: true, Help: "Set: player level"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rcfg", Command: admin.ReloadConfig, Admin: true, Help: "Reload config file"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Set", Command: admin.Set, Admin: true, Help: "Change server settings."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, Admin: true, Help: "Quick autosave rollack to <num>"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, Admin: true, Help: "Quick autosave rollack to <num>, no arg for list."})
 
 	// Util Commands
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, Admin: false, Help: "Show player info"})
@@ -71,7 +62,7 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 	for _, command := range CL.CommandList {
 		if strings.EqualFold(command.Name, name) {
 			if command.Admin {
-				if CheckAdmin(m) {
+				if disc.CheckModerator(m) {
 					command.Command(s, m, args)
 				}
 			} else {
@@ -89,7 +80,7 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	buf := "```"
 
-	if CheckAdmin(m) {
+	if disc.CheckModerator(m) {
 		for _, command := range CL.CommandList {
 			admin := ""
 			if command.Admin {
