@@ -3,6 +3,7 @@ package fact
 import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -57,8 +58,8 @@ func GenerateFactorioConfig() bool {
 	autosave_interval := 15
 	autokick := 30
 
-	if cfg.Local.DefaultUPSRate > 0 {
-		heartbeats = cfg.Local.DefaultUPSRate
+	if cfg.Local.SoftModOptions.DefaultUPSRate > 0 {
+		heartbeats = cfg.Local.SoftModOptions.DefaultUPSRate
 	}
 	if cfg.Global.FactorioData.Autosaves > 0 {
 		autosaves = cfg.Global.FactorioData.Autosaves
@@ -75,7 +76,7 @@ func GenerateFactorioConfig() bool {
 	var descrLines []string
 
 	descrLines = strings.Split(cfg.Global.FactorioData.ServerDescription, "\n")
-	if cfg.Local.SoftModOptions.DoWhitelist {
+	if cfg.Local.DoWhitelist {
 		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
 	}
 	if cfg.Local.SoftModOptions.FriendlyFire {
@@ -89,10 +90,10 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.ResetScheduleText != "" {
 		descrLines = append(descrLines, "MAP RESETS: "+cfg.Local.ResetScheduleText)
 	}
-	if cfg.Local.EnableCheats {
+	if cfg.Local.SoftModOptions.EnableCheats {
 		descrLines = append(descrLines, AddFactColor("red", "SANDBOX"))
 	}
-	if cfg.Local.DisableBlueprints {
+	if cfg.Local.SoftModOptions.DisableBlueprints {
 		descrLines = append(descrLines, AddFactColor("blue", "NO BLUEPRINTS"))
 	}
 	if cfg.Local.SlowConnect.SlowConnect {
@@ -112,11 +113,11 @@ func GenerateFactorioConfig() bool {
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
 
-	cfg.RoleListLock.Lock()
+	disc.RoleListLock.Lock()
 	conf := FactConf{
 		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
-		Description: strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(cfg.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(cfg.RoleList.NitroBooster, ", ") + "[/color]\n[color=red]Moderators: " + strings.Join(cfg.RoleList.Moderators, ", ") + "[/color]\n",
+		Description: strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n",
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
@@ -138,7 +139,7 @@ func GenerateFactorioConfig() bool {
 		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
 	}
-	cfg.RoleListLock.Unlock()
+	disc.RoleListLock.Unlock()
 
 	c := "/config set"
 	if IsFactorioBooted() {
