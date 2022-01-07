@@ -117,7 +117,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 				}
 
 				if left > 0 && !usedExistingVote {
-					fact.CMS(m.ChannelID, "You have already voted for that autosave.")
+					fact.CMS(m.ChannelID, "You can not vote again yet, you must wait "+left.Round(time.Second).String()+".")
 					return
 				}
 			}
@@ -181,25 +181,16 @@ type asData struct {
 func getVotes() (string, int) {
 	count := 0
 	buf := "Votes:\n```"
-	for _, v := range votes {
-		if !v.Voided {
-			if time.Since(v.Time) > (constants.VoteLifetime * time.Minute) {
-				//Expired vote, void it
-				v.Voided = true
-				v.Expired = true
-				buf = buf + v.Name + " (Expired)\n"
-			} else {
-				buf = buf + fmt.Sprintf("%v: autosave #%v (%v ago)\n", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
-				count++
-			}
+	for vpos, v := range votes {
+		if v.Voided {
+			buf = buf + fmt.Sprintf("%v: autosave #%v (%v ago)", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
+			buf = buf + " (voided/cast))\n"
+		} else if time.Since(v.Time) > (constants.VoteLifetime * time.Minute) {
+			//Expired vote
+			votes[vpos].Expired = true
 		} else {
-			buf = buf + v.Name + " (Voided)\n"
-		}
-		if time.Since(v.Time) > (constants.VoteLifetime * time.Minute) {
-			//Expired vote, void it
-			v.Voided = true
-			v.Expired = true
-			buf = buf + v.Name + " (Expired)\n"
+			buf = buf + fmt.Sprintf("%v: autosave #%v (%v ago)\n", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
+			count++
 		}
 	}
 	buf = buf + fmt.Sprintf("```\n`Valid votes: %v -- (need %v total)`\n", count, constants.VotesNeededRewind)
