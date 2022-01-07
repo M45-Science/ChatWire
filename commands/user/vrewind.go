@@ -101,6 +101,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		//Autosave exists, handle votes
 		var v rewindVoteData = rewindVoteData{}
 		vpos := 0
+		usedExistingVote := false
 		for vpos, v = range votes {
 			if v.DiscID == m.Author.ID || v.Name == m.Author.Username {
 				left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
@@ -111,8 +112,8 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					votes[vpos].Voided = false
 					votes[vpos].Expired = false
 					fact.CMS(m.ChannelID, "You have changed your vote to autosave #"+strconv.Itoa(num))
-					WriteRewindVotes()
 					getVotes()
+					usedExistingVote = true
 				}
 
 				if left > 0 {
@@ -124,9 +125,12 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		}
 
 		//Create new vote
-		newVote := rewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, Time: time.Now(), AutosaveNum: num}
-		votes = append(votes, newVote)
-		fact.CMS(m.ChannelID, "You have voted to rewind the map to autosave #"+args[0])
+		if !usedExistingVote {
+			newVote := rewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, Time: time.Now(), AutosaveNum: num}
+			votes = append(votes, newVote)
+			fact.CMS(m.ChannelID, "You have voted to rewind the map to autosave #"+args[0])
+		}
+
 		WriteRewindVotes()
 		if _, c := getVotes(); c < constants.VotesNeededRewind {
 			//Not enough votes yet
@@ -140,7 +144,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			asnum := 0
 			for _, as := range autoSaveList {
 				if as.Count >= constants.VotesNeededRewind {
-					fact.CMS(m.ChannelID, "Enough votes have been cast to rewind the map to autosave #"+strconv.Itoa(as.Autosave))
+					fact.CMS(m.ChannelID, "Players voted to rewind map to autosave #"+strconv.Itoa(as.Autosave))
 					found = true
 					asnum = as.Autosave
 				}
