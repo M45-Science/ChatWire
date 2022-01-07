@@ -95,8 +95,10 @@ func main() {
 		//return
 		//Proceed anyway, process is managed by systemd
 	} else {
-		botlog.DoLog("Unable to delete old lockfile, exiting.")
-		return
+		if !os.IsNotExist(err) {
+			botlog.DoLog("Unable to delete old lockfile, exiting.")
+			return
+		}
 	}
 
 	//Make lockfile
