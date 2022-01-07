@@ -13,6 +13,7 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/commands"
+	"ChatWire/commands/user"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -28,6 +29,11 @@ func main() {
 	var src = rand.NewSource(time.Now().UnixNano())
 	var r = rand.New(src)
 	glob.LastColor = r.Intn(constants.NumColors - 1)
+
+	//Set up rewind cooldown
+	now := time.Now()
+	then := now.Add(time.Duration(-constants.RewindCooldownMinutes) * time.Minute)
+	user.LastRewindTime = then.Round(time.Second)
 
 	//Create our maps
 	playlist := make(map[string]*glob.PlayerData)

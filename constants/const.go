@@ -18,6 +18,9 @@ const PauseThresh = 5               //Number of repeated time reports before we 
 const ErrorDelayShutdown = 30       //If we close on error, sleep this long before exiting
 const RestartLimitMinutes = 5       //If cw.lock is newer than this, sleep
 const RestartLimitSleepMinutes = 15 //cw.lock is new, sleep this long then exit.
+const VotesNeededRewind = 2         //Number of votes needed to rewind
+const RewindCooldownMinutes = 2     //Cooldown between rewinds
+const VoteLifetime = 15             //How long a vote lasts
 
 //Max results to return
 const WhoisResults = 20
