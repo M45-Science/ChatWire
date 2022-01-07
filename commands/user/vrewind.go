@@ -102,6 +102,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		var v rewindVoteData = rewindVoteData{}
 		vpos := 0
 		usedExistingVote := false
+		getVotes()
 		for vpos, v = range votes {
 			if v.DiscID == m.Author.ID || v.Name == m.Author.Username {
 				left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
@@ -125,8 +126,19 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		//Create new vote
 		if !usedExistingVote {
+
+			//Re-use old vote if it exists
 			newVote := rewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, Time: time.Now(), AutosaveNum: num}
-			votes = append(votes, newVote)
+			for vpos, v = range votes {
+				if v.DiscID == m.Author.ID {
+					votes[vpos] = newVote
+					usedExistingVote = true
+				}
+			}
+
+			if !usedExistingVote {
+				votes = append(votes, newVote)
+			}
 			fact.CMS(m.ChannelID, "You have voted to rewind the map to autosave #"+args[0])
 		}
 
