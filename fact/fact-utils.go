@@ -3,9 +3,14 @@ package fact
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"ChatWire/botlog"
@@ -40,7 +45,7 @@ func DeleteOldSav() {
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
 	if IsFactRunning() {
-		if cfg.Local.SoftModOptions.DoWhitelist {
+		if cfg.Local.DoWhitelist {
 			if level > 0 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
 			}
@@ -54,7 +59,7 @@ func WriteWhitelist() int {
 	wpath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix +
 		cfg.Local.ServerCallsign + "/" + constants.WhitelistName
 
-	if cfg.Local.SoftModOptions.DoWhitelist {
+	if cfg.Local.DoWhitelist {
 		glob.PlayerListLock.RLock()
 		var count = 0
 		var buf = "[\n"
@@ -193,7 +198,7 @@ func AutoPromote(pname string) string {
 			} else if plevel == 2 {
 				newrole = cfg.Global.RoleData.RegularRoleName
 			} else if plevel == 255 {
-				newrole = cfg.Global.RoleData.AdminRoleName
+				newrole = cfg.Global.RoleData.ModeratorRoleName
 			} else {
 				newrole = cfg.Global.RoleData.NewRoleName
 			}
@@ -296,4 +301,88 @@ func RandomColor(justnumbers bool) string {
 		buf = fmt.Sprintf("[color=%.2f,%.2f,%.2f]", red, green, blue)
 	}
 	return buf
+}
+
+func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
+	layoutUS := "01/02 03:04 PM MST"
+	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
+
+	files, err := ioutil.ReadDir(path)
+	//We can't read saves dir
+	if err != nil {
+		log.Fatal(err)
+		CMS(m.ChannelID, "Something went wrong, sorry.")
+	}
+
+	rangeBuf := ""
+	fileNames := ""
+	lastNum := -1
+	step := 1
+	//Loop all files
+	var tempf []fs.FileInfo
+	for _, f := range files {
+		if strings.HasPrefix(f.Name(), "_autosave") && strings.HasSuffix(f.Name(), ".zip") {
+			tempf = append(tempf, f)
+		}
+	}
+
+	sort.Slice(tempf, func(i, j int) bool {
+		return tempf[i].ModTime().After(tempf[j].ModTime())
+	})
+
+	maxList := constants.MaxRewindResults
+	for _, f := range tempf {
+		maxList--
+		if maxList <= 0 {
+			break
+		}
+		fName := f.Name()
+
+		//Check if its a properly name autosave
+		if strings.HasPrefix(fName, "_autosave") && strings.HasSuffix(fName, ".zip") {
+			fTmp := strings.TrimPrefix(fName, "_autosave")
+			fNumStr := strings.TrimSuffix(fTmp, ".zip")
+			fNum, err := strconv.Atoi(fNumStr) //autosave number
+			//Nope, no valid numer
+			if err != nil {
+				continue
+			}
+			step++
+
+			//Get mod date
+			modDate := f.ModTime().Local().Format(layoutUS)
+			//Not first file add commas/newlines
+			if fileNames != "" {
+				if step%2 == 0 {
+					fileNames = fileNames + "\n"
+				} else {
+					fileNames = fileNames + ",   "
+				}
+			}
+			//Add to list with mod date
+			fileNames = fileNames + fmt.Sprintf("(%15v ): #%3v", modDate, fNum)
+
+			//autosave number range list
+			//If number is not sequential, save end of range and print it
+			if fNum != lastNum-1 {
+				//If we just started, add prefix, otherwise add dash and the end of the range, with comma for next item.
+				if rangeBuf == "" {
+					rangeBuf = "Autosaves: "
+				} else {
+					rangeBuf = rangeBuf + "-" + strconv.Itoa(lastNum) + ", "
+				}
+				rangeBuf = rangeBuf + fmt.Sprintf("%v", fNum)
+			}
+			lastNum = fNum //Save for compairsion next loop
+		}
+	}
+	//Add last item to range
+	rangeBuf = rangeBuf + "-" + strconv.Itoa(lastNum)
+
+	if lastNum == -1 {
+		CMS(m.ChannelID, "No autosaves found.")
+	} else {
+		CMS(m.ChannelID, "```\n"+rangeBuf+"\n\n"+fileNames+"\n```")
+	}
+	return
 }
