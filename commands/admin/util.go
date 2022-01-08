@@ -124,7 +124,7 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name: "UpdateFactExp",
-		Desc: "Update Factorio to experimental",
+		Desc: "Update Factorio to exp",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
