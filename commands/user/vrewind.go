@@ -1,44 +1,24 @@
 package user
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type rewindVoteData struct {
-	Name        string
-	DiscID      string
-	AutosaveNum int
-
-	Time    time.Time
-	Voided  bool
-	Expired bool
-}
-
-var voteRewindLock sync.Mutex
-var votes []rewindVoteData
-var autoSaveList []asData
-var LastRewindTime time.Time
-var numRewind int = 0
-
 //Allow regulars to vote to rewind the map
 func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-	voteRewindLock.Lock()
-	defer voteRewindLock.Unlock()
+	glob.VoteBoxLock.Lock()
+	defer glob.VoteBoxLock.Unlock()
 
 	argnum := len(args)
 
@@ -59,7 +39,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	}
 	if argnum == 0 || err != nil {
 		fact.ShowRewindList(s, m)
-		buf, _ := getVotes()
+		buf, _ := fact.TallyRewindVotes()
 		if buf != "" {
 			fact.CMS(m.ChannelID, buf)
 		}
@@ -96,92 +76,101 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		}
 
 		//Cooldown
-		if time.Since(LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
-			fact.CMS(m.ChannelID, "The map was rewound "+time.Since(LastRewindTime).Round(time.Second).String()+" ago,")
-			left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(LastRewindTime)
+		if time.Since(glob.VoteBox.LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
+			fact.CMS(m.ChannelID, "The map was rewound "+time.Since(glob.VoteBox.LastRewindTime).Round(time.Second).String()+" ago,")
+			left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(glob.VoteBox.LastRewindTime)
 			fact.CMS(m.ChannelID, fmt.Sprintf("so it can not be rewound again for another %v", left.Round(time.Second).String()))
 			return
 		}
 
 		//Autosave exists, handle votes
-		var v rewindVoteData = rewindVoteData{}
+		var v glob.RewindVoteData = glob.RewindVoteData{}
 		vpos := 0
-		usedExistingVote := false
-		getVotes()
-		for vpos, v = range votes {
-			if v.DiscID == m.Author.ID || v.Name == m.Author.Username {
+		changedVote := false
+		foundVote := false
+		fact.TallyRewindVotes()
+		for vpos, v = range glob.VoteBox.Votes {
+			if v.DiscID == m.Author.ID {
 				left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
 
-				if v.AutosaveNum != num && !v.Voided {
-					votes[vpos].AutosaveNum = num
-					votes[vpos].Time = time.Now()
-					votes[vpos].Voided = false
-					votes[vpos].Expired = false
+				if v.AutosaveNum != num && !v.Voided && v.NumChanges < constants.MaxRewindChanges {
+					glob.VoteBox.Votes[vpos].AutosaveNum = num
+					glob.VoteBox.Votes[vpos].Time = time.Now()
+					glob.VoteBox.Votes[vpos].Voided = false
+					glob.VoteBox.Votes[vpos].Expired = false
+					glob.VoteBox.Votes[vpos].NumChanges++
+					glob.VoteBox.Votes[vpos].TotalVotes++
 					fact.CMS(m.ChannelID, "You have changed your vote to autosave #"+strconv.Itoa(num))
-					getVotes()
-					usedExistingVote = true
+					fact.TallyRewindVotes()
+					changedVote = true
+					break
+				} else if v.NumChanges >= constants.MaxRewindChanges {
+					fact.CMS(m.ChannelID, "You can't change your vote again.")
+					return
 				}
 
-				if left > 0 && !usedExistingVote {
+				//If they didn't change a already valid vote, then check cooldown
+				if left > 0 && !changedVote {
 					fact.CMS(m.ChannelID, "You can not vote again yet, you must wait "+left.Round(time.Second).String()+".")
 					return
 				}
+
+				/* Everything is good, we can cast a new vote,
+				exit so we have position of existing vote */
+				foundVote = true
+				break
 			}
 		}
 
-		//Create new vote
-		if !usedExistingVote {
+		//Create new vote, if we didn't already change it above
+		if !changedVote {
 
-			//Re-use old vote if it exists
-			newVote := rewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, Time: time.Now(), AutosaveNum: num}
-			for vpos, v = range votes {
-				if v.DiscID == m.Author.ID {
-					votes[vpos] = newVote
-					usedExistingVote = true
-				}
-			}
+			newVote := glob.RewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, TotalVotes: 0, Time: time.Now(), AutosaveNum: num, NumChanges: 0, Voided: false, Expired: false}
 
-			if !usedExistingVote {
-				votes = append(votes, newVote)
+			//Re-use old vote if we found one, or old votes will block new ones
+			if foundVote && len(glob.VoteBox.Votes) >= vpos { //sanity check
+				glob.VoteBox.Votes[vpos] = newVote
+				glob.VoteBox.Votes[vpos].TotalVotes++
+			} else if !changedVote {
+				glob.VoteBox.Votes = append(glob.VoteBox.Votes, newVote)
 			}
 			fact.CMS(m.ChannelID, "You have voted to rewind the map to autosave #"+args[0])
 		}
 
-		WriteRewindVotes()
-		if _, c := getVotes(); c < constants.VotesNeededRewind {
-			//Not enough votes yet
-			buf, _ := getVotes()
+		/* Mark dirty, so vote is saved after we are done here */
+		glob.VoteBox.Dirty = true
+		if buf, c := fact.TallyRewindVotes(); c < constants.VotesNeededRewind {
 			fact.CMS(m.ChannelID, buf)
 			return
 		} else {
-			//Enough votes, check them.
-			getVotes() //Updates autoSaveList
+			//Enough votes to check, lets tally them and see if there is a winner
+			fact.TallyRewindVotes() //Updates votes
+
 			found := false
 			asnum := 0
-			for _, as := range autoSaveList {
-				if as.Count >= constants.VotesNeededRewind {
+			for _, t := range glob.VoteBox.Tally {
+				if t.Count >= constants.VotesNeededRewind {
 					//fact.CMS(m.ChannelID, "Players voted to rewind map to autosave #"+strconv.Itoa(as.Autosave))
 					found = true
-					asnum = as.Autosave
+					asnum = t.Autosave
 				}
 			}
-			//Nope, exit
+			//Nope, not enough votes for one specific autosave
 			if !found {
 				return
 			}
 
 			//Set cooldown
-			LastRewindTime = time.Now().Round(time.Second)
+			glob.VoteBox.LastRewindTime = time.Now().Round(time.Second)
 
-			//Count number of rewinds, for longer cooldowns
-			numRewind++
+			//Count number of rewinds, for future use
+			glob.VoteBox.NumRewind++
 
 			//Mark all votes as voided
-			for vpos, _ := range votes {
-				votes[vpos].Voided = true
+			for vpos, _ = range glob.VoteBox.Votes {
+				glob.VoteBox.Votes[vpos].Voided = true
 			}
 			fact.CMS(m.ChannelID, "Rewinding the map to autosave #"+strconv.Itoa(asnum))
-			WriteRewindVotes()
 			fact.DoRewindMap(s, m, strconv.Itoa(asnum))
 			return
 		}
@@ -191,77 +180,4 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		return
 	}
 
-}
-
-type asData struct {
-	Autosave int
-	Count    int
-}
-
-func getVotes() (string, int) {
-	count := 0
-	buf := "Votes:\n```"
-	for vpos, v := range votes {
-		if v.Voided {
-			buf = buf + fmt.Sprintf("%v: autosave #%v (%v ago)", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
-			buf = buf + " (voided/cast)\n"
-		} else if time.Since(v.Time) > (constants.VoteLifetime * time.Minute) {
-			//Expired vote
-			votes[vpos].Expired = true
-		} else {
-			buf = buf + fmt.Sprintf("%v: autosave #%v (%v ago)\n", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
-			count++
-		}
-	}
-	buf = buf + fmt.Sprintf("```\n`Valid votes: %v -- (need %v total)`\n", count, constants.VotesNeededRewind)
-
-	autoSaveList = []asData{}
-	for _, v := range votes {
-		for apos, a := range autoSaveList {
-			if v.AutosaveNum == a.Autosave {
-				autoSaveList[apos] = asData{Autosave: a.Autosave, Count: a.Count + 1}
-				continue
-			}
-		}
-		autoSaveList = append(autoSaveList, asData{Autosave: v.AutosaveNum, Count: 1})
-	}
-
-	//if len(autoSaveList) > 1 {
-	//	buf = buf + "Number of votes for each autosave:\n```"
-	//	for _, v := range autoSaveList {
-	//		buf = buf + fmt.Sprintf("%v: %v\n", v.Autosave, v.Count)
-	//	}
-	//	buf = buf + "```"
-	//}
-
-	if count == 0 {
-		buf = ""
-	}
-	buf = buf + "Syntax: `$vote-rewind <autosave number>`"
-	return buf, count
-}
-
-func WriteRewindVotes() {
-	var buf []byte
-	buf, _ = json.Marshal(votes)
-	err := ioutil.WriteFile(constants.VoteRewindFile, buf, 0644)
-	if err != nil {
-		botlog.DoLog(err.Error())
-	}
-}
-
-func ReadRewindVotes() {
-	buf, err := ioutil.ReadFile(constants.VoteRewindFile)
-	if err != nil {
-		botlog.DoLog(err.Error())
-		return
-	}
-	newVotes := []rewindVoteData{}
-	err = json.Unmarshal(buf, &newVotes)
-	if err != nil {
-		botlog.DoLog(err.Error())
-		return
-	}
-
-	votes = newVotes
 }
