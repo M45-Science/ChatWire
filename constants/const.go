@@ -2,10 +2,10 @@ package constants
 
 import "time"
 
-const Version = "513-01072022-0304p"
+const Version = "514-01082022-0400"
 const Unknown = "Unknown"
 
-//Config files
+//ChatWire files
 const CWGlobalConfig = "../cw-global-config.json"
 const CWLocalConfig = "cw-local-config.json"
 const WhitelistName = "server-whitelist.json"
@@ -15,13 +15,17 @@ const ModsFolder = "mods"
 const RoleListFile = "../RoleList.dat"
 const VoteRewindFile = "vote-rewind.dat"
 
+/* ChatWire settings */
 const PauseThresh = 5               //Number of repeated time reports before we assume server is paused
 const ErrorDelayShutdown = 30       //If we close on error, sleep this long before exiting
 const RestartLimitMinutes = 5       //If cw.lock is newer than this, sleep
 const RestartLimitSleepMinutes = 15 //cw.lock is new, sleep this long then exit.
-const VotesNeededRewind = 2         //Number of votes needed to rewind
-const RewindCooldownMinutes = 2     //Cooldown between rewinds
-const VoteLifetime = 15             //How long a vote lasts
+
+/* Vote Rewind */
+const VotesNeededRewind = 2     //Number of votes needed to rewind
+const RewindCooldownMinutes = 2 //Cooldown between rewinds
+const VoteLifetime = 15         //How long a vote lasts
+const MaxRewindChanges = 2      //Max number of times a player can change their vote
 
 //Max results to return
 const WhoisResults = 20
@@ -37,7 +41,7 @@ const FactorioUpdateProcessLimit = 10 * time.Minute
 const ZipIntegrityLimit = 5 * time.Minute
 
 //Maximum time to wait for Factorio to close
-const MaxFactorioCloseWait = 60
+const MaxFactorioCloseWait = 45
 
 //Maximum number of autosaves to display in the 'rewind list' command
 const MaxRewindResults = 40
