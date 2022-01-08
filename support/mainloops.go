@@ -412,6 +412,25 @@ func MainLoops() {
 			}
 		}()
 
+		//***************************************
+		//Save vote-rewind data async
+		//***************************************
+		go func() {
+
+			for glob.ServerRunning {
+				time.Sleep(5 * time.Second)
+
+				glob.VoteBoxLock.Lock()
+
+				//Save if dirty
+				if glob.VoteBox.Dirty {
+					fact.WriteRewindVotes()
+					glob.VoteBox.Dirty = false
+				}
+				glob.VoteBoxLock.Unlock()
+			}
+		}()
+
 		//****************************************************
 		//Slow-connect, helps players catch up on large maps
 		//****************************************************
