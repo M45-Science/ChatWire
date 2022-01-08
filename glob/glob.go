@@ -22,6 +22,43 @@ type PassData struct {
 	Time   int64
 }
 
+/* Rewind Votes Container */
+type RewindVoteContainerData struct {
+	Version string
+	Votes   []RewindVoteData
+
+	//Temporary storage for tallying votes
+	Tally          []VoteTallyData `json:"-"`
+	LastRewindTime time.Time       `json:"-"`
+	NumRewind      int
+
+	Dirty bool `json:"-"`
+}
+
+/* Rewind Votes */
+type RewindVoteData struct {
+	Name       string
+	DiscID     string
+	TotalVotes int
+
+	AutosaveNum int
+	NumChanges  int
+
+	Time    time.Time
+	Voided  bool
+	Expired bool
+}
+
+/* Temporary storage for tallying votes */
+type VoteTallyData struct {
+	Autosave int
+	Count    int
+}
+
+/* Vote Rewind */
+var VoteBox RewindVoteContainerData
+var VoteBoxLock sync.Mutex
+
 /* Server status */
 var ServerRunning bool = true
 var Uptime time.Time

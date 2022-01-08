@@ -13,7 +13,6 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/commands"
-	"ChatWire/commands/user"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -33,7 +32,7 @@ func main() {
 	//Set up rewind cooldown
 	now := time.Now()
 	then := now.Add(time.Duration(-constants.RewindCooldownMinutes+1) * time.Minute)
-	user.LastRewindTime = then.Round(time.Second)
+	glob.VoteBox.LastRewindTime = then.Round(time.Second)
 
 	//Create our maps
 	playlist := make(map[string]*glob.PlayerData)
@@ -97,7 +96,7 @@ func main() {
 	fact.LoadRecord()
 
 	//Load old votes
-	user.ReadRewindVotes()
+	fact.ReadRewindVotes()
 
 	bstr, err := ioutil.ReadFile("cw.lock")
 	if err == nil {
