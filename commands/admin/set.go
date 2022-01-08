@@ -28,6 +28,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	if arg1 == "help" || arg1 == "" {
 
 		buf := ""
+		buf = buf + fmt.Sprintf("`%24v: -- %-19v %15v %v`\n\n", "Description", "Name", "Data", "(Limits)")
 		for _, setting := range SettingList {
 			data := ""
 			limits := ""
@@ -53,7 +54,7 @@ func Set(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 			if data == "" {
 				data = "(empty)"
 			}
-			buf = buf + fmt.Sprintf("%v\n`%v: %v %v`\n", setting.Desc, setting.Name, data, limits)
+			buf = buf + fmt.Sprintf("`%24v: -- %-19v %15v %v`\n\n", setting.Desc, setting.Name, data, limits)
 		}
 		buf = buf + "\n`set <setting>` will show options. (EMPTY) can be used to blank a string.\n"
 		fact.CMS(m.ChannelID, buf)
