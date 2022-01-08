@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "515-01082022-0530"
+const Version = "516-01082022-0759"
 const Unknown = "Unknown"
 
 //ChatWire files
@@ -26,6 +26,7 @@ const VotesNeededRewind = 2     //Number of votes needed to rewind
 const RewindCooldownMinutes = 2 //Cooldown between rewinds
 const VoteLifetime = 15         //How long a vote lasts
 const MaxRewindChanges = 2      //Max number of times a player can change their vote
+const MaxRewindResults = 40
 
 //Max results to return
 const WhoisResults = 20
@@ -42,9 +43,6 @@ const ZipIntegrityLimit = 5 * time.Minute
 
 //Maximum time to wait for Factorio to close
 const MaxFactorioCloseWait = 45
-
-//Maximum number of autosaves to display in the 'rewind list' command
-const MaxRewindResults = 40
 
 //How often to check if Factorio server is alive
 const WatchdogInterval = time.Second
