@@ -77,9 +77,9 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		//Cooldown
 		if time.Since(glob.VoteBox.LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
-			fact.CMS(m.ChannelID, "The map was rewound "+time.Since(glob.VoteBox.LastRewindTime).Round(time.Second).String()+" ago,")
+			//fact.CMS(m.ChannelID, "The map was rewound "+time.Since(glob.VoteBox.LastRewindTime).Round(time.Second).String()+" ago,")
 			left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(glob.VoteBox.LastRewindTime)
-			fact.CMS(m.ChannelID, fmt.Sprintf("so it can not be rewound again for another %v", left.Round(time.Second).String()))
+			fact.CMS(m.ChannelID, fmt.Sprintf("The map can not be rewound for another %v.", left.Round(time.Second).String()))
 			return
 		}
 
