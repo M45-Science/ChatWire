@@ -216,6 +216,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					joined = jtime.Format(layoutUS)
 				}
 				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				count++
 			}
 		}
 		if buf == "" {
