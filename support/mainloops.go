@@ -654,25 +654,19 @@ func MainLoops() {
 		//**************************
 		go func() {
 			for glob.ServerRunning {
-				time.Sleep(time.Second)
-				if disc.DS != nil {
-					if disc.Guild != nil {
-						if fact.IsFactorioBooted() {
-							time.Sleep(time.Minute * 5)
+				time.Sleep(time.Minute)
+				if fact.IsFactorioBooted() {
+					disc.UpdateRoleList()
 
-							disc.RoleListLock.Lock()
-							if disc.RoleListUpdated && len(disc.RoleList.Patreons) > 0 {
-								fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
-							}
-							if disc.RoleListUpdated && len(disc.RoleList.NitroBooster) > 0 {
-								fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
-							}
-							disc.RoleListUpdated = false
-							disc.RoleListLock.Unlock()
-
-							disc.UpdateRoleList()
-						}
+					disc.RoleListLock.Lock()
+					if disc.RoleListUpdated && len(disc.RoleList.Patreons) > 0 {
+						fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
 					}
+					if disc.RoleListUpdated && len(disc.RoleList.NitroBooster) > 0 {
+						fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
+					}
+					disc.RoleListUpdated = false
+					disc.RoleListLock.Unlock()
 				}
 			}
 		}()
