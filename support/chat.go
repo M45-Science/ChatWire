@@ -158,14 +158,14 @@ func Chat() {
 
 					//********************************
 					//FILTERED AREA
-					//NO CMD, ESCAPED OR CONSOLE CHAT
+					//NO ESCAPED OR CONSOLE CHAT
 					//*********************************
-					if !strings.HasPrefix(line, "[CMD]") && !strings.HasPrefix(line, "~") && !strings.HasPrefix(line, "<server>") {
+					if !strings.HasPrefix(line, "~") && !strings.HasPrefix(line, "<server>") {
 
 						//*****************
 						//NO CHAT AREA
 						//*****************
-						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") {
+						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
 							//*****************
 							//GET FACTORIO TIME
@@ -214,14 +214,6 @@ func Chat() {
 								}
 								//This might block stuff by accident, don't do it
 								//continue
-							}
-
-							//*****************
-							//COMMAND REPORTING
-							//*****************
-							if strings.HasPrefix(line, "[CMD]") {
-								botlog.DoLogGame(line)
-								continue
 							}
 
 							//*****************
@@ -901,9 +893,14 @@ func Chat() {
 							}
 							continue
 						}
+
 						//*****************
-						//END CHAT
+						//COMMAND REPORTING
 						//*****************
+						if strings.HasPrefix(line, "[CMD]") {
+							botlog.DoLogGame(line)
+							continue
+						}
 					}
 					//*****************
 					//END FILTERED
