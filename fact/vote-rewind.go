@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func printVote(v glob.RewindVoteData) string {
+func PrintVote(v glob.RewindVoteData) string {
 	buf := fmt.Sprintf("%v: autosave #%v (%v ago)", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
 	return buf
 }
@@ -29,7 +29,7 @@ func TallyRewindVotes() (string, int) {
 
 		/* Void or Cast */
 		if v.Voided {
-			buf = buf + printVote(v)
+			buf = buf + PrintVote(v)
 			buf = buf + " (void/cast)\n"
 			glob.VoteBox.Votes[vpos].NumChanges = 0
 			visVotes++
@@ -47,7 +47,7 @@ func TallyRewindVotes() (string, int) {
 
 			/* Valid */
 		} else if !v.Voided && !v.Expired {
-			buf = buf + printVote(v)
+			buf = buf + PrintVote(v)
 			buf = buf + " (VALID)\n"
 			visVotes++
 			validVotes++
