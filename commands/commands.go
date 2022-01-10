@@ -129,10 +129,12 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	count := 0
 
 	if arglen > 0 {
+		argOne := strings.TrimPrefix(args[0], cfg.Global.DiscordCommandPrefix)
+
 		for _, command := range CL.CommandList {
 			if !command.ModeratorOnly || (command.ModeratorOnly && isModerator) {
 				admin := ""
-				if strings.EqualFold(command.Name, args[0]) {
+				if strings.EqualFold(command.Name, argOne) {
 					if command.ModeratorOnly {
 						admin = " (MOD ONLY)"
 					}
