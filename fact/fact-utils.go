@@ -163,16 +163,39 @@ func WriteFact(input string) {
 	}
 }
 
+func LevelToString(level int) string {
+
+	name := "Invalid"
+
+	if level <= -254 {
+		name = "Deleted"
+	} else if level == -1 {
+		name = "Banned"
+	} else if level == 0 {
+		name = "New"
+	} else if level == 1 {
+		name = "Member"
+	} else if level == 2 {
+		name = "Regular"
+	} else if level >= 255 {
+		name = "Admin"
+	}
+
+	return name
+}
+
 /* Promote a player to the level they have, in Factorio and on Discord */
 func AutoPromote(pname string) string {
 	newusername := " *(New Player)* "
 
 	if pname != "" {
 		plevel := PlayerLevelGet(pname)
-		if plevel == -1 {
-			newusername = " *(Banned)*"
+		if plevel <= -254 {
+			newusername = " **(Deleted Player)** "
+		} else if plevel == -1 {
+			newusername = " **(Banned)**"
 
-			WriteFact(fmt.Sprintf("/ban %s previously banned", pname))
+			WriteFact(fmt.Sprintf("/ban %s (previously banned)", pname))
 		} else if plevel == 1 {
 			newusername = " *(Member)*"
 
