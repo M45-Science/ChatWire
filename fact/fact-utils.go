@@ -189,23 +189,24 @@ func AutoPromote(pname string) string {
 	newusername := " *(New Player)* "
 
 	if pname != "" {
-		plevel := PlayerLevelGet(pname)
+		plevel := PlayerLevelGet(pname, false)
 		if plevel <= -254 {
 			newusername = " **(Deleted Player)** "
+
 		} else if plevel == -1 {
 			newusername = " **(Banned)**"
-
 			WriteFact(fmt.Sprintf("/ban %s (previously banned)", pname))
+
 		} else if plevel == 1 {
 			newusername = " *(Member)*"
-
 			WriteFact(fmt.Sprintf("/member %s", pname))
+
 		} else if plevel == 2 {
 			newusername = " *(Regular)*"
 
 			WriteFact(fmt.Sprintf("/regular %s", pname))
 		} else if plevel == 255 {
-			newusername = " *(Admin)*"
+			newusername = " *(Moderator)*"
 
 			WriteFact(fmt.Sprintf("/promote %s", pname))
 		}
@@ -216,14 +217,14 @@ func AutoPromote(pname string) string {
 		if factname == pname {
 
 			newrole := ""
-			if plevel == 1 {
+			if plevel == 0 {
+				newrole = cfg.Global.RoleData.NewRoleName
+			} else if plevel == 1 {
 				newrole = cfg.Global.RoleData.MemberRoleName
 			} else if plevel == 2 {
 				newrole = cfg.Global.RoleData.RegularRoleName
 			} else if plevel == 255 {
 				newrole = cfg.Global.RoleData.ModeratorRoleName
-			} else {
-				newrole = cfg.Global.RoleData.NewRoleName
 			}
 
 			guild := GetGuild()
@@ -235,7 +236,7 @@ func AutoPromote(pname string) string {
 				if errrole {
 					errset := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, discid, regrole.ID)
 					if errset != nil {
-						botlog.DoLog(fmt.Sprintf("Couldn't set role %v for %v.", plevel, pname))
+						botlog.DoLog(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
 					}
 				}
 			} else {
@@ -337,7 +338,6 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 		CMS(m.ChannelID, "Error: Unable to read autosave directory.")
 	}
 
-	rangeBuf := ""
 	fileNames := ""
 	lastNum := -1
 	step := 1
@@ -384,23 +384,8 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			//Add to list with mod date
 			fileNames = fileNames + fmt.Sprintf("(%15v ): autosave #%3v", modDate, fNum)
-
-			//autosave number range list
-			//If number is not sequential, save end of range and print it
-			if fNum != lastNum-1 {
-				//If we just started, add prefix, otherwise add dash and the end of the range, with comma for next item.
-				if rangeBuf == "" {
-					rangeBuf = "Autosaves:\n```"
-				} else {
-					rangeBuf = rangeBuf + "-" + strconv.Itoa(lastNum) + ", "
-				}
-				rangeBuf = rangeBuf + fmt.Sprintf("%v", fNum)
-			}
-			lastNum = fNum //Save for compairsion next loop
 		}
 	}
-	//Add last item to range
-	rangeBuf = rangeBuf + "-" + strconv.Itoa(lastNum)
 
 	if lastNum == -1 {
 		CMS(m.ChannelID, "No autosaves found.")
