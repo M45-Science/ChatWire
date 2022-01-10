@@ -58,7 +58,7 @@ func RegisterCommands() {
 		Help:  "Preview new random map",
 		XHelp: "If Factorio is shut down, this will generate a preview for a new random map each time. It does not generate the map, use MakeMap to generate the map seen in the last preview."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "MakeMap", Command: admin.Generate, ModeratorOnly: true,
-		Help:  "Make map previewed",
+		Help:  "Make map preview",
 		XHelp: "If Factorio is shut down, this generates the random map from the last preview."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "NewMap", Command: admin.NewMap, ModeratorOnly: true,
 		Help:  "Map reset",
