@@ -22,6 +22,79 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 	argnum := len(args)
 
+	//Mod commands
+	if disc.CheckModerator(m) {
+		if argnum > 0 {
+			if strings.EqualFold(args[0], "erase") {
+				//Clear votes
+				glob.VoteBox.Votes = []glob.RewindVoteData{}
+
+				fact.CMS(m.ChannelID, "All votes cleared.")
+				fact.TallyRewindVotes()
+				fact.WriteRewindVotes()
+				return
+			} else if strings.EqualFold(args[0], "void") {
+				//Void votes
+				for vpos, _ := range glob.VoteBox.Votes {
+					glob.VoteBox.Votes[vpos].Voided = true
+				}
+				fact.CMS(m.ChannelID, "All votes voided.")
+				fact.TallyRewindVotes()
+				fact.WriteRewindVotes()
+				return
+			} else if strings.EqualFold(args[0], "show") {
+				//Show votes
+				buf := "Votes: ``` \n"
+				for _, tvote := range glob.VoteBox.Votes {
+					tags := ""
+					if tvote.Voided {
+						tags = " (void/cast)"
+					}
+					if tvote.Expired {
+						tags = tags + " (expired)"
+					}
+					buf = buf + fact.PrintVote(tvote)
+					buf = buf + tags + "\n"
+				}
+				buf = buf + " \n```"
+				fact.CMS(m.ChannelID, buf)
+				return
+			} else if strings.EqualFold(args[0], "tally") {
+				//Retally votes
+				fact.TallyRewindVotes()
+				fact.CMS(m.ChannelID, "Votes re-tallied (debug).")
+				return
+			} else if strings.EqualFold(args[0], "save") {
+				//Force save
+				fact.CMS(m.ChannelID, "Votes database saved.")
+				fact.WriteRewindVotes()
+				return
+			} else if strings.EqualFold(args[0], "reset-cooldown") {
+				//Reset cooldown
+				glob.VoteBox.LastRewindTime = time.Now()
+				fact.CMS(m.ChannelID, "Cooldown reset.")
+				fact.WriteRewindVotes()
+				return
+			} else if strings.EqualFold(args[0], "no-cooldown") {
+				//Reset cooldown
+				glob.VoteBox.LastRewindTime = time.Now().Add(time.Duration((-constants.RewindCooldownMinutes) * time.Minute))
+				fact.CMS(m.ChannelID, "Cooldown removed.")
+				fact.WriteRewindVotes()
+				return
+			} else if strings.EqualFold(args[0], "cooldown") {
+				//30m cooldown
+				glob.VoteBox.LastRewindTime = time.Now().Add(time.Duration((60 - constants.RewindCooldownMinutes) * time.Minute))
+				fact.CMS(m.ChannelID, "Cooldown set to 60m")
+				fact.WriteRewindVotes()
+				return
+			} else if strings.EqualFold(args[0], "help") {
+				//Show help
+				fact.CMS(m.ChannelID, "`vote-rewind erase` to erase all votes\n`vote-rewind void` to void all votes (no re-voting for 15m)\n`vote-rewind show` to display whole database\n`vote-rewind tally` to re-tally votes (debug)\n`vote-rewind save` to force-save votes\n`vote-rewind reset-cooldown` to disallow rewinding for a few minutes\n`vote-rewind cooldown` to disallow rewinding for 1 hour\n`vote-rewind no-cooldown` to allow rewinding again immediately.")
+				return
+			}
+		}
+	}
+
 	if !fact.IsFactorioBooted() || !fact.IsFactRunning() || !glob.ServerRunning {
 		fact.CMS(m.ChannelID, "Factorio isn't running!")
 		return
@@ -45,7 +118,6 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		}
 		return
 	}
-
 	//Correct number of arguments (1)
 	if argnum == 1 {
 
