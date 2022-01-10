@@ -154,8 +154,7 @@ func MainLoops() {
 					}
 
 					//Run Factorio
-					var cmd *exec.Cmd
-					cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+					var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
 					/*Hide RCON password and port*/
 					for i, targ := range tempargs {
