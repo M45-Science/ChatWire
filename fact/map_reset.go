@@ -57,6 +57,9 @@ func Map_reset(data string) {
 			return
 		} else {
 			CMS(cfg.Local.ChannelData.ChatID, "Stopping server, for map reset.")
+
+			cfg.Local.SlowConnect.DefaultSpeed = 1.0
+			cfg.Local.SlowConnect.ConnectSpeed = 0.5
 			SetAutoStart(false)
 			QuitFactorio()
 		}
