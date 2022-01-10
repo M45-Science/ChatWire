@@ -334,6 +334,7 @@ func MainLoops() {
 							//Send out buffer, split up if needed
 							//Factorio
 							buf := ""
+
 							for _, line := range factmsg {
 								oldlen := len(buf) + 1
 								addlen := len(line)
@@ -418,7 +419,7 @@ func MainLoops() {
 		go func() {
 
 			for glob.ServerRunning {
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 
 				glob.VoteBoxLock.Lock()
 
@@ -473,19 +474,26 @@ func MainLoops() {
 			for glob.ServerRunning {
 				time.Sleep(1 * time.Second)
 
+				wasDirty := false
+
 				glob.PlayerListDirtyLock.Lock()
 
 				if glob.PlayerListDirty {
 					glob.PlayerListDirty = false
+					wasDirty = true
 					//Prevent recursive lock
 					go func() {
+						time.Sleep(3 * time.Second)
 						botlog.DoLog("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
-					//Sleep for a few seconds after writing.
-					time.Sleep(10 * time.Second)
 				}
 				glob.PlayerListDirtyLock.Unlock()
+
+				//Sleep after saving
+				if wasDirty {
+					time.Sleep(10 * time.Second)
+				}
 			}
 		}()
 
@@ -534,7 +542,7 @@ func MainLoops() {
 				if updated {
 					updated = false
 
-					botlog.DoLog("Database file modified, loading.")
+					//botlog.DoLog("Database file modified, loading.")
 					fact.LoadPlayers()
 
 					//Sleep after reading
@@ -653,12 +661,13 @@ func MainLoops() {
 							time.Sleep(time.Minute * 5)
 
 							disc.RoleListLock.Lock()
-							if len(disc.RoleList.Patreons) > 0 {
+							if disc.RoleListUpdated && len(disc.RoleList.Patreons) > 0 {
 								fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
 							}
-							if len(disc.RoleList.NitroBooster) > 0 {
+							if disc.RoleListUpdated && len(disc.RoleList.NitroBooster) > 0 {
 								fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 							}
+							disc.RoleListUpdated = false
 							disc.RoleListLock.Unlock()
 
 							disc.UpdateRoleList()

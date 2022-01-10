@@ -14,6 +14,7 @@ import (
 /* Discord role member-lists */
 var RoleListLock sync.Mutex
 var RoleList RoleListData
+var RoleListUpdated bool
 
 //Cache a list of users with specific Discord roles
 func WriteRoleList() bool {
@@ -112,22 +113,52 @@ func UpdateRoleList() {
 	g := Guild
 
 	if g != nil {
-		RoleList.NitroBooster = []string{}
-		RoleList.Patreons = []string{}
-		RoleList.Moderators = []string{}
+
+		foundChange := false
 
 		for _, m := range g.Members {
 			for _, r := range m.Roles {
 				if r == cfg.Global.RoleData.NitroRoleID {
-					RoleList.NitroBooster = append(RoleList.NitroBooster, m.User.Username)
+					foundN := false
+					for _, u := range RoleList.NitroBooster {
+						if u == m.User.Username {
+							foundN = true
+							break
+						}
+					}
+					if !foundN {
+						foundChange = true
+						RoleList.NitroBooster = append(RoleList.NitroBooster, m.User.Username)
+					}
 				} else if r == cfg.Global.RoleData.PatreonRoleID {
-					RoleList.Patreons = append(RoleList.Patreons, m.User.Username)
+					foundP := false
+					for _, u := range RoleList.Patreons {
+						if u == m.User.Username {
+							foundP = true
+							break
+						}
+					}
+					if !foundP {
+						foundChange = true
+						RoleList.Patreons = append(RoleList.Patreons, m.User.Username)
+					}
 				} else if r == cfg.Global.RoleData.ModeratorRoleID {
-					RoleList.Moderators = append(RoleList.Moderators, m.User.Username)
+					foundM := false
+					for _, u := range RoleList.Moderators {
+						if u == m.User.Username {
+							foundM = true
+							break
+						}
+					}
+					if !foundM {
+						foundChange = true
+						RoleList.Moderators = append(RoleList.Moderators, m.User.Username)
+					}
 				}
 			}
 		}
-		if len(RoleList.Patreons) > 0 {
+		if foundChange {
+			RoleListUpdated = true
 			go WriteRoleList()
 		}
 	}
