@@ -31,28 +31,6 @@ func (a ByNew) Len() int           { return len(a) }
 func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
-//Replace me!! TODO
-func levelToString(level int) string {
-
-	name := "Error"
-
-	if level <= -254 {
-		name = "Deleted"
-	} else if level == -1 {
-		name = "Banned"
-	} else if level == 0 {
-		name = "New"
-	} else if level == 1 {
-		name = "Member"
-	} else if level == 2 {
-		name = "Regular"
-	} else if level >= 255 {
-		name = "Admin"
-	}
-
-	return name
-}
-
 // CheckAdmin checks if the user attempting to run an admin command is an admin
 func checkadmin(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
@@ -116,7 +94,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 				count++
 			}
 		}
@@ -149,7 +127,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 				count++
 			}
 		}
@@ -184,7 +162,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						jtime := time.Unix(p.Creation, 0)
 						joined = jtime.Format(layoutUS)
 					}
-					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 					count++
 				}
 			}
@@ -215,7 +193,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, levelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 				count++
 			}
 		}
