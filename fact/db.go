@@ -232,7 +232,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 }
 
 //Get player level, add to db if not found
-func PlayerLevelGet(pname string) int {
+func PlayerLevelGet(pname string, modifyOnly bool) int {
 	if pname == "" {
 		return 0
 	}
@@ -253,6 +253,10 @@ func PlayerLevelGet(pname string) int {
 		level := glob.PlayerList[pname].Level
 		SetPlayerListSeenDirty()
 		return level
+	}
+
+	if modifyOnly {
+		return 0
 	}
 
 	//Not in list, add them
