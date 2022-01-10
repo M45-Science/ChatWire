@@ -39,6 +39,9 @@ func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 		} else if strings.EqualFold(plevelStr, "Deleted") ||
 			strings.EqualFold(plevelStr, "Delete") {
 			plevel = -255
+		} else {
+			fact.CMS(m.ChannelID, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
+			return
 		}
 
 		//TRUE, modify only
