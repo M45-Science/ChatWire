@@ -459,15 +459,15 @@ func Chat() {
 									if trustname != "" {
 
 										if strings.Contains(line, " is now a member!") {
-											fact.PlayerLevelSet(trustname, 1)
+											fact.PlayerLevelSet(trustname, 1, false)
 											fact.AutoPromote(trustname)
 											continue
 										} else if strings.Contains(line, " is now a regular!") {
-											fact.PlayerLevelSet(trustname, 2)
+											fact.PlayerLevelSet(trustname, 2, false)
 											fact.AutoPromote(trustname)
 											continue
 										} else if strings.Contains(line, " moved to Admins group.") {
-											fact.PlayerLevelSet(trustname, 255)
+											fact.PlayerLevelSet(trustname, 255, false)
 											fact.AutoPromote(trustname)
 											continue
 										} else if strings.Contains(line, " to the map!") && strings.Contains(line, "Welcome ") {
@@ -492,7 +492,7 @@ func Chat() {
 									trustname := nodslist[1]
 
 									if strings.Contains(NoDS, "was banned by") {
-										fact.PlayerLevelSet(trustname, -1)
+										fact.PlayerLevelSet(trustname, -1, false)
 									}
 
 									fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))

@@ -138,7 +138,7 @@ func UpdateSeen(pname string) {
 }
 
 //Set player level, add to db if not found
-func PlayerLevelSet(pname string, level int) bool {
+func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	if pname == "" {
 		return false
 	}
@@ -166,6 +166,10 @@ func PlayerLevelSet(pname string, level int) bool {
 
 		glob.PlayerList[pname].Level = level
 		return true
+	}
+
+	if modifyOnly {
+		return false
 	}
 
 	//Not in list, add them
