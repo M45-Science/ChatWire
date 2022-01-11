@@ -67,6 +67,10 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 			}
 		}
 	}
+	modStr := fact.GetModLoadString()
+	if modStr != "" {
+		buf = buf + "\nLoaded mods: " + modStr + "\n"
+	}
 	buf = buf + "```For more info `" + cfg.Global.DiscordCommandPrefix + "info verbose`"
 	fact.CMS(m.ChannelID, buf)
 
