@@ -21,6 +21,7 @@ import (
 	"ChatWire/sclean"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/hako/durafmt"
 )
 
 /* Delete old sav-*.zip, gen-*.zip files, to save space. */
@@ -328,7 +329,6 @@ func RandomColor(justnumbers bool) string {
 }
 
 func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
-	layoutUS := "01/02 03:04 PM MST"
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
 
 	files, err := ioutil.ReadDir(path)
@@ -338,7 +338,6 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 		CMS(m.ChannelID, "Error: Unable to read autosave directory.")
 	}
 
-	fileNames := ""
 	lastNum := -1
 	step := 1
 	//Loop all files
@@ -352,9 +351,13 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	sort.Slice(tempf, func(i, j int) bool {
 		return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
-
 	maxList := constants.MaxRewindResults
-	for _, f := range tempf {
+	numFiles := len(tempf) - 1
+
+	buf := "Last 40 autosaves:\n"
+	for i := numFiles; i > 0; i-- {
+
+		f := tempf[i]
 		maxList--
 		if maxList <= 0 {
 			break
@@ -372,18 +375,17 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			step++
 
-			//Get mod date
-			modDate := f.ModTime().Local().Format(layoutUS)
-			//Not first file add commas/newlines
-			if fileNames != "" {
-				if step%2 == 0 {
-					fileNames = fileNames + "\n"
-				} else {
-					fileNames = fileNames + ",   "
-				}
+			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
+			if err != nil {
+				panic(err)
 			}
+
+			//Get mod date
+			modDate := time.Since(f.ModTime())
+			modDate = modDate.Round(time.Second)
+			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units)
 			//Add to list with mod date
-			fileNames = fileNames + fmt.Sprintf("(%15v ): autosave #%3v", modDate, fNum)
+			buf = buf + fmt.Sprintf("`#%-3v: %-20v`\n", fNum, modStr+" ago")
 			lastNum = fNum
 		}
 	}
@@ -391,7 +393,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if lastNum == -1 {
 		CMS(m.ChannelID, "No autosaves found.")
 	} else {
-		CMS(m.ChannelID, "```"+fileNames+"```")
+		CMS(m.ChannelID, buf)
 	}
 }
 
