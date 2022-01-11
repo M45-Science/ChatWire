@@ -1,4 +1,4 @@
-M45-ChatWire.exe
+*.exe
 *.log
 *.bin
 cw-local-config.json
@@ -6,6 +6,7 @@ ChatWire
 cw.lock
 *.zip
 *.sh
-vote-rewind.dat
+*.dat
 go.mod
-.gitignore
+go.sum
+

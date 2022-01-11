@@ -387,7 +387,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 			//Get mod date
 			modDate := time.Since(f.ModTime())
 			modDate = modDate.Round(time.Second)
-			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units)
+			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units)
 			//Add to list with mod date
 			buf = buf + fmt.Sprintf("`#%-3v: %-20v`\n", fNum, modStr+" ago")
 			lastNum = fNum
