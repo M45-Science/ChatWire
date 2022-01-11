@@ -2,7 +2,7 @@ package constants
 
 import "time"
 
-const Version = "516-01102022-0934"
+const Version = "517-01112022-1040"
 const Unknown = "Unknown"
 
 //ChatWire files
@@ -16,10 +16,10 @@ const RoleListFile = "../RoleList.dat"
 const VoteRewindFile = "vote-rewind.dat"
 
 /* ChatWire settings */
-const PauseThresh = 5               //Number of repeated time reports before we assume server is paused
-const ErrorDelayShutdown = 30       //If we close on error, sleep this long before exiting
-const RestartLimitMinutes = 5       //If cw.lock is newer than this, sleep
-const RestartLimitSleepMinutes = 15 //cw.lock is new, sleep this long then exit.
+const PauseThresh = 5              //Number of repeated time reports before we assume server is paused
+const ErrorDelayShutdown = 30      //If we close on error, sleep this long before exiting
+const RestartLimitMinutes = 5      //If cw.lock is newer than this, sleep
+const RestartLimitSleepMinutes = 2 //cw.lock is new, sleep this long then exit.
 
 /* Vote Rewind */
 const VotesNeededRewind = 2     //Number of votes needed to rewind
