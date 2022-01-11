@@ -351,17 +351,21 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	sort.Slice(tempf, func(i, j int) bool {
 		return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
-	maxList := constants.MaxRewindResults
-	numFiles := len(tempf) - 1
 
+	maxList := constants.MaxRewindResults
 	buf := "Last 40 autosaves:\n"
-	for i := numFiles; i > 0; i-- {
+
+	numFiles := len(tempf) - 1
+	startPos := 0
+	if numFiles > maxList {
+		startPos = maxList
+	} else {
+		startPos = numFiles
+	}
+
+	for i := startPos; i > 0; i-- {
 
 		f := tempf[i]
-		maxList--
-		if maxList <= 0 {
-			break
-		}
 		fName := f.Name()
 
 		//Check if its a properly name autosave
