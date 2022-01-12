@@ -13,6 +13,7 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/fact"
+	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -101,13 +102,18 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		botlog.DoLog(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 	}
 
+	glob.VoteBoxLock.Lock()
+	glob.VoteBox.LastRewindTime = time.Now()
+	fact.VoidAllVotes()    //Void all votes
+	fact.ResetTotalVotes() //New map, reset player's vote limits
+	fact.WriteRewindVotes()
+	glob.VoteBoxLock.Unlock()
+
 	lines := strings.Split(string(out), "\n")
 
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
 			fact.CMS(m.ChannelID, "New map saved as: "+filename)
-			fact.VoidAllVotes()    //Void all votes
-			fact.ResetTotalVotes() //New map, reset player's vote limits
 			time.Sleep(2 * time.Second)
 			return
 		}
