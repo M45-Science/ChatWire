@@ -13,6 +13,28 @@ import (
 	"time"
 )
 
+//Don't use if already locked
+func ResetTotalVotes() {
+	glob.VoteBoxLock.Lock()
+	for vpos, _ := range glob.VoteBox.Votes {
+		glob.VoteBox.Votes[vpos].TotalVotes = 0
+	}
+	TallyRewindVotes()
+	WriteRewindVotes()
+	glob.VoteBoxLock.Unlock()
+}
+
+//Don't use if already locked
+func VoidAllVotes() {
+	glob.VoteBoxLock.Lock()
+	for vpos, _ := range glob.VoteBox.Votes {
+		glob.VoteBox.Votes[vpos].Voided = true
+	}
+	TallyRewindVotes()
+	WriteRewindVotes()
+	glob.VoteBoxLock.Unlock()
+}
+
 func PrintVote(v glob.RewindVoteData) string {
 	buf := fmt.Sprintf("%v: autosave #%v (%v ago)", v.Name, v.AutosaveNum, time.Since(v.Time).Round(time.Second).String())
 	return buf
