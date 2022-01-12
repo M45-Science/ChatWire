@@ -113,13 +113,13 @@ func StripControl(str string) string {
 }
 
 func EscapeDiscordMarkdown(input string) string {
-	buf := strings.ReplaceAll(input, "\\", "\\\\")
-	buf = strings.ReplaceAll(input, "_", "\\_")
-	buf = strings.ReplaceAll(input, "*", "\\*")
-	buf = strings.ReplaceAll(input, "~", "\\~")
-	buf = strings.ReplaceAll(input, "`", "\\`")
-	buf = strings.ReplaceAll(input, "|", "\\|")
-	return buf
+	input = strings.ReplaceAll(input, "\\", "\\\\")
+	input = strings.ReplaceAll(input, "_", "\\_")
+	input = strings.ReplaceAll(input, "*", "\\*")
+	input = strings.ReplaceAll(input, "~", "\\~")
+	input = strings.ReplaceAll(input, "`", "\\`")
+	input = strings.ReplaceAll(input, "|", "\\|")
+	return input
 }
 
 func RemoveDiscordMarkdown(input string) string {
