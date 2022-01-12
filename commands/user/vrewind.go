@@ -201,7 +201,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 			//Re-use old vote if we found one, or old votes will block new ones
 			if foundVote && len(glob.VoteBox.Votes) >= vpos { //sanity check
-				if glob.VoteBox.Votes[vpos].TotalVotes > constants.MaxVotesPerMap {
+				if glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
 					fact.CMS(m.ChannelID, "You are over the maximum number of votes per map.")
 					return
 				} else {
