@@ -9,7 +9,7 @@ func UnixSafeFilename(input string) string {
 	input = StripControl(input)
 	input = strings.ReplaceAll(input, " ", "_")
 	input = strings.ReplaceAll(input, "..", "_")
-	input = AlphaNumPeriodDashOnly(input)
+	input = UnixPreFilter(input)
 	input = strings.TrimPrefix(input, ".")
 	input = strings.TrimPrefix(input, ".")
 	input = strings.TrimSuffix(input, ".sh")
@@ -23,14 +23,20 @@ func AlphaOnly(str string) string {
 	return str
 }
 
+func NumOnly(str string) string {
+	alphafilter, _ := regexp.Compile("[^0-9]+")
+	str = alphafilter.ReplaceAllString(str, "")
+	return str
+}
+
 func AlphaNumOnly(str string) string {
 	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9]+")
 	str = alphafilter.ReplaceAllString(str, "")
 	return str
 }
 
-func AlphaNumPeriodDashOnly(str string) string {
-	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9.-]+")
+func UnixPreFilter(str string) string {
+	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9.-_]+")
 	str = alphafilter.ReplaceAllString(str, "")
 	return str
 }
