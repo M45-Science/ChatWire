@@ -15,6 +15,7 @@ import (
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/glob"
 	"ChatWire/sclean"
 )
 
@@ -225,7 +226,11 @@ func Map_reset(data string) {
 		}
 	}
 
-	VoidAllVotes()    //Void all votes
-	ResetTotalVotes() //New map, reset player's vote limits
+	glob.VoteBoxLock.Lock()
+	glob.VoteBox.LastRewindTime = time.Now()
+	VoidAllVotes()     //Void all votes
+	ResetTotalVotes()  //New map, reset player's vote limits
+	WriteRewindVotes() //Save to file before exiting
+	glob.VoteBoxLock.Unlock()
 	DoExit(true)
 }
