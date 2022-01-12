@@ -11,6 +11,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/fact"
+	"ChatWire/sclean"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -35,6 +36,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		t := time.Now()
 		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
 		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ServerCallsign+"-"+cfg.Local.Name, date)
+		newmapname = sclean.UnixSafeFilename(newmapname)
 		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
 		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
 

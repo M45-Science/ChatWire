@@ -433,7 +433,7 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				}
 				defer from.Close()
 
-				newmappath := path + "/" + cfg.Local.Name + "_new.zip"
+				newmappath := path + "/" + sclean.UnixSafeFilename(cfg.Local.Name) + "_new.zip"
 				_, err := os.Stat(newmappath)
 				if !os.IsNotExist(err) {
 					err = os.Remove(newmappath)
