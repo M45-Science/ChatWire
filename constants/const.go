@@ -26,6 +26,7 @@ const VotesNeededRewind = 2     //Number of votes needed to rewind
 const RewindCooldownMinutes = 2 //Cooldown between rewinds
 const VoteLifetime = 15         //How long a vote lasts
 const MaxRewindChanges = 2      //Max number of times a player can change their vote
+const MaxVotesPerMap = 3        //Max number of votes per map
 const MaxRewindResults = 40
 
 //Max results to return
