@@ -225,5 +225,7 @@ func Map_reset(data string) {
 		}
 	}
 
+	VoidAllVotes()    //Void all votes
+	ResetTotalVotes() //New map, reset player's vote limits
 	DoExit(true)
 }
