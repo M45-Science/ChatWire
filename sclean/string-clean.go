@@ -5,6 +5,36 @@ import (
 	"strings"
 )
 
+func UnixSafeFilename(input string) string {
+	input = StripControl(input)
+	input = strings.ReplaceAll(input, " ", "_")
+	input = strings.ReplaceAll(input, "..", "_")
+	input = AlphaNumPeriodDashOnly(input)
+	input = strings.TrimPrefix(input, ".")
+	input = strings.TrimPrefix(input, ".")
+	input = strings.TrimSuffix(input, ".sh")
+	input = TruncateString(input, 64)
+	return input
+}
+
+func AlphaOnly(str string) string {
+	alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
+	str = alphafilter.ReplaceAllString(str, "")
+	return str
+}
+
+func AlphaNumOnly(str string) string {
+	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	str = alphafilter.ReplaceAllString(str, "")
+	return str
+}
+
+func AlphaNumPeriodDashOnly(str string) string {
+	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9.-]+")
+	str = alphafilter.ReplaceAllString(str, "")
+	return str
+}
+
 //TruncateString Actually shorten strings
 func TruncateString(str string, num int) string {
 	bnoden := str
