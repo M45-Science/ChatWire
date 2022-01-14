@@ -91,7 +91,7 @@ func ReadRoleList() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("Readcfg.RoleList: Unmashal failure")
+				botlog.DoLog("Readcfg.RoleList: Unmarshal failure")
 				return false
 			}
 

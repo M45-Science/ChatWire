@@ -299,16 +299,16 @@ func Chat() {
 													errrole, regrole := disc.RoleExists(guild, newrole)
 
 													if !errrole {
-														fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I couldn't find the Discord role '%s'.", newrole))
-														fact.WriteFact(fmt.Sprintf("/cwhisper %s  [SYSTEM] Sorry, there was an internal error, I coudn't find the Discord role '%s' Let the moderators know!", newrole, pname))
+														fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I could not find the Discord role '%s'.", newrole))
+														fact.WriteFact(fmt.Sprintf("/cwhisper %s  [SYSTEM] Sorry, there was an internal error, I could not find the Discord role '%s' Let the moderators know!", newrole, pname))
 														continue
 													}
 
 													erradd := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, pid, regrole.ID)
 
 													if erradd != nil || disc.DS == nil {
-														fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I couldn't assign the Discord role '%s'.", newrole))
-														fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, coundn't assign role '%s' Let the moderators know!", newrole, pname))
+														fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I could not assign the Discord role '%s'.", newrole))
+														fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s' Let the moderators know!", newrole, pname))
 														continue
 													}
 													fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))

@@ -348,7 +348,7 @@ func ReadGCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("ReadGCfg: Unmashal failure")
+				botlog.DoLog("ReadGCfg: Unmarshal failure")
 				botlog.DoLog(err.Error())
 				return false
 			}
