@@ -45,7 +45,7 @@ func GetMapTypeName(num int) string {
 //Generate map
 func Map_reset(data string) {
 
-	//Prevent another map reset from accidently running at the same time
+	//Prevent another map reset from accidentally running at the same time
 	GameMapLock.Lock()
 	defer GameMapLock.Unlock()
 

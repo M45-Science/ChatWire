@@ -434,7 +434,7 @@ func ReadLCfg() bool {
 			Local.Port = 34197
 		}
 		if Local.ChannelData.ChatID == "" {
-			botlog.DoLog("ReadLCfg: ChatID not set, thist MUST be set to a valid Discord channel ID!")
+			botlog.DoLog("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
 			Local.ChannelData.ChatID = "MY DISCORD CHANNEL ID"
 		}
 		WriteLCfg() //Write the defaults
@@ -448,7 +448,7 @@ func ReadLCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("ReadLCfg: Unmashal failure")
+				botlog.DoLog("ReadLCfg: Unmarshal failure")
 				botlog.DoLog(err.Error())
 				return false
 			}

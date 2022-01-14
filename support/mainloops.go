@@ -518,7 +518,7 @@ func MainLoops() {
 		}()
 
 		//***********************************
-		//Database file modifcation watching
+		//Database file modification watching
 		//***********************************
 		go fact.WatchDatabaseFile()
 

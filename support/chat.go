@@ -132,15 +132,15 @@ func Chat() {
 						NoDS = strings.Join(words[2:], " ")
 					}
 
-					//Seperate args -- for use with script output
+					//Separate args -- for use with script output
 					linelist := strings.Split(line, " ")
 					linelistlen := len(linelist)
 
-					//Seperate args, notc -- for use with factorio subsystem output
+					//Separate args, notc -- for use with factorio subsystem output
 					notclist := strings.Split(NoTC, " ")
 					notclistlen := len(notclist)
 
-					//Seperate args, nods -- for use with normal factorio log output
+					//Separate args, nods -- for use with normal factorio log output
 					nodslist := strings.Split(NoDS, " ")
 					nodslistlen := len(nodslist)
 

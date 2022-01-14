@@ -152,7 +152,7 @@ func ReadRewindVotes() bool {
 
 			err := json.Unmarshal([]byte(file), &temp)
 			if err != nil {
-				botlog.DoLog("ReadRewindVotes: Unmashal failure")
+				botlog.DoLog("ReadRewindVotes: Unmarshal failure")
 				botlog.DoLog(err.Error())
 				return false
 			}

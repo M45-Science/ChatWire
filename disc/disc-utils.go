@@ -52,7 +52,7 @@ func CheckNew(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-/* Send embeded message */
+/* Send embedded message */
 func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
 	if ch == "" || embed == nil {
