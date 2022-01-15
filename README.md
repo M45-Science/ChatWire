@@ -1,47 +1,37 @@
-Requirements:
-
-Linux
-
-Golang 1.17+
-
-ImageMagick
-
-Zip
-
+# Requirements:<br>
+Linux<br>
+Golang 1.17+<br>
 Factorio Headless 1.1+
-
-Launching will create default auto-config and save them.
-
-Binary needs to be able to create files and directories in its own directory, and up one directory.
-
-Discord token, guild-id and channel-id are required, as well as Factorio username and token are required.
-
-
---
- 
-
-Default path layout:
-
-A 'base' folder the chatwire folder resides in.
-/something/
-
-
-For ChatWire:
-/something/cw-a/ChatWire-binary-here
-
-Factorio:
-/something/fact-a/
-
-Binary:
-/something/fact-a/bin/x64/Factorio
-
-
-the "factorio prefix" is the "fact-" part.
-
-the "chatwire prefix" is the "cw-" part.
-
-the "call sign" is the "a" part.
-
-
-This is setup to have many servers running, and so some files and directories are setup to be common.
+ImageMagick *(optional)*<br>
+Zip *(optional)*<br>
+<br>
+Launching will create a default auto-config to get you started.<br>
+Needs permisisons to create files and directories in its own directory, and **up one directory**.<br>
+<br>
+`Discord token, guild-id and channel-id are required, as well as Factorio username and token.`<br>
+<br>
+<br>
+## Default path layout:<br>
+A 'base' folder the chatwire folder resides in.<br>
+`~/factServers/`<br>
+<br>
+For ChatWire:<br>
+`~/factServers/cw-a/ChatWire-binary-here`<br>
+<br>
+Factorio:<br>
+`~/factServers/fact-a/`<br>
+<br>
+Binary:<br>
+`~/factServers/fact-a/bin/x64/Factorio`<br>
+<br>
+In the cw-global-config.json:<br>
+```
+"PathData": {
+		"FactorioServersRoot": "/home/user/factServers/",
+		"FactorioHomePrefix": "fact-",
+		"ChatWireHomePrefix": "cw-",
+		"FactorioBinary": "bin/x64/factorio",
+	},
+ ```
+**This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 
