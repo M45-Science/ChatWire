@@ -7,6 +7,4 @@ cw.lock
 *.zip
 *.sh
 *.dat
-go.mod
 go.sum
-
