@@ -664,6 +664,11 @@ func MainLoops() {
 					if disc.RoleListUpdated && len(disc.RoleList.NitroBooster) > 0 {
 						fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 					}
+
+					//Live update server description
+					if disc.RoleListUpdated {
+						fact.GenerateFactorioConfig()
+					}
 					disc.RoleListUpdated = false
 					disc.RoleListLock.Unlock()
 				}
