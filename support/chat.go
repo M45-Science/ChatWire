@@ -493,6 +493,24 @@ func Chat() {
 							}
 
 							//*****************
+							//UNBAN
+							//*****************
+							if strings.HasPrefix(NoDS, "[UNBANNED]") {
+								botlog.DoLogGame(line)
+
+								if nodslistlen > 1 {
+									trustname := nodslist[1]
+
+									if strings.Contains(NoDS, "was unbanned by") {
+										fact.PlayerLevelSet(trustname, 0, false)
+									}
+
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
+								}
+								continue
+							}
+
+							//*****************
 							//Pause on catch-up
 							//*****************
 							if cfg.Local.SlowConnect.SlowConnect {
