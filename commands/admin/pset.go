@@ -18,6 +18,8 @@ func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 		pname := args[0]
 		plevelStr := args[1]
 
+		oldLevel := fact.PlayerLevelGet(pname, true)
+
 		plevel := 0
 		if strings.EqualFold(plevelStr, "Admin") ||
 			strings.EqualFold(plevelStr, "Mod") ||
@@ -42,6 +44,11 @@ func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 		} else {
 			fact.CMS(m.ChannelID, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
 			return
+		}
+
+		//Unban automatically
+		if plevel >= 0 && oldLevel == -1 {
+			fact.WriteFact("/unban " + pname)
 		}
 
 		//TRUE, modify only
