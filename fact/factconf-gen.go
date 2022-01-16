@@ -13,6 +13,8 @@ import (
 	"strings"
 
 	"ChatWire/constants"
+
+	"github.com/Distortions81/rcon"
 )
 
 /* Generate a server-settings.json file for Factorio */
@@ -113,11 +115,13 @@ func GenerateFactorioConfig() bool {
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
 
+	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n"
+
 	disc.RoleListLock.Lock()
 	conf := FactConf{
 		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
-		Description: strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n",
+		Description: serverDescString,
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
@@ -143,18 +147,27 @@ func GenerateFactorioConfig() bool {
 
 	c := "/config set"
 	if IsFactorioBooted() {
-		WriteFact(c + " name " + servName)
-		//WriteFact(c + " description " + strings.Join(descrLines, " ")) //No way to do newline =/
-		//		WriteFact(c + " max-players " + "0")
-		//		WriteFact(c + " visibility-public " + "true")
-		//		WriteFact(c + " visibility-steam " + "true")
-		//		WriteFact(c + " visibility-lan " + "false")
-		//		WriteFact(c + " require-user-verification " + "true")
-		//		WriteFact(c + " allow-commands " + "admins-only")
-		WriteFact(c + " autosave-interval " + strconv.Itoa(autosave_interval))
-		WriteFact(c + " afk-auto-kick " + strconv.Itoa(autokick))
-		//		WriteFact(c + " only-admins-can-pause " + "true")
-		//		WriteFact(c + " autosave-only-on-server " + "true")
+		//Send over rcon, to preserve newlines
+		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.RconPortOffset)
+		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.RconPass)
+		if err != nil || remoteConsole == nil {
+			botlog.DoLog(fmt.Sprintf("Error: `%v`\n", err))
+		}
+
+		remoteConsole.Write(c + " name " + servName)
+		remoteConsole.Write(c + " description " + serverDescString)
+		//		remoteConsole.Write(c + " max-players " + "0")
+		//		remoteConsole.Write(c + " visibility-public " + "true")
+		//		remoteConsole.Write(c + " visibility-steam " + "true")
+		//		remoteConsole.Write(c + " visibility-lan " + "false")
+		//		remoteConsole.Write(c + " require-user-verification " + "true")
+		//		remoteConsole.Write(c + " allow-commands " + "admins-only")
+		remoteConsole.Write(c + " autosave-interval " + strconv.Itoa(autosave_interval))
+		remoteConsole.Write(c + " afk-auto-kick " + strconv.Itoa(autokick))
+		//		remoteConsole.Write(c + " only-admins-can-pause " + "true")
+		//		remoteConsole.Write(c + " autosave-only-on-server " + "true")
+
+		remoteConsole.Close()
 	}
 
 	outbuf := new(bytes.Buffer)
