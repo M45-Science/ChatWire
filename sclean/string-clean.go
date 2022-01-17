@@ -69,9 +69,9 @@ func StripControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
-		c := fmt.Sprintf("%c", i)
-		if c[0] >= 32 && c[0] < 127 {
-			b[bl] = c[0]
+		c := str[i]
+		if c >= 32 && c < 127 {
+			b[bl] = c
 			bl++
 		}
 	}
@@ -103,12 +103,12 @@ func StripControlAndSubSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
-		c := fmt.Sprintf("%c", i)
-		if c[0] == '\n' || c[0] == '\r' || c[0] == '\t' {
+		c := str[i]
+		if c == '\n' || c == '\r' || c == '\t' {
 			b[bl] = ' '
 			bl++
-		} else if c[0] >= 32 && c[0] != 127 {
-			b[bl] = c[0]
+		} else if c >= 32 && c != 127 {
+			b[bl] = c
 			bl++
 		}
 	}
@@ -117,7 +117,7 @@ func StripControlAndSubSpecial(str string) string {
 
 //Strip lower ascii codes
 func StripControl(str string) string {
-	b := make([]byte, len(str))
+	b := make([]byte, len(str)+1)
 	var bl int
 	for i := 0; i < len(str); i++ {
 		c := fmt.Sprintf("%c", i)
