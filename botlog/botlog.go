@@ -50,7 +50,7 @@ func StartGameLog() {
 	//Make log directory
 	errr := os.MkdirAll("log", os.ModePerm)
 	if errr != nil {
-		fmt.Printf(errr.Error())
+		fmt.Print(errr.Error())
 		return
 	}
 
@@ -59,7 +59,7 @@ func StartGameLog() {
 
 	//Handle file errors
 	if erra != nil {
-		fmt.Printf(fmt.Sprintf("An error occurred when attempting to create game log. Details: %s", erra))
+		fmt.Printf("An error occurred when attempting to create game log. Details: %s", erra)
 		return
 	}
 
@@ -78,7 +78,7 @@ func StartBotLog() {
 	//Make log directory
 	errr := os.MkdirAll("log", os.ModePerm)
 	if errr != nil {
-		fmt.Printf(errr.Error())
+		fmt.Print(errr.Error())
 		return
 	}
 
@@ -87,7 +87,7 @@ func StartBotLog() {
 
 	//Handle file errors
 	if errb != nil {
-		fmt.Printf(fmt.Sprintf("An error occurred when attempting to create bot log. Details: %s", errb))
+		fmt.Printf("An error occurred when attempting to create bot log. Details: %s", errb)
 		return
 	}
 
