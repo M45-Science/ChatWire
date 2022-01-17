@@ -35,7 +35,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 				return
 			} else if strings.EqualFold(args[0], "void") {
 				//Void votes
-				for vpos, _ := range glob.VoteBox.Votes {
+				for vpos := range glob.VoteBox.Votes {
 					glob.VoteBox.Votes[vpos].Voided = true
 				}
 				fact.CMS(m.ChannelID, "All votes voided.")
@@ -244,7 +244,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			glob.VoteBox.NumRewind++
 
 			//Mark all votes as voided
-			for vpos, _ = range glob.VoteBox.Votes {
+			for vpos = range glob.VoteBox.Votes {
 				glob.VoteBox.Votes[vpos].Voided = true
 			}
 			fact.CMS(m.ChannelID, "Rewinding the map to autosave #"+strconv.Itoa(asnum))

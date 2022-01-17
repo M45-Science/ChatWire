@@ -14,7 +14,7 @@ import (
 )
 
 func ResetTotalVotes() {
-	for vpos, _ := range glob.VoteBox.Votes {
+	for vpos := range glob.VoteBox.Votes {
 		glob.VoteBox.Votes[vpos].TotalVotes = 0
 	}
 	TallyRewindVotes()
@@ -23,7 +23,7 @@ func ResetTotalVotes() {
 
 //Don't use if already locked
 func VoidAllVotes() {
-	for vpos, _ := range glob.VoteBox.Votes {
+	for vpos := range glob.VoteBox.Votes {
 		glob.VoteBox.Votes[vpos].Voided = true
 	}
 	TallyRewindVotes()
