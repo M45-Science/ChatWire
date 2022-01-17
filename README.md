@@ -5,7 +5,7 @@
 <br>
 Linux<br>
 Golang 1.17+<br>
-Factorio Headless 1.1+
+Factorio Headless 1.1+<br>
 ImageMagick *(optional)*<br>
 Zip *(optional)*<br>
 <br>
