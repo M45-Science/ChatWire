@@ -117,7 +117,7 @@ func StripControlAndSubSpecial(str string) string {
 
 //Strip lower ascii codes
 func StripControl(str string) string {
-	b := make([]byte, len(str)+1)
+	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
 		c := fmt.Sprintf("%c", i)
