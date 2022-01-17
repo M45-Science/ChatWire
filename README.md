@@ -1,4 +1,7 @@
-# Requirements:<br>
+# Requirements:
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/Distortions81/M45-ChatWire)](https://goreportcard.com/report/github.com/Distortions81/M45-ChatWire)
+
 Linux<br>
 Golang 1.17+<br>
 Factorio Headless 1.1+
