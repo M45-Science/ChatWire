@@ -108,8 +108,6 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 				command.Command(s, m, args)
 			} else if !command.ModeratorOnly {
 				command.Command(s, m, args)
-			} else {
-				//fact.CMS(m.ChannelID, "You do not have permission to run this command, smarty pants.")
 			}
 			return
 		}
