@@ -4,4 +4,3 @@ ChatWire
 cw.lock
 *.sh
 *.dat
-go.sum
