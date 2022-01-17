@@ -1,9 +1,9 @@
-# Requirements:
+## M45-ChatWire
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Go](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
 [![ReportCard](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
 [![CodeQL](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
-<br>
+### Requirements:
 Linux<br>
 Golang 1.17+<br>
 Factorio Headless 1.1+<br>
@@ -15,8 +15,7 @@ Needs permisisons to create files and directories in its own directory, and **up
 <br>
 `Discord token, guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
-<br>
-## Default path layout:<br>
+### Default path layout:<br>
 A 'base' folder the chatwire folder resides in.<br>
 `~/factServers/`<br>
 <br>
