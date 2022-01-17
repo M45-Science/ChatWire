@@ -94,7 +94,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 				count++
 			}
 		}
@@ -127,7 +127,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 				count++
 			}
 		}
@@ -162,7 +162,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 						jtime := time.Unix(p.Creation, 0)
 						joined = jtime.Format(layoutUS)
 					}
-					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 					count++
 				}
 			}
@@ -193,7 +193,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 					jtime := time.Unix(p.Creation, 0)
 					joined = jtime.Format(layoutUS)
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateString(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
 				count++
 			}
 		}

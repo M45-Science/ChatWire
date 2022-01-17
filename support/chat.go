@@ -439,7 +439,7 @@ func Chat() {
 									cmess = sclean.RemoveFactorioTags(cmess)
 
 									if len(cmess) > 500 {
-										cmess = fmt.Sprintf("%s...(cut, too long!)", sclean.TruncateString(cmess, 500))
+										cmess = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(cmess, 500))
 									}
 
 									fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), cmess))
@@ -847,7 +847,7 @@ func Chat() {
 									cmess = sclean.RemoveFactorioTags(cmess)
 
 									if len(cmess) > 500 {
-										cmess = fmt.Sprintf("%s**(message cut, too long!)**", sclean.TruncateString(cmess, 500))
+										cmess = fmt.Sprintf("%s**(message cut, too long!)**", sclean.TruncateStringEllipsis(cmess, 500))
 									}
 
 									if cmess == "" {
