@@ -1,6 +1,7 @@
 package sclean
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -9,6 +10,7 @@ func UnixSafeFilename(input string) string {
 	input = StripControl(input)
 	input = strings.ReplaceAll(input, " ", "_")
 	input = strings.ReplaceAll(input, "..", "_")
+	input = strings.ReplaceAll(input, ".", "_")
 	input = UnixPreFilter(input)
 	input = strings.TrimPrefix(input, ".")
 	input = strings.TrimPrefix(input, ".")
@@ -36,13 +38,13 @@ func AlphaNumOnly(str string) string {
 }
 
 func UnixPreFilter(str string) string {
-	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9.-_]+")
+	alphafilter, _ := regexp.Compile("[^a-zA-Z0-9-_]+")
 	str = alphafilter.ReplaceAllString(str, "")
 	return str
 }
 
 //TruncateString Actually shorten strings
-func TruncateString(str string, num int) string {
+func TruncateStringEllipsis(str string, num int) string {
 	bnoden := str
 	if len(str) > num {
 		if num > 3 {
@@ -53,14 +55,23 @@ func TruncateString(str string, num int) string {
 	return bnoden
 }
 
+//TruncateString Actually shorten strings
+func TruncateString(str string, num int) string {
+	bnoden := str
+	if len(str) > num {
+		bnoden = str[0:num]
+	}
+	return bnoden
+}
+
 //Strip all but a-z
 func StripControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c >= 32 && c < 127 {
-			b[bl] = c
+		c := fmt.Sprintf("%c", i)
+		if c[0] >= 32 && c[0] < 127 {
+			b[bl] = c[0]
 			bl++
 		}
 	}
@@ -72,11 +83,11 @@ func SubControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c >= 32 && c < 127 {
-			b[bl] = c
+		c := fmt.Sprintf("%c", i)
+		if c[0] >= 32 && c[0] < 127 {
+			b[bl] = c[0]
 			bl++
-		} else if c == '\n' || c == '\r' || c == '\t' {
+		} else if c[0] == '\n' || c[0] == '\r' || c[0] == '\t' {
 			b[bl] = ' '
 			bl++
 		} else {
@@ -92,12 +103,12 @@ func StripControlAndSubSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c == '\n' || c == '\r' || c == '\t' {
+		c := fmt.Sprintf("%c", i)
+		if c[0] == '\n' || c[0] == '\r' || c[0] == '\t' {
 			b[bl] = ' '
 			bl++
-		} else if c >= 32 && c != 127 {
-			b[bl] = c
+		} else if c[0] >= 32 && c[0] != 127 {
+			b[bl] = c[0]
 			bl++
 		}
 	}
@@ -109,9 +120,9 @@ func StripControl(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c >= 32 && c != 127 {
-			b[bl] = c
+		c := fmt.Sprintf("%c", i)
+		if c[0] >= 32 && c[0] != 127 {
+			b[bl] = c[0]
 			bl++
 		}
 	}
@@ -138,6 +149,7 @@ func RemoveDiscordMarkdown(input string) string {
 		input = regf.ReplaceAllString(input, "")
 		input = regg.ReplaceAllString(input, "")
 		input = regh.ReplaceAllString(input, "")
+		input = strings.ReplaceAll(input, "`", "")
 	}
 
 	return input
