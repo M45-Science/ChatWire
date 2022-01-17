@@ -1,6 +1,7 @@
 # Requirements:
 
 [![Go](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
+<br>
 Linux<br>
 Golang 1.17+<br>
 Factorio Headless 1.1+
