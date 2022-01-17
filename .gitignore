@@ -1,10 +1,7 @@
-*.exe
-*.log
-*.bin
+/log/
 cw-local-config.json
 ChatWire
 cw.lock
-*.zip
 *.sh
 *.dat
 go.sum
