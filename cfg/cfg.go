@@ -94,6 +94,7 @@ type PathDataStruct struct {
 
 	RecordPlayersFilename string //boh
 	SaveFilePath          string //boh
+	BanFile               string //ap
 
 	ScriptInserterPath string //bor
 	DBFileName         string //bor

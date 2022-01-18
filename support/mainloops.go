@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"ChatWire/banlist"
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
@@ -317,6 +318,11 @@ func MainLoops() {
 				fact.LockerLock.Unlock()
 			}
 		}()
+
+		//*******************************
+		//Watch ban file
+		//*******************************
+		go banlist.WatchBanFile()
 
 		//*******************************
 		//Send buffered messages to Discord, batched.
