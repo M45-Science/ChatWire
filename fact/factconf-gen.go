@@ -125,14 +125,14 @@ func GenerateFactorioConfig() bool {
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
-			Public: true,
-			Lan:    false,
-			Steam:  true,
+			Public: true,  //DEBUG ONLY
+			Lan:    false, //DEBUG ONLY
+			Steam:  false,
 		},
 
 		Username:                  cfg.Global.FactorioData.Username,
 		Token:                     cfg.Global.FactorioData.Token,
-		Require_user_verification: true,
+		Require_user_verification: true, //DEBUG ONLY
 		Max_heartbeats_per_second: heartbeats,
 		Allow_commands:            "admins-only",
 

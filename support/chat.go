@@ -681,6 +681,40 @@ func Chat() {
 							}
 
 							//*********************
+							//FIX LOCKERS
+							//*********************
+							if strings.Contains(NoTC, "ServerMultiplayerManager") {
+								if strings.HasSuffix(NoTC, "changing state from(InGameSavingMap) to(InGame)") {
+
+									fact.LockerLock.Lock()
+									fact.LockerDetectStart = time.Now()
+									fact.LockerStart = true
+									fact.LockerLock.Unlock()
+
+								} else if strings.HasSuffix(NoTC, "oldState(ConnectedWaitingForMap) newState(ConnectedDownloadingMap)") ||
+									strings.Contains(NoTC, "Disconnect notification for peer") {
+
+									fact.LockerLock.Lock()
+									fact.LockerDetectStart = time.Now()
+									fact.LockerStart = false
+									fact.LockerLock.Unlock()
+
+								}
+							}
+
+							//*********************
+							//Announce incoming connections
+							//*********************
+							if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
+								if numwords > 1 {
+									pName := words[numwords-1]
+									msg := fmt.Sprintf("%v is connecting.", pName)
+									fact.WriteFact("/cchat " + msg)
+									fact.CMS(cfg.Local.ChannelData.ChatID, msg)
+								}
+							}
+
+							//*********************
 							//GET FACTORIO VERSION
 							//*********************
 							if strings.HasPrefix(NoTC, "Loading mod base") {

@@ -88,8 +88,6 @@ func MainLoops() {
 						return
 					}
 
-					time.Sleep(2 * time.Second)
-
 					//Relaunch Throttling
 					throt := fact.GetRelaunchThrottle()
 					if throt > 0 {
@@ -286,6 +284,37 @@ func MainLoops() {
 
 				}
 
+			}
+		}()
+
+		//*******************************
+		//Look for lockers
+		//*******************************
+		go func() {
+			for glob.ServerRunning {
+				time.Sleep(time.Second)
+
+				fact.LockerLock.Lock()
+
+				if fact.LockerStart {
+					if time.Since(fact.LockerDetectStart) > time.Second*6 {
+						fact.LockerStart = false
+						fact.LockerDetectStart = time.Now()
+
+						go func() {
+							botlog.DoLog("Possible locker")
+							fact.WriteFact("/chat Locker detected, rebooting.")
+							fact.CMS(cfg.Local.ChannelData.ChatID, "Possible locker detected, rebooting.")
+
+							time.Sleep(time.Second)
+							//fact.QuitFactorio()
+							fact.SetRelaunchThrottle(0)
+							fact.SetNoResponseCount(0)
+							fact.WriteFact("/quit")
+						}()
+					}
+				}
+				fact.LockerLock.Unlock()
 			}
 		}()
 
@@ -667,7 +696,8 @@ func MainLoops() {
 
 					//Live update server description
 					if disc.RoleListUpdated {
-						fact.GenerateFactorioConfig()
+						//goroutine, avoid deadlock
+						go fact.GenerateFactorioConfig()
 					}
 					disc.RoleListUpdated = false
 					disc.RoleListLock.Unlock()

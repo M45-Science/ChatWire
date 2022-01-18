@@ -45,6 +45,11 @@ var UpdateFactorioLock sync.Mutex
 var DoUpdateFactorio = false
 var DoUpdateFactorioLock sync.Mutex
 
+/* Locker detect */
+var LockerDetectStart time.Time
+var LockerStart bool
+var LockerLock sync.Mutex
+
 /* Factorio autostart */
 var FactAutoStart = false
 var FactAutoStartLock sync.RWMutex
