@@ -31,7 +31,7 @@ func CheckBanList(player string) {
 
 	for _, ban := range BanList {
 		if ban.UserName == player {
-			fact.WriteFact("/ban " + ban.UserName + "[auto] " + ban.Reason)
+			fact.WriteFact("/ban " + ban.UserName + " [auto] " + ban.Reason)
 			break
 		}
 	}
