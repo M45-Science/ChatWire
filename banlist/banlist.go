@@ -26,7 +26,6 @@ func CheckBanList(player string) {
 	defer BanListLock.Unlock()
 
 	if cfg.Global.PathData.BanFile == "" {
-		botlog.DoLog("CheckBanList: no ban file")
 		return
 	}
 
@@ -40,19 +39,20 @@ func CheckBanList(player string) {
 
 func WatchBanFile() {
 	for glob.ServerRunning {
-		time.Sleep(time.Second * 5)
 
 		if cfg.Global.PathData.BanFile == "" {
 			break
 		}
 
-		filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+		filePath := cfg.Global.PathData.BanFile
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
 			botlog.DoLog("watchBanFile: stat")
 			continue
 		}
+
+		time.Sleep(time.Second * 30)
 
 		for glob.ServerRunning && initialStat != nil {
 			stat, errb := os.Stat(filePath)
@@ -63,11 +63,10 @@ func WatchBanFile() {
 
 			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
 				go ReadBanFile()
-				botlog.DoLog("BanFile changed")
 				break
 			}
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 		}
 	}
 }
@@ -92,7 +91,6 @@ func ReadBanFile() {
 
 	data, err := ioutil.ReadAll(file)
 
-	//botlog.DoLog(fmt.Sprintf("readBanFile: %vb", len(data)))
 	if err != nil {
 		//log.Println(err)
 		return
@@ -117,7 +115,32 @@ func ReadBanFile() {
 		botlog.DoLog(err.Error())
 	}
 
-	//botlog.DoLog(fmt.Sprintf("banlist: %v items", len(bData)))
+	oldLen := len(BanList)
+	buf := ""
+	for _, aBan := range bData {
+		found := false
+		if aBan.UserName != "" {
+			for _, bBan := range BanList {
+				if bBan.UserName == aBan.UserName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				BanList = append(BanList, aBan)
+				if buf != "" {
+					buf = buf + ", "
+				}
+				if aBan.Reason != "" {
+					buf = buf + aBan.UserName + ": " + aBan.Reason
+				} else {
+					buf = buf + aBan.UserName
+				}
+			}
+		}
 
-	BanList = bData
+	}
+	if oldLen > 0 && cfg.Local.ReportNewBans && buf != "" {
+		fact.CMS(cfg.Global.DiscordData.ReportChannelID, "New bans: "+buf)
+	}
 }
