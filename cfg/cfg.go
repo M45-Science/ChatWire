@@ -33,6 +33,7 @@ type config struct {
 	UpdateFactExp     bool
 	ResetScheduleText string
 	WriteStatsDisc    bool
+	ReportNewBans     bool
 	ResetPingString   string
 	HideAutosaves     bool
 	DoWhitelist       bool

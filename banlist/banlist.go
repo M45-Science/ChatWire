@@ -39,19 +39,20 @@ func CheckBanList(player string) {
 
 func WatchBanFile() {
 	for glob.ServerRunning {
-		time.Sleep(time.Second * 5)
 
 		if cfg.Global.PathData.BanFile == "" {
 			break
 		}
 
-		filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+		filePath := cfg.Global.PathData.BanFile
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
 			botlog.DoLog("watchBanFile: stat")
 			continue
 		}
+
+		time.Sleep(time.Second * 30)
 
 		for glob.ServerRunning && initialStat != nil {
 			stat, errb := os.Stat(filePath)
@@ -61,16 +62,16 @@ func WatchBanFile() {
 			}
 
 			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				go readBanFile()
+				go ReadBanFile()
 				break
 			}
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 		}
 	}
 }
 
-func readBanFile() {
+func ReadBanFile() {
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
@@ -91,13 +92,16 @@ func readBanFile() {
 	data, err := ioutil.ReadAll(file)
 
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return
 	}
 
 	/* This area deals with 'array of strings' format */
 	var names []string
-	json.Unmarshal(data, &names)
+	err = json.Unmarshal(data, &names)
+	if err != nil {
+		//botlog.DoLog(err.Error())
+	}
 
 	for _, name := range names {
 		if name != "" {
@@ -106,5 +110,37 @@ func readBanFile() {
 	}
 
 	/* Standard format bans */
-	json.Unmarshal(data, &bData)
+	err = json.Unmarshal(data, &bData)
+	if err != nil {
+		botlog.DoLog(err.Error())
+	}
+
+	oldLen := len(BanList)
+	buf := ""
+	for _, aBan := range bData {
+		found := false
+		if aBan.UserName != "" {
+			for _, bBan := range BanList {
+				if bBan.UserName == aBan.UserName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				BanList = append(BanList, aBan)
+				if buf != "" {
+					buf = buf + ", "
+				}
+				if aBan.Reason != "" {
+					buf = buf + aBan.UserName + ": " + aBan.Reason
+				} else {
+					buf = buf + aBan.UserName
+				}
+			}
+		}
+
+	}
+	if oldLen > 0 && cfg.Local.ReportNewBans && buf != "" {
+		fact.CMS(cfg.Global.DiscordData.ReportChannelID, "New bans: "+buf)
+	}
 }

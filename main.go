@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"ChatWire/banlist"
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/commands"
@@ -79,6 +80,7 @@ func main() {
 
 	//Read in cached discord role data
 	disc.ReadRoleList()
+	banlist.ReadBanFile()
 
 	//Set autostart mode from config
 	if cfg.Local.AutoStart {

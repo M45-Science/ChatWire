@@ -1,6 +1,7 @@
 package user
 
 import (
+	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/constants"
@@ -70,6 +71,10 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	modStr := fact.GetModLoadString()
 	if modStr != "" {
 		buf = buf + "\nLoaded mods: " + modStr + "\n"
+	}
+	banCount := len(banlist.BanList)
+	if banCount > 0 {
+		buf = buf + "\nBan count " + fmt.Sprintf("%v", banCount) + "\n"
 	}
 	buf = buf + "```For more info `" + cfg.Global.DiscordCommandPrefix + "info verbose`"
 	fact.CMS(m.ChannelID, buf)
