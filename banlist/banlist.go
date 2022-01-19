@@ -26,6 +26,7 @@ func CheckBanList(player string) {
 	defer BanListLock.Unlock()
 
 	if cfg.Global.PathData.BanFile == "" {
+		botlog.DoLog("CheckBanList: no ban file")
 		return
 	}
 
@@ -61,7 +62,8 @@ func WatchBanFile() {
 			}
 
 			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				go readBanFile()
+				go ReadBanFile()
+				botlog.DoLog("BanFile changed")
 				break
 			}
 
@@ -70,7 +72,7 @@ func WatchBanFile() {
 	}
 }
 
-func readBanFile() {
+func ReadBanFile() {
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
@@ -90,14 +92,18 @@ func readBanFile() {
 
 	data, err := ioutil.ReadAll(file)
 
+	//botlog.DoLog(fmt.Sprintf("readBanFile: %vb", len(data)))
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return
 	}
 
 	/* This area deals with 'array of strings' format */
 	var names []string
-	json.Unmarshal(data, &names)
+	err = json.Unmarshal(data, &names)
+	if err != nil {
+		//botlog.DoLog(err.Error())
+	}
 
 	for _, name := range names {
 		if name != "" {
@@ -106,5 +112,12 @@ func readBanFile() {
 	}
 
 	/* Standard format bans */
-	json.Unmarshal(data, &bData)
+	err = json.Unmarshal(data, &bData)
+	if err != nil {
+		botlog.DoLog(err.Error())
+	}
+
+	//botlog.DoLog(fmt.Sprintf("banlist: %v items", len(bData)))
+
+	BanList = bData
 }

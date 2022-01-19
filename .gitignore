@@ -4,3 +4,6 @@ ChatWire
 cw.lock
 *.sh
 *.dat
+composite.json
+.gitignore
+server-banlist.json
