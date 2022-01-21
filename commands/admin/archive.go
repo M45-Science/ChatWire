@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -34,11 +35,10 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		shortversion := strings.Join(version[0:2], ".")
 
 		t := time.Now()
-		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute())
-		newmapname := fmt.Sprintf("%s-%s.zip", cfg.Local.ServerCallsign+"-"+cfg.Local.Name, date)
-		newmapname = sclean.UnixSafeFilename(newmapname)
-		newmappath := fmt.Sprintf("%s%s maps/%s", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
-		newmapurl := fmt.Sprintf("%v%s%smaps/%s", cfg.Global.PathData.ArchiveURL, shortversion, "%20", newmapname)
+		date := t.Format("2006-01-02")
+		newmapname := fmt.Sprintf("%v-%v.zip", sclean.AlphaNumOnly(cfg.Local.ServerCallsign)+"-"+cfg.Local.Name, date)
+		newmappath := fmt.Sprintf("%v%v maps/%v", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
+		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.PathData.ArchiveURL, url.PathEscape(shortversion+" maps"), url.PathEscape(newmapname))
 
 		from, erra := os.Open(fact.GameMapPath)
 		if erra != nil {
