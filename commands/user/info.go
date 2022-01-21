@@ -72,7 +72,10 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	if modStr != "" {
 		buf = buf + "\nLoaded mods: " + modStr + "\n"
 	}
+	banlist.BanListLock.Lock()
 	banCount := len(banlist.BanList)
+	banlist.BanListLock.Unlock()
+
 	if banCount > 0 {
 		buf = buf + "\nBan count " + fmt.Sprintf("%v", banCount) + "\n"
 	}

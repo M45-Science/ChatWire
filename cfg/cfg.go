@@ -124,6 +124,7 @@ type DiscordDataStruct struct {
 	StatTotalChannelID    string
 	StatMemberChannelID   string
 	StatRegularsChannelID string
+	StatBanChannelID      string
 
 	ReportChannelID   string
 	AnnounceChannelID string

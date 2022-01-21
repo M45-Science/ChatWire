@@ -225,6 +225,10 @@ func MainLoops() {
 				time.Sleep(5 * time.Second)
 				if cfg.Local.WriteStatsDisc {
 
+					banlist.BanListLock.Lock()
+					banCount := len(banlist.BanList)
+					banlist.BanListLock.Unlock()
+
 					numreg := 0
 					numnew := 0
 					numtrust := 0
@@ -252,13 +256,13 @@ func MainLoops() {
 					}
 					glob.PlayerListLock.RUnlock()
 
-					totalstat := fmt.Sprintf("total-%v", (numtrust + numregulars + numadmin + numother))
+					totalstat := fmt.Sprintf("total-%v", (numnew + numtrust + numregulars + numadmin + banCount))
 					memberstat := fmt.Sprintf("members-%v", numtrust)
 					regularstat := fmt.Sprintf("regulars-%v", numregulars)
 
-					if glob.LastTotalStat != totalstat && cfg.Global.DiscordData.StatTotalChannelID != "" {
-						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 1})
-						glob.LastTotalStat = totalstat
+					if glob.LastRegularStat != regularstat && cfg.Global.DiscordData.StatRegularsChannelID != "" {
+						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 1})
+						glob.LastRegularStat = regularstat
 						if err != nil {
 							botlog.DoLog(err.Error())
 						}
@@ -274,9 +278,21 @@ func MainLoops() {
 						time.Sleep(5 * time.Minute)
 					}
 
-					if glob.LastRegularStat != regularstat && cfg.Global.DiscordData.StatRegularsChannelID != "" {
-						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 3})
-						glob.LastRegularStat = regularstat
+					banstat := fmt.Sprintf("bans-%v", banCount)
+					if glob.LastBanStat != banstat {
+						if cfg.Global.DiscordData.StatBanChannelID != "" {
+							_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatBanChannelID, &discordgo.ChannelEdit{Name: banstat, Position: 3})
+							glob.LastBanStat = banstat
+							if err != nil {
+								botlog.DoLog(err.Error())
+							}
+							time.Sleep(5 * time.Minute)
+						}
+					}
+
+					if glob.LastTotalStat != totalstat && cfg.Global.DiscordData.StatTotalChannelID != "" {
+						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 4})
+						glob.LastTotalStat = totalstat
 						if err != nil {
 							botlog.DoLog(err.Error())
 						}

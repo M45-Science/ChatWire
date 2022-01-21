@@ -111,9 +111,10 @@ var NoResponseCountLock sync.RWMutex
 var LastColor = 0
 
 /* Member-count status */
-var LastTotalStat = ""
-var LastMemberStat = ""
 var LastRegularStat = ""
+var LastMemberStat = ""
+var LastBanStat = ""
+var LastTotalStat = ""
 
 /* Update warning */
 var UpdateWarnCounterLock sync.Mutex

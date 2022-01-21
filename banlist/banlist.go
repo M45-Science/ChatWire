@@ -5,6 +5,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/sclean"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -141,6 +142,6 @@ func ReadBanFile() {
 
 	}
 	if oldLen > 0 && cfg.Local.ReportNewBans && buf != "" {
-		fact.CMS(cfg.Global.DiscordData.ReportChannelID, "New bans: "+buf)
+		fact.CMS(cfg.Global.DiscordData.ReportChannelID, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 500))
 	}
 }
