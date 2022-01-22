@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/banlist"
 	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
@@ -711,9 +710,6 @@ func Chat() {
 									pName := words[numwords-1]
 									pLevel := fact.PlayerLevelGet(pName, true)
 									msg := fmt.Sprintf("%v is connecting.", pName)
-									if pLevel < 2 && pLevel < 254 {
-										go banlist.CheckBanList(pName)
-									}
 									fact.WriteFact("/cchat " + msg)
 									fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 								}
