@@ -314,14 +314,15 @@ func MainLoops() {
 				fact.LockerLock.Lock()
 
 				if fact.LockerStart {
-					if time.Since(fact.LockerDetectStart) > time.Second*6 {
+					if time.Since(fact.LockerDetectStart) > time.Second*15 {
 						fact.LockerStart = false
 						fact.LockerDetectStart = time.Now()
 
 						go func() {
-							botlog.DoLog("Possible locker")
-							fact.WriteFact("/chat Locker detected, rebooting.")
-							fact.CMS(cfg.Local.ChannelData.ChatID, "Possible locker detected, rebooting.")
+							msg := "Possible locker detected, rebooting."
+							botlog.DoLog(msg)
+							fact.WriteFact("/chat " + msg)
+							fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 
 							time.Sleep(time.Second)
 							//fact.QuitFactorio()
