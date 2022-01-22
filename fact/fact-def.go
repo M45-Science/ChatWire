@@ -49,6 +49,7 @@ var DoUpdateFactorioLock sync.Mutex
 var LockerDetectStart time.Time
 var LockerStart bool
 var LockerLock sync.Mutex
+var LastLockerName string
 
 /* Factorio autostart */
 var FactAutoStart = false

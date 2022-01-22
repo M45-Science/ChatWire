@@ -708,6 +708,7 @@ func Chat() {
 							if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
 								if numwords > 1 {
 									pName := words[numwords-1]
+									fact.LastLockerName = pName
 									msg := fmt.Sprintf("%v is connecting.", pName)
 									fact.WriteFact("/cchat " + msg)
 									fact.CMS(cfg.Local.ChannelData.ChatID, msg)
