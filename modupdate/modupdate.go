@@ -60,7 +60,7 @@ func UpdateMods() {
 		}
 	}
 	if buf != "" {
-		fact.CMS(cfg.Local.ChannelData.ChatID, "Mods updated: ```"+buf+"```")
+		fact.CMS(cfg.Local.ChannelData.ChatID, "Mods updated.")
 	}
 
 }
