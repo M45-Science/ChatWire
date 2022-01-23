@@ -707,11 +707,14 @@ func Chat() {
 							//*********************
 							if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
 								if numwords > 1 {
+									fact.LockerLock.Lock()
 									pName := words[numwords-1]
 									fact.LastLockerName = pName
-									msg := fmt.Sprintf("%v is connecting.", pName)
-									fact.WriteFact("/cchat " + msg)
-									fact.CMS(cfg.Local.ChannelData.ChatID, msg)
+									fact.LockerLock.Unlock()
+									dmsg := fmt.Sprintf("`%-11s` %v is connecting.", fact.GetGameTime(), pName)
+									fmsg := fmt.Sprintf("%v is connecting.", pName)
+									fact.WriteFact("/cchat " + fmsg)
+									fact.CMS(cfg.Local.ChannelData.ChatID, dmsg)
 								}
 							}
 
@@ -734,7 +737,8 @@ func Chat() {
 									savmatch := savreg.FindStringSubmatch(NoTC)
 									if len(savmatch) > 1 {
 										if !cfg.Local.HideAutosaves {
-											fact.LogCMS(cfg.Local.ChannelData.ChatID, "💾 "+savmatch[1])
+											buf := fmt.Sprintf("`%-11s` 💾 %s", fact.GetGameTime(), savmatch[1])
+											fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
 										}
 										fact.LastSaveName = savmatch[1]
 									}
