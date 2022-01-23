@@ -42,6 +42,10 @@ const FactorioUpdateProcessLimit = 10 * time.Minute
 //Maximum time before giving up on checking zipfile integrity
 const ZipIntegrityLimit = 5 * time.Minute
 
+//Maximum time before giving up on mod updater
+const ModUpdateLimit = 15 * time.Minute
+const ModUpdaterPath = "scripts/mod_updater.py"
+
 //Maximum time to wait for Factorio to close
 const MaxFactorioCloseWait = 45
 

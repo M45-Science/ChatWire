@@ -18,6 +18,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -151,6 +152,8 @@ func MainLoops() {
 					if count > 0 && cfg.Local.DoWhitelist {
 						botlog.DoLog(fmt.Sprintf("Whitelist of %v players written.", count))
 					}
+
+					modupdate.UpdateMods()
 
 					//Run Factorio
 					var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
