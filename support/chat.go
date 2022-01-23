@@ -200,12 +200,13 @@ func Chat() {
 										fact.TickHistoryLock.Lock()
 										fact.TickHistory = append(fact.TickHistory,
 											fact.TickInt{Day: day, Hour: hour, Min: minute, Sec: second})
-										fact.TickHistoryLock.Unlock()
+
 										//Chop old history
 										thl := len(fact.TickHistory) - fact.MaxTickHistory
 										if thl > 0 {
 											fact.TickHistory = fact.TickHistory[thl:]
 										}
+										fact.TickHistoryLock.Unlock()
 									}
 
 									//Pause detection
