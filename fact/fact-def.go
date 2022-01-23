@@ -44,6 +44,7 @@ type TickInt struct {
 }
 
 var TickHistory []TickInt
+var TickHistoryLock sync.Mutex
 
 /* Factorio status */
 var FactIsRunning = false
