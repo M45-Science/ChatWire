@@ -38,7 +38,8 @@ func UpdateMods() {
 		"--update",
 	}
 
-	botlog.DoLog("Running: " + strings.Join(cmdargs, " "))
+	temp := strings.ReplaceAll(strings.Join(cmdargs, " "), cfg.Global.FactorioData.Token, "**private**")
+	botlog.DoLog(temp)
 	cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 
 	o, err := cmd.CombinedOutput()
@@ -48,8 +49,6 @@ func UpdateMods() {
 		botlog.DoLog("Error running mod updater: " + err.Error())
 	}
 
-	//Hide token
-	out = strings.ReplaceAll(out, "cfg.Global.FactorioData.Token", "*private*")
 	botlog.DoLog(out)
 
 	lines := strings.Split(out, "\n")
