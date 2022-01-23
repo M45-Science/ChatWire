@@ -124,6 +124,10 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	buf = buf + fmt.Sprintf("UPS 10m: %2.2f, 30m: %2.2f, 1h: %2.2f\n", tenMinAvr, thirtyMinAvr, oneHourAvr)
 	//End tick history
 
+	if fact.GetPausedTicks() > 4 {
+		buf = buf + "(Server is paused)\n"
+	}
+
 	buf = buf + "```For more info `" + cfg.Global.DiscordCommandPrefix + "info verbose`"
 	fact.CMS(m.ChannelID, buf)
 
