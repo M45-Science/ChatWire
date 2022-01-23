@@ -34,6 +34,17 @@ var Gametime = constants.Unknown
 var GametimeString = constants.Unknown
 var GametimeLock sync.RWMutex
 
+var MaxTickHistory = 2000
+
+type TickInt struct {
+	Day  int
+	Hour int
+	Min  int
+	Sec  int
+}
+
+var TickHistory []TickInt
+
 /* Factorio status */
 var FactIsRunning = false
 var FactIsRunningLock sync.RWMutex

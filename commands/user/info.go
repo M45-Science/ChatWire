@@ -79,6 +79,47 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	if banCount > 0 {
 		buf = buf + "\nBan count " + fmt.Sprintf("%v", banCount) + "\n"
 	}
+
+	var oneMin []fact.TickInt
+	var tenMin []fact.TickInt
+	var thirtyMin []fact.TickInt
+
+	tickHistoryLen := len(fact.TickHistory) - 1
+	end := fact.TickHistory[tickHistoryLen]
+	endInt := float64(end.Day*86400.0 + end.Hour*3600.0 + end.Min*60.0 + end.Sec)
+
+	var oneMinAvr, tenMinAvr, thirtyMinAvr float64
+	if tickHistoryLen >= 60 {
+		oneMin = fact.TickHistory[tickHistoryLen-60 : tickHistoryLen]
+
+		for _, item := range oneMin {
+			oneMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+		}
+	}
+	if tickHistoryLen >= 600 {
+		tenMin = fact.TickHistory[tickHistoryLen-600.0 : tickHistoryLen]
+
+		for _, item := range tenMin {
+			tenMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+		}
+	}
+	if tickHistoryLen >= 1800 {
+		thirtyMin = fact.TickHistory[tickHistoryLen-1800 : tickHistoryLen]
+
+		for _, item := range thirtyMin {
+			thirtyMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+		}
+	}
+
+	oneMinAvr = oneMinAvr / 1830.0 * 60.0
+	tenMinAvr = tenMinAvr / 180300.0 * 60.0
+	thirtyMinAvr = thirtyMinAvr / 1620900.0 * 60.0
+
+	if cfg.Local.SlowConnect.SlowConnect && cfg.Local.SlowConnect.DefaultSpeed != 1.0 {
+		buf = buf + fmt.Sprintf("\nUPS is set to: %2.2f\n", cfg.Local.SlowConnect.DefaultSpeed*60.0)
+	}
+	buf = buf + fmt.Sprintf("UPS 1m: %2.2f, 10m: %2.2f, 30m: %2.2f\n", oneMinAvr, tenMinAvr, thirtyMinAvr)
+
 	buf = buf + "```For more info `" + cfg.Global.DiscordCommandPrefix + "info verbose`"
 	fact.CMS(m.ChannelID, buf)
 

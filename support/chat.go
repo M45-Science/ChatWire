@@ -192,7 +192,20 @@ func Chat() {
 											second, _ = strconv.Atoi(lowerlist[x-1])
 										}
 									}
+
 									newtime := fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
+
+									//Don't add the time if we are slowed down for players connecting, or paused
+									if fact.ConnectPauseTimer == 0 && fact.PausedTicks <= 2 {
+										fact.TickHistory = append(fact.TickHistory,
+											fact.TickInt{Day: day, Hour: hour, Min: minute, Sec: second})
+
+										//Chop old history
+										thl := len(fact.TickHistory) - fact.MaxTickHistory
+										if thl > 0 {
+											fact.TickHistory = fact.TickHistory[thl:]
+										}
+									}
 
 									//Pause detection
 									fact.GametimeLock.Lock()
