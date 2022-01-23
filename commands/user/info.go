@@ -121,7 +121,13 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	if cfg.Local.SlowConnect.SlowConnect && cfg.Local.SlowConnect.DefaultSpeed != 1.0 {
 		buf = buf + fmt.Sprintf("\nUPS is set to: %2.2f\n", cfg.Local.SlowConnect.DefaultSpeed*60.0)
 	}
-	buf = buf + fmt.Sprintf("UPS 10m: %2.2f, 30m: %2.2f, 1h: %2.2f\n", tenMinAvr, thirtyMinAvr, oneHourAvr)
+	if oneHourAvr > 0 {
+		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f, 30m: %2.2f, 1h: %2.2f\n", tenMinAvr, thirtyMinAvr, oneHourAvr)
+	} else if thirtyMinAvr > 0 {
+		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f, 30m: %2.2f\n", tenMinAvr, thirtyMinAvr)
+	} else if tenMinAvr > 0 {
+		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f\n", tenMinAvr)
+	}
 	//End tick history
 
 	if fact.GetPausedTicks() > 4 {
