@@ -197,11 +197,11 @@ func Chat() {
 									if day > 0 {
 										newtime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
 									} else if hour > 0 {
-										newtime = fmt.Sprintf("%.2d-%.2d-%.2d", day, hour, minute, second)
+										newtime = fmt.Sprintf("%.2d-%.2d-%.2d", hour, minute, second)
 									} else if minute > 0 {
-										newtime = fmt.Sprintf("%.2d-%.2d", day, hour, minute, second)
+										newtime = fmt.Sprintf("%.2d-%.2d", minute, second)
 									} else {
-										newtime = fmt.Sprintf("%.2d", day, hour, minute, second)
+										newtime = fmt.Sprintf("%.2d", second)
 									}
 
 									//Don't add the time if we are slowed down for players connecting, or paused
