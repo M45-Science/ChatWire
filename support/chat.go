@@ -413,7 +413,7 @@ func Chat() {
 
 									pname = sclean.EscapeDiscordMarkdown(pname)
 
-									buf := fmt.Sprintf("`%-11s` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
+									buf := fmt.Sprintf("`%v` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 									fact.CMS(cfg.Local.ChannelData.ChatID, buf)
 
 									//Give people patreon/nitro tags in-game.
@@ -466,7 +466,7 @@ func Chat() {
 										cmess = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(cmess, 500))
 									}
 
-									fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` **%s**", fact.GetGameTime(), cmess))
+									fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` **%s**", fact.GetGameTime(), cmess))
 								}
 
 								if linelistlen > 1 {
@@ -511,7 +511,7 @@ func Chat() {
 										fact.PlayerLevelSet(trustname, -1, false)
 									}
 
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
 								}
 								continue
 							}
@@ -529,7 +529,7 @@ func Chat() {
 										fact.PlayerLevelSet(trustname, 0, false)
 									}
 
-									fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%-11s` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
+									fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
 								}
 								continue
 							}
@@ -735,8 +735,8 @@ func Chat() {
 									pName := words[numwords-1]
 									fact.LastLockerName = pName
 									fact.LockerLock.Unlock()
-									dmsg := fmt.Sprintf("`%-11s` %v is connecting.", fact.GetGameTime(), pName)
-									fmsg := fmt.Sprintf("%v is connecting.", pName)
+									dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.GetGameTime(), pName)
+									fmsg := fmt.Sprintf("`%v` is connecting.", pName)
 									fact.WriteFact("/cchat " + fmsg)
 									fact.CMS(cfg.Local.ChannelData.ChatID, dmsg)
 								}
@@ -761,7 +761,7 @@ func Chat() {
 									savmatch := savreg.FindStringSubmatch(NoTC)
 									if len(savmatch) > 1 {
 										if !cfg.Local.HideAutosaves {
-											buf := fmt.Sprintf("`%-11s` 💾 %s", fact.GetGameTime(), savmatch[1])
+											buf := fmt.Sprintf("`%v` 💾 %s", fact.GetGameTime(), savmatch[1])
 											fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
 										}
 										fact.LastSaveName = savmatch[1]
@@ -934,9 +934,9 @@ func Chat() {
 									factname = sclean.StripControlAndSubSpecial(factname)
 									factname = sclean.EscapeDiscordMarkdown(factname)
 									if dname != "" {
-										fbuf = fmt.Sprintf("`%-11s` **%s**: %s", fact.GetGameTime(), factname, cmess)
+										fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.GetGameTime(), factname, cmess)
 									} else {
-										fbuf = fmt.Sprintf("`%-11s` %s: %s", fact.GetGameTime(), factname, cmess)
+										fbuf = fmt.Sprintf("`%v` %s: %s", fact.GetGameTime(), factname, cmess)
 									}
 
 									//Remove all but letters
