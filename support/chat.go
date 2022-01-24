@@ -193,7 +193,16 @@ func Chat() {
 										}
 									}
 
-									newtime := fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
+									newtime := constants.Unknown
+									if day > 0 {
+										newtime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
+									} else if hour > 0 {
+										newtime = fmt.Sprintf("%.2d-%.2d-%.2d", day, hour, minute, second)
+									} else if minute > 0 {
+										newtime = fmt.Sprintf("%.2d-%.2d", day, hour, minute, second)
+									} else {
+										newtime = fmt.Sprintf("%.2d", day, hour, minute, second)
+									}
 
 									//Don't add the time if we are slowed down for players connecting, or paused
 									if fact.ConnectPauseTimer == 0 && fact.PausedTicks <= 2 {
