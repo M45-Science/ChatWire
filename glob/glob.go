@@ -55,68 +55,70 @@ type VoteTallyData struct {
 	Count    int
 }
 
-/* Vote Rewind */
-var VoteBox RewindVoteContainerData
-var VoteBoxLock sync.Mutex
+var (
+	/* Vote Rewind */
+	VoteBox     RewindVoteContainerData
+	VoteBoxLock sync.Mutex
 
-/* Server status */
-var ServerRunning bool = true
-var Uptime time.Time
+	/* Server status */
+	ServerRunning bool = true
+	Uptime        time.Time
 
-/* Log data */
-var GameLogName = ""
-var BotLogName = ""
-var GameLogDesc *os.File
-var BotLogDesc *os.File
+	/* Log data */
+	GameLogName = ""
+	BotLogName  = ""
+	GameLogDesc *os.File
+	BotLogDesc  *os.File
 
-/* Bot-reboot */
-var DoRebootBot = false
-var DoRebootBotLock sync.RWMutex
+	/* Bot-reboot */
+	DoRebootBot     = false
+	DoRebootBotLock sync.RWMutex
 
-/* Increasing relaunch delay */
-var RelaunchThrottle = 0
-var RelaunchThrottleLock sync.RWMutex
+	/* Increasing relaunch delay */
+	RelaunchThrottle     = 0
+	RelaunchThrottleLock sync.RWMutex
 
-/* Player database */
-var PlayerList map[string]*PlayerData
-var PlayerListLock sync.RWMutex
-var PlayerListWriteLock sync.Mutex
+	/* Player database */
+	PlayerList          map[string]*PlayerData
+	PlayerListLock      sync.RWMutex
+	PlayerListWriteLock sync.Mutex
 
-/* Registration codes */
-var PassList map[string]*PassData
-var PasswordListLock sync.RWMutex
+	/* Registration codes */
+	PassList         map[string]*PassData
+	PasswordListLock sync.RWMutex
 
-/* Login count */
-var NumLogins = 0
-var NumLoginsLock sync.RWMutex
+	/* Login count */
+	NumLogins     = 0
+	NumLoginsLock sync.RWMutex
 
-/* Player database status */
-var PlayerListUpdated = false
-var PlayerListUpdatedLock sync.Mutex
-var PlayerListDirty = false
-var PlayerListDirtyLock sync.Mutex
-var PlayerListSeenDirty = false
-var PlayerListSeenDirtyLock sync.Mutex
+	/* Player database status */
+	PlayerListUpdated       = false
+	PlayerListUpdatedLock   sync.Mutex
+	PlayerListDirty         = false
+	PlayerListDirtyLock     sync.Mutex
+	PlayerListSeenDirty     = false
+	PlayerListSeenDirtyLock sync.Mutex
 
-/* Max players online record */
-var RecordPlayers = 0
-var RecordPlayersWriteLock sync.Mutex
-var RecordPlayersLock sync.RWMutex
+	/* Max players online record */
+	RecordPlayers          = 0
+	RecordPlayersWriteLock sync.Mutex
+	RecordPlayersLock      sync.RWMutex
 
-/* Factorio server watchdog */
-var NoResponseCount = 0
-var NoResponseCountLock sync.RWMutex
+	/* Factorio server watchdog */
+	NoResponseCount     = 0
+	NoResponseCountLock sync.RWMutex
 
-/* Random color */
-var LastColor = 0
+	/* Random color */
+	LastColor = 0
 
-/* Member-count status */
-var LastRegularStat = ""
-var LastMemberStat = ""
-var LastBanStat = ""
-var LastTotalStat = ""
+	/* Member-count status */
+	LastRegularStat = ""
+	LastMemberStat  = ""
+	LastBanStat     = ""
+	LastTotalStat   = ""
 
-/* Update warning */
-var UpdateWarnCounterLock sync.Mutex
-var UpdateWarnCounter = 0
-var UpdateGraceMinutes = 10
+	/* Update warning */
+	UpdateWarnCounterLock sync.Mutex
+	UpdateWarnCounter     = 0
+	UpdateGraceMinutes    = 10
+)

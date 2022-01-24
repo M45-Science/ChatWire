@@ -10,31 +10,83 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-/*Factorio stdio links */
-var Pipe io.WriteCloser
-var PipeLock sync.Mutex
-var GameBuffer *bytes.Buffer
+var (
+	/*Factorio stdio links */
+	Pipe       io.WriteCloser
+	PipeLock   sync.Mutex
+	GameBuffer *bytes.Buffer
 
-/* Factorio patch info */
-var FactorioVersion = constants.Unknown
-var NewVersion = constants.Unknown
-var NewPatchName = constants.Unknown
-var LastSaveName = constants.Unknown
+	/* Factorio patch info */
+	FactorioVersion = constants.Unknown
+	NewVersion      = constants.Unknown
+	NewPatchName    = constants.Unknown
+	LastSaveName    = constants.Unknown
 
-/* Factorio game mod data*/
-var ModLoadMessage *discordgo.Message
-var ModLoadString = constants.Unknown
-var ModLoadLock sync.RWMutex
+	/* Factorio game mod data*/
+	ModLoadMessage *discordgo.Message
+	ModLoadString  = constants.Unknown
+	ModLoadLock    sync.RWMutex
 
-/* Factorio in-game time data */
-var LastGametime = ""
-var PausedTicks = 0
-var PausedTicksLock sync.RWMutex
-var Gametime = constants.Unknown
-var GametimeString = constants.Unknown
-var GametimeLock sync.RWMutex
+	/* Factorio in-game time data */
+	LastGametime    = ""
+	PausedTicks     = 0
+	PausedTicksLock sync.RWMutex
+	Gametime        = constants.Unknown
+	GametimeString  = constants.Unknown
+	GametimeLock    sync.RWMutex
 
-var MaxTickHistory = 2000
+	MaxTickHistory = 2000
+
+	TickHistory     []TickInt
+	TickHistoryLock sync.Mutex
+
+	/* Factorio status */
+	FactIsRunning        = false
+	FactIsRunningLock    sync.RWMutex
+	FactorioBooted       = false
+	FactorioBootedAt     time.Time
+	FactorioBootedLock   sync.RWMutex
+	FactorioLaunchLock   sync.Mutex
+	UpdateFactorioLock   sync.Mutex
+	DoUpdateFactorio     = false
+	DoUpdateFactorioLock sync.Mutex
+
+	/* Locker detect */
+	LockerDetectStart time.Time
+	LockerStart       bool
+	LockerLock        sync.Mutex
+	LastLockerName    string
+
+	/* Factorio autostart */
+	FactAutoStart     = false
+	FactAutoStartLock sync.RWMutex
+
+	/* Reboot-when-empty */
+	QueueReload     = false
+	QueueReloadLock sync.RWMutex
+
+	/*Factorio save game data */
+	GameMapName = ""
+	GameMapPath = ""
+	GameMapLock sync.Mutex
+
+	/* Players online */
+	NumPlayers     = 0
+	NumPlayersLock sync.RWMutex
+
+	/* Slow-connect status */
+	ConnectPauseLock  sync.Mutex
+	ConnectPauseTimer int64 = 0
+	ConnectPauseCount       = 0
+
+	/* Number of man-minutes */
+	ManMinutes     = 0
+	ManMinutesLock sync.Mutex
+
+	/*  Map gen data */
+	LastMapSeed uint64 = 0
+	LastMapCode        = ""
+)
 
 type TickInt struct {
 	Day  int
@@ -42,53 +94,3 @@ type TickInt struct {
 	Min  int
 	Sec  int
 }
-
-var TickHistory []TickInt
-var TickHistoryLock sync.Mutex
-
-/* Factorio status */
-var FactIsRunning = false
-var FactIsRunningLock sync.RWMutex
-var FactorioBooted = false
-var FactorioBootedAt time.Time
-var FactorioBootedLock sync.RWMutex
-var FactorioLaunchLock sync.Mutex
-var UpdateFactorioLock sync.Mutex
-var DoUpdateFactorio = false
-var DoUpdateFactorioLock sync.Mutex
-
-/* Locker detect */
-var LockerDetectStart time.Time
-var LockerStart bool
-var LockerLock sync.Mutex
-var LastLockerName string
-
-/* Factorio autostart */
-var FactAutoStart = false
-var FactAutoStartLock sync.RWMutex
-
-/* Reboot-when-empty */
-var QueueReload = false
-var QueueReloadLock sync.RWMutex
-
-/*Factorio save game data */
-var GameMapName = ""
-var GameMapPath = ""
-var GameMapLock sync.Mutex
-
-/* Players online */
-var NumPlayers = 0
-var NumPlayersLock sync.RWMutex
-
-/* Slow-connect status */
-var ConnectPauseLock sync.Mutex
-var ConnectPauseTimer int64 = 0
-var ConnectPauseCount = 0
-
-/* Number of man-minutes */
-var ManMinutes = 0
-var ManMinutesLock sync.Mutex
-
-/*  Map gen data */
-var LastMapSeed uint64 = 0
-var LastMapCode = ""

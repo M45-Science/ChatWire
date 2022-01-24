@@ -8,11 +8,13 @@ import (
 	"strings"
 )
 
-const TYPE_STRING = 0
-const TYPE_INT = 1
-const TYPE_BOOL = 2
-const TYPE_F32 = 3
-const TYPE_F64 = 4
+const (
+	TYPE_STRING = 0
+	TYPE_INT    = 1
+	TYPE_BOOL   = 2
+	TYPE_F32    = 3
+	TYPE_F64    = 4
+)
 
 //Used for set command
 type SettingListData struct {

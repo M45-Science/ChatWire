@@ -2,63 +2,65 @@ package constants
 
 import "time"
 
-const Version = "524-01232022-0447p"
-const Unknown = "Unknown"
+const (
+	Version = "524-01232022-0447p"
+	Unknown = "Unknown"
 
-//ChatWire files
-const CWGlobalConfig = "../cw-global-config.json"
-const CWLocalConfig = "cw-local-config.json"
-const WhitelistName = "server-whitelist.json"
-const ServSettingsName = "server-settings.json"
-const ModsQueueFolder = "mods-queue"
-const ModsFolder = "mods"
-const RoleListFile = "../RoleList.dat"
-const VoteRewindFile = "vote-rewind.dat"
+	//ChatWire files
+	CWGlobalConfig   = "../cw-global-config.json"
+	CWLocalConfig    = "cw-local-config.json"
+	WhitelistName    = "server-whitelist.json"
+	ServSettingsName = "server-settings.json"
+	ModsQueueFolder  = "mods-queue"
+	ModsFolder       = "mods"
+	RoleListFile     = "../RoleList.dat"
+	VoteRewindFile   = "vote-rewind.dat"
 
-/* ChatWire settings */
-const PauseThresh = 5              //Number of repeated time reports before we assume server is paused
-const ErrorDelayShutdown = 30      //If we close on error, sleep this long before exiting
-const RestartLimitMinutes = 5      //If cw.lock is newer than this, sleep
-const RestartLimitSleepMinutes = 2 //cw.lock is new, sleep this long then exit.
+	/* ChatWire settings */
+	PauseThresh              = 5  //Number of repeated time reports before we assume server is paused
+	ErrorDelayShutdown       = 30 //If we close on error, sleep this long before exiting
+	RestartLimitMinutes      = 5  //If cw.lock is newer than this, sleep
+	RestartLimitSleepMinutes = 2  //cw.lock is new, sleep this long then exit.
 
-/* Vote Rewind */
-const VotesNeededRewind = 2     //Number of votes needed to rewind
-const RewindCooldownMinutes = 2 //Cooldown between rewinds
-const VoteLifetime = 15         //How long a vote lasts
-const MaxRewindChanges = 2      //Max number of times a player can change their vote
-const MaxVotesPerMap = 3        //Max number of votes per map
-const MaxRewindResults = 40
+	/* Vote Rewind */
+	VotesNeededRewind     = 2  //Number of votes needed to rewind
+	RewindCooldownMinutes = 2  //Cooldown between rewinds
+	VoteLifetime          = 15 //How long a vote lasts
+	MaxRewindChanges      = 2  //Max number of times a player can change their vote
+	MaxVotesPerMap        = 3  //Max number of votes per map
+	MaxRewindResults      = 40
 
-//Max results to return
-const WhoisResults = 20
-const AdminWhoisResults = 40
+	//Max results to return
+	WhoisResults      = 20
+	AdminWhoisResults = 40
 
-//Maximum time to wait for factorio update download
-const FactorioUpdateCheckLimit = 15 * time.Minute
+	//Maximum time to wait for factorio update download
+	FactorioUpdateCheckLimit = 15 * time.Minute
 
-//Maximum time before giving up on patching
-const FactorioUpdateProcessLimit = 10 * time.Minute
+	//Maximum time before giving up on patching
+	FactorioUpdateProcessLimit = 10 * time.Minute
 
-//Maximum time before giving up on checking zipfile integrity
-const ZipIntegrityLimit = 5 * time.Minute
+	//Maximum time before giving up on checking zipfile integrity
+	ZipIntegrityLimit = 5 * time.Minute
 
-//Maximum time before giving up on mod updater
-const ModUpdateLimit = 15 * time.Minute
-const ModUpdaterPath = "scripts/mod_updater.py"
+	//Maximum time before giving up on mod updater
+	ModUpdateLimit = 15 * time.Minute
+	ModUpdaterPath = "scripts/mod_updater.py"
 
-//Maximum time to wait for Factorio to close
-const MaxFactorioCloseWait = 45
+	//Maximum time to wait for Factorio to close
+	MaxFactorioCloseWait = 45
 
-//How often to check if Factorio server is alive
-const WatchdogInterval = time.Second
+	//How often to check if Factorio server is alive
+	WatchdogInterval = time.Second
 
-//Throttle chat, 1.5 seconds per message.
-const CMSRate = 500 * time.Millisecond
-const CMSRestTime = 1000 * time.Millisecond
-const CMSPollRate = 100 * time.Millisecond
+	//Throttle chat, 1.5 seconds per message.
+	CMSRate     = 500 * time.Millisecond
+	CMSRestTime = 1000 * time.Millisecond
+	CMSPollRate = 100 * time.Millisecond
 
-//Used for chat colors in-game
-const NumColors = 17
+	//Used for chat colors in-game
+	NumColors = 17
+)
 
 var Colors = [...]struct {
 	R float32

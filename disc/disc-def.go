@@ -8,20 +8,22 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-/* Discord data */
-var Guild *discordgo.Guild
-var Guildname = constants.Unknown
-var GuildLock sync.RWMutex
-var DS *discordgo.Session
+var (
+	/* Discord data */
+	Guild     *discordgo.Guild
+	Guildname = constants.Unknown
+	GuildLock sync.RWMutex
+	DS        *discordgo.Session
 
-/*To-Discord message buffer*/
-var CMSBuffer []CMSBuf
-var CMSBufferLock sync.Mutex
+	/*To-Discord message buffer*/
+	CMSBuffer     []CMSBuf
+	CMSBufferLock sync.Mutex
 
-/* Channel name data */
-var OldChanName = constants.Unknown
-var NewChanName = constants.Unknown
-var UpdateChannelLock sync.Mutex
+	/* Channel name data */
+	OldChanName       = constants.Unknown
+	NewChanName       = constants.Unknown
+	UpdateChannelLock sync.Mutex
+)
 
 /* To-Discord message buffer */
 type CMSBuf struct {
