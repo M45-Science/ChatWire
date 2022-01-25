@@ -317,22 +317,17 @@ func MainLoops() {
 				fact.LockerLock.Lock()
 
 				if fact.LockerStart {
-					if time.Since(fact.LockerDetectStart) > time.Second*5 && fact.LastLockerName != "" {
-						//fact.LockerStart = false
+					if time.Since(fact.LockerDetectStart) > time.Second*3 && fact.LastLockerName != "" {
+						fact.LockerLock.Lock()
 						fact.LockerDetectStart = time.Now()
+						fact.LockerStart = false
+						fact.LockerLock.Unlock()
 
-						go func() {
-							msg := "Locker bug detected (" + fact.LastLockerName + "), kicking."
-							botlog.DoLog(msg)
-							fact.WriteFact("/chat " + msg)
-							fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-
-							time.Sleep(time.Second)
-							//fact.QuitFactorio()
-							fact.SetRelaunchThrottle(0)
-							fact.SetNoResponseCount(0)
-							fact.WriteFact("/kick " + fact.LastLockerName)
-						}()
+						msg := "Locker bug detected (" + fact.LastLockerName + "), kicking."
+						botlog.DoLog(msg)
+						fact.WriteFact("/chat " + msg)
+						fact.CMS(cfg.Local.ChannelData.ChatID, msg)
+						fact.WriteFact("/kick " + fact.LastLockerName)
 					}
 				}
 				fact.LockerLock.Unlock()
