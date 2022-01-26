@@ -9,6 +9,7 @@ import (
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -778,6 +779,18 @@ func handleCrashes(NoTC string, line string) bool {
 				fact.SetFactRunning(false, true)
 				return true
 			}
+			/* Bad zip file */
+			if strings.HasSuffix(NoTC, "failed: Bad zip file") {
+				words := strings.Split(NoTC, " ")
+				if len(words) > 3 {
+					if strings.HasPrefix(
+						cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.SaveFilePath, words[3]) &&
+						(strings.HasSuffix(words[3], ".zip") || strings.HasSuffix(words[3], ".tmp.zip")) {
+						os.Remove(words[3])
+						return true
+					}
+				}
+			}
 			/* Corrupt savegame */
 			if strings.Contains(NoTC, "Closing file") {
 				fact.GameMapLock.Lock()
@@ -801,10 +814,6 @@ func handleCrashes(NoTC string, line string) bool {
 
 				fact.SetFactorioBooted(false)
 				fact.SetFactRunning(false, true)
-				return true
-			}
-			if strings.Contains(NoTC, "Failed to reach auth server.") {
-				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com. Server will not show up in Factorio server list, reboot to re-attempt.")
 				return true
 			}
 		}
