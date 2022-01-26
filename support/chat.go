@@ -112,12 +112,6 @@ func Chat() {
 					//Server is alive
 					fact.SetFactRunning(true, false)
 
-					//***************************************
-					//Pre-process lines for quick use
-					//This could be optimized,
-					//but would be at cost of repeated code
-					//***************************************
-
 					//Timecode removal
 					trimmed := strings.TrimLeft(line, " ")
 					words := strings.Split(trimmed, " ")
@@ -169,7 +163,7 @@ func Chat() {
 
 							handleGameTime(lowerline, lowerlist, lowerlistlen)
 
-							if handleUserReport(lowerline, lowerlist, lowerlistlen) {
+							if handleUserReport(line, linelist, lowerlistlen) {
 								continue
 							}
 
@@ -232,211 +226,32 @@ func Chat() {
 							if handleExitSave(NoTC, notclist, notclistlen) {
 								continue
 							}
-							//*****************
-							//CAPTURE DESYNC
-							//*****************
-							if strings.HasPrefix(NoTC, "Info") {
 
-								if strings.Contains(NoTC, "DesyncedWaitingForMap") {
-									botlog.DoLogGame(line)
-									botlog.DoLog("desync: " + NoTC)
-									continue
-								}
-							}
-							//*****************
-							//CAPTURE CRASHES
-							//*****************
-							if strings.HasPrefix(NoTC, "Error") {
-								botlog.DoLogGame(line)
-
-								fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
-								//Lock error
-								if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
-									fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
-									fact.SetAutoStart(false)
-									fact.SetFactorioBooted(false)
-									fact.SetFactRunning(false, true)
-									continue
-								}
-								//Mod Errors
-								if strings.Contains(NoTC, "caused a non-recoverable error.") {
-									fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
-									fact.SetFactorioBooted(false)
-									fact.SetFactRunning(false, true)
-									continue
-								}
-								//Stack traces
-								if strings.Contains(NoTC, "Hosting multiplayer game failed") {
-									fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio was unable to launch.")
-									fact.SetAutoStart(false)
-									fact.SetFactorioBooted(false)
-									fact.SetFactRunning(false, true)
-									continue
-								}
-								//level.dat
-								if strings.Contains(NoTC, "level.dat not found.") {
-									fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
-									fact.SetAutoStart(false)
-									fact.SetFactorioBooted(false)
-									fact.SetFactRunning(false, true)
-									continue
-								}
-								//Stack traces
-								if strings.Contains(NoTC, "Unexpected error occurred.") {
-									fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
-									fact.SetFactorioBooted(false)
-									fact.SetFactRunning(false, true)
-									continue
-								}
-								//Multiplayer manger
-								if strings.Contains(NoTC, "MultiplayerManager failed:") {
-									if strings.Contains(NoTC, "info.json not found") {
-										fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
-										fact.SetAutoStart(false)
-										fact.SetFactorioBooted(false)
-										fact.SetFactRunning(false, true)
-										continue
-									}
-									//Corrupt savegame
-									if strings.Contains(NoTC, "Closing file") {
-										fact.GameMapLock.Lock()
-										path := fact.GameMapPath
-										fact.GameMapLock.Unlock()
-
-										var tempargs []string
-										tempargs = append(tempargs, "-f")
-										tempargs = append(tempargs, path)
-
-										out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
-
-										if errs != nil {
-											botlog.DoLog(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
-											fact.SetAutoStart(false)
-											fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
-										} else {
-											botlog.DoLog("Deleted corrupted savegame.")
-											fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
-										}
-
-										fact.SetFactorioBooted(false)
-										fact.SetFactRunning(false, true)
-										continue
-									}
-									if strings.Contains(NoTC, "Failed to reach auth server.") {
-										fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com. Server will not show up in factorio server list, reboot to re-attempt.")
-										continue
-									}
-								}
+							if handleDesync(NoTC, line) {
 								continue
 							}
 
-						}
-						//***********************
-						//FACTORIO CHAT MESSAGES
-						//***********************
-						if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
-							botlog.DoLogGame(line)
-
-							if nodslistlen > 1 {
-								nodslist[1] = strings.Replace(nodslist[1], ":", "", -1)
-								pname := nodslist[1]
-
-								if pname != "<server>" {
-
-									cmess := strings.Join(nodslist[2:], " ")
-									cmess = sclean.StripControlAndSubSpecial(cmess)
-									cmess = sclean.EscapeDiscordMarkdown(cmess)
-									cmess = sclean.RemoveFactorioTags(cmess)
-
-									if len(cmess) > 500 {
-										cmess = fmt.Sprintf("%s**(message cut, too long!)**", sclean.TruncateStringEllipsis(cmess, 500))
-									}
-
-									if cmess == "" {
-										continue
-									}
-
-									//Yeah, on different thread please.
-									go func(ptemp string) {
-										fact.UpdateSeen(ptemp)
-									}(pname)
-
-									did := disc.GetDiscordIDFromFactorioName(pname)
-									dname := disc.GetNameFromID(did, false)
-									avatar := disc.GetDiscordAvatarFromId(did, 64)
-									factname := sclean.StripControlAndSubSpecial(pname)
-									factname = sclean.TruncateString(factname, 25)
-
-									fbuf := ""
-									//Filter Factorio names
-
-									factname = sclean.StripControlAndSubSpecial(factname)
-									factname = sclean.EscapeDiscordMarkdown(factname)
-									if dname != "" {
-										fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.GetGameTime(), factname, cmess)
-									} else {
-										fbuf = fmt.Sprintf("`%v` %s: %s", fact.GetGameTime(), factname, cmess)
-									}
-
-									//Remove all but letters
-									filter, _ := regexp.Compile("[^a-zA-Z]+")
-
-									//Name to lowercase
-									dnamelower := strings.ToLower(dname)
-									fnamelower := strings.ToLower(pname)
-
-									//Reduce to letters only
-									dnamereduced := filter.ReplaceAllString(dnamelower, "")
-									fnamereduced := filter.ReplaceAllString(fnamelower, "")
-
-									//If we find discord name, and discord name and factorio name don't contain the same name
-									if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
-										//Slap data into embed format.
-										myembed := embed.NewEmbed().
-											SetAuthor("@"+dname, avatar).
-											SetDescription(fbuf).
-											MessageEmbed
-
-										//Send it off!
-										err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
-										if err != nil {
-											//On failure, send normal message
-											botlog.DoLog("Failed to send chat embed.")
-										} else {
-											//Stop if succeeds
-											continue
-										}
-									}
-									fact.CMS(cfg.Local.ChannelData.ChatID, fbuf)
-								}
+							if handleCrashes(NoTC, line) {
 								continue
 							}
-							continue
-						}
 
+							if handleChatMsg(NoDS, line, nodslist, nodslistlen) {
+								continue
+							}
+
+							if handleCmdMsg(line) {
+								continue
+							}
+						}
 						//*****************
-						//COMMAND REPORTING
+						//END FILTERED
 						//*****************
-						if strings.HasPrefix(line, "[CMD]") {
-							botlog.DoLogGame(line)
+
+						if handleOnlineMsg(line) {
 							continue
 						}
-					}
-					//*****************
-					//END FILTERED
-					//*****************
 
-					//*****************
-					//"/online"
-					//*****************
-					if strings.HasPrefix(line, "~") {
-						botlog.DoLogGame(line)
-						if strings.Contains(line, "Online:") {
-							fact.CMS(cfg.Local.ChannelData.ChatID, "`"+line+"`")
-							continue
-						}
 					}
-
 				}
 			}
 		}
@@ -1126,6 +941,222 @@ func handleExitSave(NoTC string, notclist []string, notclistlen int) bool {
 
 		}
 		return true
+	}
+	return false
+}
+
+func handleDesync(NoTC string, line string) bool {
+	//*****************
+	//CAPTURE DESYNC
+	//*****************
+	if strings.HasPrefix(NoTC, "Info") {
+
+		if strings.Contains(NoTC, "DesyncedWaitingForMap") {
+			botlog.DoLogGame(line)
+			botlog.DoLog("desync: " + NoTC)
+			return true
+		}
+	}
+	return false
+}
+
+func handleCrashes(NoTC string, line string) bool {
+	//*****************
+	//CAPTURE CRASHES
+	//*****************
+	if strings.HasPrefix(NoTC, "Error") {
+		botlog.DoLogGame(line)
+
+		fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
+		//Lock error
+		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
+			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
+			fact.SetAutoStart(false)
+			fact.SetFactorioBooted(false)
+			fact.SetFactRunning(false, true)
+			return true
+		}
+		//Mod Errors
+		if strings.Contains(NoTC, "caused a non-recoverable error.") {
+			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
+			fact.SetFactorioBooted(false)
+			fact.SetFactRunning(false, true)
+			return true
+		}
+		//Stack traces
+		if strings.Contains(NoTC, "Hosting multiplayer game failed") {
+			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio was unable to launch.")
+			fact.SetAutoStart(false)
+			fact.SetFactorioBooted(false)
+			fact.SetFactRunning(false, true)
+			return true
+		}
+		//level.dat
+		if strings.Contains(NoTC, "level.dat not found.") {
+			fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
+			fact.SetAutoStart(false)
+			fact.SetFactorioBooted(false)
+			fact.SetFactRunning(false, true)
+			return true
+		}
+		//Stack traces
+		if strings.Contains(NoTC, "Unexpected error occurred.") {
+			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
+			fact.SetFactorioBooted(false)
+			fact.SetFactRunning(false, true)
+			return true
+		}
+		//Multiplayer manger
+		if strings.Contains(NoTC, "MultiplayerManager failed:") {
+			if strings.Contains(NoTC, "info.json not found") {
+				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
+				fact.SetAutoStart(false)
+				fact.SetFactorioBooted(false)
+				fact.SetFactRunning(false, true)
+				return true
+			}
+			//Corrupt savegame
+			if strings.Contains(NoTC, "Closing file") {
+				fact.GameMapLock.Lock()
+				path := fact.GameMapPath
+				fact.GameMapLock.Unlock()
+
+				var tempargs []string
+				tempargs = append(tempargs, "-f")
+				tempargs = append(tempargs, path)
+
+				out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
+
+				if errs != nil {
+					botlog.DoLog(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+					fact.SetAutoStart(false)
+					fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
+				} else {
+					botlog.DoLog("Deleted corrupted savegame.")
+					fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
+				}
+
+				fact.SetFactorioBooted(false)
+				fact.SetFactRunning(false, true)
+				return true
+			}
+			if strings.Contains(NoTC, "Failed to reach auth server.") {
+				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com. Server will not show up in factorio server list, reboot to re-attempt.")
+				return true
+			}
+		}
+		return true
+	}
+	return false
+}
+
+func handleChatMsg(NoDS string, line string, nodslist []string, nodslistlen int) bool {
+	//***********************
+	//FACTORIO CHAT MESSAGES
+	//***********************
+	if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
+		botlog.DoLogGame(line)
+
+		if nodslistlen > 1 {
+			nodslist[1] = strings.Replace(nodslist[1], ":", "", -1)
+			pname := nodslist[1]
+
+			if pname != "<server>" {
+
+				cmess := strings.Join(nodslist[2:], " ")
+				cmess = sclean.StripControlAndSubSpecial(cmess)
+				cmess = sclean.EscapeDiscordMarkdown(cmess)
+				cmess = sclean.RemoveFactorioTags(cmess)
+
+				if len(cmess) > 500 {
+					cmess = fmt.Sprintf("%s**(message cut, too long!)**", sclean.TruncateStringEllipsis(cmess, 500))
+				}
+
+				if cmess == "" {
+					return true
+				}
+
+				//Yeah, on different thread please.
+				go func(ptemp string) {
+					fact.UpdateSeen(ptemp)
+				}(pname)
+
+				did := disc.GetDiscordIDFromFactorioName(pname)
+				dname := disc.GetNameFromID(did, false)
+				avatar := disc.GetDiscordAvatarFromId(did, 64)
+				factname := sclean.StripControlAndSubSpecial(pname)
+				factname = sclean.TruncateString(factname, 25)
+
+				fbuf := ""
+				//Filter Factorio names
+
+				factname = sclean.StripControlAndSubSpecial(factname)
+				factname = sclean.EscapeDiscordMarkdown(factname)
+				if dname != "" {
+					fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.GetGameTime(), factname, cmess)
+				} else {
+					fbuf = fmt.Sprintf("`%v` %s: %s", fact.GetGameTime(), factname, cmess)
+				}
+
+				//Remove all but letters
+				filter, _ := regexp.Compile("[^a-zA-Z]+")
+
+				//Name to lowercase
+				dnamelower := strings.ToLower(dname)
+				fnamelower := strings.ToLower(pname)
+
+				//Reduce to letters only
+				dnamereduced := filter.ReplaceAllString(dnamelower, "")
+				fnamereduced := filter.ReplaceAllString(fnamelower, "")
+
+				//If we find discord name, and discord name and factorio name don't contain the same name
+				if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
+					//Slap data into embed format.
+					myembed := embed.NewEmbed().
+						SetAuthor("@"+dname, avatar).
+						SetDescription(fbuf).
+						MessageEmbed
+
+					//Send it off!
+					err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
+					if err != nil {
+						//On failure, send normal message
+						botlog.DoLog("Failed to send chat embed.")
+					} else {
+						//Stop if succeeds
+						return true
+					}
+				}
+				fact.CMS(cfg.Local.ChannelData.ChatID, fbuf)
+			}
+			return true
+		}
+		return true
+	}
+	return false
+}
+
+func handleCmdMsg(line string) bool {
+	//*****************
+	//COMMAND REPORTING
+	//*****************
+	if strings.HasPrefix(line, "[CMD]") {
+		botlog.DoLogGame(line)
+		return true
+	}
+	return false
+}
+
+func handleOnlineMsg(line string) bool {
+	//*****************
+	//"/online"
+	//*****************
+	if strings.HasPrefix(line, "~") {
+		botlog.DoLogGame(line)
+		if strings.Contains(line, "Online:") {
+			fact.CMS(cfg.Local.ChannelData.ChatID, "`"+line+"`")
+			return true
+		}
 	}
 	return false
 }
