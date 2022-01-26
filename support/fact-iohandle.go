@@ -631,10 +631,11 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 	 ********************************/
 	if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
 		if numwords > 1 {
-			fact.LockerLock.Lock()
 			pName := words[numwords-1]
+			fact.LockerLock.Lock()
 			fact.LastLockerName = pName
 			fact.LockerLock.Unlock()
+
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.GetGameTime(), pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.WriteFact("/cchat " + fmsg)

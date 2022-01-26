@@ -178,10 +178,8 @@ func MainLoops() {
 
 				if fact.LockerStart {
 					if time.Since(fact.LockerDetectStart) > time.Second*3 && fact.LastLockerName != "" {
-						fact.LockerLock.Lock()
 						fact.LockerDetectStart = time.Now()
 						fact.LockerStart = false
-						fact.LockerLock.Unlock()
 
 						msg := "Locker bug detected (" + fact.LastLockerName + "), kicking."
 						cwlog.DoLogCW(msg)
@@ -190,6 +188,7 @@ func MainLoops() {
 						fact.WriteFact("/kick " + fact.LastLockerName)
 					}
 				}
+
 				fact.LockerLock.Unlock()
 			}
 		}()
