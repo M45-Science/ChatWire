@@ -164,6 +164,7 @@ func Chat() {
 						//*****************
 						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
+							//Don't eat event, this is capable of eating random text
 							handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 
 							if handleUserReport(line, lineList, lowerCaseListlen) {
@@ -190,6 +191,7 @@ func Chat() {
 								continue
 							}
 
+							//Don't eat event, used for fixLockers
 							handleSlowConnect(NoTC, line)
 
 							if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
@@ -216,9 +218,13 @@ func Chat() {
 								continue
 							}
 
-							handleFixLockers(NoTC)
+							if handleFixLockers(NoTC) {
+								continue
+							}
 
-							handleIncomingAnnounce(NoTC, words, numwords)
+							if handleIncomingAnnounce(NoTC, words, numwords) {
+								continue
+							}
 
 							handleFactVersion(NoTC, line, NoTClist, NoTClistlen)
 
@@ -844,7 +850,7 @@ func handleFactReady(NoTC string) bool {
 	return false
 }
 
-func handleFixLockers(NoTC string) {
+func handleFixLockers(NoTC string) bool {
 	//*********************
 	//FIX LOCKERS
 	//*********************
@@ -855,6 +861,7 @@ func handleFixLockers(NoTC string) {
 			fact.LockerDetectStart = time.Now()
 			fact.LockerStart = true
 			fact.LockerLock.Unlock()
+			return true
 
 		} else if strings.HasSuffix(NoTC, "oldState(ConnectedWaitingForMap) newState(ConnectedDownloadingMap)") ||
 			strings.Contains(NoTC, "Disconnect notification for peer") {
@@ -863,12 +870,13 @@ func handleFixLockers(NoTC string) {
 			fact.LockerDetectStart = time.Now()
 			fact.LockerStart = false
 			fact.LockerLock.Unlock()
-
+			return true
 		}
 	}
+	return false
 }
 
-func handleIncomingAnnounce(NoTC string, words []string, numwords int) {
+func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 	//*********************
 	//Announce incoming connections
 	//*********************
@@ -882,8 +890,10 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) {
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.WriteFact("/cchat " + fmsg)
 			fact.CMS(cfg.Local.ChannelData.ChatID, dmsg)
+			return true
 		}
 	}
+	return false
 }
 
 func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen int) {
