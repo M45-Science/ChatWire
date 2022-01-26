@@ -14,15 +14,15 @@ import (
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
 
-//AccessServer locks PasswordListLock
-//This allows players to register, for discord roles and in-game perks
+/* AccessServer locks PasswordListLock
+ * This allows players to register, for discord roles and in-game perks */
 func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if !fact.IsFactRunning() {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Factorio isn't currently running.")
 		return
 	}
-	//Do before lock
+	/* Do before lock */
 	g := xkcdpwgen.NewGenerator()
 	g.SetNumWords(3)
 	g.SetCapitalize(false)

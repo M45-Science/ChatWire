@@ -19,7 +19,6 @@ func CheckZip(filename string) bool {
 	defer cancel()
 
 	cmdargs := []string{"-t", filename}
-	//: " + strings.Join(cmdargs, " "))
 	cmd := exec.CommandContext(ctx, cfg.Global.PathData.ZipBinaryPath, cmdargs...)
 	o, err := cmd.CombinedOutput()
 	out := string(o)
@@ -47,11 +46,11 @@ func CheckFactUpdate(logNoUpdate bool) {
 		UpdateFactorioLock.Lock()
 		defer UpdateFactorioLock.Unlock()
 
-		//Give up on check/download after a while
+		/* Give up on check/download after a while */
 		ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 		defer cancel()
 
-		//Create cache directory
+		/* Create cache directory */
 		err := os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
 		if err != nil {
 			botlog.DoLog(err.Error())
@@ -61,7 +60,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
-		//botlog.DoLog("Update args: " + strings.Join(cmdargs, " "))
+		/* botlog.DoLog("Update args: " + strings.Join(cmdargs, " ")) */
 
 		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 		o, err := cmd.CombinedOutput()
@@ -94,7 +93,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 					} else if strings.HasPrefix(line, "Wrote ") {
 						if linelen > 1 && strings.Contains(line, ".zip") {
 
-							//Only trigger on a new patch file
+							/* Only trigger on a new patch file */
 							if line != NewPatchName {
 								NewPatchName = line
 
@@ -106,7 +105,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 									botlog.DoLog(mess)
 								} else {
 									os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
-									//Purge patch name so we attempt check again
+									/* Purge patch name so we attempt check again */
 									NewPatchName = constants.Unknown
 									botlog.DoLog("fact update check: Factorio update zip invalid... purging cache.")
 								}
@@ -122,7 +121,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 							messfact := fmt.Sprintf("Factorio update available: '%v' to '%v'", oldversion, newversion)
 							SetDoUpdateFactorio(true)
 
-							//Don't message, unless this is actually a unique new version
+							/* Don't message, unless this is actually a unique new version */
 							if NewVersion != newversion {
 								NewVersion = newversion
 
@@ -148,7 +147,7 @@ func FactUpdate() {
 	UpdateFactorioLock.Lock()
 	defer UpdateFactorioLock.Unlock()
 
-	//Give up on patching eventually
+	/* Give up on patching eventually */
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 	defer cancel()
 
@@ -158,7 +157,7 @@ func FactUpdate() {
 	}
 
 	if !IsFactRunning() {
-		//Keep us from stepping on a factorio launch or update
+		/* Keep us from stepping on a factorio launch or update */
 		FactorioLaunchLock.Lock()
 		defer FactorioLaunchLock.Unlock()
 
@@ -166,7 +165,6 @@ func FactUpdate() {
 		if cfg.Local.UpdateFactExp {
 			cmdargs = append(cmdargs, "-x")
 		}
-		//botlog.DoLog("Update args: " + strings.Join(cmdargs, " "))
 
 		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 		o, err := cmd.CombinedOutput()
@@ -186,7 +184,6 @@ func FactUpdate() {
 
 				if linelen > 0 {
 
-					//words := strings.Split(line, " ")
 					if strings.HasPrefix(line, "Update applied successfully!") {
 						mess := "fact update: Factorio updated successfully!"
 						botlog.DoLog(mess)

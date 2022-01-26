@@ -12,7 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// CheckAdmin checks if the user attempting to run an admin command is an admin
+/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
 func CheckModerator(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.ModeratorRoleID {
@@ -22,7 +22,7 @@ func CheckModerator(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-// CheckAdmin checks if the user attempting to run an admin command is an admin
+/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
 func CheckRegular(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.RegularRoleID {
@@ -32,7 +32,7 @@ func CheckRegular(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-// CheckAdmin checks if the user attempting to run an admin command is an admin
+/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
 func CheckMember(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.MemberRoleID {
@@ -42,7 +42,7 @@ func CheckMember(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-// CheckAdmin checks if the user attempting to run an admin command is an admin
+/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
 func CheckNew(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.NewRoleID {
@@ -153,7 +153,7 @@ func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 	return false, nil
 }
 
-//Discord name from discordid
+/* Discord name from discordid */
 func GetNameFromID(id string, disc bool) string {
 	if id == "" || DS == nil {
 		return ""
@@ -175,7 +175,7 @@ func GetNameFromID(id string, disc bool) string {
 	return id
 }
 
-//Discord avatar from discordid
+/* Discord avatar from discordid */
 func GetDiscordAvatarFromId(id string, size int) string {
 
 	if id == "" || DS == nil {

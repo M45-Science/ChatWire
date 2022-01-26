@@ -17,7 +17,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Archive map
+/* Archive map */
 func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.GameMapLock.Lock()
@@ -46,7 +46,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		}
 		defer from.Close()
 
-		//Make directory if it does not exist
+		/* Make directory if it does not exist */
 		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {

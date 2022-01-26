@@ -43,7 +43,7 @@ func UnixPreFilter(str string) string {
 	return str
 }
 
-//TruncateString Actually shorten strings
+/* Shorten strings, end with elipsis */
 func TruncateStringEllipsis(str string, num int) string {
 	bnoden := str
 	if len(str) > num {
@@ -55,7 +55,7 @@ func TruncateStringEllipsis(str string, num int) string {
 	return bnoden
 }
 
-//TruncateString Actually shorten strings
+/* Shorten strings */
 func TruncateString(str string, num int) string {
 	bnoden := str
 	if len(str) > num {
@@ -64,7 +64,7 @@ func TruncateString(str string, num int) string {
 	return bnoden
 }
 
-//Strip all but a-z
+/* Strip all but a-z */
 func StripControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
@@ -78,7 +78,7 @@ func StripControlAndSpecial(str string) string {
 	return string(b[:bl])
 }
 
-//Sub specials with '?', sub newlines, returns and tabs with ' '
+/* Sub specials with '?', sub newlines, returns and tabs with ' ' */
 func SubControlAndSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
@@ -98,7 +98,7 @@ func SubControlAndSpecial(str string) string {
 	return string(b[:bl])
 }
 
-//Strip lower ascii codes, sub newlines, returns and tabs with ' '
+/* Strip lower ascii codes, sub newlines, returns and tabs with ' ' */
 func StripControlAndSubSpecial(str string) string {
 	b := make([]byte, len(str))
 	var bl int
@@ -115,7 +115,7 @@ func StripControlAndSubSpecial(str string) string {
 	return string(b[:bl])
 }
 
-//Strip lower ascii codes
+/* Strip lower ascii codes */
 func StripControl(str string) string {
 	b := make([]byte, len(str))
 	var bl int
@@ -140,12 +140,12 @@ func EscapeDiscordMarkdown(input string) string {
 }
 
 func RemoveDiscordMarkdown(input string) string {
-	//Remove discord markdown
+	/* Remove discord markdown */
 	regf := regexp.MustCompile(`\*+`)
 	regg := regexp.MustCompile(`\~+`)
 	regh := regexp.MustCompile(`\_+`)
 	for regf.MatchString(input) || regg.MatchString(input) || regh.MatchString(input) {
-		//Filter discord tags
+		/* Filter discord tags */
 		input = regf.ReplaceAllString(input, "")
 		input = regg.ReplaceAllString(input, "")
 		input = regh.ReplaceAllString(input, "")
@@ -156,25 +156,27 @@ func RemoveDiscordMarkdown(input string) string {
 }
 
 func RemoveFactorioTags(input string) string {
-	//input = unidecode.Unidecode(input)
+	/* input = unidecode.Unidecode(input) */
 
-	//Remove factorio tags
-	rega := regexp.MustCompile(`\[/[^][]+\]`) //remove close tags [/color]
-
-	regc := regexp.MustCompile(`\[color=(.*?)\]`) //remove [color=*]
-	regd := regexp.MustCompile(`\[font=(.*?)\]`)  //remove [font=*]
+	/* Remove factorio tags */
+	/* remove close tags [/color] */
+	rega := regexp.MustCompile(`\[/[^][]+\]`)
+	/* remove [color=*] */
+	regc := regexp.MustCompile(`\[color=(.*?)\]`)
+	/* remove [font=*] */
+	regd := regexp.MustCompile(`\[font=(.*?)\]`)
 
 	input = strings.Replace(input, "\n", " ", -1)
 	input = strings.Replace(input, "\r", " ", -1)
 	input = strings.Replace(input, "\t", " ", -1)
 
 	for regc.MatchString(input) || regd.MatchString(input) {
-		//Remove colors/fonts
+		/* Remove colors/fonts */
 		input = regc.ReplaceAllString(input, "")
 		input = regd.ReplaceAllString(input, "")
 	}
 	for rega.MatchString(input) {
-		//Filter close tags
+		/* Filter close tags */
 		input = rega.ReplaceAllString(input, "")
 	}
 	return input

@@ -17,14 +17,14 @@ import (
 /* Prgram shutdown */
 func DoExit(delay bool) {
 
-	//Show stats
+	/* Show stats */
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	mm := GetManMinutes()
 	botlog.DoLog(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
 	time.Sleep(3 * time.Second)
-	//This kills all loops!
+	/* This kills all loops! */
 	glob.ServerRunning = false
 
 	botlog.DoLog("Bot closing, load/save db, and waiting for locks...")
@@ -33,7 +33,7 @@ func DoExit(delay bool) {
 
 	time.Sleep(1 * time.Second)
 
-	//File locks
+	/* File locks */
 	glob.PlayerListWriteLock.Lock()
 	glob.RecordPlayersWriteLock.Lock()
 
@@ -42,7 +42,7 @@ func DoExit(delay bool) {
 	glob.BotLogDesc.Close()
 
 	_ = os.Remove("cw.lock")
-	//Logs are closed, don't report
+	/* Logs are closed, don't report */
 
 	if disc.DS != nil {
 		disc.DS.Close()
@@ -72,10 +72,10 @@ func AddFactColor(color string, text string) string {
 func GetFactorioBinary() string {
 	bloc := ""
 	if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
-		//Absolute path
+		/* Absolute path */
 		bloc = cfg.Global.PathData.FactorioBinary
 	} else {
-		//Relative path
+		/* Relative path */
 		bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
 	}
 	return bloc
@@ -84,7 +84,7 @@ func GetFactorioBinary() string {
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
-	//Split at newlines, so we can batch neatly
+	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 
 	disc.CMSBufferLock.Lock()

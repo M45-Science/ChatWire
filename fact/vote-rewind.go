@@ -21,7 +21,7 @@ func ResetTotalVotes() {
 	WriteRewindVotes()
 }
 
-//Don't use if already locked
+/* Don't use if already locked */
 func VoidAllVotes() {
 	for vpos := range glob.VoteBox.Votes {
 		glob.VoteBox.Votes[vpos].Voided = true
@@ -35,7 +35,7 @@ func PrintVote(v glob.RewindVoteData) string {
 	return buf
 }
 
-//EXPECTS LOCKED VOTEBOX
+/* EXPECTS LOCKED VOTEBOX */
 func TallyRewindVotes() (string, int) {
 	validVotes := 0
 	visVotes := 0
@@ -57,9 +57,7 @@ func TallyRewindVotes() (string, int) {
 			glob.VoteBox.Votes[vpos].Expired = true
 			glob.VoteBox.Votes[vpos].NumChanges = 0
 
-			//buf = buf + printVote(v)
-			//buf = buf + " (expired)\n"
-			//visVotes++
+			
 			totalVotes++
 
 			/* Valid */
@@ -73,23 +71,23 @@ func TallyRewindVotes() (string, int) {
 	}
 	buf = buf + " ```\n"
 
-	//Clear if nothing generated
+	/* Clear if nothing generated */
 	if visVotes == 0 {
 		buf = ""
 	}
 	buf = buf + fmt.Sprintf("`Total valid votes: %v -- (need %v for the same autosave)`\n", validVotes, constants.VotesNeededRewind)
 
-	//Reset tally, recount
+	/* Reset tally, recount */
 	glob.VoteBox.Tally = []glob.VoteTallyData{}
 	for _, v := range glob.VoteBox.Votes {
 		for apos, a := range glob.VoteBox.Tally {
 			if v.AutosaveNum == a.Autosave {
-				//Same autosave, tally
+				/* Same autosave, tally */
 				glob.VoteBox.Tally[apos] = glob.VoteTallyData{Autosave: a.Autosave, Count: a.Count + 1}
 				continue
 			}
 		}
-		//Different autosave, add to list
+		/* Different autosave, add to list */
 		glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Autosave: v.AutosaveNum, Count: 1})
 	}
 
@@ -97,7 +95,7 @@ func TallyRewindVotes() (string, int) {
 	return buf, validVotes
 }
 
-//Expects locked votebox
+/* Expects locked votebox */
 func WriteRewindVotes() bool {
 	finalPath := constants.VoteRewindFile
 	tempPath := constants.VoteRewindFile + "." + cfg.Local.ServerCallsign + ".tmp"
@@ -143,7 +141,7 @@ func ReadRewindVotes() bool {
 	if notfound {
 		botlog.DoLog("ReadRewindVotes: os.Stat failed")
 		return true
-	} else { //Just read the config
+	} else { /* Just read the config */
 
 		file, err := ioutil.ReadFile(constants.VoteRewindFile)
 

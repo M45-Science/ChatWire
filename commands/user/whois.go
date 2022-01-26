@@ -17,21 +17,21 @@ import (
 )
 
 /* SORT FUNCTIONS */
-//Last Seen
+/* Last Seen */
 type ByLastSeen []glob.PlayerData
 
 func (a ByLastSeen) Len() int           { return len(a) }
 func (a ByLastSeen) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByLastSeen) Less(i, j int) bool { return a[i].LastSeen > a[j].LastSeen }
 
-//Created time
+/* Created time */
 type ByNew []glob.PlayerData
 
 func (a ByNew) Len() int           { return len(a) }
 func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
-// CheckAdmin checks if the user attempting to run an admin command is an admin
+/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
 func checkadmin(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.ModeratorRoleID {
@@ -41,7 +41,7 @@ func checkadmin(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-// Get info on a specific player
+/*  Get info on a specific player */
 func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	layoutUS := "01-02-06 3:04 PM"
@@ -53,7 +53,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	var slist []glob.PlayerData
 	argnum := len(args)
 
-	//Reconstruct list, to remove empty entries and to reduce lock time
+	/* Reconstruct list, to remove empty entries and to reduce lock time */
 	glob.PlayerListLock.RLock()
 	for _, player := range glob.PlayerList {
 		slist = append(slist, *player)

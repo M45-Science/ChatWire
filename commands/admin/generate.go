@@ -18,7 +18,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Generate map
+/* Generate map */
 func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if fact.IsFactRunning() {
@@ -39,12 +39,12 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		ourseed = fact.LastMapSeed
 	}
 
-	//If seed given
+	/* If seed given */
 	if argnum > 0 {
 		arg := args[0]
 		pnum := 0
 
-		//Remove leading zero
+		/* Remove leading zero */
 		if arg[0] == '0' {
 			pnum, _ = strconv.Atoi(fmt.Sprintf("%c", arg[1]))
 		} else {
@@ -68,10 +68,10 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.CMS(m.ChannelID, "Generating map...")
 
-	//Delete old sav-* map to save space
+	/* Delete old sav-* map to save space */
 	fact.DeleteOldSav()
 
-	//Generate code to make filename
+	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
@@ -80,7 +80,7 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
-	//Append map gen if set
+	/* Append map gen if set */
 	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
@@ -104,8 +104,8 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	glob.VoteBoxLock.Lock()
 	glob.VoteBox.LastRewindTime = time.Now()
-	fact.VoidAllVotes()    //Void all votes
-	fact.ResetTotalVotes() //New map, reset player's vote limits
+	fact.VoidAllVotes()    /* Void all votes */
+	fact.ResetTotalVotes() /* New map, reset player's vote limits */
 	fact.WriteRewindVotes()
 	glob.VoteBoxLock.Unlock()
 

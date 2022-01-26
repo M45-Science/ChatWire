@@ -1,6 +1,6 @@
 package fact
 
-//Player level names
+/* Player level names */
 type LevelNameData struct {
 	Name  string
 	Level int

@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Set a player's level. Needs to support level names, and have useful help/errors
+/* Set a player's level. Needs to support level names, and have useful help/errors */
 func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	argnum := len(args)
@@ -46,12 +46,12 @@ func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 			return
 		}
 
-		//Unban automatically
+		/* Unban automatically */
 		if plevel >= 0 && oldLevel == -1 {
 			fact.WriteFact("/unban " + pname)
 		}
 
-		//TRUE, modify only
+		/* TRUE, modify only */
 		if fact.PlayerLevelSet(pname, plevel, true) {
 			fact.AutoPromote(pname)
 			fact.SetPlayerListDirty()

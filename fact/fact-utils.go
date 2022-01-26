@@ -101,11 +101,11 @@ func QuitFactorio() {
 	SetRelaunchThrottle(0)
 	SetNoResponseCount(0)
 
-	//Running but no players, just quit
+	/* Running but no players, just quit */
 	if IsFactorioBooted() && GetNumPlayers() <= 0 {
 		WriteFact("/quit")
 
-		//Running, but players connected... Give them quick feedback.
+		/* Running, but players connected... Give them quick feedback. */
 	} else if IsFactorioBooted() && GetNumPlayers() > 0 {
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting.[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting..[/color]", RandomColor(false)))
@@ -115,7 +115,7 @@ func QuitFactorio() {
 	}
 }
 
-//Tell Factorio to save the map
+/* Tell Factorio to save the map */
 func SaveFactorio() {
 
 	if IsFactorioBooted() && 1 == 2 {
@@ -134,7 +134,7 @@ func WriteFact(input string) {
 	PipeLock.Lock()
 	defer PipeLock.Unlock()
 
-	//Clean string
+	/* Clean string */
 	buf := sclean.StripControlAndSubSpecial(input)
 
 	gpipe := Pipe
@@ -332,7 +332,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
 
 	files, err := ioutil.ReadDir(path)
-	//We can't read saves dir
+	/* We can't read saves dir */
 	if err != nil {
 		log.Fatal(err)
 		CMS(m.ChannelID, "Error: Unable to read autosave directory.")
@@ -340,7 +340,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	lastNum := -1
 	step := 1
-	//Loop all files
+	/* Loop all files */
 	var tempf []fs.FileInfo
 	for _, f := range files {
 		if strings.HasPrefix(f.Name(), "_autosave") && strings.HasSuffix(f.Name(), ".zip") {
@@ -368,12 +368,12 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 		f := tempf[i]
 		fName := f.Name()
 
-		//Check if its a properly name autosave
+		/* Check if its a properly name autosave */
 		if strings.HasPrefix(fName, "_autosave") && strings.HasSuffix(fName, ".zip") {
 			fTmp := strings.TrimPrefix(fName, "_autosave")
 			fNumStr := strings.TrimSuffix(fTmp, ".zip")
-			fNum, err := strconv.Atoi(fNumStr) //autosave number
-			//Nope, no valid numer
+			fNum, err := strconv.Atoi(fNumStr) /* autosave number
+			/* Nope, no valid number */
 			if err != nil {
 				continue
 			}
@@ -384,11 +384,11 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 				panic(err)
 			}
 
-			//Get mod date
+			/* Get mod date */
 			modDate := time.Since(f.ModTime())
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units)
-			//Add to list with mod date
+			/* Add to list with mod date */
 			buf = buf + fmt.Sprintf("`#%-3v: %-20v`\n", fNum, modStr+" ago")
 			lastNum = fNum
 		}
@@ -404,10 +404,10 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
 	num, err := strconv.Atoi(arg)
-	//Seems to be a number
+	/* Seems to be a number */
 	if err == nil {
 		if num > 0 || num < 9999 {
-			//Check if file is valid and found
+			/* Check if file is valid and found */
 			autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
 			_, err := os.Stat(path + "/" + autoSaveStr)
 			notfound := os.IsNotExist(err)

@@ -13,12 +13,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Commands is a struct containing a slice of Command.
+/*  Commands is a struct containing a slice of Command. */
 type Commands struct {
 	CommandList []Command
 }
 
-// Command is a struct containing fields that hold command information.
+/*  Command is a struct containing fields that hold command information. */
 type Command struct {
 	Name          string
 	Command       func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
@@ -27,12 +27,11 @@ type Command struct {
 	XHelp         string
 }
 
-// CL is a Commands interface.
 var CL Commands
 
-// RegisterCommands registers the commands on start up.
+/*  RegisterCommands registers the commands on start up. */
 func RegisterCommands() {
-	// Admin Commands
+	/*  Admin Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Stop", Command: admin.StopServer, ModeratorOnly: true,
 		Help:  "Stop Factorio",
 		XHelp: "This saves and closes Factorio only."})
@@ -79,7 +78,7 @@ func RegisterCommands() {
 		Help:  "Rewind map, see autosaves",
 		XHelp: "`rewind <autosave number>`\nRunning with no argument shows last 40 autosaves with date stamps. NOTE: Any autosave can be loaded."})
 
-	// Util Commands
+	/*  Player Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, ModeratorOnly: false,
 		Help:  "Show player info",
 		XHelp: "This searches for results (even partial) for the supplied name. The names searched are both `Discord` (if registered) and `Factorio` names.\nOther options: `recent`, `new` and `registered`. These show the most: `recently-online`, `just-joined` and `recently-registered` players. \n`whois <option or name>`"})
@@ -100,7 +99,7 @@ func RegisterCommands() {
 		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."})
 }
 
-// RunCommand runs a specified command.
+/*  RunCommand runs a specified command. */
 func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	for _, command := range CL.CommandList {
 		if strings.EqualFold(command.Name, name) {
@@ -116,7 +115,7 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 	fact.CMS(m.ChannelID, "Invalid command, try "+cfg.Global.DiscordCommandPrefix+"help")
 }
 
-//Display help, based on user level
+/* Display help, based on user level */
 func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	buf := ""

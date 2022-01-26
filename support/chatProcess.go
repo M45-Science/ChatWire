@@ -10,7 +10,7 @@ import (
 	"ChatWire/glob"
 )
 
-// Chat pipes in-game chat to Discord, and handles log events
+/*  Chat pipes in-game chat to Discord, and handles log events */
 func Chat() {
 
 	go func() {
@@ -20,19 +20,19 @@ func Chat() {
 				time.Sleep(time.Millisecond * 100)
 				for reader.Scan() {
 					line := reader.Text()
-					//Remove return/newline
+					/* Remove return/newline */
 					line = strings.TrimSuffix(line, "\r")
 					line = strings.TrimSuffix(line, "\n")
 
-					//Reject short lines
+					/* Reject short lines */
 					ll := len(line)
 					if ll <= 0 {
 						continue
 					}
-					//Server is alive
+					/* Server is alive */
 					fact.SetFactRunning(true, false)
 
-					//Timecode removal
+					/* Timecode removal */
 					trimmed := strings.TrimLeft(line, " ")
 					words := strings.Split(trimmed, " ")
 					numwords := len(words)
@@ -46,42 +46,42 @@ func Chat() {
 						NoDS = strings.Join(words[2:], " ")
 					}
 
-					//Separate args -- for use with script output
+					/* Separate args -- for use with script output */
 					lineList := strings.Split(line, " ")
 					lineListlen := len(lineList)
 
-					//Separate args, notc -- for use with factorio subsystem output
+					/* Separate args, notc -- for use with factorio subsystem output */
 					NoTClist := strings.Split(NoTC, " ")
 					NoTClistlen := len(NoTClist)
 
-					//Separate args, nods -- for use with normal factorio log output
+					/* Separate args, nods -- for use with normal factorio log output */
 					NoDSlist := strings.Split(NoDS, " ")
 					NoDSlistlen := len(NoDSlist)
 
-					//Lowercase converted
+					/* Lowercase converted */
 					lowerCaseLine := strings.ToLower(line)
 					lowerCaseList := strings.Split(lowerCaseLine, " ")
 					lowerCaseListlen := len(lowerCaseList)
 
-					//Decrement every time we see activity, if we see time not progressing, add two
+					/* Decrement every time we see activity, if we see time not progressing, add two */
 					fact.PausedTicksLock.Lock()
 					if fact.PausedTicks > 0 {
 						fact.PausedTicks--
 					}
 					fact.PausedTicksLock.Unlock()
 
-					//********************************
-					//FILTERED AREA
-					//NO ESCAPED OR CONSOLE CHAT
-					//*********************************
+					/*********************************
+					 * FILTERED AREA
+					 * NO ESCAPED OR CONSOLE CHAT
+					 **********************************/
 					if !strings.HasPrefix(line, "~") && !strings.HasPrefix(line, "<server>") {
 
-						//*****************
-						//NO CHAT AREA
-						//*****************
+						/******************
+						 * NO CHAT AREA
+						 ******************/
 						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
-							//Don't eat event, this is capable of eating random text
+							/* Don't eat event, this is capable of eating random text */
 							handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 
 							if handleUserReport(line, lineList, lowerCaseListlen) {
@@ -108,7 +108,7 @@ func Chat() {
 								continue
 							}
 
-							//Don't eat event, used for fixLockers
+							/* Don't eat event, used for fixLockers */
 							handleSlowConnect(NoTC, line)
 
 							if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
@@ -169,9 +169,9 @@ func Chat() {
 								continue
 							}
 						}
-						//*****************
-						//END FILTERED
-						//*****************
+						/******************
+						 * END FILTERED
+						 ******************/
 
 						if handleOnlineMsg(line) {
 							continue

@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// StopServer saves the map and closes Factorio.
+/*  StopServer saves the map and closes Factorio.  */
 func StopServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.SetRelaunchThrottle(0)

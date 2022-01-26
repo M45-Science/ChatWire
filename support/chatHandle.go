@@ -19,9 +19,9 @@ import (
 )
 
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
-	//*****************
-	//GET FACTORIO TIME
-	//*****************
+	/********************
+	 * GET FACTORIO TIME
+	 ********************/
 	if strings.Contains(lowerCaseLine, " second") || strings.Contains(lowerCaseLine, " minute") || strings.Contains(lowerCaseLine, " hour") || strings.Contains(lowerCaseLine, " day") {
 
 		day := 0
@@ -29,8 +29,6 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 		minute := 0
 		second := 0
 
-		//TODO
-		//We should check, that at least one starts on 2nd word
 		if lowerCaseListlen > 1 {
 
 			for x := 0; x < lowerCaseListlen; x++ {
@@ -56,13 +54,13 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 				newtime = fmt.Sprintf("%.2d", second)
 			}
 
-			//Don't add the time if we are slowed down for players connecting, or paused
+			/* Don't add the time if we are slowed down for players connecting, or paused */
 			if fact.ConnectPauseTimer == 0 && fact.PausedTicks <= 2 {
 				fact.TickHistoryLock.Lock()
 				fact.TickHistory = append(fact.TickHistory,
 					fact.TickInt{Day: day, Hour: hour, Min: minute, Sec: second})
 
-				//Chop old history
+				/* Chop old tick history */
 				thl := len(fact.TickHistory) - fact.MaxTickHistory
 				if thl > 0 {
 					fact.TickHistory = fact.TickHistory[thl:]
@@ -70,7 +68,7 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 				fact.TickHistoryLock.Unlock()
 			}
 
-			//Pause detection
+			/* Pause detection */
 			fact.GametimeLock.Lock()
 			fact.PausedTicksLock.Lock()
 
@@ -88,15 +86,15 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 			fact.PausedTicksLock.Unlock()
 			fact.GametimeLock.Unlock()
 		}
-		//This might block stuff by accident, don't do it
+		/* This might block stuff by accident, don't do it */
 		//continue
 	}
 }
 
 func handleUserReport(line string, lineList []string, lineListlen int) bool {
-	//*****************
-	//USER REPORT
-	//*****************
+	/******************
+	 * USER REPORT
+	 ******************/
 	if strings.HasPrefix(line, "[REPORT]") {
 		botlog.DoLogGame(line)
 		if lineListlen >= 3 {
@@ -111,19 +109,19 @@ func handleUserReport(line string, lineList []string, lineListlen int) bool {
 }
 
 func handleUserRegister(line string, lineList []string, lineListlen int) bool {
-	//*****************
-	//ACCESS
-	//*****************
+	/******************
+	 * ACCESS
+	 ******************/
 	if strings.HasPrefix(line, "[ACCESS]") {
 		if lineListlen == 4 {
-			//Format:
-			//print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter)
+			/* Format:
+			 * print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter) */
 
 			ptype := lineList[1]
 			pname := lineList[2]
 			code := lineList[3]
 
-			//Filter just in case, and so accidental spaces won't ruin passcodes
+			/* Filter just in case, and so accidental spaces won't ruin passcodes */
 			code = strings.ReplaceAll(code, " ", "")
 			pname = strings.ReplaceAll(pname, " ", "")
 
@@ -135,7 +133,7 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 			for i, pass := range glob.PassList {
 				if pass.Code == code {
 					codefound = true
-					//Delete password from list
+					/* Delete password from list */
 					pid := pass.DiscID
 					delete(glob.PassList, i)
 
@@ -160,7 +158,7 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 					if discid == pid && factname == pname {
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account, and Discord account are already connected! Setting role, if needed.", pname))
 						codegood = true
-						//Do not break, process
+						/* Do not break, process */
 					} else if discid != "" {
 						botlog.DoLog(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user.", pname))
@@ -204,7 +202,7 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 					}
 					continue
 				}
-			} //End of loop
+			} /* End of loop */
 			glob.PasswordListLock.Unlock()
 			if !codefound {
 				botlog.DoLog(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
@@ -221,9 +219,9 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 }
 
 func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
-	//***********************
-	//CAPTURE ONLINE PLAYERS
-	//***********************
+	/* ***********************
+	 * CAPTURE ONLINE PLAYERS
+	 ************************/
 	if strings.HasPrefix(line, "Online players") {
 
 		if lineListlen > 2 {
@@ -240,15 +238,16 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 			if nump > glob.RecordPlayers {
 				glob.RecordPlayers = nump
 
-				//New thread, avoid deadlock
+				/* New thread, avoid deadlock */
 				go func() {
 					fact.WriteRecord()
 				}()
 
 				buf := fmt.Sprintf("**New record!** Players online: %v", glob.RecordPlayers)
 				fact.CMS(cfg.Local.ChannelData.ChatID, buf)
-				//write to factorio as well
-				buf = strings.ReplaceAll(buf, "*", "") //Remove bold
+
+				/* write to factorio as well */
+				buf = fmt.Sprintf("New record! Players online: %v", glob.RecordPlayers)
 				fact.WriteFact("/cchat " + buf)
 
 			}
@@ -262,9 +261,9 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 }
 
 func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
-	//*****************
-	//JOIN AREA
-	//*****************
+	/******************
+	 * JOIN AREA
+	 *****************/
 	if strings.HasPrefix(NoDS, "[JOIN]") {
 		botlog.DoLogGame(NoDS)
 		fact.WriteFact("/p o c")
@@ -281,7 +280,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
 			fact.CMS(cfg.Local.ChannelData.ChatID, buf)
 
-			//Give people patreon/nitro tags in-game.
+			/* Give people patreon/nitro tags in-game. */
 			did := disc.GetDiscordIDFromFactorioName(pname)
 			if did != "" {
 				if IsPatreon(did) {
@@ -300,9 +299,9 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 }
 
 func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen int) bool {
-	//*****************
-	//LEAVE
-	//*****************
+	/******************
+	 * LEAVE
+	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") {
 		botlog.DoLogGame(line)
 		fact.WriteFact("/p o c")
@@ -320,16 +319,16 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 }
 
 func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
-	//*****************
-	//MSG AREA
-	//*****************
+	/******************
+	 * MSG AREA
+	 ******************/
 	if strings.HasPrefix(line, "[MSG]") {
 		botlog.DoLogGame(line)
 
 		if lineListlen > 0 {
 			ctext := strings.Join(lineList[1:], " ")
 
-			//Clean strings
+			/* Clean strings */
 			cmess := sclean.StripControlAndSubSpecial(ctext)
 			cmess = sclean.EscapeDiscordMarkdown(cmess)
 			cmess = sclean.RemoveFactorioTags(cmess)
@@ -375,9 +374,9 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 }
 
 func handleSlowConnect(NoTC string, line string) {
-	//*****************
-	//Slow on catch-up
-	//*****************
+	/* *****************
+	 * Slow on catch-up
+	 ******************/
 	if cfg.Local.SlowConnect.SlowConnect {
 
 		tn := time.Now()
@@ -387,7 +386,7 @@ func handleSlowConnect(NoTC string, line string) {
 			if strings.Contains(line, "removing peer") {
 				fact.WriteFact("/p o c")
 
-				//Fix for players leaving with no leave message
+				/* Fix for players leaving with no leave message */
 			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
 				if cfg.Local.SlowConnect.ConnectSpeed <= 0.0 {
 					fact.WriteFact("/gspeed 0.5")
@@ -424,13 +423,13 @@ func handleSlowConnect(NoTC string, line string) {
 }
 
 func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistlen int) bool {
-	//*****************
-	//MAP LOAD
-	//*****************
+	/******************
+	 * MAP LOAD
+	 ******************/
 	if strings.HasPrefix(NoTC, "Loading map") {
 		botlog.DoLogGame(NoTC)
 
-		//Strip file path
+		/* Strip file path */
 		if NoTClistlen > 3 {
 			fullpath := NoTClist[2]
 			size := NoTClist[3]
@@ -453,7 +452,7 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 
 			buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
 			botlog.DoLog(buf)
-		} else { //Just in case
+		} else { /* Just in case */
 			botlog.DoLog("Loading map...")
 		}
 		return true
@@ -462,9 +461,9 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 }
 
 func handleModLoad(NoTC string) bool {
-	//*****************
-	//LOADING MOD
-	//*****************
+	/******************
+	 * LOADING MOD
+	 ******************/
 	if strings.HasPrefix(NoTC, "Loading mod") && strings.HasSuffix(NoTC, "(data.lua)") {
 
 		if !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
@@ -481,9 +480,9 @@ func handleModLoad(NoTC string) bool {
 }
 
 func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
-	//*****************
-	//BAN
-	//*****************
+	/******************
+	 * BAN
+	 ******************/
 	if strings.HasPrefix(NoDS, "[BAN]") {
 		botlog.DoLogGame(NoDS)
 
@@ -502,9 +501,9 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 }
 
 func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
-	//*****************
-	//UNBAN
-	//*****************
+	/******************
+	 * UNBAN
+	 ******************/
 	if strings.HasPrefix(NoDS, "[UNBANNED]") {
 		botlog.DoLogGame(NoDS)
 
@@ -523,9 +522,9 @@ func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 }
 
 func handleFactGoodbye(NoTC string) bool {
-	//*****************
-	//GOODBYE
-	//*****************
+	/******************
+	 * GOODBYE
+	 ******************/
 	if strings.HasPrefix(NoTC, "Goodbye") {
 		botlog.DoLogGame(NoTC)
 
@@ -538,10 +537,9 @@ func handleFactGoodbye(NoTC string) bool {
 }
 
 func handleFactReady(NoTC string) bool {
-	//*****************
-	//READY MESSAGE
-	//*****************
-	// 5.164 Info RemoteCommandProcessor.cpp:131: Starting RCON interface at IP ADDR:({0.0.0.0:9100})
+	/*****************
+	 * READY MESSAGE
+	 ******************/
 	if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 
 		fact.SetFactorioBooted(true)
@@ -552,21 +550,21 @@ func handleFactReady(NoTC string) bool {
 
 		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
 
-		//Config new-users restrictions
+		/* Config new-users restrictions */
 		if cfg.Local.SoftModOptions.RestrictMode {
 			fact.WriteFact("/restrict on")
 		} else {
 			fact.WriteFact("/restrict off")
 		}
 
-		//Config friendly fire
+		/* Config friendly fire */
 		if cfg.Local.SoftModOptions.FriendlyFire {
 			fact.WriteFact("/friendlyfire on")
 		} else {
 			fact.WriteFact("/friendlyfire off")
 		}
 
-		//Config reset-interval
+		/* Config reset-interval */
 		if cfg.Local.ResetScheduleText != "" {
 			fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
 		}
@@ -587,7 +585,7 @@ func handleFactReady(NoTC string) bool {
 			//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
 		}
 
-		//Patreon list
+		/* Patreon list */
 		disc.RoleListLock.Lock()
 		if len(disc.RoleList.Patreons) > 0 {
 			fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
@@ -602,9 +600,9 @@ func handleFactReady(NoTC string) bool {
 }
 
 func handleFixLockers(NoTC string) bool {
-	//*********************
-	//FIX LOCKERS
-	//*********************
+	/**********************
+	 * FIX LOCKERS
+	 *********************/
 	if strings.Contains(NoTC, "ServerMultiplayerManager") {
 		if strings.HasSuffix(NoTC, "changing state from(InGameSavingMap) to(InGame)") {
 
@@ -628,9 +626,9 @@ func handleFixLockers(NoTC string) bool {
 }
 
 func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
-	//*********************
-	//Announce incoming connections
-	//*********************
+	/********************************
+	 * Announce incoming connections
+	 ********************************/
 	if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
 		if numwords > 1 {
 			fact.LockerLock.Lock()
@@ -648,9 +646,9 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 }
 
 func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen int) {
-	//*********************
-	//GET FACTORIO VERSION
-	//*********************
+	/* **********************
+	 * GET FACTORIO VERSION
+	 ***********************/
 	if strings.HasPrefix(NoTC, "Loading mod base") {
 		botlog.DoLogGame(line)
 		if NoTClistlen > 3 {
@@ -661,9 +659,9 @@ func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen 
 }
 
 func handleSaveMsg(NoTC string) bool {
-	//**********************
-	//CAPTURE SAVE MESSAGES
-	//**********************
+	/*************************
+	 * CAPTURE SAVE MESSAGES
+	 *************************/
 	if strings.HasPrefix(NoTC, "Info AppManager") && strings.Contains(NoTC, "Saving to") {
 		if !cfg.Local.HideAutosaves {
 			savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
@@ -682,13 +680,13 @@ func handleSaveMsg(NoTC string) bool {
 }
 
 func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
-	//**************************
-	//CAPTURE MAP NAME, ON EXIT
-	//**************************
+	/*****************************
+	 * CAPTURE MAP NAME, ON EXIT
+	 *****************************/
 	if strings.HasPrefix(NoTC, "Info MainLoop") && strings.Contains(NoTC, "Saving map as") {
 		botlog.DoLogGame(NoTC)
 
-		//Strip file path
+		/* Strip file path */
 		if NoTClistlen > 5 {
 			fullpath := NoTClist[5]
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
@@ -710,9 +708,9 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 }
 
 func handleDesync(NoTC string, line string) bool {
-	//*****************
-	//CAPTURE DESYNC
-	//*****************
+	/******************
+	 * CAPTURE DESYNC
+	 ******************/
 	if strings.HasPrefix(NoTC, "Info") {
 
 		if strings.Contains(NoTC, "DesyncedWaitingForMap") {
@@ -725,14 +723,14 @@ func handleDesync(NoTC string, line string) bool {
 }
 
 func handleCrashes(NoTC string, line string) bool {
-	//*****************
-	//CAPTURE CRASHES
-	//*****************
+	/* *****************
+	 * CAPTURE CRASHES
+	 ******************/
 	if strings.HasPrefix(NoTC, "Error") {
 		botlog.DoLogGame(line)
 
 		fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
-		//Lock error
+		/* Lock error */
 		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
 			fact.SetAutoStart(false)
@@ -740,14 +738,14 @@ func handleCrashes(NoTC string, line string) bool {
 			fact.SetFactRunning(false, true)
 			return true
 		}
-		//Mod Errors
+		/* Mod Errors */
 		if strings.Contains(NoTC, "caused a non-recoverable error.") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
 			return true
 		}
-		//Stack traces
+		/* Stack traces */
 		if strings.Contains(NoTC, "Hosting multiplayer game failed") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio was unable to launch.")
 			fact.SetAutoStart(false)
@@ -755,7 +753,7 @@ func handleCrashes(NoTC string, line string) bool {
 			fact.SetFactRunning(false, true)
 			return true
 		}
-		//level.dat
+		/* level.dat */
 		if strings.Contains(NoTC, "level.dat not found.") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
 			fact.SetAutoStart(false)
@@ -763,14 +761,14 @@ func handleCrashes(NoTC string, line string) bool {
 			fact.SetFactRunning(false, true)
 			return true
 		}
-		//Stack traces
+		/* Stack traces */
 		if strings.Contains(NoTC, "Unexpected error occurred.") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
 			return true
 		}
-		//Multiplayer manger
+		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
 			if strings.Contains(NoTC, "info.json not found") {
 				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
@@ -779,7 +777,7 @@ func handleCrashes(NoTC string, line string) bool {
 				fact.SetFactRunning(false, true)
 				return true
 			}
-			//Corrupt savegame
+			/* Corrupt savegame */
 			if strings.Contains(NoTC, "Closing file") {
 				fact.GameMapLock.Lock()
 				path := fact.GameMapPath
@@ -815,9 +813,9 @@ func handleCrashes(NoTC string, line string) bool {
 }
 
 func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int) bool {
-	//***********************
-	//FACTORIO CHAT MESSAGES
-	//***********************
+	/************************
+	 * FACTORIO CHAT MESSAGES
+	 ************************/
 	if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
 		botlog.DoLogGame(line)
 
@@ -840,7 +838,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 					return true
 				}
 
-				//Yeah, on different thread please.
+				/* Yeah, on different thread please. */
 				go func(ptemp string) {
 					fact.UpdateSeen(ptemp)
 				}(pname)
@@ -852,7 +850,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				factname = sclean.TruncateString(factname, 25)
 
 				fbuf := ""
-				//Filter Factorio names
+				/* Filter Factorio names */
 
 				factname = sclean.StripControlAndSubSpecial(factname)
 				factname = sclean.EscapeDiscordMarkdown(factname)
@@ -862,32 +860,32 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 					fbuf = fmt.Sprintf("`%v` %s: %s", fact.GetGameTime(), factname, cmess)
 				}
 
-				//Remove all but letters
+				/* Remove all but letters */
 				filter, _ := regexp.Compile("[^a-zA-Z]+")
 
-				//Name to lowercase
+				/* Name to lowercase */
 				dnamelower := strings.ToLower(dname)
 				fnamelower := strings.ToLower(pname)
 
-				//Reduce to letters only
+				/* Reduce to letters only */
 				dnamereduced := filter.ReplaceAllString(dnamelower, "")
 				fnamereduced := filter.ReplaceAllString(fnamelower, "")
 
-				//If we find discord name, and discord name and factorio name don't contain the same name
+				/* If we find discord name, and discord name and factorio name don't contain the same name */
 				if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
-					//Slap data into embed format.
+					/* Slap data into embed format. */
 					myembed := embed.NewEmbed().
 						SetAuthor("@"+dname, avatar).
 						SetDescription(fbuf).
 						MessageEmbed
 
-					//Send it off!
+						/* Send it off! */
 					err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
 					if err != nil {
-						//On failure, send normal message
+						/* On failure, send normal message */
 						botlog.DoLog("Failed to send chat embed.")
 					} else {
-						//Stop if succeeds
+						/* Stop if succeeds */
 						return true
 					}
 				}
@@ -901,9 +899,9 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 }
 
 func handleCmdMsg(line string) bool {
-	//*****************
-	//COMMAND REPORTING
-	//*****************
+	/******************
+	 * COMMAND REPORTING
+	 ******************/
 	if strings.HasPrefix(line, "[CMD]") {
 		botlog.DoLogGame(line)
 		return true
@@ -912,9 +910,9 @@ func handleCmdMsg(line string) bool {
 }
 
 func handleOnlineMsg(line string) bool {
-	//*****************
-	//"/online"
-	//*****************
+	/* ****************
+	 * "/online"
+	 ******************/
 	if strings.HasPrefix(line, "~") {
 		botlog.DoLogGame(line)
 		if strings.Contains(line, "Online:") {

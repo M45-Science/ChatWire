@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Generate map
+/* Generate map */
 func NewMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	fact.Map_reset("")
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Reboot when server is empty
+/* Reboot when server is empty */
 func Queue(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if !fact.IsQueued() {

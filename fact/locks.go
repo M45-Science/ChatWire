@@ -10,9 +10,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//************************
-//LOCK HANDLER FUNCTIONS
-//************************
+/************************
+ * LOCK HANDLER FUNCTIONS
+ *************************/
 
 func GetUpdateWarnCounter() int {
 	glob.UpdateWarnCounterLock.Lock()

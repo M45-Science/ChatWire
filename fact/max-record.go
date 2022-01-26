@@ -11,9 +11,9 @@ import (
 	"ChatWire/glob"
 )
 
-//Write record of max number of players online
+/* Write record of max number of players online */
 func WriteRecord() {
-	//Write to file
+	/* Write to file */
 	glob.RecordPlayersWriteLock.Lock()
 	defer glob.RecordPlayersWriteLock.Unlock()
 
@@ -25,7 +25,7 @@ func WriteRecord() {
 		botlog.DoLog("Couldn't open max file, skipping...")
 		return
 	}
-	// close fo on exit and check for its returned error
+	/*  close fo on exit and check for its returned error */
 	defer func() {
 		if err := fo.Close(); err != nil {
 			panic(err)
@@ -41,7 +41,7 @@ func WriteRecord() {
 	}
 }
 
-//Read record of max number of players online
+/* Read record of max number of players online */
 func LoadRecord() {
 	glob.RecordPlayersWriteLock.Lock()
 	defer glob.RecordPlayersWriteLock.Unlock()

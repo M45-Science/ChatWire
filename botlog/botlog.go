@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-//Normal bot log
+/* Normal bot log */
 func DoLog(text string) {
 	ctime := time.Now()
 	_, filename, line, _ := runtime.Caller(1)
@@ -25,7 +25,7 @@ func DoLog(text string) {
 	}
 }
 
-//Game log
+/* Game log */
 func DoLogGame(text string) {
 	ctime := time.Now()
 
@@ -40,57 +40,57 @@ func DoLogGame(text string) {
 	}
 }
 
-//Prep everything for the game log
+/* Prep everything for the game log */
 func StartGameLog() {
 	t := time.Now()
 
-	//Create our log file names
+	/* Create our log file names */
 	glob.GameLogName = fmt.Sprintf("log/game-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 
-	//Make log directory
+	/* Make log directory */
 	errr := os.MkdirAll("log", os.ModePerm)
 	if errr != nil {
 		fmt.Print(errr.Error())
 		return
 	}
 
-	//Open log files
+	/* Open log files */
 	gdesc, erra := os.OpenFile(glob.GameLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
-	//Handle file errors
+	/* Handle file errors */
 	if erra != nil {
 		fmt.Printf("An error occurred when attempting to create game log. Details: %s", erra)
 		return
 	}
 
-	//Save descriptors, open/closed elsewhere
+	/* Save descriptors, open/closed elsewhere */
 	glob.GameLogDesc = gdesc
 
 }
 
-//Prep everything for the bot log
+/* Prep everything for the bot log */
 func StartBotLog() {
 	t := time.Now()
 
-	//Create our log file names
+	/* Create our log file names */
 	glob.BotLogName = fmt.Sprintf("log/bot-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 
-	//Make log directory
+	/* Make log directory */
 	errr := os.MkdirAll("log", os.ModePerm)
 	if errr != nil {
 		fmt.Print(errr.Error())
 		return
 	}
 
-	//Open log files
+	/* Open log files */
 	bdesc, errb := os.OpenFile(glob.BotLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
-	//Handle file errors
+	/* Handle file errors */
 	if errb != nil {
 		fmt.Printf("An error occurred when attempting to create bot log. Details: %s", errb)
 		return
 	}
 
-	//Save descriptors, open/closed elsewhere
+	/* Save descriptors, open/closed elsewhere */
 	glob.BotLogDesc = bdesc
 }

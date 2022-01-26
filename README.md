@@ -1,10 +1,10 @@
 ## M45-ChatWire
-[![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+[![License: MPL 2.0](https:/* img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https:/* opensource.org/licenses/MPL-2.0)
 <br>
-[![Go](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
-[![ReportCard](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
-[![CodeQL](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
-[![BinaryBuild](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml)
+[![Go](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
+[![ReportCard](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
+[![CodeQL](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
+[![BinaryBuild](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml/badge.svg)](https:/* github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml)
 ### Requirements:
 Linux<br>
 Golang 1.17+<br>

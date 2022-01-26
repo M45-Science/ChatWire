@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//executes /online on the server, response handled in chat.go
+/* executes /online on the server, response handled in chat.go */
 func PlayersOnline(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if fact.IsFactRunning() {

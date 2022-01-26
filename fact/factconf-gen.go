@@ -54,7 +54,7 @@ func GenerateFactorioConfig() bool {
 
 	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 
-	//Setup some defaults
+	/* Setup some defaults */
 	heartbeats := 60
 	autosaves := 240
 	autosave_interval := 15
@@ -73,7 +73,7 @@ func GenerateFactorioConfig() bool {
 		autokick = cfg.Local.FactorioData.AFKKickMinutes
 	}
 
-	//Add some settings to descrLines, such as cheats, no blueprint, etc.
+	/* Add some settings to descrLines, such as cheats, no blueprint, etc. */
 
 	var descrLines []string
 
@@ -125,14 +125,14 @@ func GenerateFactorioConfig() bool {
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
-			Public: true,  //DEBUG ONLY
-			Lan:    false, //DEBUG ONLY
+			Public: true,  /* DEBUG ONLY */
+			Lan:    false, /* DEBUG ONLY */
 			Steam:  false,
 		},
 
 		Username:                  cfg.Global.FactorioData.Username,
 		Token:                     cfg.Global.FactorioData.Token,
-		Require_user_verification: true, //DEBUG ONLY
+		Require_user_verification: true, /* DEBUG ONLY */
 		Max_heartbeats_per_second: heartbeats,
 		Allow_commands:            "admins-only",
 
@@ -147,7 +147,7 @@ func GenerateFactorioConfig() bool {
 
 	c := "/config set"
 	if IsFactorioBooted() {
-		//Send over rcon, to preserve newlines
+		/* Send over rcon, to preserve newlines */
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.RconPortOffset)
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.RconPass)
 		if err != nil || remoteConsole == nil {
@@ -156,16 +156,16 @@ func GenerateFactorioConfig() bool {
 
 		remoteConsole.Write(c + " name " + servName)
 		remoteConsole.Write(c + " description " + serverDescString)
-		//		remoteConsole.Write(c + " max-players " + "0")
-		//		remoteConsole.Write(c + " visibility-public " + "true")
-		//		remoteConsole.Write(c + " visibility-steam " + "true")
-		//		remoteConsole.Write(c + " visibility-lan " + "false")
-		//		remoteConsole.Write(c + " require-user-verification " + "true")
-		//		remoteConsole.Write(c + " allow-commands " + "admins-only")
+		/* 		remoteConsole.Write(c + " max-players " + "0")
+		 * 		remoteConsole.Write(c + " visibility-public " + "true")
+		 * 		remoteConsole.Write(c + " visibility-steam " + "true")
+		 * 		remoteConsole.Write(c + " visibility-lan " + "false")
+		 * 		remoteConsole.Write(c + " require-user-verification " + "true")
+		 * 		remoteConsole.Write(c + " allow-commands " + "admins-only") */
 		remoteConsole.Write(c + " autosave-interval " + strconv.Itoa(autosave_interval))
 		remoteConsole.Write(c + " afk-auto-kick " + strconv.Itoa(autokick))
-		//		remoteConsole.Write(c + " only-admins-can-pause " + "true")
-		//		remoteConsole.Write(c + " autosave-only-on-server " + "true")
+		/* 		remoteConsole.Write(c + " only-admins-can-pause " + "true")
+		 * 		remoteConsole.Write(c + " autosave-only-on-server " + "true") */
 
 		remoteConsole.Close()
 	}

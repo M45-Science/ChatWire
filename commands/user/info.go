@@ -15,7 +15,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Show useful info about a server and it's settings
+/**************************
+ * Show useful info about a server and it's settings
+ *************************/
 func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	verbose := false
@@ -80,7 +82,9 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		buf = buf + "\nBan count " + fmt.Sprintf("%v", banCount) + "\n"
 	}
 
-	//Tick history
+	/*************************
+	 * Tick history
+	 *************************/
 	fact.TickHistoryLock.Lock()
 	var tenMin []fact.TickInt
 	var thirtyMin []fact.TickInt
@@ -128,7 +132,7 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	} else if tenMinAvr > 0 {
 		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f\n", tenMinAvr)
 	}
-	//End tick history
+	/* End tick history */
 
 	if fact.GetPausedTicks() > 4 {
 		buf = buf + "(Server is paused)\n"

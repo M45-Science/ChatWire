@@ -43,15 +43,15 @@ func GetMapTypeName(num int) string {
 	return "Error"
 }
 
-//Generate map
+/* Generate map */
 func Map_reset(data string) {
 
-	//Prevent another map reset from accidentally running at the same time
+	/* Prevent another map reset from accidentally running at the same time */
 	GameMapLock.Lock()
 	defer GameMapLock.Unlock()
 
-	//If factorio is running, and there is a argument... echo it
-	//Otherwise, stop factorio and generate a new map
+	/* If factorio is running, and there is a argument... echo it
+	 * Otherwise, stop factorio and generate a new map */
 	if IsFactRunning() {
 		if data != "" {
 			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(data))
@@ -67,12 +67,12 @@ func Map_reset(data string) {
 		}
 	}
 
-	//Wait for server to stop if running
+	/* Wait for server to stop if running */
 	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
 		time.Sleep(time.Second)
 	}
 
-	//Get factorio version, for archive folder name
+	/* Get factorio version, for archive folder name */
 	version := strings.Split(FactorioVersion, ".")
 	vlen := len(version)
 	if vlen < 3 {
@@ -80,7 +80,7 @@ func Map_reset(data string) {
 		return
 	}
 
-	//Only proceed if we were running a map, and we know our factorio version.
+	/* Only proceed if we were running a map, and we know our factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
 		shortversion := strings.Join(version[0:2], ".")
 
@@ -97,7 +97,7 @@ func Map_reset(data string) {
 		}
 		defer from.Close()
 
-		//Make directory if it does not exist
+		/* Make directory if it does not exist */
 		newdir := fmt.Sprintf("%v%v maps/", cfg.Global.PathData.MapArchivePath, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
@@ -139,10 +139,10 @@ func Map_reset(data string) {
 	}
 
 	CMS(cfg.Local.ChannelData.ChatID, "Generating map...")
-	//Delete old sav-* map to save space
+	/* Delete old sav-* map to save space */
 	DeleteOldSav()
 
-	//Generate code to make filename
+	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
@@ -151,7 +151,7 @@ func Map_reset(data string) {
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
-	//Append map gen if set
+	/* Append map gen if set */
 	if cfg.Local.MapGenPreset != "" {
 		factargs = append(factargs, "--map-gen-settings")
 		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
@@ -175,7 +175,7 @@ func Map_reset(data string) {
 	}
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
 
-	//If available, use per-server ping setting... otherwise use global
+	/* If available, use per-server ping setting... otherwise use global */
 	pingstr := ""
 	if cfg.Local.ResetPingString != "" {
 		pingstr = cfg.Local.ResetPingString
@@ -204,7 +204,7 @@ func Map_reset(data string) {
 		for _, f := range files {
 			if strings.HasSuffix(f.Name(), ".zip") {
 
-				//Delete mods queued up to be deleted
+				/* Delete mods queued up to be deleted */
 				if strings.HasPrefix(f.Name(), "deleteme-") {
 
 					err = os.Remove(modPath + strings.TrimPrefix(f.Name(), "deleteme-"))
@@ -217,7 +217,7 @@ func Map_reset(data string) {
 					}
 				} else {
 
-					//Otherwise, install new mod
+					/* Otherwise, install new mod */
 					err := os.Rename(qPath+f.Name(), modPath+f.Name())
 					if err != nil {
 						botlog.DoLog(err.Error())
@@ -229,9 +229,9 @@ func Map_reset(data string) {
 
 	glob.VoteBoxLock.Lock()
 	glob.VoteBox.LastRewindTime = time.Now()
-	VoidAllVotes()     //Void all votes
-	ResetTotalVotes()  //New map, reset player's vote limits
-	WriteRewindVotes() //Save to file before exiting
+	VoidAllVotes()     /* Void all votes */
+	ResetTotalVotes()  /* New map, reset player's vote limits */
+	WriteRewindVotes() /* Save to file before exiting */
 	glob.VoteBoxLock.Unlock()
 	DoExit(true)
 }

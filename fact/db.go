@@ -14,7 +14,7 @@ import (
 	"ChatWire/sclean"
 )
 
-//Screw fsnotify
+/* Screw fsnotify */
 func WatchDatabaseFile() {
 	for glob.ServerRunning {
 		time.Sleep(time.Second * 5)
@@ -44,7 +44,7 @@ func WatchDatabaseFile() {
 	}
 }
 
-//Check if DB has been updated
+/* Check if DB has been updated */
 func IsPlayerListUpdated() bool {
 	glob.PlayerListUpdatedLock.Lock()
 	reply := glob.PlayerListUpdated
@@ -53,36 +53,36 @@ func IsPlayerListUpdated() bool {
 	return reply
 }
 
-//Set DB as updated
+/* Set DB as updated */
 func SetPlayerListUpdated() {
 	glob.PlayerListUpdatedLock.Lock()
 	glob.PlayerListUpdated = true
 	glob.PlayerListUpdatedLock.Unlock()
 }
 
-//Mark DB dirty
+/* Mark DB dirty */
 func SetPlayerListDirty() {
 	glob.PlayerListDirtyLock.Lock()
 	glob.PlayerListDirty = true
 	glob.PlayerListDirtyLock.Unlock()
 }
 
-//Mark DB as SeenDirty (low priority)
+/* Mark DB as SeenDirty (low priority) */
 func SetPlayerListSeenDirty() {
 	glob.PlayerListSeenDirtyLock.Lock()
 	glob.PlayerListSeenDirty = true
 	glob.PlayerListSeenDirtyLock.Unlock()
 }
 
-//Get playerID (Discord), add to db if not found
+/* Get playerID (Discord), add to db if not found */
 func PlayerSetID(pname string, id string, level int) bool {
 
 	if id == "" || pname == "" {
 		return false
 	}
 
-	pname = strings.ReplaceAll(pname, ",", "") //remove comma
-	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
+	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
 
 	glob.PlayerListLock.Lock()
@@ -99,7 +99,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 		return true
 	}
 
-	//Not in list, add them
+	/* Not in list, add them */
 	newplayer := glob.PlayerData{
 
 		Name:     pname,
@@ -114,14 +114,14 @@ func PlayerSetID(pname string, id string, level int) bool {
 	return false
 }
 
-//Saw player (low priority)
+/* Saw player (low priority) */
 func UpdateSeen(pname string) {
 	if pname == "" {
 		return
 	}
 
-	pname = strings.ReplaceAll(pname, ",", "") //remove comma
-	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
+	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
 
 	glob.PlayerListLock.Lock()
@@ -137,14 +137,14 @@ func UpdateSeen(pname string) {
 	}
 }
 
-//Set player level, add to db if not found
+/* Set player level, add to db if not found */
 func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	if pname == "" {
 		return false
 	}
 
-	pname = strings.ReplaceAll(pname, ",", "") //remove comma
-	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
+	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
 
 	t := time.Now()
@@ -172,7 +172,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 		return false
 	}
 
-	//Not in list, add them
+	/* Not in list, add them */
 	newplayer := glob.PlayerData{
 
 		Name:     pname,
@@ -188,9 +188,9 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	return false
 }
 
-//**********************************************
-//Expects locked db, only used for LoadPlayers()
-//**********************************************
+/*************************************************
+ * Expects locked db, only used for LoadPlayers()
+ *************************************************/
 func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	if pname == "" {
 		return
@@ -218,7 +218,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		return
 	}
 
-	//Not in list, add them
+	/* Not in list, add them */
 	newplayer := glob.PlayerData{
 
 		Name:     pname,
@@ -231,14 +231,14 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	WhitelistPlayer(pname, level)
 }
 
-//Get player level, add to db if not found
+/* Get player level, add to db if not found */
 func PlayerLevelGet(pname string, modifyOnly bool) int {
 	if pname == "" {
 		return 0
 	}
 
-	pname = strings.ReplaceAll(pname, ",", "") //remove comma
-	pname = strings.ReplaceAll(pname, ":", "") //replace colon
+	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
+	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
 
 	glob.PlayerListLock.Lock()
@@ -248,7 +248,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 
 	if glob.PlayerList[pname] != nil {
 
-		//Found in list
+		/* Found in list */
 		glob.PlayerList[pname].LastSeen = t.Unix()
 		level := glob.PlayerList[pname].Level
 		SetPlayerListSeenDirty()
@@ -259,7 +259,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 		return 0
 	}
 
-	//Not in list, add them
+	/* Not in list, add them */
 	newplayer := glob.PlayerData{
 
 		Name:     pname,
@@ -274,7 +274,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 	return 0
 }
 
-//Load database
+/* Load database */
 func LoadPlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
@@ -289,7 +289,7 @@ func LoadPlayers() {
 		dblines := strings.Split(string(filedata), ":")
 		dblen := len(dblines)
 
-		//Upgrade existing
+		/* Upgrade existing */
 		if dblines[0] == "db-v0.03" {
 
 			glob.PlayerListLock.Lock()
@@ -313,9 +313,9 @@ func LoadPlayers() {
 	}
 }
 
-//Save database
+/* Save database */
 func WritePlayers() {
-	//Write to file
+	/* Write to file */
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
@@ -326,7 +326,7 @@ func WritePlayers() {
 		botlog.DoLog("Couldn't open db file, skipping...")
 		return
 	}
-	// close fo on exit and check for its returned error
+	/*  close fo on exit and check for its returned error */
 	defer func() {
 		if err := fo.Close(); err != nil {
 			panic(err)

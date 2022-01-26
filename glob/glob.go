@@ -27,7 +27,7 @@ type RewindVoteContainerData struct {
 	Version string
 	Votes   []RewindVoteData
 
-	//Temporary storage for tallying votes
+	/* Temporary storage for tallying votes */
 	Tally          []VoteTallyData `json:"-"`
 	LastRewindTime time.Time       `json:"-"`
 	NumRewind      int

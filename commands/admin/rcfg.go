@@ -10,13 +10,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Reload config files
+/* Reload config files */
 func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.GameMapLock.Lock()
 	defer fact.GameMapLock.Unlock()
 
-	//Read global and local configs
+	/* Read global and local configs */
 	if !cfg.ReadGCfg() {
 		fact.CMS(m.ChannelID, "Global config file seems to be invalid.")
 		return
@@ -26,13 +26,13 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		return
 	}
 
-	//Re-Write global and local configs
+	/* Re-Write global and local configs */
 	cfg.WriteGCfg()
 	cfg.WriteLCfg()
 	fact.DoUpdateChannelName()
 	fact.CMS(m.ChannelID, "Config files reloaded.")
 
-	//Config reset-interval
+	/* Config reset-interval */
 	if cfg.Local.ResetScheduleText != "" {
 		fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
 	}
@@ -48,7 +48,7 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		fact.WriteFact("/enablecheats " + support.BoolToString(cfg.Local.SoftModOptions.EnableCheats))
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
 	}
-	//This also uses /config to live change settings.
+	/* This also uses /config to live change settings. */
 	fact.GenerateFactorioConfig()
 
 }

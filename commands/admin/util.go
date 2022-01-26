@@ -16,7 +16,7 @@ const (
 	TYPE_F64    = 4
 )
 
-//Used for set command
+/* Used for set command */
 type SettingListData struct {
 	Name string
 	Desc string
@@ -50,7 +50,7 @@ type SettingListData struct {
 	FactUpdateCommand string
 }
 
-//List of datatypes for settings
+/* List of datatypes for settings */
 var SettingType = []int{
 	TYPE_STRING,
 	TYPE_INT,
@@ -59,7 +59,7 @@ var SettingType = []int{
 	TYPE_F64,
 }
 
-//List of settings
+/* List of settings */
 var SettingList = []SettingListData{
 	{
 		Name: "Name",
@@ -267,7 +267,7 @@ var SettingList = []SettingListData{
 	},
 }
 
-//Get list of map generation presets, because an invalid one will make map generation fail
+/* Get list of map generation presets, because an invalid one will make map generation fail */
 func GetMapGenNames() []string {
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.MapGenPath
 	files, err := ioutil.ReadDir(path)
@@ -286,7 +286,7 @@ func GetMapGenNames() []string {
 	return output
 }
 
-//See if this map gen exists
+/* See if this map gen exists */
 func CheckMapGen(text string) bool {
 
 	if text == "" {

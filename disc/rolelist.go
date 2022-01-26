@@ -16,7 +16,7 @@ var RoleListLock sync.Mutex
 var RoleList RoleListData
 var RoleListUpdated bool
 
-//Cache a list of users with specific Discord roles
+/* Cache a list of users with specific Discord roles */
 func WriteRoleList() bool {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()
@@ -58,13 +58,13 @@ func WriteRoleList() bool {
 	return true
 }
 
-//Create a new RoleList
+/* Create a new RoleList */
 func CreateRoleList() RoleListData {
 	newcfg := RoleListData{Version: "0.0.1"}
 	return newcfg
 }
 
-//Read in cached list of Discord users with specific roles
+/* Read in cached list of Discord users with specific roles */
 func ReadRoleList() bool {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()
@@ -83,7 +83,7 @@ func ReadRoleList() bool {
 			return false
 		}
 		return true
-	} else { //Otherwise just read in the config
+	} else { /* Otherwise just read in the config */
 		file, err := ioutil.ReadFile(constants.RoleListFile)
 
 		if file != nil && err == nil {
@@ -106,7 +106,7 @@ func ReadRoleList() bool {
 	}
 }
 
-//Check with Discord, get updated list of users
+/* Check with Discord, get updated list of users */
 func UpdateRoleList() {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()

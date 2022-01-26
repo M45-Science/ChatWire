@@ -1,9 +1,7 @@
 package support
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -18,7 +16,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-	"ChatWire/modupdate"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -27,31 +24,33 @@ func LinuxSetProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
-//*******************
-//Main threads/loops
-//*******************
+/********************
+ * Main threads/loops
+ ********************/
 
 func MainLoops() {
 
-	//Wait to start loops...
+	/* Wait to start loops... */
 	time.Sleep(time.Second)
 
-	go func() { //nested for 'reasons'
+	go func() { /* nested for 'reasons' */
 
-		//**************
-		//Game watchdog
-		//**************
+		/***************
+		 * Game watchdog
+		 ***************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(constants.WatchdogInterval)
 
-				//Check for Factorio updates
+				/* Check for updates */
 				if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootBot() || fact.GetDoUpdateFactorio()) {
 					if fact.GetDoUpdateFactorio() {
 						fact.FactUpdate()
 					}
 					fact.DoExit(true)
-				} else if fact.IsFactRunning() { //Currently running normally
+
+					/* We are running normally */
+				} else if fact.IsFactRunning() {
 
 					nores := 0
 					if fact.GetPausedTicks() <= constants.PauseThresh {
@@ -70,158 +69,19 @@ func MainLoops() {
 							time.Sleep(time.Second)
 						}
 					}
-				} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() { //Isn't running, but we should be
-					//Dont relaunch if we are set to auto update
 
-					if cfg.Global.PathData.ScriptInserterPath != "" {
-						command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
-						out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
-						if errs != nil {
-							botlog.DoLog(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
-						} else {
-							botlog.DoLog("Soft-mod inserted into save file.")
-						}
-					}
+					/* We aren't running, but should be! */
+				} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() {
+					/* Dont relaunch if we are set to auto update */
 
-					//Generate config file for Factorio server, if it fails stop everything.
-					if !fact.GenerateFactorioConfig() {
-						fact.SetAutoStart(false)
-						fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to generate config file for Factorio server.")
-						return
-					}
-
-					//Relaunch Throttling
-					throt := fact.GetRelaunchThrottle()
-					if throt > 0 {
-
-						delay := throt * throt * 10
-
-						if delay > 0 {
-							botlog.DoLog(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
-							for i := 0; i < delay*11 && throt > 0; i++ {
-								time.Sleep(100 * time.Millisecond)
-							}
-						}
-					}
-					//Timer gets longer each reboot
-					fact.SetRelaunchThrottle(throt + 1)
-
-					//Prevent us from distrupting updates
-					fact.FactorioLaunchLock.Lock()
-
-					var err error
-					var tempargs []string
-
-					//Factorio launch parameters
-					rconport := cfg.Local.Port + cfg.Global.RconPortOffset
-					rconportStr := fmt.Sprintf("%v", rconport)
-					rconpass := cfg.Global.RconPass
-					port := cfg.Local.Port
-					postStr := fmt.Sprintf("%v", port)
-					serversettings := cfg.Global.PathData.FactorioServersRoot +
-						cfg.Global.PathData.FactorioHomePrefix +
-						cfg.Local.ServerCallsign + "/" +
-						constants.ServSettingsName
-
-					tempargs = append(tempargs, "--start-server-load-latest")
-					tempargs = append(tempargs, "--rcon-port")
-					tempargs = append(tempargs, rconportStr)
-
-					tempargs = append(tempargs, "--rcon-password")
-					tempargs = append(tempargs, rconpass)
-
-					tempargs = append(tempargs, "--port")
-					tempargs = append(tempargs, postStr)
-
-					tempargs = append(tempargs, "--server-settings")
-					tempargs = append(tempargs, serversettings)
-
-					//Auth Server Bans ( world bans )
-					if cfg.Global.AuthServerBans {
-						tempargs = append(tempargs, "--use-authserver-bans")
-					}
-
-					//Whitelist
-					if cfg.Local.DoWhitelist {
-						tempargs = append(tempargs, "--use-server-whitelist")
-						tempargs = append(tempargs, "true")
-					}
-
-					//Write or delete whitelist
-					count := fact.WriteWhitelist()
-					if count > 0 && cfg.Local.DoWhitelist {
-						botlog.DoLog(fmt.Sprintf("Whitelist of %v players written.", count))
-					}
-
-					modupdate.UpdateMods()
-
-					//Run Factorio
-					var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
-
-					/*Hide RCON password and port*/
-					for i, targ := range tempargs {
-						if targ == rconpass {
-							tempargs[i] = "***private***"
-						} else if targ == rconportStr {
-							//funny, and impossible port number
-							tempargs[i] = "69420"
-						}
-					}
-					botlog.DoLog("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-
-					LinuxSetProcessGroup(cmd)
-					//Connect Factorio stdout to a buffer for processing
-					fact.GameBuffer = new(bytes.Buffer)
-					logwriter := io.MultiWriter(fact.GameBuffer)
-					cmd.Stdout = logwriter
-					//Stdin
-					tpipe, errp := cmd.StdinPipe()
-
-					//Factorio is not happy.
-					if errp != nil {
-						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
-						//close lock
-						fact.FactorioLaunchLock.Unlock()
-						fact.DoExit(true)
-						return
-					}
-
-					//Save pipe
-					if tpipe != nil && err == nil {
-						fact.PipeLock.Lock()
-						fact.Pipe = tpipe
-						fact.PipeLock.Unlock()
-					}
-
-					//Handle launch errors
-					err = cmd.Start()
-					if err != nil {
-						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
-						//close lock
-						fact.FactorioLaunchLock.Unlock()
-						fact.DoExit(true)
-						return
-					}
-
-					//Okay, factorio is running now, prep
-					fact.SetModLoadString(constants.Unknown)
-					fact.ModLoadString = constants.Unknown //Reset loaded mod list
-					fact.SetFactRunning(true, false)
-					fact.SetFactorioBooted(false)
-
-					fact.SetGameTime(constants.Unknown)
-					fact.SetNoResponseCount(0)
-					botlog.DoLog("Factorio booting...")
-
-					//close lock
-					fact.FactorioLaunchLock.Unlock()
+					launchFactortio()
 				}
 			}
 		}()
 
-		//*******************************
-		//Discord stats update
-		//*******************************
+		/********************************
+		 * Discord stats update
+		 ********************************/
 		go func() {
 			time.Sleep(5 * time.Minute)
 			for glob.ServerRunning {
@@ -307,9 +167,9 @@ func MainLoops() {
 			}
 		}()
 
-		//*******************************
-		//Look for lockers
-		//*******************************
+		/********************************
+		 * Look for lockers
+		 ********************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(time.Second)
@@ -334,20 +194,20 @@ func MainLoops() {
 			}
 		}()
 
-		//*******************************
-		//Watch ban file
-		//*******************************
+		/********************************
+		 * Watch ban file
+		 ********************************/
 		go banlist.WatchBanFile()
 
-		//*******************************
-		//Send buffered messages to Discord, batched.
-		//*******************************
+		/********************************
+		 *  Send buffered messages to Discord, batched.
+		 ********************************/
 		go func() {
 			for glob.ServerRunning {
 
 				if disc.DS != nil {
 
-					//Check if buffer is active
+					/* Check if buffer is active */
 					active := false
 					disc.CMSBufferLock.Lock()
 					if disc.CMSBuffer != nil {
@@ -355,11 +215,11 @@ func MainLoops() {
 					}
 					disc.CMSBufferLock.Unlock()
 
-					//If buffer is active, sleep and wait for it to fill up
+					/* If buffer is active, sleep and wait for it to fill up */
 					if active {
 						time.Sleep(constants.CMSRate)
 
-						//Waited for buffer to fill up, grab and clear buffers
+						/* Waited for buffer to fill up, grab and clear buffers */
 						disc.CMSBufferLock.Lock()
 						lcopy := disc.CMSBuffer
 						disc.CMSBuffer = nil
@@ -370,6 +230,7 @@ func MainLoops() {
 							var factmsg []string
 							var moder []string
 
+							/* Put messages into proper lists */
 							for _, msg := range lcopy {
 								if msg.Channel == cfg.Local.ChannelData.ChatID {
 									factmsg = append(factmsg, msg.Text)
@@ -380,8 +241,8 @@ func MainLoops() {
 								}
 							}
 
-							//Send out buffer, split up if needed
-							//Factorio
+							/* Send out buffer, split up if needed */
+							/* Factorio */
 							buf := ""
 
 							for _, line := range factmsg {
@@ -398,7 +259,7 @@ func MainLoops() {
 								disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, buf)
 							}
 
-							//Moderation
+							/* Moderation */
 							buf = ""
 							for _, line := range moder {
 								oldlen := len(buf) + 1
@@ -415,22 +276,22 @@ func MainLoops() {
 							}
 						}
 
-						//Don't send any more messages for a while (throttle)
+						/* Don't send any more messages for a while (throttle) */
 						time.Sleep(constants.CMSRestTime)
 					}
 
 				}
 
-				//Sleep for a moment before checking buffer again
+				/* Sleep for a moment before checking buffer again */
 				time.Sleep(constants.CMSPollRate)
 			}
 		}()
 
-		//**********************
-		//Check players online
-		//**********************
-		//Safety, in case player count gets off
-		//Also helps detect servers crash/dead while paused
+		/***********************
+		 * Check players online
+		 ***********************/
+		/* Safety, in case player count gets off
+		 * Also helps detect servers crash/dead while paused */
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(5 * time.Minute)
@@ -441,9 +302,9 @@ func MainLoops() {
 			}
 		}()
 
-		//**********************************
-		//Delete expired registration codes
-		//**********************************
+		/***********************************
+		 * Delete expired registration codes
+		 ***********************************/
 		go func() {
 
 			for glob.ServerRunning {
@@ -462,9 +323,9 @@ func MainLoops() {
 			}
 		}()
 
-		//***************************************
-		//Save vote-rewind data async
-		//***************************************
+		/****************************************
+		 * Save vote-rewind data async
+		 ****************************************/
 		go func() {
 
 			for glob.ServerRunning {
@@ -472,7 +333,7 @@ func MainLoops() {
 
 				glob.VoteBoxLock.Lock()
 
-				//Save if dirty
+				/* Save if dirty */
 				if glob.VoteBox.Dirty {
 					fact.WriteRewindVotes()
 					glob.VoteBox.Dirty = false
@@ -481,9 +342,9 @@ func MainLoops() {
 			}
 		}()
 
-		//****************************************************
-		//Slow-connect, helps players catch up on large maps
-		//****************************************************
+		/*****************************************************
+		 * Slow-connect, helps players catch up on large maps
+		 *****************************************************/
 		go func() {
 			for glob.ServerRunning {
 
@@ -516,9 +377,9 @@ func MainLoops() {
 				}
 			}
 		}()
-		//*******************************
-		//Save database, if marked dirty
-		//*******************************
+		/********************************
+		 * Save database, if marked dirty
+		 ********************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(1 * time.Second)
@@ -530,7 +391,7 @@ func MainLoops() {
 				if glob.PlayerListDirty {
 					glob.PlayerListDirty = false
 					wasDirty = true
-					//Prevent recursive lock
+					/* Prevent recursive lock */
 					go func() {
 						time.Sleep(3 * time.Second)
 						botlog.DoLog("Database marked dirty, saving.")
@@ -539,16 +400,16 @@ func MainLoops() {
 				}
 				glob.PlayerListDirtyLock.Unlock()
 
-				//Sleep after saving
+				/* Sleep after saving */
 				if wasDirty {
 					time.Sleep(10 * time.Second)
 				}
 			}
 		}()
 
-		//**********************************************************
-		//Save database (less often), if last seen is marked dirty
-		//**********************************************************
+		/***********************************************************
+		 * Save database (less often), if last seen is marked dirty
+		 ***********************************************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(5 * time.Minute)
@@ -557,7 +418,7 @@ func MainLoops() {
 				if glob.PlayerListSeenDirty {
 					glob.PlayerListSeenDirty = false
 
-					//Prevent recursive lock
+					/* Prevent recursive lock */
 					go func() {
 						//botlog.DoLog("Database last seen flagged, saving.")
 						fact.WritePlayers()
@@ -567,12 +428,12 @@ func MainLoops() {
 			}
 		}()
 
-		//***********************************
-		//Database file modification watching
-		//***********************************
+		/************************************
+		 * Database file modification watching
+		 ************************************/
 		go fact.WatchDatabaseFile()
 
-		//Read database, if the file was modifed
+		/* Read database, if the file was modifed */
 		go func() {
 			updated := false
 
@@ -580,7 +441,7 @@ func MainLoops() {
 
 				time.Sleep(1 * time.Second)
 
-				//Detect update
+				/* Detect update */
 				glob.PlayerListUpdatedLock.Lock()
 				if glob.PlayerListUpdated {
 					updated = true
@@ -594,31 +455,31 @@ func MainLoops() {
 					//botlog.DoLog("Database file modified, loading.")
 					fact.LoadPlayers()
 
-					//Sleep after reading
+					/* Sleep after reading */
 					time.Sleep(5 * time.Second)
 				}
 
 			}
 		}()
 
-		//**************************
-		//Get Guild information
-		//Needed for Discord roles
-		//**************************
+		/***************************
+		 * Get Guild information
+		 * Needed for Discord roles
+		 ***************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(5 * time.Second)
 
 				disc.GuildLock.Lock()
 
-				//Get guild id, if we need it
+				/* Get guild id, if we need it */
 
 				if disc.Guild == nil && disc.DS != nil {
 					var nguild *discordgo.Guild
 					var err error
 
-					// Attempt to get the guild from the state,
-					// If there is an error, fall back to the restapi.
+					/*  Attempt to get the guild from the state,
+					 *  If there is an error, fall back to the restapi. */
 					nguild, err = disc.DS.State.Guild(cfg.Global.DiscordData.GuildID)
 					if err != nil {
 						nguild, err = disc.DS.Guild(cfg.Global.DiscordData.GuildID)
@@ -641,14 +502,14 @@ func MainLoops() {
 						break
 					} else {
 
-						//Guild found, exit loop
+						/* Guild found, exit loop */
 						disc.Guild = nguild
 						disc.Guildname = nguild.Name
 						botlog.DoLog("Guild data linked.")
 					}
 				}
 
-				//Update role IDs
+				/* Update role IDs */
 				if disc.Guild != nil {
 					changed := false
 					for _, role := range disc.Guild.Roles {
@@ -698,9 +559,9 @@ func MainLoops() {
 			}
 		}()
 
-		//**************************
-		//Update patreon/nitro players
-		//**************************
+		/*******************************
+		 * Update patreon/nitro players
+		 *******************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(time.Minute)
@@ -715,9 +576,9 @@ func MainLoops() {
 						fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 					}
 
-					//Live update server description
+					/* Live update server description */
 					if disc.RoleListUpdated {
-						//goroutine, avoid deadlock
+						/* goroutine, avoid deadlock */
 						go fact.GenerateFactorioConfig()
 					}
 					disc.RoleListUpdated = false
@@ -726,9 +587,9 @@ func MainLoops() {
 			}
 		}()
 
-		//************************************
-		//Reboot if queued, when server empty
-		//************************************
+		/************************************
+		 * Reboot if queued, when server empty
+		 ************************************/
 		go func() {
 
 			for glob.ServerRunning {
@@ -744,9 +605,9 @@ func MainLoops() {
 			}
 		}()
 
-		//*******************************************
-		//Bug players if there is an pending update
-		//*******************************************
+		/*******************************************
+		 * Bug players if there is an pending update
+		 *******************************************/
 		go func() {
 
 			for glob.ServerRunning {
@@ -758,7 +619,7 @@ func MainLoops() {
 
 							numwarn := fact.GetUpdateWarnCounter()
 
-							//Warn users
+							/* Warn users */
 							if numwarn < glob.UpdateGraceMinutes {
 								msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
@@ -766,29 +627,29 @@ func MainLoops() {
 							}
 							time.Sleep(1 * time.Minute)
 
-							//Reboot anyway
+							/* Reboot anyway */
 							if numwarn > glob.UpdateGraceMinutes {
 								msg := "(SYSTEM) Rebooting for Factorio update."
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 								fact.WriteFact("/cchat " + fact.AddFactColor("red", msg))
 								fact.SetUpdateWarnCounter(0)
 								fact.QuitFactorio()
-								break //Stop looping
+								break /* Stop looping */
 							}
 							fact.SetUpdateWarnCounter(numwarn + 1)
 						} else {
 							fact.SetUpdateWarnCounter(0)
 							fact.QuitFactorio()
-							break //Stop looping
+							break /* Stop looping */
 						}
 					}
 				}
 			}
 		}()
 
-		//*******************
-		//Check signal files
-		//*******************
+		/*********************
+		 * Check signal files
+		 *********************/
 		go func() {
 			clearOldSignals()
 			failureReported := false
@@ -799,7 +660,7 @@ func MainLoops() {
 				var err error
 				var errb error
 
-				//Queued reboots, regardless of game state
+				/* Queued reboots, regardless of game state */
 				if _, err = os.Stat(".queue"); err == nil {
 					if errb = os.Remove(".queue"); errb == nil {
 						if !fact.IsQueued() {
@@ -811,7 +672,7 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .queue file, ignoring.")
 					}
 				}
-				//Halt, regardless of game state
+				/* Halt, regardless of game state */
 				if _, err = os.Stat(".halt"); err == nil {
 					if errb = os.Remove(".halt"); errb == nil {
 						if fact.IsFactRunning() {
@@ -832,10 +693,10 @@ func MainLoops() {
 					}
 				}
 
-				//Only if game is running
+				/* Only if game is running */
 				if fact.IsFactRunning() {
-					//Quick reboot
-					//This should eventually grab save name from file
+					/* Quick reboot
+					 * This should eventually grab save name from file */
 					if _, err = os.Stat(".qrestart"); err == nil {
 						if errb = os.Remove(".qrestart"); errb == nil {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio quick restarting!")
@@ -845,7 +706,7 @@ func MainLoops() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .qrestart file, ignoring.")
 						}
 					}
-					//Stop game
+					/* Stop game */
 					if _, err = os.Stat(".stop"); err == nil {
 						if errb = os.Remove(".stop"); errb == nil {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping!")
@@ -856,7 +717,7 @@ func MainLoops() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .stop file, ignoring.")
 						}
 					}
-					//New map
+					/* New map */
 					if _, err = os.Stat(".newmap"); err == nil {
 						if errb = os.Remove(".newmap"); errb == nil {
 							fact.Map_reset("")
@@ -865,7 +726,7 @@ func MainLoops() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .stop file, ignoring.")
 						}
 					}
-					//Message
+					/* Message */
 					if _, err = os.Stat(".message"); err == nil {
 						data, errc := os.ReadFile(".message")
 						if errb = os.Remove(".message"); errb == nil {
@@ -873,8 +734,8 @@ func MainLoops() {
 								message := string(data)
 								msglen := len(message)
 								if msglen > 5 && msglen < 250 {
-									message = strings.ReplaceAll(message, "\n", "") //replace newline
-									message = strings.ReplaceAll(message, "\r", "") //replace return
+									message = strings.ReplaceAll(message, "\n", "") /* replace newline */
+									message = strings.ReplaceAll(message, "\r", "") /* replace return */
 									fact.Map_reset(message)
 								} else {
 									fact.LogCMS(cfg.Local.ChannelData.ChatID, ".message text is invalid, ignoring.")
@@ -885,8 +746,8 @@ func MainLoops() {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .message file, ignoring.")
 						}
 					}
-				} else { //Only if game is NOT running
-					//Start game
+				} else { /*  Only if game is NOT running */
+					/* Start game */
 					if _, err = os.Stat(".start"); err == nil {
 						if errb = os.Remove(".start"); errb == nil {
 							fact.SetAutoStart(true)
@@ -900,9 +761,9 @@ func MainLoops() {
 			}
 		}()
 
-		//*********************************
-		//Fix lost connection to log files
-		//*********************************
+		/***********************************
+		 * Fix lost connection to log files
+		 ***********************************/
 		go func() {
 
 			for glob.ServerRunning {
@@ -926,9 +787,9 @@ func MainLoops() {
 			}
 		}()
 
-		//****************************
-		// Check for factorio updates
-		//****************************
+		/****************************
+		* Check for factorio updates
+		****************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(60 * time.Minute)
@@ -937,9 +798,9 @@ func MainLoops() {
 			}
 		}()
 
-		//****************************
-		// Refresh channel names
-		//****************************
+		/****************************
+		* Refresh channel names
+		****************************/
 		go func() {
 
 			for glob.ServerRunning {
@@ -960,9 +821,9 @@ func MainLoops() {
 			}
 		}()
 
-		//****************************
-		// Capture man-minutes
-		//****************************
+		/****************************
+		 * Capture man-minutes
+		 ****************************/
 		go func() {
 			for glob.ServerRunning {
 				time.Sleep(time.Minute)
@@ -977,7 +838,7 @@ func MainLoops() {
 		}()
 	}()
 
-	//After starting loops, wait here for process signals
+	/* After starting loops, wait here for process signals */
 	sc := make(chan os.Signal, 1)
 
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
@@ -991,29 +852,4 @@ func MainLoops() {
 		time.Sleep(time.Second)
 	}
 	fact.DoExit(false)
-}
-
-//Delete old signal files
-func clearOldSignals() {
-	if err := os.Remove(".qrestart"); err == nil {
-		botlog.DoLog("old .qrestart removed.")
-	}
-	if err := os.Remove(".queue"); err == nil {
-		botlog.DoLog("old .queue removed.")
-	}
-	if err := os.Remove(".stop"); err == nil {
-		botlog.DoLog("old .stop removed.")
-	}
-	if err := os.Remove(".newmap"); err == nil {
-		botlog.DoLog("old .newmap removed.")
-	}
-	if err := os.Remove(".message"); err == nil {
-		botlog.DoLog("old .message removed.")
-	}
-	if err := os.Remove(".start"); err == nil {
-		botlog.DoLog("old .start removed.")
-	}
-	if err := os.Remove(".halt"); err == nil {
-		botlog.DoLog("old .halt removed.")
-	}
 }

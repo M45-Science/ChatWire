@@ -17,7 +17,7 @@ import (
 var Local config
 var Global gconfig
 
-//Local config
+/* Local config  */
 type config struct {
 	Version string
 
@@ -45,7 +45,7 @@ type config struct {
 	SoftModOptions SoftModOptionsStruct
 }
 
-//Global config (shared with other servers)
+/* Global config (shared with other servers)  */
 type gconfig struct {
 	Version string
 	Domain  string
@@ -66,7 +66,7 @@ type gconfig struct {
 	AuthServerBans bool
 }
 
-//Global Factorio data
+/* Global Factorio data  */
 type GFactDataStruct struct {
 	Comment   string
 	Username  string
@@ -76,46 +76,45 @@ type GFactDataStruct struct {
 	ServerDescription string
 }
 
-//Local Factorio settings
+/* Local Factorio settings */
 type LFactDataStruct struct {
 	AutoSaveMinutes int
 	AutoPause       bool
 	AFKKickMinutes  int
 }
 
-//Global, these are paths we need
-//bor = based on root
-//boh = based on home
-//ap = absolute path
+/* Global, these are paths we need
+ * bor = based on root
+ * boh = based on home
+ * ap = absolute path */
 type PathDataStruct struct {
-	FactorioServersRoot string //root of factorio server
-	FactorioHomePrefix  string //per-server
-	ChatWireHomePrefix  string //per-server
+	FactorioServersRoot string /* root of factorio server */
+	FactorioHomePrefix  string /* per-server */
+	ChatWireHomePrefix  string /* per-server */
 	FactorioBinary      string
 
-	RecordPlayersFilename string //boh
-	SaveFilePath          string //boh
-	BanFile               string //ap
+	RecordPlayersFilename string /* boh */
+	SaveFilePath          string /* boh */
+	BanFile               string /* ap */
 
-	ScriptInserterPath string //bor
-	DBFileName         string //bor
-	LogCompScriptPath  string //bor
-	FactUpdaterPath    string //bor
-	FactUpdateCache    string //bor
-	MapGenPath         string //bor
+	ScriptInserterPath string /* bor */
+	DBFileName         string /* bor */
+	FactUpdaterPath    string /* bor */
+	FactUpdateCache    string /* bor */
+	MapGenPath         string /* bor */
 
-	MapPreviewPath   string //ap
-	MapArchivePath   string //ap
-	ImageMagickPath  string //ap
-	ShellPath        string //ap
-	RMPath           string //ap
-	FactUpdaterShell string //ap
-	ZipBinaryPath    string //ap
+	MapPreviewPath   string /* ap */
+	MapArchivePath   string /* ap */
+	ImageMagickPath  string /* ap */
+	ShellPath        string /* ap */
+	RMPath           string /* ap */
+	FactUpdaterShell string /* ap */
+	ZipBinaryPath    string /* ap */
 	MapPreviewURL    string
 	ArchiveURL       string
 }
 
-//Discord-specific data global
+/* Discord-specific data global */
 type DiscordDataStruct struct {
 	Comment string
 	Token   string
@@ -130,7 +129,7 @@ type DiscordDataStruct struct {
 	AnnounceChannelID string
 }
 
-//Discord role info, global
+/* Discord role info, global */
 type RoleDataStruct struct {
 	ModeratorRoleName string
 	RegularRoleName   string
@@ -148,7 +147,7 @@ type RoleDataStruct struct {
 	NitroRoleID     string
 }
 
-//Map preview generation settings, global
+/* Map preview generation settings, global */
 type MapPreviewDataStruct struct {
 	Comment    string
 	Args       string
@@ -158,21 +157,21 @@ type MapPreviewDataStruct struct {
 	JPGScale   string
 }
 
-//Discord data, per-server
+/* Discord data, per-server */
 type ChannelDataStruct struct {
 	Comment string
 	Pos     int
 	ChatID  string
 }
 
-//Local, Factorio setting
+/* Local, Factorio setting */
 type SlowConnectStruct struct {
 	SlowConnect  bool
 	DefaultSpeed float32
 	ConnectSpeed float32
 }
 
-//Local soft-mod options
+/* Local soft-mod options */
 type SoftModOptionsStruct struct {
 	RestrictMode      bool
 	FriendlyFire      bool
@@ -220,15 +219,16 @@ func WriteGCfg() bool {
 	return true
 }
 
-//Used for map names
+/* Used for map names */
 func randomBase64String(l int) string {
 	buff := make([]byte, int(math.Ceil(float64(l)/float64(1.33333333333))))
 	rand.Read(buff)
 	str := base64.RawURLEncoding.EncodeToString(buff)
-	return str[:l] // strip 1 extra character we get from odd length results
+	/* strip 1 extra character we get from odd length results */
+	return str[:l]
 }
 
-//Read global/shared server config data
+/* Read global/shared server config data */
 func ReadGCfg() bool {
 
 	_, err := os.Stat(constants.CWGlobalConfig)
@@ -239,7 +239,7 @@ func ReadGCfg() bool {
 		newcfg := CreateGCfg()
 		Global = newcfg
 
-		//Automatic global defaults
+		/* Automatic global defaults */
 		if Global.PathData.DBFileName == "" {
 			Global.PathData.DBFileName = "playerdb.dat"
 			_, err := os.Create(Global.PathData.DBFileName)
@@ -306,10 +306,10 @@ func ReadGCfg() bool {
 			Global.PathData.MapArchivePath = Global.PathData.FactorioServersRoot + "/public_html/archive/"
 		}
 		if Global.PathData.MapPreviewURL == "" {
-			Global.PathData.MapPreviewURL = "http://" + Global.Domain + "/~username/map-preview/"
+			Global.PathData.MapPreviewURL = "http:/* " + Global.Domain + "/~username/map-preview/"
 		}
 		if Global.PathData.ArchiveURL == "" {
-			Global.PathData.ArchiveURL = "http://" + Global.Domain + "/~username/archive/"
+			Global.PathData.ArchiveURL = "http:/* " + Global.Domain + "/~username/archive/"
 		}
 		if Global.PathData.ImageMagickPath == "" {
 			Global.PathData.ImageMagickPath = "/usr/bin/convert"
@@ -343,7 +343,7 @@ func ReadGCfg() bool {
 			Global.FactorioData.Token = "MY FACTORIO TOKEN"
 		}
 		return true
-	} else { //Otherwise just read in the config
+	} else { /* Otherwise just read in the config */
 		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
 
 		if file != nil && err == nil {
@@ -366,17 +366,17 @@ func ReadGCfg() bool {
 	}
 }
 
-//Make new empty gconfig data
+/* Make new empty gconfig data */
 func CreateGCfg() gconfig {
 	newcfg := gconfig{Version: "0.0.2"}
 	newcfg.FactorioData.Comment = "THESE ARE REQUIRED!"
 	newcfg.DiscordData.Comment = "TOKEN AND GUILD ID ARE REQUIRED!"
 	newcfg.RoleData.Comment = "THESE IDS ARE AUTOMATIC! DO NOT EDIT! ONLY SUPPLY ROLE NAMES!"
-	newcfg.MapPreviewData.Comment = "https://wiki.factorio.com/Command_line_parameters"
+	newcfg.MapPreviewData.Comment = "https:/* wiki.factorio.com/Command_line_parameters"
 	return newcfg
 }
 
-//Write local server settings file
+/* Write local server settings file */
 func WriteLCfg() bool {
 	tempPath := constants.CWLocalConfig + "." + Local.ServerCallsign + ".tmp"
 	finalPath := constants.CWLocalConfig
@@ -415,7 +415,7 @@ func WriteLCfg() bool {
 	return true
 }
 
-//Read local server settings file
+/* Read local server settings file */
 func ReadLCfg() bool {
 
 	_, err := os.Stat(constants.CWLocalConfig)
@@ -426,7 +426,7 @@ func ReadLCfg() bool {
 		newcfg := CreateLCfg()
 		Local = newcfg
 
-		//Automatical local defaults
+		/* Automatical local defaults */
 		if Local.Name == "" {
 			Local.Name = "unnamed"
 		}
@@ -440,9 +440,9 @@ func ReadLCfg() bool {
 			botlog.DoLog("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
 			Local.ChannelData.ChatID = "MY DISCORD CHANNEL ID"
 		}
-		WriteLCfg() //Write the defaults
+		WriteLCfg() /* Write the defaults */
 		return true
-	} else { //Just read the config
+	} else { /* Just read the config */
 
 		file, err := ioutil.ReadFile(constants.CWLocalConfig)
 
@@ -458,7 +458,7 @@ func ReadLCfg() bool {
 
 			Local = newcfg
 
-			//Automatic local defaults
+			/* Automatic local defaults */
 			found := false
 			for _, t := range constants.MapTypes {
 				if Local.MapPreset == t {
@@ -479,7 +479,7 @@ func ReadLCfg() bool {
 	}
 }
 
-//Make empty local config
+/* Make empty local config */
 func CreateLCfg() config {
 	newcfg := config{Version: "0.0.2"}
 	newcfg.ChannelData.Comment = "CHANNEL ID REQUIRED! POSITION IS OPTIONAL!"

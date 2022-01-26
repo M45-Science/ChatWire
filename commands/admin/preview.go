@@ -17,7 +17,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//RandomMap locks FactorioLaunchLock
+/* RandomMap locks FactorioLaunchLock */
 func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []string) {
 
 	if fact.IsFactRunning() {
@@ -44,7 +44,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.PathData.MapPreviewPath, ourcode)
 	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.MapPreviewData.Res, "--map-preview-scale=" + cfg.Global.MapPreviewData.Scale, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.MapPreviewData.Args}
 
-	//Append map gen if set
+	/* Append map gen if set */
 	if cfg.Local.MapGenPreset != "" {
 		args = append(args, "--map-gen-settings")
 		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
@@ -78,7 +78,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	cmdb := exec.Command(cfg.Global.PathData.ImageMagickPath, imgargs...)
 	_, berr := cmdb.CombinedOutput()
 
-	//Delete PNG, we don't need it now
+	/* Delete PNG, we don't need it now */
 	if err := os.Remove(path); err != nil {
 		botlog.DoLog("png preview file not found...")
 	}
