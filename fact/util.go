@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
@@ -21,13 +21,13 @@ func DoExit(delay bool) {
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	mm := GetManMinutes()
-	botlog.DoLog(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
+	cwlog.DoLogCW(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
 	time.Sleep(3 * time.Second)
 	/* This kills all loops! */
 	glob.ServerRunning = false
 
-	botlog.DoLog("Bot closing, load/save db, and waiting for locks...")
+	cwlog.DoLogCW("Bot closing, load/save db, and waiting for locks...")
 	LoadPlayers()
 	WritePlayers()
 
@@ -37,7 +37,7 @@ func DoExit(delay bool) {
 	glob.PlayerListWriteLock.Lock()
 	glob.RecordPlayersWriteLock.Lock()
 
-	botlog.DoLog("Closing log files.")
+	cwlog.DoLogCW("Closing log files.")
 	glob.GameLogDesc.Close()
 	glob.BotLogDesc.Close()
 
@@ -98,7 +98,7 @@ func CMS(channel string, text string) {
 
 			disc.CMSBuffer = append(disc.CMSBuffer, item)
 		} else {
-			botlog.DoLog("CMS: Line too long! Discarding...")
+			cwlog.DoLogCW("CMS: Line too long! Discarding...")
 		}
 	}
 
@@ -107,6 +107,6 @@ func CMS(channel string, text string) {
 
 /* Log AND send this message to Discord */
 func LogCMS(channel string, text string) {
-	botlog.DoLog(text)
+	cwlog.DoLogCW(text)
 	CMS(channel, text)
 }

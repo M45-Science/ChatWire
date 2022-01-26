@@ -10,8 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"ChatWire/botlog"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 )
 
 var Local config
@@ -192,27 +192,27 @@ func WriteGCfg() bool {
 	Global.Version = "0.0.1"
 
 	if err := enc.Encode(Global); err != nil {
-		botlog.DoLog("WriteGCfg: enc.Encode failure")
+		cwlog.DoLogCW("WriteGCfg: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		botlog.DoLog("WriteGCfg: os.Create failure")
+		cwlog.DoLogCW("WriteGCfg: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		botlog.DoLog("WriteGCfg: WriteFile failure")
+		cwlog.DoLogCW("WriteGCfg: WriteFile failure")
 	}
 
 	err = os.Rename(tempPath, finalPath)
 
 	if err != nil {
-		botlog.DoLog("Couldn't rename Gcfg file.")
+		cwlog.DoLogCW("Couldn't rename Gcfg file.")
 		return false
 	}
 
@@ -235,7 +235,7 @@ func ReadGCfg() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		botlog.DoLog("ReadGCfg: os.Stat failed, auto-defaults generated.")
+		cwlog.DoLogCW("ReadGCfg: os.Stat failed, auto-defaults generated.")
 		newcfg := CreateGCfg()
 		Global = newcfg
 
@@ -244,7 +244,7 @@ func ReadGCfg() bool {
 			Global.PathData.DBFileName = "playerdb.dat"
 			_, err := os.Create(Global.PathData.DBFileName)
 			if err != nil {
-				botlog.DoLog("Could not create playerdb.dat")
+				cwlog.DoLogCW("Could not create playerdb.dat")
 				return false
 			}
 		}
@@ -253,7 +253,7 @@ func ReadGCfg() bool {
 
 			err := os.MkdirAll(Global.PathData.FactorioServersRoot+"/"+Global.PathData.MapGenPath, os.ModePerm)
 			if err != nil {
-				botlog.DoLog("Could not create map-gen-json directory.")
+				cwlog.DoLogCW("Could not create map-gen-json directory.")
 				return false
 			}
 		}
@@ -265,11 +265,11 @@ func ReadGCfg() bool {
 		}
 		if Global.RconPass == "" {
 			Global.RconPass = randomBase64String(64)
-			botlog.DoLog("No RCON password specified. Random one generated.")
+			cwlog.DoLogCW("No RCON password specified. Random one generated.")
 		}
 		if Global.GroupName == "" {
 			Global.GroupName = randomBase64String(3)
-			botlog.DoLog("No group name specified. Random one generated.")
+			cwlog.DoLogCW("No group name specified. Random one generated.")
 		}
 		if Global.DiscordCommandPrefix == "" {
 			Global.DiscordCommandPrefix = "$"
@@ -327,19 +327,19 @@ func ReadGCfg() bool {
 			Global.PathData.FactorioBinary = "bin/x64/factorio"
 		}
 		if Global.DiscordData.GuildID == "" {
-			botlog.DoLog("No Discord Guild ID specified. This MUST be set!")
+			cwlog.DoLogCW("No Discord Guild ID specified. This MUST be set!")
 			Global.DiscordData.GuildID = "MY DISCORD GUILD/SERVER ID"
 		}
 		if Global.DiscordData.Token == "" {
-			botlog.DoLog("No Discord Token specified. This MUST be set!")
+			cwlog.DoLogCW("No Discord Token specified. This MUST be set!")
 			Global.DiscordData.Token = "MY DISCORD BOT TOKEN"
 		}
 		if Global.FactorioData.Username == "" {
-			botlog.DoLog("No Factorio Username specified. This MUST be set!")
+			cwlog.DoLogCW("No Factorio Username specified. This MUST be set!")
 			Global.FactorioData.Username = "MY FACTORIO USERNAME"
 		}
 		if Global.FactorioData.Token == "" {
-			botlog.DoLog("No Factorio Token specified. This MUST be set!")
+			cwlog.DoLogCW("No Factorio Token specified. This MUST be set!")
 			Global.FactorioData.Token = "MY FACTORIO TOKEN"
 		}
 		return true
@@ -351,8 +351,8 @@ func ReadGCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("ReadGCfg: Unmarshal failure")
-				botlog.DoLog(err.Error())
+				cwlog.DoLogCW("ReadGCfg: Unmarshal failure")
+				cwlog.DoLogCW(err.Error())
 				return false
 			}
 
@@ -360,7 +360,7 @@ func ReadGCfg() bool {
 
 			return true
 		} else {
-			botlog.DoLog("ReadGCfg: ReadFile failure")
+			cwlog.DoLogCW("ReadGCfg: ReadFile failure")
 			return false
 		}
 	}
@@ -388,27 +388,27 @@ func WriteLCfg() bool {
 	Local.Version = "0.0.1"
 
 	if err := enc.Encode(Local); err != nil {
-		botlog.DoLog("WriteLCfg: enc.Encode failure")
+		cwlog.DoLogCW("WriteLCfg: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		botlog.DoLog("WriteLCfg: os.Create failure")
+		cwlog.DoLogCW("WriteLCfg: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		botlog.DoLog("WriteLCfg: WriteFile failure")
+		cwlog.DoLogCW("WriteLCfg: WriteFile failure")
 	}
 
 	err = os.Rename(tempPath, finalPath)
 
 	if err != nil {
-		botlog.DoLog("Couldn't rename Lcfg file.")
+		cwlog.DoLogCW("Couldn't rename Lcfg file.")
 		return false
 	}
 
@@ -422,7 +422,7 @@ func ReadLCfg() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		botlog.DoLog("ReadLCfg: os.Stat failed, auto-defaults generated.")
+		cwlog.DoLogCW("ReadLCfg: os.Stat failed, auto-defaults generated.")
 		newcfg := CreateLCfg()
 		Local = newcfg
 
@@ -437,7 +437,7 @@ func ReadLCfg() bool {
 			Local.Port = 34197
 		}
 		if Local.ChannelData.ChatID == "" {
-			botlog.DoLog("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
+			cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
 			Local.ChannelData.ChatID = "MY DISCORD CHANNEL ID"
 		}
 		WriteLCfg() /* Write the defaults */
@@ -451,8 +451,8 @@ func ReadLCfg() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("ReadLCfg: Unmarshal failure")
-				botlog.DoLog(err.Error())
+				cwlog.DoLogCW("ReadLCfg: Unmarshal failure")
+				cwlog.DoLogCW(err.Error())
 				return false
 			}
 
@@ -467,12 +467,12 @@ func ReadLCfg() bool {
 			}
 			if !found {
 				Local.MapPreset = constants.MapTypes[1]
-				botlog.DoLog("ReadLCfg: MapPreset not valid, setting to " + Local.MapPreset)
+				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.MapPreset)
 			}
 
 			return true
 		} else {
-			botlog.DoLog("ReadLCfg: ReadFile failure")
+			cwlog.DoLogCW("ReadLCfg: ReadFile failure")
 			return false
 		}
 

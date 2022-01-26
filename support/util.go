@@ -1,8 +1,8 @@
 package support
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"os"
 	"strings"
@@ -84,24 +84,24 @@ func BoolToString(b bool) string {
 /* Delete old signal files */
 func clearOldSignals() {
 	if err := os.Remove(".qrestart"); err == nil {
-		botlog.DoLog("old .qrestart removed.")
+		cwlog.DoLogCW("old .qrestart removed.")
 	}
 	if err := os.Remove(".queue"); err == nil {
-		botlog.DoLog("old .queue removed.")
+		cwlog.DoLogCW("old .queue removed.")
 	}
 	if err := os.Remove(".stop"); err == nil {
-		botlog.DoLog("old .stop removed.")
+		cwlog.DoLogCW("old .stop removed.")
 	}
 	if err := os.Remove(".newmap"); err == nil {
-		botlog.DoLog("old .newmap removed.")
+		cwlog.DoLogCW("old .newmap removed.")
 	}
 	if err := os.Remove(".message"); err == nil {
-		botlog.DoLog("old .message removed.")
+		cwlog.DoLogCW("old .message removed.")
 	}
 	if err := os.Remove(".start"); err == nil {
-		botlog.DoLog("old .start removed.")
+		cwlog.DoLogCW("old .start removed.")
 	}
 	if err := os.Remove(".halt"); err == nil {
-		botlog.DoLog("old .halt removed.")
+		cwlog.DoLogCW("old .halt removed.")
 	}
 }

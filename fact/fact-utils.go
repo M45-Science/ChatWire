@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
@@ -37,9 +37,9 @@ func DeleteOldSav() {
 	out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
 
 	if errs != nil {
-		botlog.DoLog(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+		cwlog.DoLogCW(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	} else {
-		botlog.DoLog(fmt.Sprintf("Deleted old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+		cwlog.DoLogCW(fmt.Sprintf("Deleted old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
 	}
 }
 
@@ -78,14 +78,14 @@ func WriteWhitelist() int {
 		_, err := os.Create(wpath)
 
 		if err != nil {
-			botlog.DoLog("WriteWhitelist: os.Create failure")
+			cwlog.DoLogCW("WriteWhitelist: os.Create failure")
 			return -1
 		}
 
 		err = ioutil.WriteFile(wpath, []byte(buf), 0644)
 
 		if err != nil {
-			botlog.DoLog("WriteWhitelist: WriteFile failure")
+			cwlog.DoLogCW("WriteWhitelist: WriteFile failure")
 			return -1
 		}
 		return count
@@ -143,22 +143,22 @@ func WriteFact(input string) {
 		plen := len(buf)
 
 		if plen > 2000 {
-			botlog.DoLog("Message to factorio, too long... Not sending.")
+			cwlog.DoLogCW("Message to factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
-			botlog.DoLog("Message for factorio too short... Not sending.")
+			cwlog.DoLogCW("Message for factorio too short... Not sending.")
 			return
 		}
 
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
-			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
 			SetFactRunning(false, true)
 			return
 		}
 
 	} else {
-		botlog.DoLog("An error occurred when attempting to write to Factorio (nil pipe)")
+		cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
 		SetFactRunning(false, true)
 		return
 	}
@@ -237,12 +237,12 @@ func AutoPromote(pname string) string {
 				if errrole {
 					errset := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, discid, regrole.ID)
 					if errset != nil {
-						botlog.DoLog(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
+						cwlog.DoLogCW(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
 					}
 				}
 			} else {
 
-				botlog.DoLog("No guild data.")
+				cwlog.DoLogCW("No guild data.")
 			}
 		}
 	}
@@ -289,7 +289,7 @@ func DoUpdateChannelName() {
 		_, aerr := disc.DS.ChannelEditComplex(cfg.Local.ChannelData.ChatID, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.ChannelData.Pos})
 
 		if aerr != nil {
-			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
 		}
 	}
 }
@@ -429,7 +429,7 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				selSaveName := path + "/" + autoSaveStr
 				from, erra := os.Open(selSaveName)
 				if erra != nil {
-					botlog.DoLog(fmt.Sprintf("An error occurred when attempting to open the selected rewind map. Details: %s", erra))
+					cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the selected rewind map. Details: %s", erra))
 				}
 				defer from.Close()
 
@@ -438,20 +438,20 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				if !os.IsNotExist(err) {
 					err = os.Remove(newmappath)
 					if err != nil {
-						botlog.DoLog(fmt.Sprintf("An error occurred when attempting to remove the new map. Details: %s", err))
+						cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to remove the new map. Details: %s", err))
 						return
 					}
 				}
 				to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 				if errb != nil {
-					botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the new rewind map. Details: %s", errb))
+					cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the new rewind map. Details: %s", errb))
 					return
 				}
 				defer to.Close()
 
 				_, errc := io.Copy(to, from)
 				if errc != nil {
-					botlog.DoLog(fmt.Sprintf("An error occurred when attempting to write the new rewind map. Details: %s", errc))
+					cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the new rewind map. Details: %s", errc))
 					return
 				}
 

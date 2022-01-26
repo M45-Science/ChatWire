@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"ChatWire/sclean"
 )
@@ -76,7 +76,7 @@ func Map_reset(data string) {
 	version := strings.Split(FactorioVersion, ".")
 	vlen := len(version)
 	if vlen < 3 {
-		botlog.DoLog("Unable to determine factorio version.")
+		cwlog.DoLogCW("Unable to determine factorio version.")
 		return
 	}
 
@@ -92,7 +92,7 @@ func Map_reset(data string) {
 
 		from, erra := os.Open(GameMapPath)
 		if erra != nil {
-			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
 			return
 		}
 		defer from.Close()
@@ -101,19 +101,19 @@ func Map_reset(data string) {
 		newdir := fmt.Sprintf("%v%v maps/", cfg.Global.PathData.MapArchivePath, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
-			botlog.DoLog(err.Error())
+			cwlog.DoLogCW(err.Error())
 		}
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
-			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
 			return
 		}
 		defer to.Close()
 
 		_, errc := io.Copy(to, from)
 		if errc != nil {
-			botlog.DoLog(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
 			return
 		}
 
@@ -164,13 +164,13 @@ func Map_reset(data string) {
 	}
 
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", GetFactorioBinary(), strings.Join(factargs, " "))
-	botlog.DoLog(lbuf)
+	cwlog.DoLogCW(lbuf)
 
 	cmd := exec.Command(GetFactorioBinary(), factargs...)
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 		return
 	}
 	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
@@ -190,7 +190,7 @@ func Map_reset(data string) {
 		constants.ModsFolder + "/"
 	files, err := ioutil.ReadDir(qPath)
 	if err != nil {
-		botlog.DoLog(err.Error())
+		cwlog.DoLogCW(err.Error())
 	}
 	_, err = os.Stat(qPath)
 	notfound := os.IsNotExist(err)
@@ -198,7 +198,7 @@ func Map_reset(data string) {
 	if notfound {
 		_, err = os.Create(qPath)
 		if err != nil {
-			botlog.DoLog(err.Error())
+			cwlog.DoLogCW(err.Error())
 		}
 	} else {
 		for _, f := range files {
@@ -209,18 +209,18 @@ func Map_reset(data string) {
 
 					err = os.Remove(modPath + strings.TrimPrefix(f.Name(), "deleteme-"))
 					if err != nil {
-						botlog.DoLog(err.Error())
+						cwlog.DoLogCW(err.Error())
 					}
 					err = os.Remove(qPath + f.Name())
 					if err != nil {
-						botlog.DoLog(err.Error())
+						cwlog.DoLogCW(err.Error())
 					}
 				} else {
 
 					/* Otherwise, install new mod */
 					err := os.Rename(qPath+f.Name(), modPath+f.Name())
 					if err != nil {
-						botlog.DoLog(err.Error())
+						cwlog.DoLogCW(err.Error())
 					}
 				}
 			}

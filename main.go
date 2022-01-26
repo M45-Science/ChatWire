@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"ChatWire/banlist"
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/commands"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -62,9 +62,9 @@ func main() {
 	}
 
 	/* Start logs */
-	botlog.StartBotLog()
-	botlog.StartGameLog()
-	botlog.DoLog("Version: " + constants.Version)
+	cwlog.StartBotLog()
+	cwlog.StartGameLog()
+	cwlog.DoLogCW("Version: " + constants.Version)
 
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
@@ -93,15 +93,15 @@ func main() {
 		lastTimeStr := strings.TrimSpace(string(bstr))
 		lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
 		if err != nil {
-			botlog.DoLog("Unable to parse cw.lock: " + err.Error())
+			cwlog.DoLogCW("Unable to parse cw.lock: " + err.Error())
 		} else {
-			botlog.DoLog("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
+			cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
 
 			/* Recent lockfile, probable crash loop */
 			if lastTime.Sub(glob.Uptime) < (constants.RestartLimitMinutes * time.Minute) {
 				msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
 
-				botlog.DoLog(msg)
+				cwlog.DoLogCW(msg)
 				go func(msg string) {
 					for disc.DS == nil {
 						time.Sleep(time.Second)
@@ -111,7 +111,7 @@ func main() {
 
 				_ = os.Remove("cw.lock")
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
-				botlog.DoLog("Sleep done, exiting.")
+				cwlog.DoLogCW("Sleep done, exiting.")
 				return
 			}
 		}
@@ -123,7 +123,7 @@ func main() {
 		/* Proceed anyway, process is managed by systemd */
 	} else {
 		if !os.IsNotExist(err) {
-			botlog.DoLog("Unable to delete old lockfile, exiting.")
+			cwlog.DoLogCW("Unable to delete old lockfile, exiting.")
 			return
 		}
 	}
@@ -131,7 +131,7 @@ func main() {
 	/* Make lockfile */
 	lfile, err := os.OpenFile("cw.lock", os.O_CREATE, 0666)
 	if err != nil {
-		botlog.DoLog("Couldn't create lock file!!!")
+		cwlog.DoLogCW("Couldn't create lock file!!!")
 		return
 		/* Okay, somthing is probably wrong */
 	}
@@ -146,12 +146,12 @@ func main() {
 
 func startbot() {
 
-	botlog.DoLog("Starting bot...")
+	cwlog.DoLogCW("Starting bot...")
 
 	bot, erra := discordgo.New("Bot " + cfg.Global.DiscordData.Token)
 
 	if erra != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
 		time.Sleep(time.Minute)
 		startbot()
 		return
@@ -162,7 +162,7 @@ func startbot() {
 	errb := bot.Open()
 
 	if errb != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
 		time.Sleep(time.Minute)
 		startbot()
 		return
@@ -181,11 +181,11 @@ func startbot() {
 	botstatus := fmt.Sprintf("%vhelp", cfg.Global.DiscordCommandPrefix)
 	errc := bot.UpdateGameStatus(0, botstatus)
 	if errc != nil {
-		botlog.DoLog(errc.Error())
+		cwlog.DoLogCW(errc.Error())
 	}
 
 	bstring := "Loading: CW *v" + constants.Version + "*"
-	botlog.DoLog(bstring)
+	cwlog.DoLogCW(bstring)
 	//fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
 	fact.UpdateChannelName()
 }
@@ -201,7 +201,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.ChannelID == cfg.Local.ChannelData.ChatID && m.ChannelID != "" {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
-		botlog.DoLog("[" + m.Author.Username + "] " + ctext)
+		cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
 		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
 			empty := []string{}

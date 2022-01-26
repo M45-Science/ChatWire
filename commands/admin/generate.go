@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
 
@@ -93,13 +93,13 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	}
 
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
-	botlog.DoLog(lbuf)
+	cwlog.DoLogCW(lbuf)
 
 	cmd := exec.Command(fact.GetFactorioBinary(), factargs...)
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 	}
 
 	glob.VoteBoxLock.Lock()

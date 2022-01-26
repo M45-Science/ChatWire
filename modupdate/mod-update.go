@@ -1,9 +1,9 @@
 package modupdate
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"context"
 	"os/exec"
@@ -12,7 +12,7 @@ import (
 
 func UpdateMods() {
 
-	botlog.DoLog("Updating mods...")
+	cwlog.DoLogCW("Updating mods...")
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ModUpdateLimit)
 	defer cancel()
 
@@ -39,17 +39,17 @@ func UpdateMods() {
 	}
 
 	temp := strings.ReplaceAll(strings.Join(cmdargs, " "), cfg.Global.FactorioData.Token, "**private**")
-	botlog.DoLog(temp)
+	cwlog.DoLogCW(temp)
 	cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 
 	o, err := cmd.CombinedOutput()
 	out := string(o)
 
 	if err != nil {
-		botlog.DoLog("Error running mod updater: " + err.Error())
+		cwlog.DoLogCW("Error running mod updater: " + err.Error())
 	}
 
-	botlog.DoLog(out)
+	cwlog.DoLogCW(out)
 
 	lines := strings.Split(out, "\n")
 	buf := ""

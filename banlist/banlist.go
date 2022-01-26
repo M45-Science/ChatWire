@@ -1,12 +1,13 @@
 package banlist
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -49,7 +50,7 @@ func WatchBanFile() {
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
-			botlog.DoLog("watchBanFile: stat")
+			cwlog.DoLogCW("watchBanFile: stat")
 			continue
 		}
 
@@ -58,7 +59,7 @@ func WatchBanFile() {
 		for glob.ServerRunning && initialStat != nil {
 			stat, errb := os.Stat(filePath)
 			if errb != nil {
-				botlog.DoLog("watchBanFile: restat")
+				cwlog.DoLogCW("watchBanFile: restat")
 				break
 			}
 
@@ -101,7 +102,8 @@ func ReadBanFile() {
 	var names []string
 	err = json.Unmarshal(data, &names)
 	if err != nil {
-		//botlog.DoLog(err.Error())
+		fmt.Print("")
+		//Ignore error
 	}
 
 	for _, name := range names {
@@ -113,7 +115,7 @@ func ReadBanFile() {
 	/* Standard format bans */
 	err = json.Unmarshal(data, &bData)
 	if err != nil {
-		botlog.DoLog(err.Error())
+		cwlog.DoLogCW(err.Error())
 	}
 
 	oldLen := len(BanList)

@@ -1,9 +1,9 @@
 package disc
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -31,27 +31,27 @@ func WriteRoleList() bool {
 	RoleList.Version = "0.0.1"
 
 	if err := enc.Encode(RoleList); err != nil {
-		botlog.DoLog("Writecfg.RoleList: enc.Encode failure")
+		cwlog.DoLogCW("Writecfg.RoleList: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		botlog.DoLog("Writecfg.RoleList: os.Create failure")
+		cwlog.DoLogCW("Writecfg.RoleList: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		botlog.DoLog("Writecfg.RoleList: WriteFile failure")
+		cwlog.DoLogCW("Writecfg.RoleList: WriteFile failure")
 	}
 
 	err = os.Rename(tempPath, finalPath)
 
 	if err != nil {
-		botlog.DoLog("Couldn't rename RoleList file.")
+		cwlog.DoLogCW("Couldn't rename RoleList file.")
 		return false
 	}
 
@@ -73,13 +73,13 @@ func ReadRoleList() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		botlog.DoLog("ReadGCfg: os.Stat failed, auto-defaults generated.")
+		cwlog.DoLogCW("ReadGCfg: os.Stat failed, auto-defaults generated.")
 		newcfg := CreateRoleList()
 		RoleList = newcfg
 
 		_, err := os.Create(constants.RoleListFile)
 		if err != nil {
-			botlog.DoLog("Could not create RoleList.")
+			cwlog.DoLogCW("Could not create RoleList.")
 			return false
 		}
 		return true
@@ -91,16 +91,16 @@ func ReadRoleList() bool {
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
-				botlog.DoLog("Readcfg.RoleList: Unmarshal failure")
+				cwlog.DoLogCW("Readcfg.RoleList: Unmarshal failure")
 				return false
 			}
 
-			botlog.DoLog("Readcfg.RoleList: Successfully read.")
+			cwlog.DoLogCW("Readcfg.RoleList: Successfully read.")
 			RoleList = newcfg
 
 			return true
 		} else {
-			botlog.DoLog("Readcfg.RoleList: ReadFile failure")
+			cwlog.DoLogCW("Readcfg.RoleList: ReadFile failure")
 			return false
 		}
 	}

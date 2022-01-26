@@ -1,9 +1,9 @@
 package support
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/modupdate"
 	"bytes"
@@ -21,9 +21,9 @@ func launchFactortio() {
 		command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
 		out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
 		if errs != nil {
-			botlog.DoLog(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
+			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
 		} else {
-			botlog.DoLog("Soft-mod inserted into save file.")
+			cwlog.DoLogCW("Soft-mod inserted into save file.")
 		}
 	}
 
@@ -41,7 +41,7 @@ func launchFactortio() {
 		delay := throt * throt * 10
 
 		if delay > 0 {
-			botlog.DoLog(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
+			cwlog.DoLogCW(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
 			for i := 0; i < delay*11 && throt > 0; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}
@@ -94,7 +94,7 @@ func launchFactortio() {
 	/* Write or delete whitelist */
 	count := fact.WriteWhitelist()
 	if count > 0 && cfg.Local.DoWhitelist {
-		botlog.DoLog(fmt.Sprintf("Whitelist of %v players written.", count))
+		cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
 	}
 
 	modupdate.UpdateMods()
@@ -113,7 +113,7 @@ func launchFactortio() {
 	}
 
 	/* Launch factorio */
-	botlog.DoLog("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
+	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 
 	LinuxSetProcessGroup(cmd)
 	/* Connect Factorio stdout to a buffer for processing */
@@ -125,7 +125,7 @@ func launchFactortio() {
 
 	/* Factorio is not happy. */
 	if errp != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 		/* close lock  */
 		fact.FactorioLaunchLock.Unlock()
 		fact.DoExit(true)
@@ -142,7 +142,7 @@ func launchFactortio() {
 	/* Handle launch errors */
 	err = cmd.Start()
 	if err != nil {
-		botlog.DoLog(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 		/* close lock */
 		fact.FactorioLaunchLock.Unlock()
 		fact.DoExit(true)
@@ -156,7 +156,7 @@ func launchFactortio() {
 
 	fact.SetGameTime(constants.Unknown)
 	fact.SetNoResponseCount(0)
-	botlog.DoLog("Factorio booting...")
+	cwlog.DoLogCW("Factorio booting...")
 
 	/* Unlock launch lock */
 	fact.FactorioLaunchLock.Unlock()

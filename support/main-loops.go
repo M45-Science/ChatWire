@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"ChatWire/banlist"
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -127,7 +127,7 @@ func MainLoops() {
 						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 1})
 						glob.LastRegularStat = regularstat
 						if err != nil {
-							botlog.DoLog(err.Error())
+							cwlog.DoLogCW(err.Error())
 						}
 						time.Sleep(5 * time.Minute)
 					}
@@ -136,7 +136,7 @@ func MainLoops() {
 						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
 						glob.LastMemberStat = memberstat
 						if err != nil {
-							botlog.DoLog(err.Error())
+							cwlog.DoLogCW(err.Error())
 						}
 						time.Sleep(5 * time.Minute)
 					}
@@ -147,7 +147,7 @@ func MainLoops() {
 							_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatBanChannelID, &discordgo.ChannelEdit{Name: banstat, Position: 3})
 							glob.LastBanStat = banstat
 							if err != nil {
-								botlog.DoLog(err.Error())
+								cwlog.DoLogCW(err.Error())
 							}
 							time.Sleep(5 * time.Minute)
 						}
@@ -157,7 +157,7 @@ func MainLoops() {
 						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 4})
 						glob.LastTotalStat = totalstat
 						if err != nil {
-							botlog.DoLog(err.Error())
+							cwlog.DoLogCW(err.Error())
 						}
 						time.Sleep(5 * time.Minute)
 					}
@@ -184,7 +184,7 @@ func MainLoops() {
 						fact.LockerLock.Unlock()
 
 						msg := "Locker bug detected (" + fact.LastLockerName + "), kicking."
-						botlog.DoLog(msg)
+						cwlog.DoLogCW(msg)
 						fact.WriteFact("/chat " + msg)
 						fact.CMS(cfg.Local.ChannelData.ChatID, msg)
 						fact.WriteFact("/kick " + fact.LastLockerName)
@@ -315,7 +315,7 @@ func MainLoops() {
 				glob.PasswordListLock.Lock()
 				for _, pass := range glob.PassList {
 					if (t.Unix() - pass.Time) > 300 {
-						botlog.DoLog("Invalidating old unused access code for user: " + disc.GetNameFromID(pass.DiscID, false))
+						cwlog.DoLogCW("Invalidating old unused access code for user: " + disc.GetNameFromID(pass.DiscID, false))
 						delete(glob.PassList, pass.DiscID)
 					}
 				}
@@ -394,7 +394,7 @@ func MainLoops() {
 					/* Prevent recursive lock */
 					go func() {
 						time.Sleep(3 * time.Second)
-						botlog.DoLog("Database marked dirty, saving.")
+						cwlog.DoLogCW("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
 				}
@@ -420,7 +420,7 @@ func MainLoops() {
 
 					/* Prevent recursive lock */
 					go func() {
-						//botlog.DoLog("Database last seen flagged, saving.")
+						//cwlog.DoLogCW("Database last seen flagged, saving.")
 						fact.WritePlayers()
 					}()
 				}
@@ -452,7 +452,7 @@ func MainLoops() {
 				if updated {
 					updated = false
 
-					//botlog.DoLog("Database file modified, loading.")
+					//cwlog.DoLogCW("Database file modified, loading.")
 					fact.LoadPlayers()
 
 					/* Sleep after reading */
@@ -484,20 +484,20 @@ func MainLoops() {
 					if err != nil {
 						nguild, err = disc.DS.Guild(cfg.Global.DiscordData.GuildID)
 						if err != nil {
-							botlog.DoLog("Failed to get valid guild data, giving up.")
+							cwlog.DoLogCW("Failed to get valid guild data, giving up.")
 							disc.GuildLock.Unlock()
 							break
 						}
 					}
 
 					if err != nil {
-						botlog.DoLog(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
+						cwlog.DoLogCW(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
 						disc.GuildLock.Unlock()
 						break
 					}
 					if nguild == nil || err != nil {
 						disc.Guildname = constants.Unknown
-						botlog.DoLog("Guild data came back nil.")
+						cwlog.DoLogCW("Guild data came back nil.")
 						disc.GuildLock.Unlock()
 						break
 					} else {
@@ -505,7 +505,7 @@ func MainLoops() {
 						/* Guild found, exit loop */
 						disc.Guild = nguild
 						disc.Guildname = nguild.Name
-						botlog.DoLog("Guild data linked.")
+						cwlog.DoLogCW("Guild data linked.")
 					}
 				}
 
@@ -549,7 +549,7 @@ func MainLoops() {
 						}
 					}
 					if changed {
-						botlog.DoLog("Role IDs updated.")
+						cwlog.DoLogCW("Role IDs updated.")
 						cfg.WriteGCfg()
 					}
 				}
@@ -597,7 +597,7 @@ func MainLoops() {
 
 				if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
 					if fact.IsFactRunning() {
-						botlog.DoLog("No players currently online, performing scheduled reboot.")
+						cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
 						fact.QuitFactorio()
 						break //We don't need to loop anymore
 					}
@@ -665,7 +665,7 @@ func MainLoops() {
 					if errb = os.Remove(".queue"); errb == nil {
 						if !fact.IsQueued() {
 							fact.SetQueued(true)
-							botlog.DoLog("Reboot queued!")
+							cwlog.DoLogCW("Reboot queued!")
 						}
 					} else if errb != nil && !failureReported {
 						failureReported = true
@@ -774,15 +774,15 @@ func MainLoops() {
 
 					glob.BotLogDesc.Close()
 					glob.BotLogDesc = nil
-					botlog.StartBotLog()
-					botlog.DoLog("BotLog file was deleted, recreated.")
+					cwlog.StartBotLog()
+					cwlog.DoLogCW("BotLog file was deleted, recreated.")
 				}
 
 				if _, err = os.Stat(glob.GameLogName); err != nil {
 					glob.GameLogDesc.Close()
 					glob.GameLogDesc = nil
-					botlog.StartGameLog()
-					botlog.DoLogGame("GameLog file was deleted, recreated.")
+					cwlog.StartGameLog()
+					cwlog.DoLogGame("GameLog file was deleted, recreated.")
 				}
 			}
 		}()

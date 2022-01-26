@@ -1,8 +1,8 @@
 package fact
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"bytes"
 	"encoding/json"
@@ -151,7 +151,7 @@ func GenerateFactorioConfig() bool {
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.RconPortOffset)
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.RconPass)
 		if err != nil || remoteConsole == nil {
-			botlog.DoLog(fmt.Sprintf("Error: `%v`\n", err))
+			cwlog.DoLogCW(fmt.Sprintf("Error: `%v`\n", err))
 		}
 
 		remoteConsole.Write(c + " name " + servName)
@@ -176,30 +176,30 @@ func GenerateFactorioConfig() bool {
 	enc.SetEscapeHTML(false)
 
 	if err := enc.Encode(conf); err != nil {
-		botlog.DoLog("GenerateFactorioConfig: enc.Encode failure")
+		cwlog.DoLogCW("GenerateFactorioConfig: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		botlog.DoLog("GenerateFactorioConfig: os.Create failure")
+		cwlog.DoLogCW("GenerateFactorioConfig: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		botlog.DoLog("GenerateFactorioConfig: WriteFile failure")
+		cwlog.DoLogCW("GenerateFactorioConfig: WriteFile failure")
 		return false
 	}
 
 	err = os.Rename(tempPath, finalPath)
 	if err != nil {
-		botlog.DoLog("GenerateFactorioConfig: Rename failure")
+		cwlog.DoLogCW("GenerateFactorioConfig: Rename failure")
 		return false
 	}
 
-	botlog.DoLog("Server settings json written.")
+	cwlog.DoLogCW("Server settings json written.")
 	return true
 }

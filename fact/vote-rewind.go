@@ -1,9 +1,9 @@
 package fact
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"bytes"
 	"encoding/json"
@@ -57,7 +57,6 @@ func TallyRewindVotes() (string, int) {
 			glob.VoteBox.Votes[vpos].Expired = true
 			glob.VoteBox.Votes[vpos].NumChanges = 0
 
-			
 			totalVotes++
 
 			/* Valid */
@@ -107,27 +106,27 @@ func WriteRewindVotes() bool {
 	glob.VoteBox.Version = "0.0.1"
 
 	if err := enc.Encode(glob.VoteBox); err != nil {
-		botlog.DoLog("WriteRewindVotes: enc.Encode failure")
+		cwlog.DoLogCW("WriteRewindVotes: enc.Encode failure")
 		return false
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		botlog.DoLog("WriteRewindVotes: os.Create failure")
+		cwlog.DoLogCW("WriteRewindVotes: os.Create failure")
 		return false
 	}
 
 	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		botlog.DoLog("WriteRewindVotes: WriteFile failure")
+		cwlog.DoLogCW("WriteRewindVotes: WriteFile failure")
 	}
 
 	err = os.Rename(tempPath, finalPath)
 
 	if err != nil {
-		botlog.DoLog("Couldn't rename VoteRewindFile file.")
+		cwlog.DoLogCW("Couldn't rename VoteRewindFile file.")
 		return false
 	}
 
@@ -139,7 +138,7 @@ func ReadRewindVotes() bool {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		botlog.DoLog("ReadRewindVotes: os.Stat failed")
+		cwlog.DoLogCW("ReadRewindVotes: os.Stat failed")
 		return true
 	} else { /* Just read the config */
 
@@ -150,16 +149,16 @@ func ReadRewindVotes() bool {
 
 			err := json.Unmarshal([]byte(file), &temp)
 			if err != nil {
-				botlog.DoLog("ReadRewindVotes: Unmarshal failure")
-				botlog.DoLog(err.Error())
+				cwlog.DoLogCW("ReadRewindVotes: Unmarshal failure")
+				cwlog.DoLogCW(err.Error())
 				return false
 			}
 
 			glob.VoteBox = temp
-			botlog.DoLog("ReadRewindVotes: Successfully read file")
+			cwlog.DoLogCW("ReadRewindVotes: Successfully read file")
 			return true
 		} else {
-			botlog.DoLog("ReadRewindVotes: ReadFile failure")
+			cwlog.DoLogCW("ReadRewindVotes: ReadFile failure")
 			return false
 		}
 

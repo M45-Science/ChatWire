@@ -98,7 +98,7 @@
                     "blank": 24,
                     "code": 58,
                     "comment": 14,
-                    "filename": "botlog/botlog.go"
+                    "filename": "botlog/cwlog.go"
                 },
                 {
                     "blank": 87,
@@ -567,7 +567,7 @@
                     "blank": 24,
                     "code": 58,
                     "comment": 14,
-                    "filename": "botlog/botlog.go"
+                    "filename": "botlog/cwlog.go"
                 },
                 {
                     "blank": 87,
@@ -1006,7 +1006,7 @@
                     "blank": 24,
                     "code": 58,
                     "comment": 14,
-                    "filename": "botlog/botlog.go"
+                    "filename": "botlog/cwlog.go"
                 },
                 {
                     "blank": 87,
@@ -1445,7 +1445,7 @@
                     "blank": 24,
                     "code": 58,
                     "comment": 14,
-                    "filename": "botlog/botlog.go"
+                    "filename": "botlog/cwlog.go"
                 },
                 {
                     "blank": 87,
@@ -1884,7 +1884,7 @@
                     "blank": 24,
                     "code": 58,
                     "comment": 14,
-                    "filename": "botlog/botlog.go"
+                    "filename": "botlog/cwlog.go"
                 },
                 {
                     "blank": 87,

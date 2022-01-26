@@ -1,4 +1,4 @@
-package botlog
+package cwlog
 
 import (
 	"ChatWire/glob"
@@ -10,7 +10,7 @@ import (
 )
 
 /* Normal bot log */
-func DoLog(text string) {
+func DoLogCW(text string) {
 	ctime := time.Now()
 	_, filename, line, _ := runtime.Caller(1)
 

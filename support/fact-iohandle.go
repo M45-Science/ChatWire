@@ -1,9 +1,9 @@
 package support
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -96,7 +96,7 @@ func handleUserReport(line string, lineList []string, lineListlen int) bool {
 	 * USER REPORT
 	 ******************/
 	if strings.HasPrefix(line, "[REPORT]") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 		if lineListlen >= 3 {
 			buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
 				cfg.Local.ServerCallsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
@@ -160,12 +160,12 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 						codegood = true
 						/* Do not break, process */
 					} else if discid != "" {
-						botlog.DoLog(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
+						cwlog.DoLogCW(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user.", pname))
 						codegood = false
 						continue
 					} else if factname != "" {
-						botlog.DoLog(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
+						cwlog.DoLogCW(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user.", pname))
 						codegood = false
 						continue
@@ -195,7 +195,7 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 							fact.LogCMS(cfg.Local.ChannelData.ChatID, pname+": Registration complete!")
 							continue
 						} else {
-							botlog.DoLog("No guild info.")
+							cwlog.DoLogCW("No guild info.")
 							fact.CMS(cfg.Local.ChannelData.ChatID, "Sorry, I couldn't find the guild info!")
 							continue
 						}
@@ -205,12 +205,12 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 			} /* End of loop */
 			glob.PasswordListLock.Unlock()
 			if !codefound {
-				botlog.DoLog(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
+				cwlog.DoLogCW(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
 				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 				return true
 			}
 		} else {
-			botlog.DoLog("Internal error, [ACCESS] had wrong argument count.")
+			cwlog.DoLogCW("Internal error, [ACCESS] had wrong argument count.")
 			return true
 		}
 		return true
@@ -265,7 +265,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 * JOIN AREA
 	 *****************/
 	if strings.HasPrefix(NoDS, "[JOIN]") {
-		botlog.DoLogGame(NoDS)
+		cwlog.DoLogGame(NoDS)
 		fact.WriteFact("/p o c")
 
 		if NoDSlistlen > 1 {
@@ -303,7 +303,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 * LEAVE
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 		fact.WriteFact("/p o c")
 
 		if NoDSlistlen > 1 {
@@ -323,7 +323,7 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 	 * MSG AREA
 	 ******************/
 	if strings.HasPrefix(line, "[MSG]") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 
 		if lineListlen > 0 {
 			ctext := strings.Join(lineList[1:], " ")
@@ -427,7 +427,7 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 	 * MAP LOAD
 	 ******************/
 	if strings.HasPrefix(NoTC, "Loading map") {
-		botlog.DoLogGame(NoTC)
+		cwlog.DoLogGame(NoTC)
 
 		/* Strip file path */
 		if NoTClistlen > 3 {
@@ -451,9 +451,9 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 			}
 
 			buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
-			botlog.DoLog(buf)
+			cwlog.DoLogCW(buf)
 		} else { /* Just in case */
-			botlog.DoLog("Loading map...")
+			cwlog.DoLogCW("Loading map...")
 		}
 		return true
 	}
@@ -467,7 +467,7 @@ func handleModLoad(NoTC string) bool {
 	if strings.HasPrefix(NoTC, "Loading mod") && strings.HasSuffix(NoTC, "(data.lua)") {
 
 		if !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
-			botlog.DoLogGame(NoTC)
+			cwlog.DoLogGame(NoTC)
 
 			modName := strings.TrimPrefix(NoTC, "Loading mod ")
 			modName = strings.TrimSuffix(modName, " (data.lua)")
@@ -484,7 +484,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 * BAN
 	 ******************/
 	if strings.HasPrefix(NoDS, "[BAN]") {
-		botlog.DoLogGame(NoDS)
+		cwlog.DoLogGame(NoDS)
 
 		if NoDSlistlen > 1 {
 			trustname := NoDSlist[1]
@@ -505,7 +505,7 @@ func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 * UNBAN
 	 ******************/
 	if strings.HasPrefix(NoDS, "[UNBANNED]") {
-		botlog.DoLogGame(NoDS)
+		cwlog.DoLogGame(NoDS)
 
 		if NoDSlistlen > 1 {
 			trustname := NoDSlist[1]
@@ -526,7 +526,7 @@ func handleFactGoodbye(NoTC string) bool {
 	 * GOODBYE
 	 ******************/
 	if strings.HasPrefix(NoTC, "Goodbye") {
-		botlog.DoLogGame(NoTC)
+		cwlog.DoLogGame(NoTC)
 
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
 		fact.SetFactorioBooted(false)
@@ -650,7 +650,7 @@ func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen 
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(NoTC, "Loading mod base") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 		if NoTClistlen > 3 {
 			fact.FactorioVersion = NoTClist[3]
 		}
@@ -684,7 +684,7 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 	 * CAPTURE MAP NAME, ON EXIT
 	 *****************************/
 	if strings.HasPrefix(NoTC, "Info MainLoop") && strings.Contains(NoTC, "Saving map as") {
-		botlog.DoLogGame(NoTC)
+		cwlog.DoLogGame(NoTC)
 
 		/* Strip file path */
 		if NoTClistlen > 5 {
@@ -698,7 +698,7 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 			fact.GameMapPath = fullpath
 			fact.GameMapLock.Unlock()
 
-			botlog.DoLog(fmt.Sprintf("Map saved as: " + filename))
+			cwlog.DoLogCW(fmt.Sprintf("Map saved as: " + filename))
 			fact.LastSaveName = filename
 
 		}
@@ -714,8 +714,8 @@ func handleDesync(NoTC string, line string) bool {
 	if strings.HasPrefix(NoTC, "Info") {
 
 		if strings.Contains(NoTC, "DesyncedWaitingForMap") {
-			botlog.DoLogGame(line)
-			botlog.DoLog("desync: " + NoTC)
+			cwlog.DoLogGame(line)
+			cwlog.DoLogCW("desync: " + NoTC)
 			return true
 		}
 	}
@@ -727,7 +727,7 @@ func handleCrashes(NoTC string, line string) bool {
 	 * CAPTURE CRASHES
 	 ******************/
 	if strings.HasPrefix(NoTC, "Error") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 
 		fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
 		/* Lock error */
@@ -790,11 +790,11 @@ func handleCrashes(NoTC string, line string) bool {
 				out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
 
 				if errs != nil {
-					botlog.DoLog(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+					cwlog.DoLogCW(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
 					fact.SetAutoStart(false)
 					fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
 				} else {
-					botlog.DoLog("Deleted corrupted savegame.")
+					cwlog.DoLogCW("Deleted corrupted savegame.")
 					fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
 				}
 
@@ -817,7 +817,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 	 * FACTORIO CHAT MESSAGES
 	 ************************/
 	if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 
 		if NoDSlistlen > 1 {
 			NoDSlist[1] = strings.Replace(NoDSlist[1], ":", "", -1)
@@ -883,7 +883,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 					err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
 					if err != nil {
 						/* On failure, send normal message */
-						botlog.DoLog("Failed to send chat embed.")
+						cwlog.DoLogCW("Failed to send chat embed.")
 					} else {
 						/* Stop if succeeds */
 						return true
@@ -903,7 +903,7 @@ func handleCmdMsg(line string) bool {
 	 * COMMAND REPORTING
 	 ******************/
 	if strings.HasPrefix(line, "[CMD]") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 		return true
 	}
 	return false
@@ -914,7 +914,7 @@ func handleOnlineMsg(line string) bool {
 	 * "/online"
 	 ******************/
 	if strings.HasPrefix(line, "~") {
-		botlog.DoLogGame(line)
+		cwlog.DoLogGame(line)
 		if strings.Contains(line, "Online:") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "`"+line+"`")
 			return true

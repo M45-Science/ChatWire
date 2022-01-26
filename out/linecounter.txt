@@ -27,7 +27,7 @@ total blank lines : 1853
 .github/workflows/report.yml, code is 11, comment is 0, blank is 3.
 .gitignore, code is 9, comment is 0, blank is 0.
 banlist/banlist.go, code is 106, comment is 4, blank is 37.
-botlog/botlog.go, code is 58, comment is 14, blank is 24.
+botlog/cwlog.go, code is 58, comment is 14, blank is 24.
 cfg/cfg.go, code is 376, comment is 24, blank is 87.
 ChatWire, it is a binary file.
 commands/admin/archive.go, code is 49, comment is 2, blank is 28.

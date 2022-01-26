@@ -1,9 +1,9 @@
 package admin
 
 import (
-	"ChatWire/botlog"
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"io/ioutil"
 	"strings"
 )
@@ -272,7 +272,7 @@ func GetMapGenNames() []string {
 	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.MapGenPath
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		botlog.DoLog(err.Error())
+		cwlog.DoLogCW(err.Error())
 		return nil
 	}
 

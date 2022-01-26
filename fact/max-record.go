@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/glob"
 )
 
@@ -22,7 +22,7 @@ func WriteRecord() {
 
 	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.RecordPlayersFilename)
 	if err != nil {
-		botlog.DoLog("Couldn't open max file, skipping...")
+		cwlog.DoLogCW("Couldn't open max file, skipping...")
 		return
 	}
 	/*  close fo on exit and check for its returned error */
@@ -37,7 +37,7 @@ func WriteRecord() {
 	err = ioutil.WriteFile(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.RecordPlayersFilename, []byte(buffer), 0644)
 
 	if err != nil {
-		botlog.DoLog("Couldn't write max file.")
+		cwlog.DoLogCW("Couldn't write max file.")
 	}
 }
 
@@ -51,7 +51,7 @@ func LoadRecord() {
 
 	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.RecordPlayersFilename)
 	if err != nil {
-		botlog.DoLog("Couldn't read max file, skipping...")
+		cwlog.DoLogCW("Couldn't read max file, skipping...")
 		return
 	}
 

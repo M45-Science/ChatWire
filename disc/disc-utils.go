@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/botlog"
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
@@ -64,7 +64,7 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
 		if err != nil {
 
-			botlog.DoLog(fmt.Sprintf("SmartWriteDiscordEmbed: ERROR: %v", err))
+			cwlog.DoLogCW(fmt.Sprintf("SmartWriteDiscordEmbed: ERROR: %v", err))
 		}
 
 		return err
@@ -85,7 +85,7 @@ func SmartWriteDiscord(ch string, text string) {
 
 		if err != nil {
 
-			botlog.DoLog(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
+			cwlog.DoLogCW(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
 		}
 	} else {
 
@@ -102,7 +102,7 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 
 		if err != nil || ch == nil {
 
-			botlog.DoLog(fmt.Sprintf("SmartChannelCreate: ERROR: %v", err))
+			cwlog.DoLogCW(fmt.Sprintf("SmartChannelCreate: ERROR: %v", err))
 		} else {
 			return ch
 		}
@@ -123,7 +123,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 
 		if err != nil {
 
-			botlog.DoLog(fmt.Sprintf("SmartRoleAdd: ERROR: %v", err))
+			cwlog.DoLogCW(fmt.Sprintf("SmartRoleAdd: ERROR: %v", err))
 		}
 
 		return err
