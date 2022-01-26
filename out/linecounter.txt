@@ -2,22 +2,22 @@
 EXTENSION NAME : linecounter
 EXTENSION VERSION : 0.2.7
 -------------------------------------------------------------------------------
-count time : 2022-01-26 01:34:04
+count time : 2022-01-26 02:24:55
 count workspace : /home/dist/github/cw-t
 total files : 64
-total code lines : 6527
+total code lines : 6528
 total comment lines : 706
 total blank lines : 1853
 
     statistics
    |      extension|     total code|  total comment|    total blank|percent|
    -------------------------------------------------------------------------
-   |            .go|           6124|            649|           1792|     94|
+   |           .mod|             15|              4|              3|   0.23|
+   |           .dat|              5|              0|              0|  0.077|
+   |            .go|           6125|            649|           1792|     94|
    |               |            187|             14|             43|    2.9|
    |           .sum|             35|              0|              0|   0.54|
    |          .json|             40|              0|              0|   0.61|
-   |           .mod|             15|              4|              3|   0.23|
-   |           .dat|              5|              0|              0|  0.077|
    |            .md|             42|              5|              1|   0.64|
    |           .yml|             79|             34|             14|    1.2|
    -------------------------------------------------------------------------
@@ -26,8 +26,7 @@ total blank lines : 1853
 .github/workflows/go.yml, code is 19, comment is 0, blank is 6.
 .github/workflows/report.yml, code is 11, comment is 0, blank is 3.
 .gitignore, code is 9, comment is 0, blank is 0.
-banlist/banlist.go, code is 106, comment is 4, blank is 37.
-botlog/cwlog.go, code is 58, comment is 14, blank is 24.
+banlist/banlist.go, code is 107, comment is 4, blank is 38.
 cfg/cfg.go, code is 376, comment is 24, blank is 87.
 ChatWire, it is a binary file.
 commands/admin/archive.go, code is 49, comment is 2, blank is 28.
@@ -54,6 +53,7 @@ commands/user/vrewind.go, code is 192, comment is 29, blank is 38.
 commands/user/whois.go, code is 151, comment is 10, blank is 45.
 constants/const.go, code is 61, comment is 13, blank is 16.
 cw-local-config.json, code is 40, comment is 0, blank is 0.
+cwlog/cwlog.go, code is 58, comment is 14, blank is 24.
 disc/disc-def.go, code is 25, comment is 5, blank is 11.
 disc/disc-utils.go, code is 156, comment is 13, blank is 60.
 disc/rolelist.go, code is 125, comment is 5, blank is 35.
@@ -63,11 +63,11 @@ fact/fact-utils.go, code is 348, comment is 21, blank is 105.
 fact/factconf-gen.go, code is 149, comment is 13, blank is 43.
 fact/level.go, code is 31, comment is 1, blank is 2.
 fact/locks.go, code is 207, comment is 4, blank is 63.
-fact/map_reset.go, code is 169, comment is 14, blank is 54.
+fact/map-reset.go, code is 169, comment is 14, blank is 54.
 fact/max-record.go, code is 42, comment is 4, blank is 20.
 fact/updater.go, code is 147, comment is 11, blank is 50.
 fact/util.go, code is 67, comment is 11, blank is 34.
-fact/vote-rewind.go, code is 124, comment is 10, blank is 44.
+fact/vote-rewind.go, code is 124, comment is 10, blank is 43.
 glob/glob.go, code is 77, comment is 20, blank is 27.
 go.mod, code is 15, comment is 4, blank is 3.
 go.sum, code is 35, comment is 0, blank is 0.
@@ -75,14 +75,14 @@ img-source/chatwire3c.png, it is a binary file.
 img-source/chatwire3c.psd, it is a binary file.
 LICENSE, code is 178, comment is 14, blank is 43.
 main.go, code is 183, comment is 36, blank is 73.
-modupdate/modupdate.go, code is 46, comment is 0, blank is 19.
+modupdate/mod-update.go, code is 46, comment is 0, blank is 19.
 README.md, code is 42, comment is 5, blank is 1.
 sclean/string-clean.go, code is 146, comment is 15, blank is 22.
 sclean/string-clean_test.go, code is 146, comment is 1, blank is 40.
-support/chatHandle.go, code is 668, comment is 114, blank is 142.
-support/chatProcess.go, code is 118, comment is 22, blank is 45.
-support/launchFact.go, code is 102, comment is 22, blank is 39.
-support/mainloops.go, code is 603, comment is 112, blank is 141.
+support/fact-iohandle.go, code is 668, comment is 114, blank is 142.
+support/fact-ioprocess.go, code is 118, comment is 22, blank is 45.
+support/fact-launch.go, code is 102, comment is 22, blank is 39.
+support/main-loops.go, code is 603, comment is 112, blank is 141.
 support/util.go, code is 87, comment is 6, blank is 14.
 vote-rewind.dat, code is 5, comment is 0, blank is 0.
 ===============================================================================
