@@ -724,14 +724,14 @@ func handleDesync(NoTC string, line string) bool {
 	return false
 }
 
-func handleCrashes(NoTC string, line string) bool {
+func handleCrashes(NoTC string, line string, words []string, numwords int) bool {
 	/* *****************
 	 * CAPTURE CRASHES
 	 ******************/
 	if strings.HasPrefix(NoTC, "Error") {
 		cwlog.DoLogGame(line)
 
-		fact.CMS(cfg.Local.ChannelData.ChatID, "error: "+NoTC)
+		fact.CMS(cfg.Local.ChannelData.ChatID, NoTC)
 		/* Lock error */
 		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
@@ -779,15 +779,22 @@ func handleCrashes(NoTC string, line string) bool {
 				fact.SetFactRunning(false, true)
 				return true
 			}
+			/*Error ServerMultiplayerManager.cpp:91: MultiplayerManager failed: "Opening zip /home/dist/github/fact-t/saves/_autosave949.tmp.zip failed: Bad zip file"*/
 			/* Bad zip file */
-			if strings.HasSuffix(NoTC, "failed: Bad zip file") {
-				words := strings.Split(NoTC, " ")
-				if len(words) > 3 {
+			if strings.Contains(NoTC, "failed: Bad zip file") {
+				if numwords > 6 {
 					if strings.HasPrefix(
+						words[7],
 						cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+
-							cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.SaveFilePath, words[3]) &&
-						(strings.HasSuffix(words[3], ".zip") || strings.HasSuffix(words[3], ".tmp.zip")) {
-						os.Remove(words[3])
+							cfg.Local.ServerCallsign) &&
+						(strings.HasSuffix(words[7], ".zip") || strings.HasSuffix(words[7], ".tmp.zip")) {
+						err := os.Remove(words[7])
+						if err != nil {
+							cwlog.DoLogCW("Unable to remove bad zip file: " + words[7])
+							fact.SetAutoStart(false)
+						} else {
+							cwlog.DoLogCW("Removed bad zip file: " + words[7])
+						}
 						return true
 					}
 				}
