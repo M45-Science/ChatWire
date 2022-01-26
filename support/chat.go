@@ -103,10 +103,13 @@ func Chat() {
 				time.Sleep(time.Millisecond * 100)
 				for reader.Scan() {
 					line := reader.Text()
+					//Remove return/newline
 					line = strings.TrimSuffix(line, "\r")
 					line = strings.TrimSuffix(line, "\n")
+
+					//Reject short lines
 					ll := len(line)
-					if ll <= 1 {
+					if ll <= 0 {
 						continue
 					}
 					//Server is alive
@@ -127,21 +130,21 @@ func Chat() {
 					}
 
 					//Separate args -- for use with script output
-					linelist := strings.Split(line, " ")
-					linelistlen := len(linelist)
+					lineList := strings.Split(line, " ")
+					lineListlen := len(lineList)
 
 					//Separate args, notc -- for use with factorio subsystem output
-					notclist := strings.Split(NoTC, " ")
-					notclistlen := len(notclist)
+					NoTClist := strings.Split(NoTC, " ")
+					NoTClistlen := len(NoTClist)
 
 					//Separate args, nods -- for use with normal factorio log output
-					nodslist := strings.Split(NoDS, " ")
-					nodslistlen := len(nodslist)
+					NoDSlist := strings.Split(NoDS, " ")
+					NoDSlistlen := len(NoDSlist)
 
 					//Lowercase converted
-					lowerline := strings.ToLower(line)
-					lowerlist := strings.Split(lowerline, " ")
-					lowerlistlen := len(lowerlist)
+					lowerCaseLine := strings.ToLower(line)
+					lowerCaseList := strings.Split(lowerCaseLine, " ")
+					lowerCaseListlen := len(lowerCaseList)
 
 					//Decrement every time we see activity, if we see time not progressing, add two
 					fact.PausedTicksLock.Lock()
@@ -161,35 +164,35 @@ func Chat() {
 						//*****************
 						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
-							handleGameTime(lowerline, lowerlist, lowerlistlen)
+							handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 
-							if handleUserReport(line, linelist, lowerlistlen) {
+							if handleUserReport(line, lineList, lowerCaseListlen) {
 								continue
 							}
 
-							if handleUserRegister(line, linelist, linelistlen) {
+							if handleUserRegister(line, lineList, lineListlen) {
 								continue
 							}
 
-							if handleOnlinePlayers(line, linelist, linelistlen) {
+							if handleOnlinePlayers(line, lineList, lineListlen) {
 								continue
 							}
 
-							if handlePlayerJoin(NoDS, nodslist, nodslistlen) {
+							if handlePlayerJoin(NoDS, NoDSlist, NoDSlistlen) {
 								continue
 							}
 
-							if handlePlayerLeave(NoDS, line, nodslist, lowerlistlen) {
+							if handlePlayerLeave(NoDS, line, NoDSlist, lowerCaseListlen) {
 								continue
 							}
 
-							if handleSoftModMsg(line, linelist, linelistlen) {
+							if handleSoftModMsg(line, lineList, lineListlen) {
 								continue
 							}
 
 							handleSlowConnect(NoTC, line)
 
-							if handleMapLoad(NoTC, nodslist, notclist, notclistlen) {
+							if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
 								continue
 							}
 
@@ -197,11 +200,11 @@ func Chat() {
 								continue
 							}
 
-							if handleBan(NoDS, nodslist, nodslistlen) {
+							if handleBan(NoDS, NoDSlist, NoDSlistlen) {
 								continue
 							}
 
-							if handleUnBan(NoDS, nodslist, nodslistlen) {
+							if handleUnBan(NoDS, NoDSlist, NoDSlistlen) {
 								continue
 							}
 
@@ -217,13 +220,13 @@ func Chat() {
 
 							handleIncomingAnnounce(NoTC, words, numwords)
 
-							handleFactVersion(NoTC, line, notclist, notclistlen)
+							handleFactVersion(NoTC, line, NoTClist, NoTClistlen)
 
 							if handleSaveMsg(NoTC) {
 								continue
 							}
 
-							if handleExitSave(NoTC, notclist, notclistlen) {
+							if handleExitSave(NoTC, NoTClist, NoTClistlen) {
 								continue
 							}
 
@@ -235,7 +238,7 @@ func Chat() {
 								continue
 							}
 
-							if handleChatMsg(NoDS, line, nodslist, nodslistlen) {
+							if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
 								continue
 							}
 
@@ -258,11 +261,11 @@ func Chat() {
 	}()
 }
 
-func handleGameTime(lowerline string, lowerlist []string, lowerlistlen int) {
+func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
 	//*****************
 	//GET FACTORIO TIME
 	//*****************
-	if strings.Contains(lowerline, " second") || strings.Contains(lowerline, " minute") || strings.Contains(lowerline, " hour") || strings.Contains(lowerline, " day") {
+	if strings.Contains(lowerCaseLine, " second") || strings.Contains(lowerCaseLine, " minute") || strings.Contains(lowerCaseLine, " hour") || strings.Contains(lowerCaseLine, " day") {
 
 		day := 0
 		hour := 0
@@ -271,17 +274,17 @@ func handleGameTime(lowerline string, lowerlist []string, lowerlistlen int) {
 
 		//TODO
 		//We should check, that at least one starts on 2nd word
-		if lowerlistlen > 1 {
+		if lowerCaseListlen > 1 {
 
-			for x := 0; x < lowerlistlen; x++ {
-				if strings.Contains(lowerlist[x], "day") {
-					day, _ = strconv.Atoi(lowerlist[x-1])
-				} else if strings.Contains(lowerlist[x], "hour") {
-					hour, _ = strconv.Atoi(lowerlist[x-1])
-				} else if strings.Contains(lowerlist[x], "minute") {
-					minute, _ = strconv.Atoi(lowerlist[x-1])
-				} else if strings.Contains(lowerlist[x], "second") {
-					second, _ = strconv.Atoi(lowerlist[x-1])
+			for x := 0; x < lowerCaseListlen; x++ {
+				if strings.Contains(lowerCaseList[x], "day") {
+					day, _ = strconv.Atoi(lowerCaseList[x-1])
+				} else if strings.Contains(lowerCaseList[x], "hour") {
+					hour, _ = strconv.Atoi(lowerCaseList[x-1])
+				} else if strings.Contains(lowerCaseList[x], "minute") {
+					minute, _ = strconv.Atoi(lowerCaseList[x-1])
+				} else if strings.Contains(lowerCaseList[x], "second") {
+					second, _ = strconv.Atoi(lowerCaseList[x-1])
 				}
 			}
 
@@ -322,7 +325,7 @@ func handleGameTime(lowerline string, lowerlist []string, lowerlistlen int) {
 				fact.PausedTicks = 0
 			}
 			fact.LastGametime = fact.Gametime
-			fact.GametimeString = lowerline
+			fact.GametimeString = lowerCaseLine
 			fact.Gametime = newtime
 
 			fact.PausedTicksLock.Unlock()
@@ -333,15 +336,15 @@ func handleGameTime(lowerline string, lowerlist []string, lowerlistlen int) {
 	}
 }
 
-func handleUserReport(line string, linelist []string, linelistlen int) bool {
+func handleUserReport(line string, lineList []string, lineListlen int) bool {
 	//*****************
 	//USER REPORT
 	//*****************
 	if strings.HasPrefix(line, "[REPORT]") {
 		botlog.DoLogGame(line)
-		if linelistlen >= 3 {
+		if lineListlen >= 3 {
 			buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
-				cfg.Local.ServerCallsign+"-"+cfg.Local.Name, linelist[1], strings.Join(linelist[2:], " "))
+				cfg.Local.ServerCallsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
 			fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
 		}
 		return true
@@ -350,18 +353,18 @@ func handleUserReport(line string, linelist []string, linelistlen int) bool {
 	return false
 }
 
-func handleUserRegister(line string, linelist []string, linelistlen int) bool {
+func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 	//*****************
 	//ACCESS
 	//*****************
 	if strings.HasPrefix(line, "[ACCESS]") {
-		if linelistlen == 4 {
+		if lineListlen == 4 {
 			//Format:
 			//print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter)
 
-			ptype := linelist[1]
-			pname := linelist[2]
-			code := linelist[3]
+			ptype := lineList[1]
+			pname := lineList[2]
+			code := lineList[3]
 
 			//Filter just in case, and so accidental spaces won't ruin passcodes
 			code = strings.ReplaceAll(code, " ", "")
@@ -460,14 +463,14 @@ func handleUserRegister(line string, linelist []string, linelistlen int) bool {
 	return false
 }
 
-func handleOnlinePlayers(line string, linelist []string, linelistlen int) bool {
+func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 	//***********************
 	//CAPTURE ONLINE PLAYERS
 	//***********************
 	if strings.HasPrefix(line, "Online players") {
 
-		if linelistlen > 2 {
-			poc := strings.Join(linelist[2:], " ")
+		if lineListlen > 2 {
+			poc := strings.Join(lineList[2:], " ")
 			poc = strings.ReplaceAll(poc, "(", "")
 			poc = strings.ReplaceAll(poc, ")", "")
 			poc = strings.ReplaceAll(poc, ":", "")
@@ -501,7 +504,7 @@ func handleOnlinePlayers(line string, linelist []string, linelistlen int) bool {
 	return false
 }
 
-func handlePlayerJoin(NoDS string, nodslist []string, nodslistlen int) bool {
+func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	//*****************
 	//JOIN AREA
 	//*****************
@@ -509,8 +512,8 @@ func handlePlayerJoin(NoDS string, nodslist []string, nodslistlen int) bool {
 		botlog.DoLogGame(NoDS)
 		fact.WriteFact("/p o c")
 
-		if nodslistlen > 1 {
-			pname := sclean.StripControlAndSubSpecial(nodslist[1])
+		if NoDSlistlen > 1 {
+			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
 			glob.NumLoginsLock.Lock()
 			glob.NumLogins = glob.NumLogins + 1
 			glob.NumLoginsLock.Unlock()
@@ -539,7 +542,7 @@ func handlePlayerJoin(NoDS string, nodslist []string, nodslistlen int) bool {
 	return false
 }
 
-func handlePlayerLeave(NoDS string, line string, nodslist []string, nodslistlen int) bool {
+func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen int) bool {
 	//*****************
 	//LEAVE
 	//*****************
@@ -547,8 +550,8 @@ func handlePlayerLeave(NoDS string, line string, nodslist []string, nodslistlen 
 		botlog.DoLogGame(line)
 		fact.WriteFact("/p o c")
 
-		if nodslistlen > 1 {
-			pname := nodslist[1]
+		if NoDSlistlen > 1 {
+			pname := NoDSlist[1]
 
 			go func(factname string) {
 				fact.UpdateSeen(factname)
@@ -559,15 +562,15 @@ func handlePlayerLeave(NoDS string, line string, nodslist []string, nodslistlen 
 	return false
 }
 
-func handleSoftModMsg(line string, linelist []string, linelistlen int) bool {
+func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 	//*****************
 	//MSG AREA
 	//*****************
 	if strings.HasPrefix(line, "[MSG]") {
 		botlog.DoLogGame(line)
 
-		if linelistlen > 0 {
-			ctext := strings.Join(linelist[1:], " ")
+		if lineListlen > 0 {
+			ctext := strings.Join(lineList[1:], " ")
 
 			//Clean strings
 			cmess := sclean.StripControlAndSubSpecial(ctext)
@@ -581,8 +584,8 @@ func handleSoftModMsg(line string, linelist []string, linelistlen int) bool {
 			fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` **%s**", fact.GetGameTime(), cmess))
 		}
 
-		if linelistlen > 1 {
-			trustname := linelist[1]
+		if lineListlen > 1 {
+			trustname := lineList[1]
 
 			if trustname != "" {
 
@@ -599,7 +602,7 @@ func handleSoftModMsg(line string, linelist []string, linelistlen int) bool {
 					fact.AutoPromote(trustname)
 					return true
 				} else if strings.Contains(line, " to the map!") && strings.Contains(line, "Welcome ") {
-					btrustname := linelist[2]
+					btrustname := lineList[2]
 					fact.AutoPromote(btrustname)
 					return true
 				} else if strings.Contains(line, " has nil permissions.") {
@@ -612,48 +615,6 @@ func handleSoftModMsg(line string, linelist []string, linelistlen int) bool {
 	}
 	return false
 
-}
-
-func handleBan(NoDS string, nodslist []string, nodslistlen int) bool {
-	//*****************
-	//BAN
-	//*****************
-	if strings.HasPrefix(NoDS, "[BAN]") {
-		botlog.DoLogGame(NoDS)
-
-		if nodslistlen > 1 {
-			trustname := nodslist[1]
-
-			if strings.Contains(NoDS, "was banned by") {
-				fact.PlayerLevelSet(trustname, -1, false)
-			}
-
-			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
-		}
-		return true
-	}
-	return false
-}
-
-func handleUnBan(NoDS string, nodslist []string, nodslistlen int) bool {
-	//*****************
-	//UNBAN
-	//*****************
-	if strings.HasPrefix(NoDS, "[UNBANNED]") {
-		botlog.DoLogGame(NoDS)
-
-		if nodslistlen > 1 {
-			trustname := nodslist[1]
-
-			if strings.Contains(NoDS, "was unbanned by") {
-				fact.PlayerLevelSet(trustname, 0, false)
-			}
-
-			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(nodslist[1:], " ")))
-		}
-		return true
-	}
-	return false
 }
 
 func handleSlowConnect(NoTC string, line string) {
@@ -705,7 +666,7 @@ func handleSlowConnect(NoTC string, line string) {
 	}
 }
 
-func handleMapLoad(NoTC string, nodslist []string, notclist []string, notclistlen int) bool {
+func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistlen int) bool {
 	//*****************
 	//MAP LOAD
 	//*****************
@@ -713,9 +674,9 @@ func handleMapLoad(NoTC string, nodslist []string, notclist []string, notclistle
 		botlog.DoLogGame(NoTC)
 
 		//Strip file path
-		if notclistlen > 3 {
-			fullpath := notclist[2]
-			size := notclist[3]
+		if NoTClistlen > 3 {
+			fullpath := NoTClist[2]
+			size := NoTClist[3]
 			sizei, _ := strconv.Atoi(size)
 			fullpath = strings.Replace(fullpath, ":", "", -1)
 
@@ -756,6 +717,48 @@ func handleModLoad(NoTC string) bool {
 			modName = strings.TrimSuffix(modName, " (data.lua)")
 			modName = strings.ReplaceAll(modName, " ", "-")
 			fact.AddModLoadString(modName)
+		}
+		return true
+	}
+	return false
+}
+
+func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
+	//*****************
+	//BAN
+	//*****************
+	if strings.HasPrefix(NoDS, "[BAN]") {
+		botlog.DoLogGame(NoDS)
+
+		if NoDSlistlen > 1 {
+			trustname := NoDSlist[1]
+
+			if strings.Contains(NoDS, "was banned by") {
+				fact.PlayerLevelSet(trustname, -1, false)
+			}
+
+			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
+		}
+		return true
+	}
+	return false
+}
+
+func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
+	//*****************
+	//UNBAN
+	//*****************
+	if strings.HasPrefix(NoDS, "[UNBANNED]") {
+		botlog.DoLogGame(NoDS)
+
+		if NoDSlistlen > 1 {
+			trustname := NoDSlist[1]
+
+			if strings.Contains(NoDS, "was unbanned by") {
+				fact.PlayerLevelSet(trustname, 0, false)
+			}
+
+			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
 		}
 		return true
 	}
@@ -876,21 +879,21 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) {
 			fact.LastLockerName = pName
 			fact.LockerLock.Unlock()
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.GetGameTime(), pName)
-			fmsg := fmt.Sprintf("`%v` is connecting.", pName)
+			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.WriteFact("/cchat " + fmsg)
 			fact.CMS(cfg.Local.ChannelData.ChatID, dmsg)
 		}
 	}
 }
 
-func handleFactVersion(NoTC string, line string, notclist []string, notclistlen int) {
+func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen int) {
 	//*********************
 	//GET FACTORIO VERSION
 	//*********************
 	if strings.HasPrefix(NoTC, "Loading mod base") {
 		botlog.DoLogGame(line)
-		if notclistlen > 3 {
-			fact.FactorioVersion = notclist[3]
+		if NoTClistlen > 3 {
+			fact.FactorioVersion = NoTClist[3]
 		}
 	}
 
@@ -917,7 +920,7 @@ func handleSaveMsg(NoTC string) bool {
 	return false
 }
 
-func handleExitSave(NoTC string, notclist []string, notclistlen int) bool {
+func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 	//**************************
 	//CAPTURE MAP NAME, ON EXIT
 	//**************************
@@ -925,8 +928,8 @@ func handleExitSave(NoTC string, notclist []string, notclistlen int) bool {
 		botlog.DoLogGame(NoTC)
 
 		//Strip file path
-		if notclistlen > 5 {
-			fullpath := notclist[5]
+		if NoTClistlen > 5 {
+			fullpath := NoTClist[5]
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 			filename := regaa.ReplaceAllString(fullpath, "")
 			filename = strings.Replace(filename, ":", "", -1)
@@ -1050,20 +1053,20 @@ func handleCrashes(NoTC string, line string) bool {
 	return false
 }
 
-func handleChatMsg(NoDS string, line string, nodslist []string, nodslistlen int) bool {
+func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int) bool {
 	//***********************
 	//FACTORIO CHAT MESSAGES
 	//***********************
 	if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
 		botlog.DoLogGame(line)
 
-		if nodslistlen > 1 {
-			nodslist[1] = strings.Replace(nodslist[1], ":", "", -1)
-			pname := nodslist[1]
+		if NoDSlistlen > 1 {
+			NoDSlist[1] = strings.Replace(NoDSlist[1], ":", "", -1)
+			pname := NoDSlist[1]
 
 			if pname != "<server>" {
 
-				cmess := strings.Join(nodslist[2:], " ")
+				cmess := strings.Join(NoDSlist[2:], " ")
 				cmess = sclean.StripControlAndSubSpecial(cmess)
 				cmess = sclean.EscapeDiscordMarkdown(cmess)
 				cmess = sclean.RemoveFactorioTags(cmess)
