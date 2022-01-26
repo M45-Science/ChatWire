@@ -27,7 +27,7 @@ func DoExit(delay bool) {
 	/* This kills all loops! */
 	glob.ServerRunning = false
 
-	cwlog.DoLogCW("Bot closing, load/save db, and waiting for locks...")
+	cwlog.DoLogCW("CW closing, load/save db, and waiting for locks...")
 	LoadPlayers()
 	WritePlayers()
 
@@ -39,7 +39,7 @@ func DoExit(delay bool) {
 
 	cwlog.DoLogCW("Closing log files.")
 	glob.GameLogDesc.Close()
-	glob.BotLogDesc.Close()
+	glob.CWLogDesc.Close()
 
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */

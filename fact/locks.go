@@ -172,18 +172,18 @@ func GetNoResposeCount() int {
 	return temp
 }
 
-func IsSetRebootBot() bool {
-	glob.DoRebootBotLock.RLock()
-	temp := glob.DoRebootBot
-	glob.DoRebootBotLock.RUnlock()
+func IsSetRebootCW() bool {
+	glob.DoRebootCWLock.RLock()
+	temp := glob.DoRebootCW
+	glob.DoRebootCWLock.RUnlock()
 
 	return temp
 }
 
-func SetBotReboot(should bool) {
-	glob.DoRebootBotLock.Lock()
-	glob.DoRebootBot = should
-	glob.DoRebootBotLock.Unlock()
+func SetCWReboot(should bool) {
+	glob.DoRebootCWLock.Lock()
+	glob.DoRebootCW = should
+	glob.DoRebootCWLock.Unlock()
 }
 
 func IsQueued() bool {

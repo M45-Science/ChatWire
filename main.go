@@ -62,7 +62,7 @@ func main() {
 	}
 
 	/* Start logs */
-	cwlog.StartBotLog()
+	cwlog.StartCWLog()
 	cwlog.StartGameLog()
 	cwlog.DoLogCW("Version: " + constants.Version)
 

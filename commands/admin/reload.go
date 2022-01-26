@@ -11,7 +11,7 @@ func Reload(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.CMS(m.ChannelID, "Now reloading!")
 
-	fact.SetBotReboot(true)
+	fact.SetCWReboot(true)
 	fact.SetRelaunchThrottle(0)
 	fact.QuitFactorio()
 }

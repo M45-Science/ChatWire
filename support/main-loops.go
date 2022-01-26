@@ -43,7 +43,7 @@ func MainLoops() {
 				time.Sleep(constants.WatchdogInterval)
 
 				/* Check for updates */
-				if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootBot() || fact.GetDoUpdateFactorio()) {
+				if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootCW() || fact.GetDoUpdateFactorio()) {
 					if fact.GetDoUpdateFactorio() {
 						fact.FactUpdate()
 					}
@@ -770,12 +770,12 @@ func MainLoops() {
 				time.Sleep(time.Second * 15)
 
 				var err error
-				if _, err = os.Stat(glob.BotLogName); err != nil {
+				if _, err = os.Stat(glob.CWLogName); err != nil {
 
-					glob.BotLogDesc.Close()
-					glob.BotLogDesc = nil
-					cwlog.StartBotLog()
-					cwlog.DoLogCW("BotLog file was deleted, recreated.")
+					glob.CWLogDesc.Close()
+					glob.CWLogDesc = nil
+					cwlog.StartCWLog()
+					cwlog.DoLogCW("CWLog file was deleted, recreated.")
 				}
 
 				if _, err = os.Stat(glob.GameLogName); err != nil {
@@ -845,7 +845,7 @@ func MainLoops() {
 	<-sc
 	_ = os.Remove("cw.lock")
 	fact.SetAutoStart(false)
-	fact.SetBotReboot(false)
+	fact.SetCWReboot(false)
 	fact.SetQueued(false)
 	fact.QuitFactorio()
 	for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {

@@ -66,13 +66,13 @@ var (
 
 	/* Log data */
 	GameLogName = ""
-	BotLogName  = ""
+	CWLogName   = ""
 	GameLogDesc *os.File
-	BotLogDesc  *os.File
+	CWLogDesc   *os.File
 
-	/* Bot-reboot */
-	DoRebootBot     = false
-	DoRebootBotLock sync.RWMutex
+	/* CW reboot */
+	DoRebootCW     = false
+	DoRebootCWLock sync.RWMutex
 
 	/* Increasing relaunch delay */
 	RelaunchThrottle     = 0

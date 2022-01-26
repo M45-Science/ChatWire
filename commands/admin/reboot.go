@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-/* Reboots whole bot */
+/* Reboots cw */
 func Reboot(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	fact.CMS(m.ChannelID, "Now rebooting!")
