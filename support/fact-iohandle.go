@@ -784,7 +784,8 @@ func handleCrashes(NoTC string, line string) bool {
 				words := strings.Split(NoTC, " ")
 				if len(words) > 3 {
 					if strings.HasPrefix(
-						cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.SaveFilePath, words[3]) &&
+						cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+
+							cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.SaveFilePath, words[3]) &&
 						(strings.HasSuffix(words[3], ".zip") || strings.HasSuffix(words[3], ".tmp.zip")) {
 						os.Remove(words[3])
 						return true
