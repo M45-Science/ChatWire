@@ -315,7 +315,7 @@ func MainLoops() {
 				glob.PasswordListLock.Lock()
 				for _, pass := range glob.PassList {
 					if (t.Unix() - pass.Time) > 300 {
-						cwlog.DoLogCW("Invalidating old unused access code for user: " + disc.GetNameFromID(pass.DiscID, false))
+						cwlog.DoLogCW("Invalidating old unused access code for player: " + disc.GetNameFromID(pass.DiscID, false))
 						delete(glob.PassList, pass.DiscID)
 					}
 				}
@@ -619,7 +619,7 @@ func MainLoops() {
 
 							numwarn := fact.GetUpdateWarnCounter()
 
-							/* Warn users */
+							/* Warn players */
 							if numwarn < glob.UpdateGraceMinutes {
 								msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
@@ -788,7 +788,7 @@ func MainLoops() {
 		}()
 
 		/****************************
-		* Check for factorio updates
+		* Check for Factorio updates
 		****************************/
 		go func() {
 			for glob.ServerRunning {

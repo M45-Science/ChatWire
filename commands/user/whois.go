@@ -31,8 +31,8 @@ func (a ByNew) Len() int           { return len(a) }
 func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
-/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
-func checkadmin(m *discordgo.MessageCreate) bool {
+/* Check if Discord moderator */
+func checkModerator(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.ModeratorRoleID {
 			return true
@@ -47,7 +47,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	layoutUS := "01-02-06 3:04 PM"
 
 	maxresults := constants.WhoisResults
-	if checkadmin(m) {
+	if checkModerator(m) {
 		maxresults = constants.AdminWhoisResults
 	}
 	var slist []glob.PlayerData
@@ -65,7 +65,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	if argnum < 1 {
 		fact.CMS(m.ChannelID, "**Arguments:** <option>\n\n```options:\nrecent (recently online)\nnew (by time joined)\nregistered (recently registered)\n<factorio/discord name search>```")
 		return
-		/* SHOW RECENTLY SEEN USERS */
+		/* SHOW RECENTLY SEEN PLAYERS */
 	} else if strings.ToLower(args[0]) == "recent" {
 		buf = "Recently online:\n"
 

@@ -95,7 +95,7 @@ func WriteWhitelist() int {
 	return 0
 }
 
-/* Quit factorio */
+/* Quit Factorio */
 func QuitFactorio() {
 
 	SetRelaunchThrottle(0)
@@ -143,10 +143,10 @@ func WriteFact(input string) {
 		plen := len(buf)
 
 		if plen > 2000 {
-			cwlog.DoLogCW("Message to factorio, too long... Not sending.")
+			cwlog.DoLogCW("Message to Factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
-			cwlog.DoLogCW("Message for factorio too short... Not sending.")
+			cwlog.DoLogCW("Message for Factorio too short... Not sending.")
 			return
 		}
 
@@ -187,27 +187,27 @@ func LevelToString(level int) string {
 
 /* Promote a player to the level they have, in Factorio and on Discord */
 func AutoPromote(pname string) string {
-	newusername := " *(New Player)* "
+	playerName := " *(New Player)* "
 
 	if pname != "" {
 		plevel := PlayerLevelGet(pname, false)
 		if plevel <= -254 {
-			newusername = " **(Deleted Player)** "
+			playerName = " **(Deleted Player)** "
 
 		} else if plevel == -1 {
-			newusername = " **(Banned)**"
+			playerName = " **(Banned)**"
 			WriteFact(fmt.Sprintf("/ban %s (previously banned)", pname))
 
 		} else if plevel == 1 {
-			newusername = " *(Member)*"
+			playerName = " *(Member)*"
 			WriteFact(fmt.Sprintf("/member %s", pname))
 
 		} else if plevel == 2 {
-			newusername = " *(Regular)*"
+			playerName = " *(Regular)*"
 
 			WriteFact(fmt.Sprintf("/regular %s", pname))
 		} else if plevel == 255 {
-			newusername = " *(Moderator)*"
+			playerName = " *(Moderator)*"
 
 			WriteFact(fmt.Sprintf("/promote %s", pname))
 		}
@@ -247,7 +247,7 @@ func AutoPromote(pname string) string {
 		}
 	}
 
-	return newusername
+	return playerName
 
 }
 

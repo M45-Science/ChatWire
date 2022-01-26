@@ -27,7 +27,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	vlen := len(version)
 
 	if vlen < 3 {
-		cwlog.DoLogCW("Unable to determine factorio version.")
+		cwlog.DoLogCW("Unable to determine Factorio version.")
 		return
 	}
 

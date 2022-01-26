@@ -88,7 +88,7 @@ type LFactDataStruct struct {
  * boh = based on home
  * ap = absolute path */
 type PathDataStruct struct {
-	FactorioServersRoot string /* root of factorio server */
+	FactorioServersRoot string /* root of Factorio server */
 	FactorioHomePrefix  string /* per-server */
 	ChatWireHomePrefix  string /* per-server */
 	FactorioBinary      string

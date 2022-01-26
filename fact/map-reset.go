@@ -50,8 +50,8 @@ func Map_reset(data string) {
 	GameMapLock.Lock()
 	defer GameMapLock.Unlock()
 
-	/* If factorio is running, and there is a argument... echo it
-	 * Otherwise, stop factorio and generate a new map */
+	/* If Factorio is running, and there is a argument... echo it
+	 * Otherwise, stop Factorio and generate a new map */
 	if IsFactRunning() {
 		if data != "" {
 			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(data))
@@ -72,15 +72,15 @@ func Map_reset(data string) {
 		time.Sleep(time.Second)
 	}
 
-	/* Get factorio version, for archive folder name */
+	/* Get Factorio version, for archive folder name */
 	version := strings.Split(FactorioVersion, ".")
 	vlen := len(version)
 	if vlen < 3 {
-		cwlog.DoLogCW("Unable to determine factorio version.")
+		cwlog.DoLogCW("Unable to determine Factorio version.")
 		return
 	}
 
-	/* Only proceed if we were running a map, and we know our factorio version. */
+	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
 		shortversion := strings.Join(version[0:2], ".")
 

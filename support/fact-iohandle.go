@@ -91,14 +91,14 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 	}
 }
 
-func handleUserReport(line string, lineList []string, lineListlen int) bool {
+func handlePlayerReport(line string, lineList []string, lineListlen int) bool {
 	/******************
-	 * USER REPORT
+	 * Player REPORT
 	 ******************/
 	if strings.HasPrefix(line, "[REPORT]") {
 		cwlog.DoLogGame(line)
 		if lineListlen >= 3 {
-			buf := fmt.Sprintf("**USER REPORT:**\nServer: %v, User: %v: Report:\n %v",
+			buf := fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v",
 				cfg.Local.ServerCallsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
 			fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
 		}
@@ -108,7 +108,7 @@ func handleUserReport(line string, lineList []string, lineListlen int) bool {
 	return false
 }
 
-func handleUserRegister(line string, lineList []string, lineListlen int) bool {
+func handlePlayerRegister(line string, lineList []string, lineListlen int) bool {
 	/******************
 	 * ACCESS
 	 ******************/
@@ -160,13 +160,13 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 						codegood = true
 						/* Do not break, process */
 					} else if discid != "" {
-						cwlog.DoLogCW(fmt.Sprintf("Factorio user '%s' tried to connect a Discord user, that is already connected to a different Factorio user.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user.", pname))
+						cwlog.DoLogCW(fmt.Sprintf("Factorio player '%s' tried to connect a Discord account, that is already connected to a different Factorio account.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That Discord name is already connected to a different Factorio account.", pname))
 						codegood = false
 						continue
 					} else if factname != "" {
-						cwlog.DoLogCW(fmt.Sprintf("Factorio user '%s' tried to connect their Factorio user, that is already connected to a different Discord user.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user.", pname))
+						cwlog.DoLogCW(fmt.Sprintf("Factorio player '%s' tried to connect their Factorio account, that is already connected to a different Discord account.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account is already connected to a different Discord account.", pname))
 						codegood = false
 						continue
 					}
@@ -205,7 +205,7 @@ func handleUserRegister(line string, lineList []string, lineListlen int) bool {
 			} /* End of loop */
 			glob.PasswordListLock.Unlock()
 			if !codefound {
-				cwlog.DoLogCW(fmt.Sprintf("Factorio user '%s', tried to use an invalid or expired code.", pname))
+				cwlog.DoLogCW(fmt.Sprintf("Factorio player '%s', tried to use an invalid or expired code.", pname))
 				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
 				return true
 			}
@@ -246,7 +246,7 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 				buf := fmt.Sprintf("**New record!** Players online: %v", glob.RecordPlayers)
 				fact.CMS(cfg.Local.ChannelData.ChatID, buf)
 
-				/* write to factorio as well */
+				/* write to Factorio as well */
 				buf = fmt.Sprintf("New record! Players online: %v", glob.RecordPlayers)
 				fact.WriteFact("/cchat " + buf)
 
@@ -550,7 +550,7 @@ func handleFactReady(NoTC string) bool {
 
 		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
 
-		/* Config new-users restrictions */
+		/* Config new-player restrictions */
 		if cfg.Local.SoftModOptions.RestrictMode {
 			fact.WriteFact("/restrict on")
 		} else {
@@ -803,7 +803,7 @@ func handleCrashes(NoTC string, line string) bool {
 				return true
 			}
 			if strings.Contains(NoTC, "Failed to reach auth server.") {
-				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com. Server will not show up in factorio server list, reboot to re-attempt.")
+				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to connect to auth.factorio.com. Server will not show up in Factorio server list, reboot to re-attempt.")
 				return true
 			}
 		}
@@ -871,7 +871,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				dnamereduced := filter.ReplaceAllString(dnamelower, "")
 				fnamereduced := filter.ReplaceAllString(fnamelower, "")
 
-				/* If we find discord name, and discord name and factorio name don't contain the same name */
+				/* If we find Discord name, and Discord name and Factorio name don't contain the same name */
 				if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
 					/* Slap data into embed format. */
 					myembed := embed.NewEmbed().

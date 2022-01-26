@@ -112,7 +112,7 @@ func launchFactortio() {
 		}
 	}
 
-	/* Launch factorio */
+	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 
 	LinuxSetProcessGroup(cmd)
@@ -149,7 +149,7 @@ func launchFactortio() {
 		return
 	}
 
-	/* Okay, factorio is running now, prep */
+	/* Okay, Factorio is running now, prep */
 	fact.SetModLoadString(constants.Unknown)
 	fact.SetFactRunning(true, false)
 	fact.SetFactorioBooted(false)

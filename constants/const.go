@@ -34,7 +34,7 @@ const (
 	WhoisResults      = 20
 	AdminWhoisResults = 40
 
-	/* Maximum time to wait for factorio update download */
+	/* Maximum time to wait for Factorio update download */
 	FactorioUpdateCheckLimit = 15 * time.Minute
 
 	/* Maximum time before giving up on patching */

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-/*  IsPatreon checks if user has patreon role */
+/*  IsPatreon checks if player has patreon role */
 func IsPatreon(id string) bool {
 	if id == "" || disc.DS == nil {
 		return false
@@ -29,7 +29,7 @@ func IsPatreon(id string) bool {
 	return false
 }
 
-/*  IsNitro checks if user has nitro role */
+/*  IsNitro checks if player has nitro role */
 func IsNitro(id string) bool {
 	if id == "" || disc.DS == nil {
 		return false

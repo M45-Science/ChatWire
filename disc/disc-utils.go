@@ -12,7 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
+/*  Check if Discord moderator */
 func CheckModerator(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.ModeratorRoleID {
@@ -22,7 +22,7 @@ func CheckModerator(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
+/* Check if Discord regular */
 func CheckRegular(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.RegularRoleID {
@@ -32,7 +32,7 @@ func CheckRegular(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
+/* Check if Discord member */
 func CheckMember(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.MemberRoleID {
@@ -42,7 +42,7 @@ func CheckMember(m *discordgo.MessageCreate) bool {
 	return false
 }
 
-/*  CheckAdmin checks if the user attempting to run an admin command is an admin */
+/* Check if Discord 'new' */
 func CheckNew(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
 		if role == cfg.Global.RoleData.NewRoleID {
@@ -115,7 +115,7 @@ func SmartChannelCreate(id string) *discordgo.Channel {
 	return nil
 }
 
-/* Give a user a role */
+/* Give a player a role */
 func SmartRoleAdd(gid string, uid string, rid string) error {
 
 	if DS != nil {

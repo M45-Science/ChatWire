@@ -16,7 +16,7 @@ var RoleListLock sync.Mutex
 var RoleList RoleListData
 var RoleListUpdated bool
 
-/* Cache a list of users with specific Discord roles */
+/* Cache a list of players with specific Discord roles */
 func WriteRoleList() bool {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()
@@ -64,7 +64,7 @@ func CreateRoleList() RoleListData {
 	return newcfg
 }
 
-/* Read in cached list of Discord users with specific roles */
+/* Read in cached list of Discord players with specific roles */
 func ReadRoleList() bool {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()
@@ -106,7 +106,7 @@ func ReadRoleList() bool {
 	}
 }
 
-/* Check with Discord, get updated list of users */
+/* Check with Discord, get updated list of players */
 func UpdateRoleList() {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()

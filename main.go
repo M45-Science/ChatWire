@@ -75,7 +75,7 @@ func main() {
 		fact.SetAutoStart(true)
 	}
 
-	/* Start discord bot, don't wait for it.
+	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
 	go startbot()
 	/* Loop to read Factorio stdout, runs in a goroutine */
@@ -169,7 +169,7 @@ func startbot() {
 	}
 
 	if bot != nil && erra == nil && errb == nil {
-		/* Save discord descriptor here */
+		/* Save Discord descriptor here */
 		disc.DS = bot
 	}
 
@@ -277,12 +277,12 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				cordname = sclean.TruncateString(cordname, 64)
 				factuser = sclean.TruncateString(factuser, 64)
 
-				/* Check if discord name contains factorio name, if not lets show both their names */
+				/* Check if Discord name contains Factorio name, if not lets show both their names */
 				if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
 
-					nbuf = fmt.Sprintf("/cchat [color=0,1,1][DISCORD][/color] [color=1,1,0]@%s[/color] [color=0,0.5,0](%s):[/color] %s%s[/color]", cordname, factuser, fact.RandomColor(false), cmess)
+					nbuf = fmt.Sprintf("/cchat [color=0,1,1][Discord][/color] [color=1,1,0]@%s[/color] [color=0,0.5,0](%s):[/color] %s%s[/color]", cordname, factuser, fact.RandomColor(false), cmess)
 				} else {
-					nbuf = fmt.Sprintf("/cchat [color=0,1,1][DISCORD][/color] [color=1,1,0]@%s:[/color] %s%s[/color]", cordname, fact.RandomColor(false), cmess)
+					nbuf = fmt.Sprintf("/cchat [color=0,1,1][Discord][/color] [color=1,1,0]@%s:[/color] %s%s[/color]", cordname, fact.RandomColor(false), cmess)
 				}
 
 				fact.WriteFact(nbuf)

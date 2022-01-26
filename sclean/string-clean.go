@@ -140,12 +140,12 @@ func EscapeDiscordMarkdown(input string) string {
 }
 
 func RemoveDiscordMarkdown(input string) string {
-	/* Remove discord markdown */
+	/* Remove Discord markdown */
 	regf := regexp.MustCompile(`\*+`)
 	regg := regexp.MustCompile(`\~+`)
 	regh := regexp.MustCompile(`\_+`)
 	for regf.MatchString(input) || regg.MatchString(input) || regh.MatchString(input) {
-		/* Filter discord tags */
+		/* Filter Discord tags */
 		input = regf.ReplaceAllString(input, "")
 		input = regg.ReplaceAllString(input, "")
 		input = regh.ReplaceAllString(input, "")
@@ -158,7 +158,7 @@ func RemoveDiscordMarkdown(input string) string {
 func RemoveFactorioTags(input string) string {
 	/* input = unidecode.Unidecode(input) */
 
-	/* Remove factorio tags */
+	/* Remove Factorio tags */
 	/* remove close tags [/color] */
 	rega := regexp.MustCompile(`\[/[^][]+\]`)
 	/* remove [color=*] */

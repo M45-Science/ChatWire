@@ -115,7 +115,7 @@ func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, a
 	fact.CMS(m.ChannelID, "Invalid command, try "+cfg.Global.DiscordCommandPrefix+"help")
 }
 
-/* Display help, based on user level */
+/* Display help, based on player level */
 func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	buf := ""

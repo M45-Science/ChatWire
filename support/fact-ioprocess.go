@@ -50,11 +50,11 @@ func Chat() {
 					lineList := strings.Split(line, " ")
 					lineListlen := len(lineList)
 
-					/* Separate args, notc -- for use with factorio subsystem output */
+					/* Separate args, notc -- for use with Factorio subsystem output */
 					NoTClist := strings.Split(NoTC, " ")
 					NoTClistlen := len(NoTClist)
 
-					/* Separate args, nods -- for use with normal factorio log output */
+					/* Separate args, nods -- for use with normal Factorio log output */
 					NoDSlist := strings.Split(NoDS, " ")
 					NoDSlistlen := len(NoDSlist)
 
@@ -84,11 +84,11 @@ func Chat() {
 							/* Don't eat event, this is capable of eating random text */
 							handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 
-							if handleUserReport(line, lineList, lowerCaseListlen) {
+							if handlePlayerReport(line, lineList, lowerCaseListlen) {
 								continue
 							}
 
-							if handleUserRegister(line, lineList, lineListlen) {
+							if handlePlayerRegister(line, lineList, lineListlen) {
 								continue
 							}
 
