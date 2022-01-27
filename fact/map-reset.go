@@ -184,6 +184,7 @@ func Map_reset(data string) {
 	}
 	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
 
+	/* Mods queue folder */
 	qPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
 		constants.ModsQueueFolder + "/"
 	modPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
@@ -202,6 +203,13 @@ func Map_reset(data string) {
 		}
 	} else {
 		for _, f := range files {
+			if f.Name() == "mod-settings.dat" {
+				err := os.Rename(qPath+f.Name(), modPath+f.Name())
+				if err != nil {
+					cwlog.DoLogCW(err.Error())
+				}
+			}
+
 			if strings.HasSuffix(f.Name(), ".zip") {
 
 				/* Delete mods queued up to be deleted */
