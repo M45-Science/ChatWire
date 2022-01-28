@@ -179,10 +179,11 @@ func Chat() {
 						 * END FILTERED
 						 ******************/
 
+						/* Escaped */
+					} else {
 						if handleOnlineMsg(line) {
 							continue
 						}
-
 					}
 				}
 			}
