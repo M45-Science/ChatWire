@@ -167,11 +167,11 @@ func Chat() {
 								continue
 							}
 
-							if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
+							if handleCmdMsg(line) {
 								continue
 							}
-
-							if handleCmdMsg(line) {
+						} else {
+							if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
 								continue
 							}
 						}
