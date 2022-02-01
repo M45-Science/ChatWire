@@ -837,10 +837,11 @@ func MainLoops() {
 		/* Check for mod update     */
 		/****************************/
 		go func() {
+			time.Sleep(time.Minute)
 			for glob.ServerRunning {
-				time.Sleep(time.Hour)
-
 				modupdate.CheckMods()
+
+				time.Sleep(time.Hour)
 			}
 		}()
 	}()
