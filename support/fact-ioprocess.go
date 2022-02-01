@@ -17,7 +17,7 @@ func Chat() {
 		for glob.ServerRunning {
 			if fact.GameBuffer != nil {
 				reader := bufio.NewScanner(fact.GameBuffer)
-				time.Sleep(time.Millisecond * 1)
+				time.Sleep(time.Millisecond * 10)
 				for reader.Scan() {
 					line := reader.Text()
 					/* Remove return/newline */
