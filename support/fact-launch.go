@@ -5,7 +5,6 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/fact"
-	"ChatWire/modupdate"
 	"bytes"
 	"fmt"
 	"io"
@@ -96,8 +95,6 @@ func launchFactortio() {
 	if count > 0 && cfg.Local.DoWhitelist {
 		cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
 	}
-
-	modupdate.UpdateMods()
 
 	/* Run Factorio */
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)

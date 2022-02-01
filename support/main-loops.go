@@ -16,6 +16,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -829,6 +830,17 @@ func MainLoops() {
 					fact.ManMinutes = (fact.ManMinutes + nump)
 				}
 				fact.ManMinutesLock.Unlock()
+			}
+		}()
+
+		/****************************/
+		/* Check for mod update     */
+		/****************************/
+		go func() {
+			for glob.ServerRunning {
+				time.Sleep(time.Hour)
+
+				modupdate.CheckMods()
 			}
 		}()
 	}()

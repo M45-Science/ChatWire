@@ -6,13 +6,36 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"context"
+	"io/ioutil"
 	"os/exec"
 	"strings"
 )
 
+func CheckMods() {
+	/* Update mods if needed */
+	modPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
+		constants.ModsFolder + "/"
+	mCount := 0
+
+	files, err := ioutil.ReadDir(modPath)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), ".zip") {
+			mCount++
+		}
+	}
+
+	/* There are mods, so check for updates */
+	if mCount > 0 {
+		UpdateMods()
+	}
+}
+
 func UpdateMods() {
 
-	cwlog.DoLogCW("Updating mods...")
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ModUpdateLimit)
 	defer cancel()
 
@@ -59,7 +82,8 @@ func UpdateMods() {
 		}
 	}
 	if buf != "" {
-		fact.CMS(cfg.Local.ChannelData.ChatID, "Mods updated.")
+		fact.CMS(cfg.Local.ChannelData.ChatID, "Some Factorio mods were updated, and will take effect on the next reboot (when server is empty)")
+		fact.SetQueued(true)
 	}
 
 }
