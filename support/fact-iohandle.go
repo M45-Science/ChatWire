@@ -546,7 +546,6 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactorioBooted(true)
 		fact.SetFactRunning(true, false)
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+fact.FactorioVersion+" is now online.")
-		time.Sleep(time.Second)
 		fact.WriteFact("/p o c")
 
 		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))

@@ -110,7 +110,6 @@ func QuitFactorio() {
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting.[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting..[/color]", RandomColor(false)))
 		WriteFact(fmt.Sprintf("/cchat %sServer quitting...[/color]", RandomColor(false)))
-		time.Sleep(5 * time.Second)
 		WriteFact("/quit")
 	}
 }
@@ -456,7 +455,6 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				}
 
 				CMS(m.ChannelID, fmt.Sprintf("Loading autosave%v", num))
-				time.Sleep(time.Second * 1)
 				SetAutoStart(true)
 				return
 			}

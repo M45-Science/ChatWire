@@ -30,9 +30,6 @@ func LinuxSetProcessGroup(cmd *exec.Cmd) {
 
 func MainLoops() {
 
-	/* Wait to start loops... */
-	time.Sleep(time.Second)
-
 	go func() { /* nested for 'reasons' */
 
 		/***************
@@ -293,7 +290,7 @@ func MainLoops() {
 		 * Also helps detect servers crash/dead while paused */
 		go func() {
 			for glob.ServerRunning {
-				time.Sleep(5 * time.Minute)
+				time.Sleep(1 * time.Minute)
 
 				if fact.IsFactRunning() {
 					fact.WriteFact("/p o c")
@@ -307,7 +304,7 @@ func MainLoops() {
 		go func() {
 
 			for glob.ServerRunning {
-				time.Sleep(30 * time.Second)
+				time.Sleep(10 * time.Second)
 
 				t := time.Now()
 
@@ -392,7 +389,6 @@ func MainLoops() {
 					wasDirty = true
 					/* Prevent recursive lock */
 					go func() {
-						time.Sleep(3 * time.Second)
 						cwlog.DoLogCW("Database marked dirty, saving.")
 						fact.WritePlayers()
 					}()
@@ -467,7 +463,7 @@ func MainLoops() {
 		 ***************************/
 		go func() {
 			for glob.ServerRunning {
-				time.Sleep(5 * time.Second)
+				time.Sleep(1 * time.Second)
 
 				disc.GuildLock.Lock()
 
@@ -554,7 +550,7 @@ func MainLoops() {
 				}
 				disc.GuildLock.Unlock()
 
-				time.Sleep(time.Minute * 5)
+				time.Sleep(time.Second * 30)
 			}
 		}()
 
@@ -592,7 +588,7 @@ func MainLoops() {
 		go func() {
 
 			for glob.ServerRunning {
-				time.Sleep(1 * time.Second)
+				time.Sleep(2 * time.Second)
 
 				if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
 					if fact.IsFactRunning() {
@@ -654,7 +650,7 @@ func MainLoops() {
 			failureReported := false
 			for glob.ServerRunning {
 
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 
 				var err error
 				var errb error
@@ -791,7 +787,7 @@ func MainLoops() {
 		****************************/
 		go func() {
 			for glob.ServerRunning {
-				time.Sleep(60 * time.Minute)
+				time.Sleep(time.Hour)
 				fact.CheckFactUpdate(false)
 
 			}
@@ -812,7 +808,7 @@ func MainLoops() {
 
 				if oldchname != chname {
 					fact.DoUpdateChannelName()
-					time.Sleep(time.Minute * 1)
+					time.Sleep(time.Second * 30)
 				} else {
 
 					time.Sleep(5 * time.Second)

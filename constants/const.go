@@ -23,40 +23,40 @@ const (
 	RestartLimitSleepMinutes = 2  /* cw.lock is new, sleep this long then exit. */
 
 	/* Vote Rewind */
-	VotesNeededRewind     = 2  /* Number of votes needed to rewind */
-	RewindCooldownMinutes = 2  /* Cooldown between rewinds */
-	VoteLifetime          = 15 /* How long a vote lasts */
-	MaxRewindChanges      = 2  /* Max number of times a player can change their vote */
-	MaxVotesPerMap        = 3  /* Max number of votes per map */
-	MaxRewindResults      = 40
+	VotesNeededRewind     = 2 /* Number of votes needed to rewind */
+	RewindCooldownMinutes = 1 /* Cooldown between rewinds */
+	VoteLifetime          = 5 /* How long a vote lasts */
+	MaxRewindChanges      = 2 /* Max number of times a player can change their vote */
+	MaxVotesPerMap        = 4 /* Max number of votes per map */
+	MaxRewindResults      = 20
 
 	/* Max results to return */
 	WhoisResults      = 20
-	AdminWhoisResults = 40
+	AdminWhoisResults = 20
 
 	/* Maximum time to wait for Factorio update download */
-	FactorioUpdateCheckLimit = 15 * time.Minute
+	FactorioUpdateCheckLimit = 10 * time.Minute
 
 	/* Maximum time before giving up on patching */
-	FactorioUpdateProcessLimit = 10 * time.Minute
+	FactorioUpdateProcessLimit = 5 * time.Minute
 
 	/* Maximum time before giving up on checking zipfile integrity */
-	ZipIntegrityLimit = 5 * time.Minute
+	ZipIntegrityLimit = 1 * time.Minute
 
 	/* Maximum time before giving up on mod updater */
-	ModUpdateLimit = 15 * time.Minute
+	ModUpdateLimit = 10 * time.Minute
 	ModUpdaterPath = "scripts/mod_updater.py"
 
 	/* Maximum time to wait for Factorio to close */
-	MaxFactorioCloseWait = 45
+	MaxFactorioCloseWait = 30
 
 	/* How often to check if Factorio server is alive */
 	WatchdogInterval = time.Second
 
 	/* Throttle chat, 1.5 seconds per message. */
-	CMSRate     = 500 * time.Millisecond
-	CMSRestTime = 1000 * time.Millisecond
-	CMSPollRate = 100 * time.Millisecond
+	CMSRate     = 100 * time.Millisecond  //Time we spend waiting for buffer to full up once active
+	CMSRestTime = 1000 * time.Millisecond //Time to sleep after sending a message
+	CMSPollRate = 100 * time.Millisecond  //Time between polls
 
 	/* Used for chat colors in-game */
 	NumColors = 17

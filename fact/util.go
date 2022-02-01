@@ -23,15 +23,12 @@ func DoExit(delay bool) {
 	mm := GetManMinutes()
 	cwlog.DoLogCW(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
-	time.Sleep(3 * time.Second)
 	/* This kills all loops! */
 	glob.ServerRunning = false
 
 	cwlog.DoLogCW("CW closing, load/save db, and waiting for locks...")
 	LoadPlayers()
 	WritePlayers()
-
-	time.Sleep(1 * time.Second)
 
 	/* File locks */
 	glob.PlayerListWriteLock.Lock()

@@ -69,7 +69,7 @@ func Map_reset(data string) {
 
 	/* Wait for server to stop if running */
 	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 100)
 	}
 
 	/* Get Factorio version, for archive folder name */

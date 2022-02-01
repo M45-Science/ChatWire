@@ -104,7 +104,7 @@ func main() {
 				cwlog.DoLogCW(msg)
 				go func(msg string) {
 					for disc.DS == nil {
-						time.Sleep(time.Second)
+						time.Sleep(time.Millisecond * 100)
 					}
 					disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, msg)
 				}(msg)
@@ -152,7 +152,7 @@ func startbot() {
 
 	if erra != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
-		time.Sleep(time.Minute)
+		time.Sleep(time.Minute * 2)
 		startbot()
 		return
 	}
@@ -163,7 +163,7 @@ func startbot() {
 
 	if errb != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
-		time.Sleep(time.Minute)
+		time.Sleep(time.Minute * 2)
 		startbot()
 		return
 	}
@@ -175,7 +175,6 @@ func startbot() {
 
 	bot.LogLevel = discordgo.LogWarning
 
-	time.Sleep(2 * time.Second)
 	commands.RegisterCommands()
 	bot.AddHandler(MessageCreate)
 	botstatus := fmt.Sprintf("%vhelp", cfg.Global.DiscordCommandPrefix)

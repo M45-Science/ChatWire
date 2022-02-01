@@ -114,7 +114,6 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
 			fact.CMS(m.ChannelID, "New map saved as: "+filename)
-			time.Sleep(2 * time.Second)
 			return
 		}
 	}
