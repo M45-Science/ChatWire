@@ -37,6 +37,7 @@ type config struct {
 	ResetPingString   string
 	HideAutosaves     bool
 	DoWhitelist       bool
+	AutoModUpdate     bool
 
 	FactorioData LFactDataStruct
 

@@ -12,6 +12,10 @@ import (
 )
 
 func CheckMods() {
+	if !cfg.Local.AutoModUpdate {
+		return
+	}
+
 	/* Update mods if needed */
 	modPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
 		constants.ModsFolder + "/"

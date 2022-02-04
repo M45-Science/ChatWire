@@ -265,6 +265,14 @@ var SettingList = []SettingListData{
 
 		BData: &cfg.Local.FactorioData.AutoPause,
 	},
+	{
+		Name:    "AutoModUpdate",
+		Desc:    "Auto-update mods in background",
+		Type:    TYPE_BOOL,
+		DefBool: true,
+
+		BData: &cfg.Local.AutoModUpdate,
+	},
 }
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */
