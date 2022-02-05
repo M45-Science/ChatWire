@@ -267,7 +267,7 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name:    "AutoModUpdate",
-		Desc:    "Auto-update mods in background",
+		Desc:    "Auto-update game mods",
 		Type:    TYPE_BOOL,
 		DefBool: true,
 
