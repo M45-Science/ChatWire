@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-func CheckMods() {
-	if !cfg.Local.AutoModUpdate {
+func CheckMods(force bool) {
+	if !cfg.Local.AutoModUpdate && !force {
 		return
 	}
 
