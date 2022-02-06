@@ -273,6 +273,14 @@ var SettingList = []SettingListData{
 
 		BData: &cfg.Local.AutoModUpdate,
 	},
+	{
+		Name:    "CleanMapOnBoot",
+		Desc:    "Run CleanMap mod on boot",
+		Type:    TYPE_BOOL,
+		DefBool: false,
+
+		BData: &cfg.Local.SoftModOptions.CleanMapOnBoot,
+	},
 }
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */
