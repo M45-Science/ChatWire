@@ -62,6 +62,7 @@ func Map_reset(data string) {
 
 			cfg.Local.SlowConnect.DefaultSpeed = 1.0
 			cfg.Local.SlowConnect.ConnectSpeed = 0.5
+			cfg.WriteLCfg()
 			SetAutoStart(false)
 			QuitFactorio()
 		}
