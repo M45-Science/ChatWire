@@ -77,6 +77,9 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, ModeratorOnly: true,
 		Help:  "Rewind map, see autosaves",
 		XHelp: "`rewind <autosave number>`\nRunning with no argument shows last 40 autosaves with date stamps. NOTE: Any autosave can be loaded."})
+	CL.CommandList = append(CL.CommandList, Command{Name: "ModUp", Command: admin.ForceUpdateMods, ModeratorOnly: true,
+		Help:  "Update installed Factorio mods",
+		XHelp: "Forces installed Facorio mods to update, even if automatic mod updaing is disabled."})
 
 	/*  Player Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, ModeratorOnly: false,
