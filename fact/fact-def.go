@@ -35,7 +35,7 @@ var (
 	GametimeString  = constants.Unknown
 	GametimeLock    sync.RWMutex
 
-	MaxTickHistory = 2000
+	MaxTickHistory = 4000
 
 	TickHistory     []TickInt
 	TickHistoryLock sync.Mutex
