@@ -839,7 +839,7 @@ func MainLoops() {
 		go func() {
 			time.Sleep(time.Minute)
 			for glob.ServerRunning {
-				modupdate.CheckMods()
+				modupdate.CheckMods(false)
 
 				time.Sleep(time.Hour)
 			}
