@@ -1,18 +1,20 @@
 package banlist
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/cwlog"
-	"ChatWire/fact"
-	"ChatWire/glob"
-	"ChatWire/sclean"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
+
+	"ChatWire/cfg"
+	"ChatWire/cwlog"
+	"ChatWire/fact"
+	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
 var BanList []banDataType
@@ -32,7 +34,7 @@ func CheckBanList(player string) {
 	}
 
 	for _, ban := range BanList {
-		if ban.UserName == player {
+		if strings.EqualFold(ban.UserName, player) {
 			fact.WriteFact("/ban " + ban.UserName + " [auto] " + ban.Reason)
 			break
 		}
