@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "528-02.06.2022-0208p"
+	Version = "529-03.21.2022-0418"
 	Unknown = "Unknown"
 
 	/* ChatWire files */
@@ -54,7 +54,7 @@ const (
 	WatchdogInterval = time.Second
 
 	/* Throttle chat, 1.5 seconds per message. */
-	CMSRate     = 100 * time.Millisecond  //Time we spend waiting for buffer to full up once active
+	CMSRate     = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
 	CMSRestTime = 1000 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate = 100 * time.Millisecond  //Time between polls
 

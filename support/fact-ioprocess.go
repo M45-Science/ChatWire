@@ -81,12 +81,6 @@ func Chat() {
 						 ******************/
 						if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
-							/* tmp := ""
-							for i, word := range words {
-								tmp = tmp + "(" + strconv.Itoa(i) + ")" + word + ", "
-							}
-							cwlog.DoLogGame(tmp) */
-
 							/* Don't eat event, this is capable of eating random text */
 							handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 

@@ -304,7 +304,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 * LEAVE
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") {
-		cwlog.DoLogGame(line)
+		cwlog.DoLogGame(NoDS)
 		fact.WriteFact("/p o c")
 
 		if NoDSlistlen > 1 {
@@ -651,7 +651,7 @@ func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen 
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(NoTC, "Loading mod base") {
-		cwlog.DoLogGame(line)
+		cwlog.DoLogGame(NoTC)
 		if NoTClistlen > 3 {
 			fact.FactorioVersion = NoTClist[3]
 		}
@@ -715,7 +715,7 @@ func handleDesync(NoTC string, line string) bool {
 	if strings.HasPrefix(NoTC, "Info") {
 
 		if strings.Contains(NoTC, "DesyncedWaitingForMap") {
-			cwlog.DoLogGame(line)
+			cwlog.DoLogGame(NoTC)
 			cwlog.DoLogCW("desync: " + NoTC)
 			return true
 		}
@@ -728,7 +728,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 	 * CAPTURE CRASHES
 	 ******************/
 	if strings.HasPrefix(NoTC, "Error") {
-		cwlog.DoLogGame(line)
+		cwlog.DoLogGame(NoTC)
 
 		fact.CMS(cfg.Local.ChannelData.ChatID, NoTC)
 		/* Lock error */
@@ -834,7 +834,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 	 * FACTORIO CHAT MESSAGES
 	 ************************/
 	if strings.HasPrefix(NoDS, "[CHAT]") || strings.HasPrefix(NoDS, "[SHOUT]") {
-		cwlog.DoLogGame(line)
+		cwlog.DoLogGame(NoDS)
 
 		if NoDSlistlen > 1 {
 			NoDSlist[1] = strings.Replace(NoDSlist[1], ":", "", -1)

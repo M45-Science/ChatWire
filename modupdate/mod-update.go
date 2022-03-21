@@ -65,8 +65,8 @@ func UpdateMods() {
 		"--update",
 	}
 
-	temp := strings.ReplaceAll(strings.Join(cmdargs, " "), cfg.Global.FactorioData.Token, "**private**")
-	cwlog.DoLogCW(temp)
+	//temp := strings.ReplaceAll(strings.Join(cmdargs, " "), cfg.Global.FactorioData.Token, "**private**")
+	//cwlog.DoLogCW(temp)
 	cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
 
 	o, err := cmd.CombinedOutput()
@@ -74,9 +74,9 @@ func UpdateMods() {
 
 	if err != nil {
 		cwlog.DoLogCW("Error running mod updater: " + err.Error())
+	} else {
+		//cwlog.DoLogCW(out)
 	}
-
-	cwlog.DoLogCW(out)
 
 	lines := strings.Split(out, "\n")
 	buf := ""
