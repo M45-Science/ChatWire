@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "529-03.21.2022-0418"
+	Version = "530-03.29.2022-1003"
 	Unknown = "Unknown"
 
 	/* ChatWire files */

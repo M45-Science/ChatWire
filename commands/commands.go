@@ -80,6 +80,9 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "ModUp", Command: admin.ForceUpdateMods, ModeratorOnly: true,
 		Help:  "Update installed Factorio mods",
 		XHelp: "Forces installed Facorio mods to update, even if automatic mod updaing is disabled."})
+	CL.CommandList = append(CL.CommandList, Command{Name: "SetSeed", Command: admin.SetSeed, ModeratorOnly: true,
+		Help:  "Set seed number.",
+		XHelp: "Set seed number for next map, 0 for random"})
 
 	/*  Player Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, ModeratorOnly: false,

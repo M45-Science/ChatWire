@@ -132,6 +132,13 @@ func Map_reset(data string) {
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
 
+	//Use seed if specified, then clear it
+	if cfg.Local.Seed > 0 {
+		ourseed = cfg.Local.Seed
+		cfg.Local.Seed = 0
+		cfg.WriteLCfg()
+	}
+
 	MapPreset := cfg.Local.MapPreset
 
 	if MapPreset == "Error" {

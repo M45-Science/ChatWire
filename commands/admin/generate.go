@@ -39,6 +39,13 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		ourseed = fact.LastMapSeed
 	}
 
+	//Use seed if specified, then clear it
+	if cfg.Local.Seed > 0 {
+		ourseed = cfg.Local.Seed
+		cfg.Local.Seed = 0
+		cfg.WriteLCfg()
+	}
+
 	/* If seed given */
 	if argnum > 0 {
 		arg := args[0]

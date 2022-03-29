@@ -24,6 +24,7 @@ type config struct {
 	ServerCallsign string
 	Name           string
 	Port           int
+	Seed           uint64
 
 	MapPreset    string
 	MapGenPreset string
