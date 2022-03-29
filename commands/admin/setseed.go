@@ -22,5 +22,6 @@ func SetSeed(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	} else {
 		fact.CMS(m.ChannelID, "Map seed cleared.")
 	}
+	cfg.WriteLCfg()
 
 }
