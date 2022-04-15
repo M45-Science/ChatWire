@@ -496,6 +496,11 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 			if strings.Contains(NoDS, "was banned by") {
 				fact.PlayerLevelSet(trustname, -1, false)
+				if cfg.Local.ReportNewBans {
+					reason := strings.Split(NoDS, "Reason: ")
+					buf := fmt.Sprintf("M45 ban: %v: %v", trustname, reason)
+					fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
+				}
 				time.Sleep(time.Second * 5)
 			}
 
