@@ -485,6 +485,10 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 * BAN
 	 ******************/
 	if strings.HasPrefix(NoDS, "[BAN]") {
+		//Prevent double-ban
+		glob.PlayerListWriteLock.Lock()
+		defer glob.PlayerListWriteLock.Unlock()
+
 		cwlog.DoLogGame(NoDS)
 
 		if NoDSlistlen > 1 {
@@ -492,6 +496,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 			if strings.Contains(NoDS, "was banned by") {
 				fact.PlayerLevelSet(trustname, -1, false)
+				time.Sleep(time.Second * 5)
 			}
 
 			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
