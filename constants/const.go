@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "530-03.29.2022-1003"
+	Version = "531-04.23.2022-0751"
 	Unknown = "Unknown"
 
 	/* ChatWire files */
@@ -48,7 +48,7 @@ const (
 	ModUpdaterPath = "scripts/mod_updater.py"
 
 	/* Maximum time to wait for Factorio to close */
-	MaxFactorioCloseWait = 30
+	MaxFactorioCloseWait = 45 * 10 //Loop sleep is 1/10 of a second
 
 	/* How often to check if Factorio server is alive */
 	WatchdogInterval = time.Second
