@@ -348,6 +348,8 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 							glob.PlayerSus[pname]--
 						}
 					} else {
+						glob.PlayerSus[pname]++
+
 						if glob.PlayerSus[pname] > 15 {
 
 							if time.Since(glob.LastSusWarning) > time.Minute {
