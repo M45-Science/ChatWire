@@ -236,10 +236,6 @@ func GetPlayerDataFromName(pname string) *glob.PlayerData {
 	glob.PlayerListLock.RLock()
 	defer glob.PlayerListLock.RUnlock()
 
-	for i, _ := range glob.PlayerList {
-		if glob.PlayerList[i].Name == pname {
-			return glob.PlayerList[i]
-		}
-	}
-	return nil
+	p := glob.PlayerList[pname]
+	return p
 }
