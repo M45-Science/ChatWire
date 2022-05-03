@@ -864,27 +864,26 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				if time.Since(glob.ChatterList[pname]) < time.Second*2 {
 					glob.ChatterSpamScore[pname]++
 					glob.ChatterList[pname] = time.Now()
-				} else if time.Since(glob.ChatterList[pname]) < time.Second*1 {
+				} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1250 {
 					glob.ChatterSpamScore[pname] += 2
 					glob.ChatterList[pname] = time.Now()
-				} else if time.Since(glob.ChatterList[pname]) > time.Second*5 {
+				} else if time.Since(glob.ChatterList[pname]) > time.Second*6 {
 					glob.ChatterSpamScore[pname] -= 1
 					glob.ChatterList[pname] = time.Now()
-				} else if time.Since(glob.ChatterList[pname]) > time.Second*15 {
+				} else if time.Since(glob.ChatterList[pname]) > time.Second*10 {
 					glob.ChatterSpamScore[pname] = 0
 					glob.ChatterList[pname] = time.Now()
 				}
 
-				if glob.ChatterSpamScore[pname] > 10 {
+				if glob.ChatterSpamScore[pname] > 9 {
 					bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
 					fact.WriteFact(bbuf)
 
-				}
-				if glob.ChatterSpamScore[pname] > 12 {
+				} else if glob.ChatterSpamScore[pname] > 12 {
 					if cfg.Global.LogURL != "" {
-						bbuf = fmt.Sprintf("/cchat /ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, cfg.Global.LogURL, cfg.Local.ServerCallsign, glob.GameLogName)
+						bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, strings.TrimSuffix(cfg.Global.LogURL, "/"), cfg.Local.ServerCallsign, strings.TrimPrefix(glob.GameLogName, "log/"))
 					} else {
-						bbuf = fmt.Sprintf("/cchat /ban %v Spamming chat (auto-ban)\n", pname)
+						bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)\n", pname)
 					}
 					glob.ChatterSpamScore[pname] = 0
 					fact.WriteFact(bbuf)
