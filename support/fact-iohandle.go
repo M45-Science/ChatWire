@@ -857,16 +857,30 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 			if pname != "<server>" {
 
+				var bbuf string = ""
+
 				//Automatically ban people for chat spam
 				//TODO: Make this configurable
-				if time.Since(glob.ChatterList[pname]) < time.Millisecond*2000 {
+				if time.Since(glob.ChatterList[pname]) < time.Second*2 {
 					glob.ChatterSpamScore[pname]++
-				} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1000 {
+					glob.ChatterList[pname] = time.Now()
+				} else if time.Since(glob.ChatterList[pname]) < time.Second*1 {
 					glob.ChatterSpamScore[pname] += 2
+					glob.ChatterList[pname] = time.Now()
+				} else if time.Since(glob.ChatterList[pname]) > time.Second*5 {
+					glob.ChatterSpamScore[pname] -= 1
+					glob.ChatterList[pname] = time.Now()
+				} else if time.Since(glob.ChatterList[pname]) > time.Second*15 {
+					glob.ChatterSpamScore[pname] = 0
+					glob.ChatterList[pname] = time.Now()
 				}
 
+				if glob.ChatterSpamScore[pname] > 10 {
+					bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
+					fact.WriteFact(bbuf)
+
+				}
 				if glob.ChatterSpamScore[pname] > 12 {
-					var bbuf string = ""
 					if cfg.Global.LogURL != "" {
 						bbuf = fmt.Sprintf("/cchat /ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, cfg.Global.LogURL, cfg.Local.ServerCallsign, glob.GameLogName)
 					} else {
