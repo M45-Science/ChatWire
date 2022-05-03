@@ -859,19 +859,22 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 				//Automatically ban people for chat spam
 				//TODO: Make this configurable
-				if time.Since(glob.ChatterList[pname]) < time.Second {
-					if glob.ChatterSpamScore[pname] > 10 {
-						var bbuf string = ""
-						if cfg.Global.LogURL != "" {
-							bbuf = fmt.Sprintf("/cchat (TEST) /ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, cfg.Global.LogURL, cfg.Local.ServerCallsign, glob.GameLogName)
-						} else {
-							bbuf = fmt.Sprintf("/cchat (TEST) /ban %v Spamming chat (auto-ban)\n", pname)
-						}
-						fact.WriteFact(bbuf)
-					}
+				if time.Since(glob.ChatterList[pname]) < time.Millisecond*2000 {
 					glob.ChatterSpamScore[pname]++
+				} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1000 {
+					glob.ChatterSpamScore[pname] += 2
 				}
-				glob.ChatterList[pname] = time.Now()
+
+				if glob.ChatterSpamScore[pname] > 12 {
+					var bbuf string = ""
+					if cfg.Global.LogURL != "" {
+						bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, cfg.Global.LogURL, cfg.Local.ServerCallsign, glob.GameLogName)
+					} else {
+						bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)\n", pname)
+					}
+					glob.ChatterSpamScore[pname] = 0
+					fact.WriteFact(bbuf)
+				}
 
 				cmess := strings.Join(NoDSlist[2:], " ")
 				cmess = sclean.StripControlAndSubSpecial(cmess)
