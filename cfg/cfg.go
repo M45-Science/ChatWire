@@ -61,6 +61,7 @@ type gconfig struct {
 	RoleData       RoleDataStruct
 	PathData       PathDataStruct
 	MapPreviewData MapPreviewDataStruct
+	LogURL         string
 
 	DiscordCommandPrefix string
 	ResetPingString      string
