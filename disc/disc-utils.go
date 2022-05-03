@@ -227,3 +227,19 @@ func GetFactorioNameFromDiscordID(id string) string {
 	}
 	return ""
 }
+
+func GetPlayerDataFromName(pname string) *glob.PlayerData {
+	if pname == "" {
+		return nil
+	}
+
+	glob.PlayerListLock.RLock()
+	defer glob.PlayerListLock.RUnlock()
+
+	for i, _ := range glob.PlayerList {
+		if glob.PlayerList[i].Name == pname {
+			return glob.PlayerList[i]
+		}
+	}
+	return nil
+}
