@@ -916,6 +916,8 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				nores = glob.NoResponseCount
 				glob.NoResponseCountLock.Unlock()
 
+				glob.ChatterLock.Lock()
+
 				//Do not ban for chat spam if game is lagging
 				if nores < 4 {
 					var bbuf string = ""
@@ -953,6 +955,8 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 					//Just zero it out to be safe
 					glob.ChatterSpamScore[pname] = 0
 				}
+
+				glob.ChatterLock.Unlock()
 
 				cmess := strings.Join(NoDSlist[2:], " ")
 				cmess = sclean.StripControlAndSubSpecial(cmess)

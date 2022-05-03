@@ -122,6 +122,7 @@ var (
 	UpdateWarnCounter     = 0
 	UpdateGraceMinutes    = 10
 
+	ChatterLock      sync.Mutex
 	ChatterList      map[string]time.Time
 	ChatterSpamScore map[string]int
 

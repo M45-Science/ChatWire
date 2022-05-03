@@ -83,6 +83,9 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "SetSeed", Command: admin.SetSeed, ModeratorOnly: true,
 		Help:  "Set seed number.",
 		XHelp: "Set seed number for next map, 0 for random"})
+	CL.CommandList = append(CL.CommandList, Command{Name: "Debug", Command: admin.DebugStat, ModeratorOnly: true,
+		Help:  "debug",
+		XHelp: "development and testing use only."})
 
 	/*  Player Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, ModeratorOnly: false,
