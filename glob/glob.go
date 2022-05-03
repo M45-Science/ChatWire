@@ -124,4 +124,8 @@ var (
 
 	ChatterList      map[string]time.Time
 	ChatterSpamScore map[string]int
+
+	PlayerSusLock  sync.Mutex
+	PlayerSus      map[string]int
+	LastSusWarning time.Time
 )

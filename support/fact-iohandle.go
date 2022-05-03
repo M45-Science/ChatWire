@@ -319,6 +319,59 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	return false
 }
 
+func handleActMsg(line string, lineList []string, lineListLen int) bool {
+	/******************
+	 * ACT AREA
+	 ******************/
+	if strings.HasPrefix(line, "~[ACT]") {
+
+		cwlog.DoLogGame(line)
+
+		if lineListLen > 2 {
+			pname := lineList[1]
+			if pname != "" {
+				p := disc.GetPlayerDataFromName(pname)
+				if p != nil && p.Name != "" && p.Level < 1 {
+					action := lineList[2]
+
+					glob.PlayerSusLock.Lock()
+
+					if strings.Contains(action, "tag") ||
+						strings.Contains(action, "rotated") ||
+						strings.Contains(action, "ghost") {
+						glob.PlayerSus[pname] += 2
+					} else if strings.Contains(action, "placed") {
+						if glob.PlayerSus[pname] > 0 {
+							glob.PlayerSus[pname]--
+						}
+						if glob.PlayerSus[pname] > 0 {
+							glob.PlayerSus[pname]--
+						}
+					} else {
+						if glob.PlayerSus[pname] > 15 {
+
+							if time.Since(glob.LastSusWarning) > time.Minute {
+								glob.PlayerSus[pname] = 0
+
+								glob.LastSusWarning = time.Now()
+								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. Rating: %v", pname, glob.PlayerSus[pname])
+
+								fact.WriteFact("/cchat [color=red]" + sbuf + "[/color]")
+								fact.CMS(cfg.Local.ChannelData.ChatID, sbuf)
+							}
+						}
+						glob.PlayerSus[pname]--
+					}
+
+					glob.PlayerSusLock.Unlock()
+				}
+			}
+		}
+		return true
+	}
+	return false
+}
+
 func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 	/******************
 	 * MSG AREA
@@ -857,36 +910,47 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 			if pname != "<server>" {
 
-				var bbuf string = ""
+				var nores int = 0
+				glob.NoResponseCountLock.Lock()
+				nores = glob.NoResponseCount
+				glob.NoResponseCountLock.Unlock()
 
-				//Automatically ban people for chat spam
-				//TODO: Make this configurable
-				if time.Since(glob.ChatterList[pname]) < time.Second*2 {
-					glob.ChatterSpamScore[pname]++
-					glob.ChatterList[pname] = time.Now()
-				} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1250 {
-					glob.ChatterSpamScore[pname] += 2
-					glob.ChatterList[pname] = time.Now()
-				} else if time.Since(glob.ChatterList[pname]) > time.Second*6 {
-					glob.ChatterSpamScore[pname] -= 1
-					glob.ChatterList[pname] = time.Now()
-				} else if time.Since(glob.ChatterList[pname]) > time.Second*10 {
-					glob.ChatterSpamScore[pname] = 0
-					glob.ChatterList[pname] = time.Now()
-				}
+				//Do not ban for chat spam if game is lagging
+				if nores < 4 {
+					var bbuf string = ""
 
-				if glob.ChatterSpamScore[pname] > 9 {
-					bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
-					fact.WriteFact(bbuf)
-
-				} else if glob.ChatterSpamScore[pname] > 12 {
-					if cfg.Global.LogURL != "" {
-						bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, strings.TrimSuffix(cfg.Global.LogURL, "/"), cfg.Local.ServerCallsign, strings.TrimPrefix(glob.GameLogName, "log/"))
-					} else {
-						bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)\n", pname)
+					//Automatically ban people for chat spam
+					//TODO: Make this configurable
+					if time.Since(glob.ChatterList[pname]) < time.Second*2 {
+						glob.ChatterSpamScore[pname]++
+						glob.ChatterList[pname] = time.Now()
+					} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1250 {
+						glob.ChatterSpamScore[pname] += 2
+						glob.ChatterList[pname] = time.Now()
+					} else if time.Since(glob.ChatterList[pname]) > time.Second*6 {
+						glob.ChatterSpamScore[pname] -= 1
+						glob.ChatterList[pname] = time.Now()
+					} else if time.Since(glob.ChatterList[pname]) > time.Second*10 {
+						glob.ChatterSpamScore[pname] = 0
+						glob.ChatterList[pname] = time.Now()
 					}
+
+					if glob.ChatterSpamScore[pname] > 9 {
+						bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
+						fact.WriteFact(bbuf)
+
+					} else if glob.ChatterSpamScore[pname] > 12 {
+						if cfg.Global.LogURL != "" {
+							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.LogURL, "/"), cfg.Local.ServerCallsign, strings.TrimPrefix(glob.GameLogName, "log/"))
+						} else {
+							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
+						}
+						glob.ChatterSpamScore[pname] = 0
+						fact.WriteFact(bbuf)
+					}
+				} else {
+					//Just zero it out to be safe
 					glob.ChatterSpamScore[pname] = 0
-					fact.WriteFact(bbuf)
 				}
 
 				cmess := strings.Join(NoDSlist[2:], " ")
