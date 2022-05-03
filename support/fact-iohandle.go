@@ -863,9 +863,9 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 					if glob.ChatterSpamScore[pname] > 10 {
 						var bbuf string = ""
 						if cfg.Global.LogURL != "" {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, cfg.Global.LogURL, cfg.Local.ServerCallsign, glob.GameLogName)
+							bbuf = fmt.Sprintf("/cchat (TEST) /ban %v Spamming chat (auto-ban) %v/%v/%v\n", pname, cfg.Global.LogURL, cfg.Local.ServerCallsign, glob.GameLogName)
 						} else {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)\n", pname)
+							bbuf = fmt.Sprintf("/cchat (TEST) /ban %v Spamming chat (auto-ban)\n", pname)
 						}
 						fact.WriteFact(bbuf)
 					}
