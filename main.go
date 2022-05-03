@@ -38,6 +38,9 @@ func main() {
 	playlist := make(map[string]*glob.PlayerData)
 	passlist := make(map[string]*glob.PassData)
 
+	glob.ChatterList = make(map[string]time.Time)
+	glob.ChatterSpamScore = make(map[string]int)
+
 	/* Assign to globals */
 	glob.PlayerList = playlist
 	glob.PassList = passlist

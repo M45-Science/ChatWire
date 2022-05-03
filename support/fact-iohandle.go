@@ -857,6 +857,18 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 			if pname != "<server>" {
 
+				//Automatically ban people for chat spam
+				//TODO: Make this configurable
+				if time.Since(glob.ChatterList[pname]) < time.Second {
+					if glob.ChatterSpamScore[pname] > 10 {
+						bbuf := fmt.Sprintf("/ban %v Spamming chat (auto-ban) https://m45sci.xyz/logs/%v/%v\n", pname, cfg.Local.ServerCallsign, glob.GameLogName)
+
+						fact.WriteFact(bbuf)
+					}
+					glob.ChatterSpamScore[pname]++
+				}
+				glob.ChatterList[pname] = time.Now()
+
 				cmess := strings.Join(NoDSlist[2:], " ")
 				cmess = sclean.StripControlAndSubSpecial(cmess)
 				cmess = sclean.EscapeDiscordMarkdown(cmess)
