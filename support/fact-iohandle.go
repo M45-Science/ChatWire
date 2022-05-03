@@ -360,7 +360,6 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 								fact.CMS(cfg.Local.ChannelData.ChatID, sbuf)
 							}
 						}
-						glob.PlayerSus[pname]--
 					}
 
 					glob.PlayerSusLock.Unlock()
