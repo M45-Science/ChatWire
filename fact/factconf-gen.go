@@ -57,7 +57,7 @@ func GenerateFactorioConfig() bool {
 	} else {
 		cfg.ServerPrefix = ""
 	}
-	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.ServerPrefix+cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
+	servName := "\u0080 [" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 
 	/* Setup some defaults */
 	heartbeats := 60
