@@ -14,6 +14,7 @@ import (
 	"ChatWire/cwlog"
 )
 
+var ServerPrefix = ""
 var Local config
 var Global gconfig
 
@@ -473,6 +474,11 @@ func ReadLCfg() bool {
 				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.MapPreset)
 			}
 
+			if newcfg.DoWhitelist {
+				ServerPrefix = constants.MembersPrefix
+			} else {
+				ServerPrefix = ""
+			}
 			return true
 		} else {
 			cwlog.DoLogCW("ReadLCfg: ReadFile failure")
