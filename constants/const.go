@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "532-05.3.2022-0100"
+	Version = "533-05.4.2022-1059"
 	Unknown = "Unknown"
 
 	/* ChatWire files */
@@ -15,6 +15,7 @@ const (
 	ModsFolder       = "mods"
 	RoleListFile     = "../RoleList.dat"
 	VoteRewindFile   = "vote-rewind.dat"
+	MembersPrefix    = "M"
 
 	/* ChatWire settings */
 	PauseThresh              = 5  /* Number of repeated time reports before we assume server is paused */
@@ -23,11 +24,11 @@ const (
 	RestartLimitSleepMinutes = 2  /* cw.lock is new, sleep this long then exit. */
 
 	/* Vote Rewind */
-	VotesNeededRewind     = 2 /* Number of votes needed to rewind */
-	RewindCooldownMinutes = 1 /* Cooldown between rewinds */
-	VoteLifetime          = 5 /* How long a vote lasts */
-	MaxRewindChanges      = 2 /* Max number of times a player can change their vote */
-	MaxVotesPerMap        = 4 /* Max number of votes per map */
+	VotesNeededRewind     = 2      /* Number of votes needed to rewind */
+	RewindCooldownMinutes = 1      /* Cooldown between rewinds */
+	VoteLifetime          = 60 * 3 /* How long a vote lasts */
+	MaxRewindChanges      = 2      /* Max number of times a player can change their vote */
+	MaxVotesPerMap        = 4      /* Max number of votes per map */
 	MaxRewindResults      = 20
 
 	/* Max results to return */
@@ -35,13 +36,13 @@ const (
 	AdminWhoisResults = 20
 
 	/* Maximum time to wait for Factorio update download */
-	FactorioUpdateCheckLimit = 10 * time.Minute
+	FactorioUpdateCheckLimit = 15 * time.Minute
 
 	/* Maximum time before giving up on patching */
-	FactorioUpdateProcessLimit = 5 * time.Minute
+	FactorioUpdateProcessLimit = 10 * time.Minute
 
 	/* Maximum time before giving up on checking zipfile integrity */
-	ZipIntegrityLimit = 1 * time.Minute
+	ZipIntegrityLimit = 2 * time.Minute
 
 	/* Maximum time before giving up on mod updater */
 	ModUpdateLimit = 10 * time.Minute
@@ -55,7 +56,7 @@ const (
 
 	/* Throttle chat, 1.5 seconds per message. */
 	CMSRate     = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
-	CMSRestTime = 1000 * time.Millisecond //Time to sleep after sending a message
+	CMSRestTime = 2000 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate = 100 * time.Millisecond  //Time between polls
 
 	/* Used for chat colors in-game */
