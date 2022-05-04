@@ -82,7 +82,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 				fact.WriteRewindVotes()
 				return
 			} else if strings.EqualFold(args[0], "cooldown") {
-				/* 30m cooldown */
+				/* 60m cooldown */
 				glob.VoteBox.LastRewindTime = time.Now().Add(time.Duration((60 - constants.RewindCooldownMinutes) * time.Minute))
 				fact.CMS(m.ChannelID, "Cooldown set to 60m")
 				fact.WriteRewindVotes()
@@ -102,7 +102,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 	/* Only if allowed */
 	if !disc.CheckRegular(m) && !disc.CheckModerator(m) {
-		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.RoleData.RegularRoleName)+"` Discord role to use this command.")
+		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.RoleData.RegularRoleName)+"` Discord role to use this command. See $help register for more info.")
 		return
 	}
 
