@@ -54,14 +54,14 @@ func RegisterCommands() {
 		Help:  "Archive current map",
 		XHelp: "This takes the current map (if known) and archives it to our website. It also sends the download link to Discord."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "RandomMap", Command: admin.RandomMap, ModeratorOnly: true,
-		Help:  "Preview new random map",
+		Help:  "Previews a new random map",
 		XHelp: "If Factorio is shut down, this will generate a preview for a new random map each time. It does not generate the map, use MakeMap to generate the map seen in the last preview."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "MakeMap", Command: admin.Generate, ModeratorOnly: true,
-		Help:  "Make map preview",
-		XHelp: "If Factorio is shut down, this generates the random map from the last preview."})
+		Help:  "Generates a new map",
+		XHelp: "If Factorio is shut down, this generates the random map from the last preview (otherwise a new random map)."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "NewMap", Command: admin.NewMap, ModeratorOnly: true,
 		Help:  "Map reset",
-		XHelp: "Stops Factorio, archives the map and generates a new one with the current preset."})
+		XHelp: "Stops Factorio, archives the current map and generates a new one with the current preset."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "UpdateFact", Command: admin.Update, ModeratorOnly: true,
 		Help:  "Update Factorio/Cancel",
 		XHelp: "Checks if there is there is an update available for Factorio and update if there is. You can: update `CANCEL` to cancel an update."})
@@ -76,7 +76,7 @@ func RegisterCommands() {
 		XHelp: "This allows most options to be set.\nTo see all options, run the command with no options.\nThen: `set <option> <value>`"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, ModeratorOnly: true,
 		Help:  "Rewind map, see autosaves",
-		XHelp: "`rewind <autosave number>`\nRunning with no argument shows last 40 autosaves with date stamps. NOTE: Any autosave can be loaded."})
+		XHelp: "`rewind <autosave number>`\nRunning with no argument shows last 20 autosaves with date stamps. NOTE: Any autosave can be loaded."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "ModUp", Command: admin.ForceUpdateMods, ModeratorOnly: true,
 		Help:  "Update installed Factorio mods",
 		XHelp: "Forces installed Facorio mods to update, even if automatic mod updaing is disabled."})
@@ -85,7 +85,7 @@ func RegisterCommands() {
 		XHelp: "Set seed number for next map, 0 for random"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Debug", Command: admin.DebugStat, ModeratorOnly: true,
 		Help:  "debug",
-		XHelp: "development and testing use only."})
+		XHelp: "Development and testing use only."})
 
 	/*  Player Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, ModeratorOnly: false,
@@ -102,9 +102,9 @@ func RegisterCommands() {
 		XHelp: "Registration gives you a Discord role that matches your Factorio level. You only need to do this once.\n`Make sure your DMs are turned on in Discord`, or you will not get your registration code. The DM will contain a special code and instructions on how to complete registration.\nThe supplied code is pasted as a `COMMAND in FACTORIO` on the Factorio server with the same name as `the Discord channel` your ran it on. If the code isn't used in a few minutes it will expire. `DO NOT SHARE OR PASTE THIS CODE IN CHAT OR ON DISCORD.`\nIf you `ACCIDENTALLY` paste the code somewhere public, use the `register` command again, to `invalidate the old code` and `receive a new one`.\n"})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Vote-Rewind", Command: user.VoteRewind, ModeratorOnly: false,
 		Help:  "Vote to rewind the map",
-		XHelp: "This shows the last `40 autosaves` and `all votes`.\nMap-rewind has a two-minute cooldown, and votes expire after `15 minutes`, although you can `change your vote` a few times.\nYou must wait for your old vote to `expire` to vote `again`.\nTo vote: `vote-rewind <autosave number>`\nThis command is only accessible to `REGULARS` on `DISCORD`! (see `help register`).\n`NOTE:` Any autosave can be loaded, not just ones displayed in the command.\nModerators: `vote-rewind help` for more info."})
+		XHelp: "This shows the last `20 autosaves` and `all votes`.\nMap-rewind has a one-minute cooldown, and votes expire after `30 minutes`, although you can `change your vote` a few times.\nYou must wait for your old vote to `expire` to vote `again`.\nTo vote: `vote-rewind <autosave number>`\nThis command is only accessible to `REGULARS` on `DISCORD`! (see `help register`).\n`NOTE:` Any autosave can be loaded, not just ones displayed in the command."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, ModeratorOnly: false,
-		Help:  "help <command name> for detailed information",
+		Help:  "help <command name> for more detailed information",
 		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."})
 }
 
