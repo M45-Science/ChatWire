@@ -100,7 +100,7 @@ func handlePlayerReport(line string, lineList []string, lineListlen int) bool {
 		cwlog.DoLogGame(line)
 		if lineListlen >= 3 {
 			buf := fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v",
-				cfg.Local.ServerCallsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
+				cfg.Local.ServerCallsign+"-"+cfg.ServerPrefix+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
 			fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
 		}
 		return true
@@ -617,7 +617,7 @@ func handleFactReady(NoTC string) bool {
 		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/p o c")
 
-		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
+		fact.WriteFact("/cname " + strings.ToUpper(cfg.ServerPrefix+cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
 
 		/* Config new-player restrictions */
 		if cfg.Local.SoftModOptions.RestrictMode {

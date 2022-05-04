@@ -52,11 +52,16 @@ func GenerateFactorioConfig() bool {
 	tempPath := constants.ServSettingsName + ".tmp"
 	finalPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
 
-	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
+	if cfg.Local.DoWhitelist {
+		cfg.ServerPrefix = constants.MembersPrefix
+	} else {
+		cfg.ServerPrefix = ""
+	}
+	servName := "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.ServerPrefix+cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 
 	/* Setup some defaults */
 	heartbeats := 60
-	autosaves := 240
+	autosaves := 250
 	autosave_interval := 15
 	autokick := 30
 
@@ -78,44 +83,45 @@ func GenerateFactorioConfig() bool {
 	var descrLines []string
 
 	descrLines = strings.Split(cfg.Global.FactorioData.ServerDescription, "\n")
+	if cfg.Local.ResetScheduleText != "" {
+		descrLines = append(descrLines, AddFactColor("green", "MAP RESETS: "+cfg.Local.ResetScheduleText))
+	}
 	if cfg.Local.DoWhitelist {
-		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
+		descrLines = append(descrLines, AddFactColor("orange", "MEMBERS-ONLY"))
 	}
 	if cfg.Local.SoftModOptions.FriendlyFire {
 		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
 	}
-	if cfg.Local.MapGenPreset != "" {
-		descrLines = append(descrLines, "Map gen: "+cfg.Local.MapGenPreset)
-	} else if cfg.Local.MapPreset != "" {
-		descrLines = append(descrLines, "Map preset: "+cfg.Local.MapPreset)
-	}
-	if cfg.Local.ResetScheduleText != "" {
-		descrLines = append(descrLines, "MAP RESETS: "+cfg.Local.ResetScheduleText)
-	}
 	if cfg.Local.SoftModOptions.EnableCheats {
-		descrLines = append(descrLines, AddFactColor("red", "SANDBOX"))
+		descrLines = append(descrLines, AddFactColor("yellow", "SANDBOX"))
 	}
 	if cfg.Local.SoftModOptions.DisableBlueprints {
 		descrLines = append(descrLines, AddFactColor("blue", "NO BLUEPRINTS"))
 	}
 	if cfg.Local.SlowConnect.SlowConnect {
-		descrLines = append(descrLines, AddFactColor("green", "Slow-connect on"))
+		descrLines = append(descrLines, AddFactColor("yellow", "Slow-connect on"))
 	}
 	if !cfg.Local.FactorioData.AutoPause {
 		descrLines = append(descrLines, AddFactColor("orange", "AUTO-PAUSE OFF"))
 	}
-	if cfg.Global.AuthServerBans {
-		descrLines = append(descrLines, "AUTH-SERVER BANS ON")
+	/*if cfg.Global.AuthServerBans {
+		descrLines = append(descrLines, "Auth-server bans enabled")
+	}*/
+	if cfg.Local.MapGenPreset != "" {
+		descrLines = append(descrLines, "Map generator: "+cfg.Local.MapGenPreset)
+	} else if cfg.Local.MapPreset != "" {
+		descrLines = append(descrLines, "Map preset: "+cfg.Local.MapPreset)
 	}
-	if cfg.Global.FactorioData.Username != "" {
-		descrLines = append(descrLines, "Owner: "+cfg.Global.FactorioData.Username)
-	}
-	descrLines = append(descrLines, fmt.Sprintf("%v:%v", cfg.Global.Domain, cfg.Local.Port))
+	/*if cfg.Global.FactorioData.Username != "" {
+		descrLines = append(descrLines, "Server owner: "+cfg.Global.FactorioData.Username)
+	}*/
+	descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Domain, cfg.Local.Port)))
 
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
 
-	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n"
+	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
+	//+ "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n"
 
 	disc.RoleListLock.Lock()
 	conf := FactConf{
@@ -127,7 +133,7 @@ func GenerateFactorioConfig() bool {
 		Visibility: VisData{
 			Public: true,  /* DEBUG ONLY */
 			Lan:    false, /* DEBUG ONLY */
-			Steam:  false,
+			Steam:  true,
 		},
 
 		Username:                  cfg.Global.FactorioData.Username,

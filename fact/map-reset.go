@@ -55,7 +55,7 @@ func Map_reset(data string) {
 	if IsFactRunning() {
 		if data != "" {
 			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(data))
-			WriteFact("/cchat " + AddFactColor("red", data))
+			WriteFact("/cchat " + AddFactColor("orange", data))
 			return
 		} else {
 			CMS(cfg.Local.ChannelData.ChatID, "Stopping server, for map reset.")
@@ -190,7 +190,7 @@ func Map_reset(data string) {
 	} else if cfg.Global.ResetPingString != "" {
 		pingstr = cfg.Global.ResetPingString
 	}
-	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
+	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.ServerPrefix+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
 
 	/* Mods queue folder */
 	qPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
