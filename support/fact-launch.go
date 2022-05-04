@@ -96,6 +96,9 @@ func launchFactortio() {
 		cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
 	}
 
+	//Clear mod load string
+	fact.SetModLoadString(constants.Unknown)
+
 	/* Run Factorio */
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
@@ -147,7 +150,6 @@ func launchFactortio() {
 	}
 
 	/* Okay, Factorio is running now, prep */
-	fact.SetModLoadString(constants.Unknown)
 	fact.SetFactRunning(true, false)
 	fact.SetFactorioBooted(false)
 
