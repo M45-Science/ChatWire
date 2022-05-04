@@ -52,12 +52,15 @@ func GenerateFactorioConfig() bool {
 	tempPath := constants.ServSettingsName + ".tmp"
 	finalPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
 
+	var servName string = ""
 	if cfg.Local.DoWhitelist {
 		cfg.ServerPrefix = constants.MembersPrefix
+		servName = "\u0080 [" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
+
 	} else {
 		cfg.ServerPrefix = ""
+		servName = "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 	}
-	servName := "\u0080 [" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
 
 	/* Setup some defaults */
 	heartbeats := 60
