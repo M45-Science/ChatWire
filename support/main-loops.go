@@ -640,7 +640,7 @@ func MainLoops() {
 							if numwarn < glob.UpdateGraceMinutes {
 								msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-								fact.WriteFact("/cchat " + fact.AddFactColor("red", msg))
+								fact.WriteFact("/cchat " + fact.AddFactColor("orange", msg))
 							}
 							time.Sleep(1 * time.Minute)
 
@@ -648,7 +648,7 @@ func MainLoops() {
 							if numwarn > glob.UpdateGraceMinutes {
 								msg := "(SYSTEM) Rebooting for Factorio update."
 								fact.CMS(cfg.Local.ChannelData.ChatID, msg)
-								fact.WriteFact("/cchat " + fact.AddFactColor("red", msg))
+								fact.WriteFact("/cchat " + fact.AddFactColor("orange", msg))
 								fact.SetUpdateWarnCounter(0)
 								fact.QuitFactorio()
 								break /* Stop looping */
