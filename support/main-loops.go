@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
 	"syscall"
 	"time"
@@ -30,8 +29,6 @@ func LinuxSetProcessGroup(cmd *exec.Cmd) {
  ********************/
 
 func MainLoops() {
-
-	go func() { /* nested for 'reasons' */
 
 		/***************
 		 * Game watchdog
@@ -865,20 +862,5 @@ func MainLoops() {
 				time.Sleep(time.Hour)
 			}
 		}()
-	}()
 
-	/* After starting loops, wait here for process signals */
-	sc := make(chan os.Signal, 1)
-
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
-	_ = os.Remove("cw.lock")
-	fact.SetAutoStart(false)
-	fact.SetCWReboot(false)
-	fact.SetQueued(false)
-	fact.QuitFactorio()
-	for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-		time.Sleep(time.Second)
-	}
-	fact.DoExit(false)
 }

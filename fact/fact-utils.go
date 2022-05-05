@@ -97,7 +97,7 @@ func WriteWhitelist() int {
 	return 0
 }
 
-/* Quit Factorio */
+ /* Quit Factorio */
 func QuitFactorio() {
 
 	SetRelaunchThrottle(0)
@@ -109,9 +109,9 @@ func QuitFactorio() {
 
 		/* Running, but players connected... Give them quick feedback. */
 	} else if IsFactorioBooted() && GetNumPlayers() > 0 {
-		WriteFact(fmt.Sprintf("/cchat %sServer quitting.[/color]", RandomColor(false)))
-		WriteFact(fmt.Sprintf("/cchat %sServer quitting..[/color]", RandomColor(false)))
-		WriteFact(fmt.Sprintf("/cchat %sServer quitting...[/color]", RandomColor(false)))
+		WriteFact("/cchat [color=red]Server quitting.[/color]")
+		WriteFact("/cchat [color=green]Server quitting..[/color]")
+		WriteFact("/cchat [color=blue]Server quitting...[/color]")
 		WriteFact("/quit")
 	}
 }
@@ -293,40 +293,6 @@ func DoUpdateChannelName() {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
 		}
 	}
-}
-
-/* Get a random color, used for Factorio text */
-func RandomColor(justnumbers bool) string {
-	var buf string
-
-	if glob.LastColor < (constants.NumColors - 1) {
-		glob.LastColor++
-	} else {
-		glob.LastColor = 0
-	}
-
-	color := constants.Colors[glob.LastColor]
-
-	red := color.R + 0.2
-	green := color.G + 0.2
-	blue := color.B + 0.2
-
-	if red > 1 {
-		red = 1
-	}
-	if green > 1 {
-		green = 1
-	}
-	if blue > 1 {
-		blue = 1
-	}
-
-	if justnumbers {
-		buf = fmt.Sprintf("%.2f,%.2f,%.2f", red, green, blue)
-	} else {
-		buf = fmt.Sprintf("[color=%.2f,%.2f,%.2f]", red, green, blue)
-	}
-	return buf
 }
 
 func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
