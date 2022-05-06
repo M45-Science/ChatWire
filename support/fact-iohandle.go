@@ -545,6 +545,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			trustname := NoDSlist[1]
 
 			if strings.Contains(NoDS, "was banned by") {
+				time.Sleep(time.Second * 5)
 				fact.PlayerLevelSet(trustname, -1, false)
 				if cfg.Local.ReportNewBans {
 					if strings.Contains(NoDS, "Reason") {
@@ -556,7 +557,6 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 						fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
 					}
 				}
-				time.Sleep(time.Second * 5)
 			}
 
 			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
@@ -795,7 +795,6 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 	if strings.HasPrefix(NoTC, "Error") {
 		cwlog.DoLogGame(NoTC)
 
-		fact.CMS(cfg.Local.ChannelData.ChatID, NoTC)
 		/* Lock error */
 		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
 			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
