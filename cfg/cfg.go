@@ -123,6 +123,7 @@ type DiscordDataStruct struct {
 	Comment string
 	Token   string
 	GuildID string
+	AppID   string
 
 	StatTotalChannelID    string
 	StatMemberChannelID   string
