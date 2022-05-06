@@ -47,9 +47,6 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Queue", Command: admin.Queue, ModeratorOnly: true,
 		Help:  "Queue reboot ",
 		XHelp: "Queue a reboot of Factorio and ChatWire.\nRuns once player count is 0."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, ModeratorOnly: true,
-		Help:  "Force map save",
-		XHelp: "This tells Factorio to save the map, thats it..."})
 	CL.CommandList = append(CL.CommandList, Command{Name: "Archive", Command: admin.ArchiveMap, ModeratorOnly: true,
 		Help:  "Archive current map",
 		XHelp: "This takes the current map (if known) and archives it to our website. It also sends the download link to Discord."})
