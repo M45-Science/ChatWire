@@ -107,10 +107,6 @@ func Chat() {
 							continue
 						}
 
-						if handleActMsg(line, lineList, lineListlen) {
-							continue
-						}
-
 						/* Don't eat event, used for fixLockers */
 						handleSlowConnect(NoTC, line)
 
@@ -178,6 +174,9 @@ func Chat() {
 
 					/* Escaped */
 				} else {
+					if handleActMsg(line, lineList, lineListlen) {
+						continue
+					}
 					if handleOnlineMsg(line) {
 						continue
 					}
