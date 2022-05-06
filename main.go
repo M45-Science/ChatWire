@@ -155,8 +155,12 @@ var DiscordConnectAttempts int
 
 func startbot() {
 
-	cwlog.DoLogCW("Starting bot...")
+	if cfg.Global.DiscordData.Token == "" {
+		cwlog.DoLogCW("Discord token not set, not starting.")
+		return
+	}
 
+	cwlog.DoLogCW("Starting Discord bot...")
 	bot, erra := discordgo.New("Bot " + cfg.Global.DiscordData.Token)
 
 	if erra != nil {
@@ -185,20 +189,25 @@ func startbot() {
 		return
 	}
 
-	if bot != nil && erra == nil && errb == nil {
-		/* Save Discord descriptor here */
-		disc.DS = bot
-	}
-
 	bot.LogLevel = discordgo.LogWarning
+	bot.AddHandler(BotReady)
+}
 
-	commands.RegisterCommands()
-	bot.AddHandler(MessageCreate)
+func BotReady(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	commands.RegisterCommands(s, i)
+	s.AddHandler(MessageCreate)
+
 	botstatus := fmt.Sprintf("type %vhelp", cfg.Global.DiscordCommandPrefix)
-	errc := bot.UpdateGameStatus(0, botstatus)
+	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
 	}
+
+	if s != nil {
+		/* Save Discord descriptor here */
+		disc.DS = s
+	}
+
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
