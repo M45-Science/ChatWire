@@ -412,10 +412,6 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 					fact.PlayerLevelSet(trustname, 255, false)
 					fact.AutoPromote(trustname)
 					return true
-				} else if strings.Contains(line, " to the map!") && strings.Contains(line, "Welcome ") {
-					btrustname := lineList[2]
-					fact.AutoPromote(btrustname)
-					return true
 				} else if strings.Contains(line, " has nil permissions.") {
 					fact.AutoPromote(trustname)
 					return true
@@ -911,52 +907,56 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 			if pname != "<server>" {
 
-				var nores int = 0
-				glob.NoResponseCountLock.Lock()
-				nores = glob.NoResponseCount
-				glob.NoResponseCountLock.Unlock()
+				/* Skip new user suspecion on whitelist servers */
+				if !cfg.Local.DoWhitelist {
+					var nores int = 0
+					glob.NoResponseCountLock.Lock()
+					nores = glob.NoResponseCount
+					glob.NoResponseCountLock.Unlock()
 
-				glob.ChatterLock.Lock()
+					glob.ChatterLock.Lock()
 
-				//Do not ban for chat spam if game is lagging
-				if nores < 4 {
-					var bbuf string = ""
+					//Do not ban for chat spam if game is lagging
+					if nores < 4 {
+						var bbuf string = ""
 
-					//Automatically ban people for chat spam
-					//TODO: Make this configurable
-					if time.Since(glob.ChatterList[pname]) < time.Second*2 {
-						glob.ChatterSpamScore[pname]++
-						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1250 {
-						glob.ChatterSpamScore[pname] += 2
-						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) > time.Second*6 {
-						glob.ChatterSpamScore[pname] -= 1
-						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) > time.Second*10 {
-						glob.ChatterSpamScore[pname] = 0
-						glob.ChatterList[pname] = time.Now()
-					}
-
-					if glob.ChatterSpamScore[pname] > 9 {
-						bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
-						fact.WriteFact(bbuf)
-
-					} else if glob.ChatterSpamScore[pname] > 12 {
-						if cfg.Global.LogURL != "" {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.LogURL, "/"), cfg.Local.ServerCallsign, strings.TrimPrefix(glob.GameLogName, "log/"))
-						} else {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
+						//Automatically ban people for chat spam
+						//TODO: Make this configurable
+						if time.Since(glob.ChatterList[pname]) < time.Second*2 {
+							glob.ChatterSpamScore[pname]++
+							glob.ChatterList[pname] = time.Now()
+						} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1250 {
+							glob.ChatterSpamScore[pname] += 2
+							glob.ChatterList[pname] = time.Now()
+						} else if time.Since(glob.ChatterList[pname]) > time.Second*6 {
+							glob.ChatterSpamScore[pname] -= 1
+							glob.ChatterList[pname] = time.Now()
+						} else if time.Since(glob.ChatterList[pname]) > time.Second*10 {
+							glob.ChatterSpamScore[pname] = 0
+							glob.ChatterList[pname] = time.Now()
 						}
-						glob.ChatterSpamScore[pname] = 0
-						fact.WriteFact(bbuf)
-					}
-				} else {
-					//Just zero it out to be safe
-					glob.ChatterSpamScore[pname] = 0
-				}
 
-				glob.ChatterLock.Unlock()
+						if glob.ChatterSpamScore[pname] > 9 {
+							bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
+							fact.WriteFact(bbuf)
+
+						} else if glob.ChatterSpamScore[pname] > 12 {
+							if cfg.Global.LogURL != "" {
+								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.LogURL, "/"), cfg.Local.ServerCallsign, strings.TrimPrefix(glob.GameLogName, "log/"))
+							} else {
+								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
+							}
+							glob.ChatterSpamScore[pname] = 0
+							fact.WriteFact(bbuf)
+						}
+					} else {
+						//Just zero it out to be safe
+						glob.ChatterSpamScore[pname] = 0
+					}
+
+					glob.ChatterLock.Unlock()
+
+				}
 
 				cmess := strings.Join(NoDSlist[2:], " ")
 				cmess = sclean.StripControlAndSubSpecial(cmess)
