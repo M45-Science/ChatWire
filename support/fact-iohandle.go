@@ -323,56 +323,56 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 	/******************
 	 * ACT AREA
 	 ******************/
-	/* Skip on whitelist servers */
-	if !cfg.Local.DoWhitelist {
-		if strings.HasPrefix(line, "~[ACT]") {
 
-			cwlog.DoLogGame(line)
+	if strings.HasPrefix(line, "~[ACT]") {
 
-			if lineListLen > 2 {
-				pname := lineList[1]
-				if pname != "" {
-					p := disc.GetPlayerDataFromName(pname)
-					if p != nil && p.Name != "" && p.Level < 1 {
-						action := lineList[2]
+		cwlog.DoLogGame(line)
 
-						glob.PlayerSusLock.Lock()
+		/* Don't bother on whitelist servers */
+		if lineListLen > 2 && !cfg.Local.DoWhitelist {
+			pname := lineList[1]
+			if pname != "" {
+				p := disc.GetPlayerDataFromName(pname)
+				if p != nil && p.Name != "" && p.Level < 1 {
+					action := lineList[2]
 
-						if strings.Contains(action, "tag") ||
-							strings.Contains(action, "rotated") ||
-							strings.Contains(action, "ghost") {
-							glob.PlayerSus[pname] += 2
-						} else if strings.Contains(action, "placed") {
-							if glob.PlayerSus[pname] > 0 {
-								glob.PlayerSus[pname]--
-							}
-							if glob.PlayerSus[pname] > 0 {
-								glob.PlayerSus[pname]--
-							}
-						} else {
-							glob.PlayerSus[pname]++
+					glob.PlayerSusLock.Lock()
 
-							if glob.PlayerSus[pname] > 15 {
+					if strings.Contains(action, "tag") ||
+						strings.Contains(action, "rotated") ||
+						strings.Contains(action, "ghost") {
+						glob.PlayerSus[pname] += 2
+					} else if strings.Contains(action, "placed") {
+						if glob.PlayerSus[pname] > 0 {
+							glob.PlayerSus[pname]--
+						}
+						if glob.PlayerSus[pname] > 0 {
+							glob.PlayerSus[pname]--
+						}
+					} else {
+						glob.PlayerSus[pname]++
 
-								if time.Since(glob.LastSusWarning) > time.Minute {
-									glob.PlayerSus[pname] = 0
+						if glob.PlayerSus[pname] > 15 {
 
-									glob.LastSusWarning = time.Now()
-									sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. Rating: %v", pname, glob.PlayerSus[pname])
+							if time.Since(glob.LastSusWarning) > time.Minute {
+								glob.PlayerSus[pname] = 0
 
-									fact.WriteFact("/cchat [color=red]" + sbuf + "[/color]")
-									fact.CMS(cfg.Local.ChannelData.ChatID, sbuf)
-								}
+								glob.LastSusWarning = time.Now()
+								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. Rating: %v", pname, glob.PlayerSus[pname])
+
+								fact.WriteFact("/cchat [color=red]" + sbuf + "[/color]")
+								fact.CMS(cfg.Local.ChannelData.ChatID, sbuf)
 							}
 						}
-
-						glob.PlayerSusLock.Unlock()
 					}
+
+					glob.PlayerSusLock.Unlock()
 				}
 			}
-			return true
 		}
+		return true
 	}
+
 	return false
 }
 
