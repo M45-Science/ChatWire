@@ -3,7 +3,6 @@ package disc
 import (
 	"ChatWire/constants"
 	"sync"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -27,7 +26,6 @@ var (
 
 /* To-Discord message buffer */
 type CMSBuf struct {
-	Added   time.Time
 	Channel string
 	Text    string
 }
