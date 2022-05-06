@@ -30,7 +30,7 @@ type Command struct {
 var CL Commands
 
 /*  RegisterCommands registers the commands on start up. */
-func RegisterCommands() {
+func RegisterCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/*  Admin Commands */
 	CL.CommandList = append(CL.CommandList, Command{Name: "Stop", Command: admin.StopServer, ModeratorOnly: true,
 		Help:  "Stop Factorio",
@@ -103,6 +103,10 @@ func RegisterCommands() {
 	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, ModeratorOnly: false,
 		Help:  "help <command name> for more detailed information",
 		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."})
+
+	for _, _ = range CL.CommandList {
+		s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, nil)
+	}
 }
 
 /*  RunCommand runs a specified command. */
