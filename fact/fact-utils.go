@@ -97,7 +97,7 @@ func WriteWhitelist() int {
 	return 0
 }
 
- /* Quit Factorio */
+/* Quit Factorio */
 func QuitFactorio() {
 
 	SetRelaunchThrottle(0)
@@ -113,20 +113,6 @@ func QuitFactorio() {
 		WriteFact("/cchat [color=green]Server quitting..[/color]")
 		WriteFact("/cchat [color=blue]Server quitting...[/color]")
 		WriteFact("/quit")
-	}
-}
-
-/* Tell Factorio to save the map */
-func SaveFactorio() {
-
-	if IsFactorioBooted() && 1 == 2 {
-		gtime := GetGameTime()
-
-		if gtime != constants.Unknown {
-			WriteFact(fmt.Sprintf("/server-save sav-%s", gtime))
-		} else {
-			WriteFact("/server-save")
-		}
 	}
 }
 
