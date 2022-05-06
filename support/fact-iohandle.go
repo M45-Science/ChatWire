@@ -835,6 +835,13 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
+			if strings.Contains(NoTC, "syntax error") {
+				fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio encountered a lua syntax error, stopping.")
+				fact.SetAutoStart(false)
+				fact.SetFactorioBooted(false)
+				fact.SetFactRunning(false, true)
+				return true
+			}
 			if strings.Contains(NoTC, "info.json not found") {
 				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
 				fact.SetAutoStart(false)
