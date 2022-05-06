@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "533-05.4.2022-1059"
+	Version = "534-05.05.2022-0556p"
 	Unknown = "Unknown"
 
 	/* ChatWire files */
@@ -60,30 +60,6 @@ const (
 	CMSPollRate        = 100 * time.Millisecond  //Time between polls
 	MaxDiscordAttempts = 100
 )
-
-var Colors = [...]struct {
-	R float32
-	G float32
-	B float32
-}{
-	{1, 0, 0},          /* RED */
-	{1, 0.25, 0},       /* RED-ORANGE */
-	{1, 0.5, 0},        /* ORANGE */
-	{1, 0.66, 0},       /* ORANGE-YELLOW */
-	{1, 1, 0},          /* YELLOW */
-	{0.66, 1, 0},       /* YELLOW-GREEN */
-	{0, 1, 0},          /* GREEN */
-	{0, 1, 0.66},       /* GREEN-BLUE */
-	{0, 1, 1},          /* CYAN */
-	{0, 0.66, 1},       /* CYAN-BLUE */
-	{0, 0, 1},          /* BLUE */
-	{0.33, 0, 1},       /* BLUE-PURPLE */
-	{0.66, 0, 1},       /* PURPLE */
-	{0.85, 0, 1},       /* PURPLE-MAGENTA */
-	{1, 0, 1},          /* MAGENTA */
-	{1, 0, 0.66},       /* MAGENTA-RED */
-	{0.66, 0.66, 0.66}, /* GRAY */
-}
 
 /* Factorio map preset names */
 var MapTypes = []string{"custom", "default", "rich-resources", "marathon", "death-world", "death-world-marathon", "rail-world", "ribbon-world", "island"}
