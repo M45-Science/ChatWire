@@ -121,13 +121,19 @@ type Command struct {
 }
 
 /*  RegisterCommands registers the commands on start up. */
-func RegisterCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func RegisterCommands(s *discordgo.Session) {
 
 	/* Bypasses init loop compile error. */
 	CL = append(CL, cmds...)
 
 	for i, _ := range CL {
-		s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, CL[i].AppCmd)
+		CL[i].AppCmd = &discordgo.ApplicationCommand{}
+		CL[i].AppCmd.Name = CL[i].Name
+		s.AddHandler(CL[i].Command)
+	}
+
+	for i, _ := range CL {
+		CL[i].AppCmd, _ = s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, CL[i].AppCmd)
 	}
 }
 
