@@ -61,7 +61,7 @@ func MainLoops() {
 					fact.SetRelaunchThrottle(0)
 					fact.QuitFactorio()
 					for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-						time.Sleep(time.Second)
+						time.Sleep(time.Millisecond * 100)
 					}
 				}
 
@@ -693,7 +693,7 @@ func MainLoops() {
 						fact.SetAutoStart(false)
 						fact.QuitFactorio()
 						for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-							time.Sleep(time.Second)
+							time.Sleep(time.Millisecond * 100)
 						}
 						fact.DoExit(false)
 					} else {

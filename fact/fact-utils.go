@@ -93,7 +93,6 @@ func WriteWhitelist() int {
 		_ = os.Remove(wpath)
 	}
 
-	time.Sleep(time.Millisecond * 100)
 	return 0
 }
 
@@ -373,7 +372,7 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				QuitFactorio()
 
 				for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
-					time.Sleep(time.Second)
+					time.Sleep(time.Millisecond * 100)
 					if x == (constants.MaxFactorioCloseWait - 1) {
 						CMS(m.ChannelID, "Factorio may be frozen, canceling rewind.")
 						return

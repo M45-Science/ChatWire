@@ -146,7 +146,7 @@ func main() {
 	fact.SetQueued(false)
 	fact.QuitFactorio()
 	for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 100)
 	}
 	fact.DoExit(false)
 }
