@@ -55,8 +55,8 @@ func main() {
 					disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, msg)
 				}(msg)
 
-				_ = os.Remove("cw.lock")
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
+				_ = os.Remove("cw.lock")
 				cwlog.DoLogCW("Sleep done, exiting.")
 				return
 			}
@@ -176,6 +176,7 @@ func startbot() {
 
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
+	bot.AddHandler(BotReady)
 	errb := bot.Open()
 
 	if errb != nil {
@@ -190,11 +191,11 @@ func startbot() {
 	}
 
 	bot.LogLevel = discordgo.LogWarning
-	bot.AddHandler(BotReady)
 }
 
-func BotReady(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	commands.RegisterCommands(s, i)
+func BotReady(s *discordgo.Session, r *discordgo.Ready) {
+
+	//commands.RegisterCommands(s)
 	s.AddHandler(MessageCreate)
 
 	botstatus := fmt.Sprintf("type %vhelp", cfg.Global.DiscordCommandPrefix)
@@ -208,6 +209,7 @@ func BotReady(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		disc.DS = s
 	}
 
+	cwlog.DoLogCW("Discord bot ready.")
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {

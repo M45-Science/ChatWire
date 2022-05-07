@@ -259,7 +259,7 @@ func ReadGCfg() bool {
 			err := os.MkdirAll(Global.PathData.FactorioServersRoot+"/"+Global.PathData.MapGenPath, os.ModePerm)
 			if err != nil {
 				cwlog.DoLogCW("Could not create map-gen-json directory.")
-				return false
+				//return false
 			}
 		}
 		if Global.Domain == "" {
@@ -335,6 +335,9 @@ func ReadGCfg() bool {
 			cwlog.DoLogCW("No Discord Guild ID specified. This MUST be set!")
 			Global.DiscordData.GuildID = "MY DISCORD GUILD/SERVER ID"
 		}
+		if Global.DiscordData.AppID == "" {
+			Global.DiscordData.AppID = "MY DISCORD APP ID"
+		}
 		if Global.DiscordData.Token == "" {
 			cwlog.DoLogCW("No Discord Token specified. This MUST be set!")
 			Global.DiscordData.Token = "MY DISCORD BOT TOKEN"
@@ -346,6 +349,12 @@ func ReadGCfg() bool {
 		if Global.FactorioData.Token == "" {
 			cwlog.DoLogCW("No Factorio Token specified. This MUST be set!")
 			Global.FactorioData.Token = "MY FACTORIO TOKEN"
+		}
+		if Global.FactorioData.Autosaves == 0 {
+			Global.FactorioData.Autosaves = 250
+		}
+		if Global.PathData.BanFile == "" {
+			Global.PathData.BanFile = "bans.json"
 		}
 		return true
 	} else { /* Otherwise just read in the config */

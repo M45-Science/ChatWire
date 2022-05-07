@@ -111,25 +111,29 @@ var cmds = []Command{
 		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."},
 }
 
-/*  Commands is a struct containing a slice of Command. */
-
-/*  Command is a struct containing fields that hold command information. */
 type Command struct {
 	Name          string
 	Command       func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 	ModeratorOnly bool
 	Help          string
 	XHelp         string
+	AppCmd        *discordgo.ApplicationCommand
 }
 
 /*  RegisterCommands registers the commands on start up. */
-func RegisterCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func RegisterCommands(s *discordgo.Session) {
 
 	/* Bypasses init loop compile error. */
 	CL = append(CL, cmds...)
 
-	for _, _ = range CL {
-		s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, nil)
+	for i, _ := range CL {
+		CL[i].AppCmd = &discordgo.ApplicationCommand{}
+		CL[i].AppCmd.Name = CL[i].Name
+		s.AddHandler(CL[i].Command)
+	}
+
+	for i, _ := range CL {
+		CL[i].AppCmd, _ = s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, CL[i].AppCmd)
 	}
 }
 
