@@ -147,7 +147,9 @@ var cmds = []Command{
 
 func ClearCommands() {
 	for _, v := range CL {
-		disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.DiscordData.GuildID, v.AppCmd.ID)
+		if v.AppCmd != nil {
+			disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.DiscordData.GuildID, v.AppCmd.ID)
+		}
 	}
 }
 
