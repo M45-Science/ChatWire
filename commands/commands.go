@@ -146,7 +146,9 @@ var cmds = []Command{
 }
 
 func ClearCommands() {
-	//Clear commands here!
+	for _, v := range CL {
+		disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.DiscordData.GuildID, v.AppCmd.ID)
+	}
 }
 
 /*  RegisterCommands registers the commands on start up. */
