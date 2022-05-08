@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"ChatWire/cfg"
@@ -13,41 +14,74 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+type Command struct {
+	Name          string
+	Command       func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
+	ModeratorOnly bool
+	Help          string
+	XHelp         string
+	AppCmd        *discordgo.ApplicationCommand
+}
+
 var CL []Command
 
 var cmds = []Command{
 	/*  Admin Commands */
-	{Name: "Stop", Command: admin.StopServer, ModeratorOnly: true,
-		Help:  "Stop Factorio",
-		XHelp: "This saves and closes Factorio only."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "stop-factorio",
+		Description: "Stops Factorio, if running.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.StopServer, ModeratorOnly: true},
 
-	{Name: "Start", Command: admin.Restart, ModeratorOnly: true,
-		Help:  "Restart Factorio",
-		XHelp: "Starts or restarts Factorio only."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "start-factorio",
+		Description: "Starts or restarts Factorio, even if already running.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Restart, ModeratorOnly: true},
 
-	{Name: "RebootCW", Command: admin.Reload, ModeratorOnly: true,
-		Help:  "Reboot everything",
-		XHelp: "Save and close Factorio, and reboot ChatWire."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "reboot-chatwire",
+		Description: "Closes Factorio (if running), and restarts ChatWire.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Reload, ModeratorOnly: true},
 
-	{Name: "ForceRebootCW", Command: admin.Reboot, ModeratorOnly: true,
-		Help:  "Don't use",
-		XHelp: "Yeah, this does not cleanly exit, don't use this.\nConsider this the `big red button` that says `do not press`."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "force-reboot-chatwire",
+		Description: "Big red button. Don't use this lightly. This does not cleanly exit Factorio or ChatWire.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Reboot, ModeratorOnly: true},
 
-	{Name: "Queue", Command: admin.Queue, ModeratorOnly: true,
-		Help:  "Queue reboot ",
-		XHelp: "Queue a reboot of Factorio and ChatWire.\nRuns once player count is 0."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "queue-reboot",
+		Description: "Queues up a reboot. This waits until no players are online to reboot Factorio and ChatWire.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Queue, ModeratorOnly: true},
 
-	{Name: "Archive", Command: admin.ArchiveMap, ModeratorOnly: true,
-		Help:  "Archive current map",
-		XHelp: "This takes the current map (if known) and archives it to our website. It also sends the download link to Discord."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "archive-map",
+		Description: "Archives the current map to our website, and posts the link to the chat.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.ArchiveMap, ModeratorOnly: true},
 
-	{Name: "RandomMap", Command: admin.RandomMap, ModeratorOnly: true,
-		Help:  "Previews a new random map",
-		XHelp: "If Factorio is shut down, this will generate a preview for a new random map each time. It does not generate the map, use MakeMap to generate the map seen in the last preview."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "new-map-preview",
+		Description: "Posts a new map, with preview to discord. Use /make-new-map to create it.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.RandomMap, ModeratorOnly: true},
 
-	{Name: "MakeMap", Command: admin.Generate, ModeratorOnly: true,
-		Help:  "Generates a new map",
-		XHelp: "If Factorio is shut down, this generates the random map from the last preview (otherwise a new random map)."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "make-new-map",
+		Description: "Creates a new map and loads it.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Generate, ModeratorOnly: true},
 
 	{Name: "NewMap", Command: admin.NewMap, ModeratorOnly: true,
 		Help:  "Map reset",
@@ -111,13 +145,8 @@ var cmds = []Command{
 		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."},
 }
 
-type Command struct {
-	Name          string
-	Command       func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
-	ModeratorOnly bool
-	Help          string
-	XHelp         string
-	AppCmd        *discordgo.ApplicationCommand
+func ClearCommands() {
+	//Clear commands here!
 }
 
 /*  RegisterCommands registers the commands on start up. */
@@ -126,15 +155,20 @@ func RegisterCommands(s *discordgo.Session) {
 	/* Bypasses init loop compile error. */
 	CL = append(CL, cmds...)
 
-	for i, _ := range CL {
-		CL[i].AppCmd = &discordgo.ApplicationCommand{}
-		CL[i].AppCmd.Name = CL[i].Name
-		s.AddHandler(CL[i].Command)
+	for i, c := range CL {
+		if c.AppCmd != nil {
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, c.AppCmd)
+			if err != nil {
+				log.Println("Failed to create command:", c.Name, err)
+				continue
+			}
+			CL[i].AppCmd = cmd
+		}
 	}
+}
 
-	for i, _ := range CL {
-		CL[i].AppCmd, _ = s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, CL[i].AppCmd)
-	}
+func SlashCommand(s *discordgo.Session, i *discordgo.MessageCreate) {
+	fmt.Println("MEEP!!!")
 }
 
 /*  RunCommand runs a specified command. */

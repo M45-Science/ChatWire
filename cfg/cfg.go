@@ -353,9 +353,6 @@ func ReadGCfg() bool {
 		if Global.FactorioData.Autosaves == 0 {
 			Global.FactorioData.Autosaves = 250
 		}
-		if Global.PathData.BanFile == "" {
-			Global.PathData.BanFile = "bans.json"
-		}
 		return true
 	} else { /* Otherwise just read in the config */
 		file, err := ioutil.ReadFile(constants.CWGlobalConfig)

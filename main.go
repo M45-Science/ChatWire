@@ -140,6 +140,7 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
+	commands.ClearCommands()
 	_ = os.Remove("cw.lock")
 	fact.SetAutoStart(false)
 	fact.SetCWReboot(false)
@@ -195,8 +196,9 @@ func startbot() {
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
-	//commands.RegisterCommands(s)
+	commands.RegisterCommands(s)
 	s.AddHandler(MessageCreate)
+	s.AddHandler(commands.SlashCommand)
 
 	botstatus := fmt.Sprintf("type %vhelp", cfg.Global.DiscordCommandPrefix)
 	errc := s.UpdateGameStatus(0, botstatus)
