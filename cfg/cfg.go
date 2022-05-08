@@ -245,6 +245,14 @@ func ReadGCfg() bool {
 				return false
 			}
 		}
+		if Global.Paths.DataFiles.RecordPlayers == "" {
+			Global.Paths.DataFiles.RecordPlayers = "recordPlayers.dat"
+			_, err := os.Create(Global.Paths.DataFiles.RecordPlayers)
+			if err != nil {
+				cwlog.DoLogCW("Could not create recordPlayers.dat")
+				return false
+			}
+		}
 		if Global.Paths.Folders.MapGenerators == "" {
 			Global.Paths.Folders.MapGenerators = "map-gen-json"
 
@@ -423,6 +431,15 @@ func ReadLCfg() bool {
 		}
 		if Local.Port <= 0 {
 			Local.Port = 7000
+		}
+		if Local.Settings.AFKMin <= 0 {
+			Local.Settings.AFKMin = 15
+		}
+		if Local.Settings.AutosaveMin <= 0 {
+			Local.Settings.AutosaveMin = 15
+		}
+		if !Local.Settings.AutoPause {
+			Local.Settings.AutoPause = true
 		}
 		if Local.Channel.ChatChannel == "" {
 			cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
