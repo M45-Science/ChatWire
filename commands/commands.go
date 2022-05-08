@@ -69,74 +69,116 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "new-map-preview",
-		Description: "Posts a new map, with preview to discord. Use /make-new-map to create it.",
+		Description: "Posts a new map, with preview to discord. Use /make-new-map after to create it.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.RandomMap, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "make-new-map",
-		Description: "Creates a new map and loads it.",
+		Description: "Creates a new map.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.Generate, ModeratorOnly: true},
 
-	{Name: "NewMap", Command: admin.NewMap, ModeratorOnly: true,
-		Help:  "Map reset",
-		XHelp: "Stops Factorio, archives the current map and generates a new one with the current preset."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "map-reset",
+		Description: "Stops Factorio, archives current map, generates new one, and starts Factorio.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.NewMap, ModeratorOnly: true},
 
-	{Name: "UpdateFact", Command: admin.Update, ModeratorOnly: true,
-		Help:  "Update Factorio/Cancel",
-		XHelp: "Checks if there is there is an update available for Factorio and update if there is. You can: update `CANCEL` to cancel an update."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "update-factorio",
+		Description: "Updates Factorio to the latest version if there is a new version available.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
 
-	{Name: "PSet", Command: admin.SetPlayerLevel, ModeratorOnly: true,
-		Help:  "pset <player> <level>",
-		XHelp: "`pset <player> <level>`\nSets the <player> (case sensitive) to <level>\nLevels: `Admin, Regular, Member and New`. Also `Banned` and `Deleted`."},
+		Command: admin.Update, ModeratorOnly: true},
 
-	{Name: "RCfg", Command: admin.ReloadConfig, ModeratorOnly: true,
-		Help:  "Reload configs",
-		XHelp: "This reloads the server config files from disk.\nDon't use this, this is only for reloading manually edited config files."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "player-set",
+		Description: "Sets a player's rank.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.SetPlayerLevel, ModeratorOnly: true},
 
-	{Name: "Set", Command: admin.Set, ModeratorOnly: true,
-		Help:  "Set options",
-		XHelp: "This allows most options to be set.\nTo see all options, run the command with no options.\nThen: `set <option> <value>`"},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "reload-config",
+		Description: "Reloads config files from disk, only used when manually editing config files.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.ReloadConfig, ModeratorOnly: true},
 
-	{Name: "Rewind", Command: admin.Rewind, ModeratorOnly: true,
-		Help:  "Rewind map, see autosaves",
-		XHelp: "`rewind <autosave number>`\nRunning with no argument shows last 20 autosaves with date stamps. NOTE: Any autosave can be loaded."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "config",
+		Description: "Change server configuration options.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Set, ModeratorOnly: true},
 
-	{Name: "ModUp", Command: admin.ForceUpdateMods, ModeratorOnly: true,
-		Help:  "Update installed Factorio mods",
-		XHelp: "Forces installed Facorio mods to update, even if automatic mod updaing is disabled."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "rewind-map",
+		Description: "Rewinds the map to specified autosave.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Rewind, ModeratorOnly: true},
 
-	{Name: "SetSeed", Command: admin.SetSeed, ModeratorOnly: true,
-		Help:  "Set seed number.",
-		XHelp: "Set seed number for next map, 0 for random"},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "update-mods",
+		Description: "Updates Factorio mods to the latest version if there is a new version available.",
+	},
+		Command: admin.ForceUpdateMods, ModeratorOnly: true},
 
-	{Name: "Debug", Command: admin.DebugStat, ModeratorOnly: true,
-		Help:  "debug",
-		XHelp: "Development and testing use only."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "set-map-seed",
+		Description: "Sets the map seed for the next map reset. Value is cleared after use.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.SetSeed, ModeratorOnly: true},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "debug",
+		Description: "Only used for development and testing.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.DebugStat, ModeratorOnly: true},
 
 	/*  Player Commands */
-	{Name: "Whois", Command: user.Whois, ModeratorOnly: false,
-		Help:  "Show player info",
-		XHelp: "This searches for results (even partial) for the supplied name. The names searched are both `Discord` (if registered) and `Factorio` names.\nOther options: `recent`, `new` and `registered`. These show the most: `recently-online`, `just-joined` and `recently-registered` players. \n`whois <option or name>`"},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "whois",
+		Description: "Shows information about a player.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.Whois, ModeratorOnly: false},
 
-	{Name: "Online", Command: user.PlayersOnline, ModeratorOnly: false,
-		Help:  "Show players online",
-		XHelp: "This just shows players who are currently in the game on this server."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "players-online",
+		Description: "Shows detailed info about players currently online.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.PlayersOnline, ModeratorOnly: false},
 
-	{Name: "Info", Command: user.ShowSettings, ModeratorOnly: false,
-		Help:  "Server & Map info",
-		XHelp: "Shows relevant map/server options and statistics, to see everything type: `info verbose`"},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "server-info",
+		Description: "Shows detailed information on the server settings.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.ShowSettings, ModeratorOnly: false},
 
-	{Name: "Register", Command: user.AccessServer, ModeratorOnly: false,
-		Help:  "Get an upgraded Discord role!",
-		XHelp: "Registration gives you a Discord role that matches your Factorio level. You only need to do this once.\n`Make sure your DMs are turned on in Discord`, or you will not get your registration code. The DM will contain a special code and instructions on how to complete registration.\nThe supplied code is pasted as a `COMMAND in FACTORIO` on the Factorio server with the same name as `the Discord channel` your ran it on. If the code isn't used in a few minutes it will expire. `DO NOT SHARE OR PASTE THIS CODE IN CHAT OR ON DISCORD.`\nIf you `ACCIDENTALLY` paste the code somewhere public, use the `register` command again, to `invalidate the old code` and `receive a new one`.\n"},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "register",
+		Description: "Registers a new account, giving you accociated Discord roles with more privleges.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.AccessServer, ModeratorOnly: false},
 
-	{Name: "Vote-Rewind", Command: user.VoteRewind, ModeratorOnly: false,
-		Help:  "Vote to rewind the map",
-		XHelp: "This shows the last `20 autosaves` and `all votes`.\nMap-rewind has a one-minute cooldown, and votes expire after `30 minutes`, although you can `change your vote` a few times.\nYou must wait for your old vote to `expire` to vote `again`.\nTo vote: `vote-rewind <autosave number>`\nThis command is only accessible to `REGULARS` on `DISCORD`! (see `help register`).\n`NOTE:` Any autosave can be loaded, not just ones displayed in the command."},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "vote-rewind",
+		Description: "Vote to rewind the map to the specified autosave (two votes needed!).",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.VoteRewind, ModeratorOnly: false},
 }
 
 func ClearCommands() {
