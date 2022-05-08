@@ -20,7 +20,7 @@ func WriteRecord() {
 	glob.RecordPlayersLock.Lock()
 	defer glob.RecordPlayersLock.Unlock()
 
-	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.RecordPlayersFilename)
+	fo, err := os.Create(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.DataFiles.RecordPlayers)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't open max file, skipping...")
 		return
@@ -34,7 +34,7 @@ func WriteRecord() {
 
 	buffer := fmt.Sprintf("%d", glob.RecordPlayers)
 
-	err = ioutil.WriteFile(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+cfg.Local.ServerCallsign+"/"+cfg.Global.PathData.RecordPlayersFilename, []byte(buffer), 0644)
+	err = ioutil.WriteFile(cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.FactorioPrefix+cfg.Local.Callsign+"/"+cfg.Global.Paths.DataFiles.RecordPlayers, []byte(buffer), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write max file.")
@@ -49,7 +49,7 @@ func LoadRecord() {
 	glob.RecordPlayersLock.Lock()
 	defer glob.RecordPlayersLock.Unlock()
 
-	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.RecordPlayersFilename)
+	filedata, err := ioutil.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.DataFiles.RecordPlayers)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't read max file, skipping...")
 		return

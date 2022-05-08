@@ -122,8 +122,8 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	oneHourAvr = oneHourAvr / 6481800.0 * 60.0
 	fact.TickHistoryLock.Unlock()
 
-	if cfg.Local.SlowConnect.SlowConnect && cfg.Local.SlowConnect.DefaultSpeed != 1.0 {
-		buf = buf + fmt.Sprintf("\nUPS is set to: %2.2f\n", cfg.Local.SlowConnect.DefaultSpeed*60.0)
+	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled && cfg.Local.Options.SoftModOptions.SlowConnect.Speed != 1.0 {
+		buf = buf + fmt.Sprintf("\nUPS is set to: %2.2f\n", cfg.Local.Options.SoftModOptions.SlowConnect.Speed*60.0)
 	}
 	if oneHourAvr > 0 {
 		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f, 30m: %2.2f, 1h: %2.2f\n", tenMinAvr, thirtyMinAvr, oneHourAvr)
@@ -138,7 +138,6 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		buf = buf + "(Server is paused)\n"
 	}
 
-	buf = buf + "```For more info `" + cfg.Global.DiscordCommandPrefix + "info verbose`"
 	fact.CMS(m.ChannelID, buf)
 
 }

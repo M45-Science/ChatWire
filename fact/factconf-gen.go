@@ -50,16 +50,16 @@ type FactConf struct {
 func GenerateFactorioConfig() bool {
 
 	tempPath := constants.ServSettingsName + ".tmp"
-	finalPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + constants.ServSettingsName
+	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + constants.ServSettingsName
 
 	var servName string = ""
-	if cfg.Local.DoWhitelist {
+	if cfg.Local.Options.Whitelist {
 		cfg.ServerPrefix = constants.MembersPrefix
-		servName = "\u0080 [" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
+		servName = "\u0080 [" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
 	} else {
 		cfg.ServerPrefix = ""
-		servName = "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.ServerCallsign) + "-" + cfg.Local.Name
+		servName = "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 	}
 
 	/* Setup some defaults */
@@ -68,57 +68,54 @@ func GenerateFactorioConfig() bool {
 	autosave_interval := 15
 	autokick := 30
 
-	if cfg.Local.SoftModOptions.DefaultUPSRate > 0 {
-		heartbeats = cfg.Local.SoftModOptions.DefaultUPSRate
+	if cfg.Global.Options.AutosaveMax > 0 {
+		autosaves = cfg.Global.Options.AutosaveMax
 	}
-	if cfg.Global.FactorioData.Autosaves > 0 {
-		autosaves = cfg.Global.FactorioData.Autosaves
+	if cfg.Local.Settings.AutosaveMin > 0 {
+		autosave_interval = cfg.Local.Settings.AutosaveMin
 	}
-	if cfg.Local.FactorioData.AutoSaveMinutes > 0 {
-		autosave_interval = cfg.Local.FactorioData.AutoSaveMinutes
-	}
-	if cfg.Local.FactorioData.AFKKickMinutes > 0 {
-		autokick = cfg.Local.FactorioData.AFKKickMinutes
+	if cfg.Local.Settings.AFKMin > 0 {
+		autokick = cfg.Local.Settings.AFKMin
 	}
 
 	/* Add some settings to descrLines, such as cheats, no blueprint, etc. */
 
 	var descrLines []string
 
-	descrLines = strings.Split(cfg.Global.FactorioData.ServerDescription, "\n")
-	if cfg.Local.ResetScheduleText != "" {
-		descrLines = append(descrLines, AddFactColor("orange", "MAP RESETS: "+cfg.Local.ResetScheduleText))
+	descrLines = strings.Split(cfg.Global.Options.Description, "\n")
+	if cfg.Local.Options.ScheduleText != "" {
+		descrLines = append(descrLines, AddFactColor("orange", "MAP RESETS: "+cfg.Local.Options.ScheduleText))
 	}
-	if cfg.Local.DoWhitelist {
+	if cfg.Local.Options.Whitelist {
 		descrLines = append(descrLines, AddFactColor("orange", "MEMBERS-ONLY"))
 	}
-	if cfg.Local.SoftModOptions.FriendlyFire {
+	if cfg.Local.Options.SoftModOptions.FriendlyFire {
 		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
 	}
-	if cfg.Local.SoftModOptions.EnableCheats {
+	if cfg.Local.Options.SoftModOptions.Cheats {
 		descrLines = append(descrLines, AddFactColor("yellow", "SANDBOX"))
 	}
-	if cfg.Local.SoftModOptions.DisableBlueprints {
+	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 		descrLines = append(descrLines, AddFactColor("blue", "NO BLUEPRINTS"))
 	}
-	if cfg.Local.SlowConnect.SlowConnect {
+	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
 		descrLines = append(descrLines, AddFactColor("yellow", "Slow-connect on"))
 	}
-	if !cfg.Local.FactorioData.AutoPause {
+	if !cfg.Local.Settings.AutoPause {
 		descrLines = append(descrLines, AddFactColor("orange", "AUTO-PAUSE OFF"))
 	}
 	/*if cfg.Global.AuthServerBans {
 		descrLines = append(descrLines, "Auth-server bans enabled")
 	}*/
-	if cfg.Local.MapGenPreset != "" {
-		descrLines = append(descrLines, "Map generator: "+cfg.Local.MapGenPreset)
-	} else if cfg.Local.MapPreset != "" {
-		descrLines = append(descrLines, "Map preset: "+cfg.Local.MapPreset)
+	if cfg.Local.Settings.MapGenerator != "" {
+		descrLines = append(descrLines, "Map generator: "+cfg.Local.Settings.MapGenerator)
+	} else if cfg.Local.Settings.MapPreset != "" {
+		descrLines = append(descrLines, "Map preset: "+cfg.Local.Settings.MapPreset)
 	}
 	/*if cfg.Global.FactorioData.Username != "" {
 		descrLines = append(descrLines, "Server owner: "+cfg.Global.FactorioData.Username)
 	}*/
-	descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Domain, cfg.Local.Port)))
+	descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)))
 
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
@@ -139,8 +136,8 @@ func GenerateFactorioConfig() bool {
 			Steam:  true,
 		},
 
-		Username:                  cfg.Global.FactorioData.Username,
-		Token:                     cfg.Global.FactorioData.Token,
+		Username:                  cfg.Global.Factorio.Username,
+		Token:                     cfg.Global.Factorio.Token,
 		Require_user_verification: true, /* DEBUG ONLY */
 		Max_heartbeats_per_second: heartbeats,
 		Allow_commands:            "admins-only",
@@ -148,7 +145,7 @@ func GenerateFactorioConfig() bool {
 		Autosave_interval:       autosave_interval,
 		Autosave_slots:          autosaves,
 		Afk_autokick_interval:   autokick,
-		Auto_pause:              cfg.Local.FactorioData.AutoPause,
+		Auto_pause:              cfg.Local.Settings.AutoPause,
 		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
 	}
@@ -157,8 +154,8 @@ func GenerateFactorioConfig() bool {
 	c := "/config set"
 	if IsFactorioBooted() {
 		/* Send over rcon, to preserve newlines */
-		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.RconPortOffset)
-		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.RconPass)
+		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
+		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.Factorio.RCONPass)
 		if err != nil || remoteConsole == nil {
 			cwlog.DoLogCW(fmt.Sprintf("Error: `%v`\n", err))
 		}

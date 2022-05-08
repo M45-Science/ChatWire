@@ -97,7 +97,7 @@ func TallyRewindVotes() (string, int) {
 /* Expects locked votebox */
 func WriteRewindVotes() bool {
 	finalPath := constants.VoteRewindFile
-	tempPath := constants.VoteRewindFile + "." + cfg.Local.ServerCallsign + ".tmp"
+	tempPath := constants.VoteRewindFile + "." + cfg.Local.Callsign + ".tmp"
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)

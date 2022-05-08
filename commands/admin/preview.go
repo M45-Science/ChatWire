@@ -21,7 +21,7 @@ import (
 func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []string) {
 
 	if fact.IsFactRunning() {
-		fact.CMS(m.ChannelID, "Stop server first! ("+cfg.Global.DiscordCommandPrefix+"stop)")
+		fact.CMS(m.ChannelID, "Stop server first! ($stop)")
 		return
 	}
 
@@ -36,21 +36,21 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 	buf := new(bytes.Buffer)
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	fact.LastMapSeed = ourseed
-	MapPreset := cfg.Local.MapPreset
-	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	MapPreset := cfg.Local.Settings.MapPreset
+	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.Settings.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	fact.LastMapCode = ourcode
 
-	path := fmt.Sprintf("%s%s.png", cfg.Global.PathData.MapPreviewPath, ourcode)
-	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.PathData.MapPreviewPath, ourcode)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.MapPreviewData.Res, "--map-preview-scale=" + cfg.Global.MapPreviewData.Scale, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.MapPreviewData.Args}
+	path := fmt.Sprintf("%s%s.png", cfg.Global.Paths.Folders.MapPreviews, ourcode)
+	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.Paths.Folders.MapPreviews, ourcode)
+	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.Options.PreviewSettings.PNGRes, "--map-preview-scale=" + cfg.Global.Options.PreviewSettings.PNGScale, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.Options.PreviewSettings.Arguments}
 
 	/* Append map gen if set */
-	if cfg.Local.MapGenPreset != "" {
+	if cfg.Local.Settings.MapGenerator != "" {
 		args = append(args, "--map-gen-settings")
-		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
+		args = append(args, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
 
 		args = append(args, "--map-settings")
-		args = append(args, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+		args = append(args, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
 	} else {
 		args = append(args, "--preset")
 		args = append(args, MapPreset)
@@ -74,8 +74,8 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 		}
 	}
 
-	imgargs := []string{path, "-quality", cfg.Global.MapPreviewData.JPGQuality, "-scale", cfg.Global.MapPreviewData.JPGScale, jpgpath}
-	cmdb := exec.Command(cfg.Global.PathData.ImageMagickPath, imgargs...)
+	imgargs := []string{path, "-quality", cfg.Global.Options.PreviewSettings.JPGQuality, "-scale", cfg.Global.Options.PreviewSettings.JPGScale, jpgpath}
+	cmdb := exec.Command(cfg.Global.Paths.Binaries.ImgCmd, imgargs...)
 	_, berr := cmdb.CombinedOutput()
 
 	/* Delete PNG, we don't need it now */
@@ -89,7 +89,7 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 
 	buffer := "Preview failed."
 	if preview_made {
-		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, cfg.Global.PathData.MapPreviewURL, ourcode)
+		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, cfg.Global.Paths.URLs.MapPreviewURL, ourcode)
 	}
 
 	fact.CMS(m.ChannelID, buffer)

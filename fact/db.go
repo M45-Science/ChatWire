@@ -19,7 +19,7 @@ func WatchDatabaseFile() {
 	for glob.ServerRunning {
 		time.Sleep(time.Second * 5)
 
-		filePath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+		filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
@@ -279,7 +279,7 @@ func LoadPlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	filedata, err := ioutil.ReadFile(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
+	filedata, err := ioutil.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't read db file, skipping...")
 		return
@@ -321,7 +321,7 @@ func WritePlayers() {
 
 	buffer := ""
 
-	fo, err := os.Create(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName)
+	fo, err := os.Create(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't open db file, skipping...")
 		return
@@ -340,7 +340,7 @@ func WritePlayers() {
 	}
 	glob.PlayerListLock.RUnlock()
 
-	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.ServerCallsign)
+	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
 	err = ioutil.WriteFile(nfilename, []byte(buffer), 0644)
 
 	if err != nil {
@@ -349,7 +349,7 @@ func WritePlayers() {
 	}
 
 	oldName := nfilename
-	newName := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.DBFileName
+	newName := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 	err = os.Rename(oldName, newName)
 
 	if err != nil {

@@ -57,7 +57,7 @@ func MainLoops() {
 					fact.WriteFact("/time")
 				}
 				if nores == 120 {
-					fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio unresponsive for over two minutes... rebooting.")
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio unresponsive for over two minutes... rebooting.")
 					fact.SetRelaunchThrottle(0)
 					fact.QuitFactorio()
 					for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
@@ -71,94 +71,6 @@ func MainLoops() {
 
 				launchFactortio()
 			}
-		}
-	}()
-
-	/********************************
-	 * Discord stats update
-	 ********************************/
-	go func() {
-		time.Sleep(5 * time.Minute)
-		for glob.ServerRunning {
-			time.Sleep(5 * time.Second)
-			if cfg.Local.WriteStatsDisc {
-
-				banlist.BanListLock.Lock()
-				banCount := len(banlist.BanList)
-				banlist.BanListLock.Unlock()
-
-				numreg := 0
-				numnew := 0
-				numtrust := 0
-				numregulars := 0
-				numadmin := 0
-				numother := 0
-
-				glob.PlayerListLock.RLock()
-				for _, player := range glob.PlayerList {
-					if player.ID != "" {
-						numreg++
-					}
-
-					if player.Level == 0 {
-						numnew++
-					} else if player.Level == 1 {
-						numtrust++
-					} else if player.Level == 2 {
-						numregulars++
-					} else if player.Level == 255 {
-						numadmin++
-					} else {
-						numother++
-					}
-				}
-				glob.PlayerListLock.RUnlock()
-
-				totalstat := fmt.Sprintf("total-%v", (numnew + numtrust + numregulars + numadmin + banCount))
-				memberstat := fmt.Sprintf("members-%v", numtrust)
-				regularstat := fmt.Sprintf("regulars-%v", numregulars)
-
-				if glob.LastRegularStat != regularstat && cfg.Global.DiscordData.StatRegularsChannelID != "" {
-					_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatRegularsChannelID, &discordgo.ChannelEdit{Name: regularstat, Position: 1})
-					glob.LastRegularStat = regularstat
-					if err != nil {
-						cwlog.DoLogCW(err.Error())
-					}
-					time.Sleep(5 * time.Minute)
-				}
-
-				if glob.LastMemberStat != memberstat && cfg.Global.DiscordData.StatMemberChannelID != "" {
-					_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatMemberChannelID, &discordgo.ChannelEdit{Name: memberstat, Position: 2})
-					glob.LastMemberStat = memberstat
-					if err != nil {
-						cwlog.DoLogCW(err.Error())
-					}
-					time.Sleep(5 * time.Minute)
-				}
-
-				banstat := fmt.Sprintf("bans-%v", banCount)
-				if glob.LastBanStat != banstat {
-					if cfg.Global.DiscordData.StatBanChannelID != "" {
-						_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatBanChannelID, &discordgo.ChannelEdit{Name: banstat, Position: 3})
-						glob.LastBanStat = banstat
-						if err != nil {
-							cwlog.DoLogCW(err.Error())
-						}
-						time.Sleep(5 * time.Minute)
-					}
-				}
-
-				if glob.LastTotalStat != totalstat && cfg.Global.DiscordData.StatTotalChannelID != "" {
-					_, err := disc.DS.ChannelEditComplex(cfg.Global.DiscordData.StatTotalChannelID, &discordgo.ChannelEdit{Name: totalstat, Position: 4})
-					glob.LastTotalStat = totalstat
-					if err != nil {
-						cwlog.DoLogCW(err.Error())
-					}
-					time.Sleep(5 * time.Minute)
-				}
-
-			}
-
 		}
 	}()
 
@@ -179,7 +91,7 @@ func MainLoops() {
 					msg := "Locker bug detected (" + fact.LastLockerName + "), kicking."
 					cwlog.DoLogCW(msg)
 					fact.WriteFact("/chat " + msg)
-					fact.CMS(cfg.Local.ChannelData.ChatID, msg)
+					fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 					fact.WriteFact("/kick " + fact.LastLockerName)
 				}
 			}
@@ -247,9 +159,9 @@ func MainLoops() {
 
 						/* Put messages into proper lists */
 						for _, msg := range lcopy {
-							if msg.Channel == cfg.Local.ChannelData.ChatID {
+							if msg.Channel == cfg.Local.Channel.ChatChannel {
 								factmsg = append(factmsg, msg.Text)
-							} else if msg.Channel == cfg.Global.DiscordData.ReportChannelID {
+							} else if msg.Channel == cfg.Global.Discord.ReportChannel {
 								moder = append(moder, msg.Text)
 							} else {
 								disc.SmartWriteDiscord(msg.Channel, msg.Text)
@@ -264,14 +176,14 @@ func MainLoops() {
 							oldlen := len(buf) + 1
 							addlen := len(line)
 							if oldlen+addlen >= 2000 {
-								disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, buf)
+								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 								buf = line
 							} else {
 								buf = buf + "\n" + line
 							}
 						}
 						if buf != "" {
-							disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, buf)
+							disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 						}
 
 						/* Moderation */
@@ -280,14 +192,14 @@ func MainLoops() {
 							oldlen := len(buf) + 1
 							addlen := len(line)
 							if oldlen+addlen >= 2000 {
-								disc.SmartWriteDiscord(cfg.Global.DiscordData.ReportChannelID, buf)
+								disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
 								buf = line
 							} else {
 								buf = buf + "\n" + line
 							}
 						}
 						if buf != "" {
-							disc.SmartWriteDiscord(cfg.Global.DiscordData.ReportChannelID, buf)
+							disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
 						}
 					}
 
@@ -366,7 +278,7 @@ func MainLoops() {
 			time.Sleep(5 * time.Second)
 			tn := time.Now()
 
-			if cfg.Local.SlowConnect.SlowConnect {
+			if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
 
 				fact.ConnectPauseLock.Lock()
 
@@ -376,11 +288,11 @@ func MainLoops() {
 						fact.ConnectPauseCount = 0
 
 						buf := "Catch-up taking over 30 seconds, returning to normal speed."
-						fact.CMS(cfg.Local.ChannelData.ChatID, buf)
+						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 						fact.WriteFact("/chat (SYSTEM) " + buf)
 
-						if cfg.Local.SlowConnect.DefaultSpeed > 0.0 {
-							fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.DefaultSpeed))
+						if cfg.Local.Options.SoftModOptions.SlowConnect.Speed > 0.0 {
+							fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.Speed))
 						} else {
 							fact.WriteFact("/gspeed 1.0")
 						}
@@ -493,9 +405,9 @@ func MainLoops() {
 
 				/*  Attempt to get the guild from the state,
 				 *  If there is an error, fall back to the restapi. */
-				nguild, err = disc.DS.State.Guild(cfg.Global.DiscordData.GuildID)
+				nguild, err = disc.DS.State.Guild(cfg.Global.Discord.Guild)
 				if err != nil {
-					nguild, err = disc.DS.Guild(cfg.Global.DiscordData.GuildID)
+					nguild, err = disc.DS.Guild(cfg.Global.Discord.Guild)
 					if err != nil {
 						cwlog.DoLogCW("Failed to get valid guild data, giving up.")
 						disc.GuildLock.Unlock()
@@ -526,38 +438,38 @@ func MainLoops() {
 			if disc.Guild != nil {
 				changed := false
 				for _, role := range disc.Guild.Roles {
-					if cfg.Global.RoleData.ModeratorRoleName != "" &&
-						role.Name == cfg.Global.RoleData.ModeratorRoleName &&
-						role.ID != "" && cfg.Global.RoleData.ModeratorRoleID != role.ID {
-						cfg.Global.RoleData.ModeratorRoleID = role.ID
+					if cfg.Global.Discord.Roles.Moderator != "" &&
+						role.Name == cfg.Global.Discord.Roles.Moderator &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Moderator != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Moderator = role.ID
 						changed = true
 
-					} else if cfg.Global.RoleData.RegularRoleName != "" &&
-						role.Name == cfg.Global.RoleData.RegularRoleName &&
-						role.ID != "" && cfg.Global.RoleData.RegularRoleID != role.ID {
-						cfg.Global.RoleData.RegularRoleID = role.ID
+					} else if cfg.Global.Discord.Roles.Regular != "" &&
+						role.Name == cfg.Global.Discord.Roles.Regular &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Regular != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Regular = role.ID
 						changed = true
 
-					} else if cfg.Global.RoleData.MemberRoleName != "" &&
-						role.Name == cfg.Global.RoleData.MemberRoleName &&
-						role.ID != "" && cfg.Global.RoleData.MemberRoleID != role.ID {
-						cfg.Global.RoleData.MemberRoleID = role.ID
+					} else if cfg.Global.Discord.Roles.Member != "" &&
+						role.Name == cfg.Global.Discord.Roles.Member &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Member != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Member = role.ID
 						changed = true
 
-					} else if cfg.Global.RoleData.NewRoleName != "" &&
-						role.Name == cfg.Global.RoleData.NewRoleName &&
-						role.ID != "" && cfg.Global.RoleData.NewRoleID != role.ID {
-						cfg.Global.RoleData.NewRoleID = role.ID
+					} else if cfg.Global.Discord.Roles.New != "" &&
+						role.Name == cfg.Global.Discord.Roles.New &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.New != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.New = role.ID
 						changed = true
-					} else if cfg.Global.RoleData.PatreonRoleName != "" &&
-						role.Name == cfg.Global.RoleData.PatreonRoleName &&
-						role.ID != "" && cfg.Global.RoleData.PatreonRoleID != role.ID {
-						cfg.Global.RoleData.PatreonRoleID = role.ID
+					} else if cfg.Global.Discord.Roles.Patreon != "" &&
+						role.Name == cfg.Global.Discord.Roles.Patreon &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Patreon != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Patreon = role.ID
 						changed = true
-					} else if cfg.Global.RoleData.NitroRoleName != "" &&
-						role.Name == cfg.Global.RoleData.NitroRoleName &&
-						role.ID != "" && cfg.Global.RoleData.NitroRoleID != role.ID {
-						cfg.Global.RoleData.NitroRoleID = role.ID
+					} else if cfg.Global.Discord.Roles.Nitro != "" &&
+						role.Name == cfg.Global.Discord.Roles.Nitro &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Nitro != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Nitro = role.ID
 						changed = true
 					}
 				}
@@ -626,7 +538,7 @@ func MainLoops() {
 		for glob.ServerRunning {
 			time.Sleep(30 * time.Second)
 
-			if cfg.Local.AutoUpdate {
+			if cfg.Local.Options.AutoUpdate {
 				if fact.IsFactRunning() && fact.NewVersion != constants.Unknown {
 					if fact.GetNumPlayers() > 0 {
 
@@ -635,7 +547,7 @@ func MainLoops() {
 						/* Warn players */
 						if numwarn < glob.UpdateGraceMinutes {
 							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
-							fact.CMS(cfg.Local.ChannelData.ChatID, msg)
+							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.WriteFact("/cchat " + fact.AddFactColor("orange", msg))
 						}
 						time.Sleep(1 * time.Minute)
@@ -643,7 +555,7 @@ func MainLoops() {
 						/* Reboot anyway */
 						if numwarn > glob.UpdateGraceMinutes {
 							msg := "(SYSTEM) Rebooting for Factorio update."
-							fact.CMS(cfg.Local.ChannelData.ChatID, msg)
+							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.WriteFact("/cchat " + fact.AddFactColor("orange", msg))
 							fact.SetUpdateWarnCounter(0)
 							fact.QuitFactorio()
@@ -682,14 +594,14 @@ func MainLoops() {
 					}
 				} else if errb != nil && !failureReported {
 					failureReported = true
-					fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .queue file, ignoring.")
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .queue file, ignoring.")
 				}
 			}
 			/* Halt, regardless of game state */
 			if _, err = os.Stat(".halt"); err == nil {
 				if errb = os.Remove(".halt"); errb == nil {
 					if fact.IsFactRunning() {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting, closing Factorio.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting, closing Factorio.")
 						fact.SetAutoStart(false)
 						fact.QuitFactorio()
 						for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
@@ -697,12 +609,12 @@ func MainLoops() {
 						}
 						fact.DoExit(false)
 					} else {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "ChatWire is halting.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting.")
 						fact.DoExit(false)
 					}
 				} else if errb != nil && !failureReported {
 					failureReported = true
-					fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .halt file, ignoring.")
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .halt file, ignoring.")
 				}
 			}
 
@@ -712,22 +624,22 @@ func MainLoops() {
 				 * This should eventually grab save name from file */
 				if _, err = os.Stat(".qrestart"); err == nil {
 					if errb = os.Remove(".qrestart"); errb == nil {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio quick restarting!")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio quick restarting!")
 						fact.QuitFactorio()
 					} else if errb != nil && !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .qrestart file, ignoring.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .qrestart file, ignoring.")
 					}
 				}
 				/* Stop game */
 				if _, err = os.Stat(".stop"); err == nil {
 					if errb = os.Remove(".stop"); errb == nil {
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio stopping!")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio stopping!")
 						fact.SetAutoStart(false)
 						fact.QuitFactorio()
 					} else if errb != nil && !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .stop file, ignoring.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
 					}
 				}
 				/* New map */
@@ -736,7 +648,7 @@ func MainLoops() {
 						fact.Map_reset("")
 					} else if errb != nil && !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .stop file, ignoring.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
 					}
 				}
 				/* Message */
@@ -751,12 +663,12 @@ func MainLoops() {
 								message = strings.ReplaceAll(message, "\r", "") /* replace return */
 								fact.Map_reset(message)
 							} else {
-								fact.LogCMS(cfg.Local.ChannelData.ChatID, ".message text is invalid, ignoring.")
+								fact.LogCMS(cfg.Local.Channel.ChatChannel, ".message text is invalid, ignoring.")
 							}
 						}
 					} else if errb != nil && !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .message file, ignoring.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .message file, ignoring.")
 					}
 				}
 			} else { /*  Only if game is NOT running */
@@ -764,10 +676,10 @@ func MainLoops() {
 				if _, err = os.Stat(".start"); err == nil {
 					if errb = os.Remove(".start"); errb == nil {
 						fact.SetAutoStart(true)
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio starting!")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio starting!")
 					} else if errb != nil && !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.ChannelData.ChatID, "Failed to remove .start file, ignoring.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .start file, ignoring.")
 					}
 				}
 			}

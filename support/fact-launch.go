@@ -16,9 +16,9 @@ import (
 func launchFactortio() {
 
 	/* Insert soft mod */
-	if cfg.Global.PathData.ScriptInserterPath != "" {
-		command := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.ScriptInserterPath
-		out, errs := exec.Command(command, cfg.Local.ServerCallsign).Output()
+	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
+		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
+		out, errs := exec.Command(command, cfg.Local.Callsign).Output()
 		if errs != nil {
 			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
 		} else {
@@ -29,7 +29,7 @@ func launchFactortio() {
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
 		fact.SetAutoStart(false)
-		fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to generate config file for Factorio server.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to generate config file for Factorio server.")
 		return
 	}
 
@@ -56,14 +56,14 @@ func launchFactortio() {
 	var tempargs []string
 
 	/* Factorio launch parameters */
-	rconport := cfg.Local.Port + cfg.Global.RconPortOffset
+	rconport := cfg.Local.Port + cfg.Global.Options.RconOffset
 	rconportStr := fmt.Sprintf("%v", rconport)
-	rconpass := cfg.Global.RconPass
+	rconpass := cfg.Global.Factorio.RCONPass
 	port := cfg.Local.Port
 	postStr := fmt.Sprintf("%v", port)
-	serversettings := cfg.Global.PathData.FactorioServersRoot +
-		cfg.Global.PathData.FactorioHomePrefix +
-		cfg.Local.ServerCallsign + "/" +
+	serversettings := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.FactorioPrefix +
+		cfg.Local.Callsign + "/" +
 		constants.ServSettingsName
 
 	tempargs = append(tempargs, "--start-server-load-latest")
@@ -80,19 +80,19 @@ func launchFactortio() {
 	tempargs = append(tempargs, serversettings)
 
 	/*Auth Server Bans ( global bans ) */
-	if cfg.Global.AuthServerBans {
+	if cfg.Global.Options.UseAuthserver {
 		tempargs = append(tempargs, "--use-authserver-bans")
 	}
 
 	/* Whitelist */
-	if cfg.Local.DoWhitelist {
+	if cfg.Local.Options.Whitelist {
 		tempargs = append(tempargs, "--use-server-whitelist")
 		tempargs = append(tempargs, "true")
 	}
 
 	/* Write or delete whitelist */
 	count := fact.WriteWhitelist()
-	if count > 0 && cfg.Local.DoWhitelist {
+	if count > 0 && cfg.Local.Options.Whitelist {
 		cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
 	}
 

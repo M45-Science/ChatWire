@@ -1,8 +1,6 @@
 package admin
 
 import (
-	"fmt"
-
 	"ChatWire/cfg"
 	"ChatWire/fact"
 	"ChatWire/support"
@@ -33,20 +31,17 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	fact.CMS(m.ChannelID, "Config files reloaded.")
 
 	/* Config reset-interval */
-	if cfg.Local.ResetScheduleText != "" {
-		fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
+	if cfg.Local.Options.ScheduleText != "" {
+		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleText)
 	}
-	if cfg.Local.SoftModOptions.DefaultUPSRate > 0 && cfg.Local.SoftModOptions.DefaultUPSRate < 1000 {
-		fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.SoftModOptions.DefaultUPSRate))
-		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.SoftModOptions.DefaultUPSRate)+"hz.")
+
+	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
+		fact.WriteFact("/blueprints " + support.BoolToString(!cfg.Local.Options.SoftModOptions.DisableBlueprints))
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Blueprints disabled.")
 	}
-	if cfg.Local.SoftModOptions.DisableBlueprints {
-		fact.WriteFact("/blueprints " + support.BoolToString(!cfg.Local.SoftModOptions.DisableBlueprints))
-		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
-	}
-	if cfg.Local.SoftModOptions.EnableCheats {
-		fact.WriteFact("/enablecheats " + support.BoolToString(cfg.Local.SoftModOptions.EnableCheats))
-		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
+	if cfg.Local.Options.SoftModOptions.Cheats {
+		fact.WriteFact("/enablecheats " + support.BoolToString(cfg.Local.Options.SoftModOptions.Cheats))
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cheats enabled.")
 	}
 	/* This also uses /config to live change settings. */
 	fact.GenerateFactorioConfig()

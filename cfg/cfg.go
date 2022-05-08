@@ -15,186 +15,179 @@ import (
 )
 
 var ServerPrefix = ""
-var Local config
-var Global gconfig
+var Local local
+var Global global
 
-/* Local config  */
-type config struct {
-	Version string
+/* GLOBAL CONFIG */
+type global struct {
+	GroupName string
+	Discord   discord
+	Factorio  factData
 
-	ServerCallsign string
-	Name           string
-	Port           int
-	Seed           uint64
-
-	MapPreset    string
-	MapGenPreset string
-
-	AutoStart         bool
-	AutoUpdate        bool
-	UpdateFactExp     bool
-	ResetScheduleText string
-	WriteStatsDisc    bool
-	ReportNewBans     bool
-	ResetPingString   string
-	HideAutosaves     bool
-	DoWhitelist       bool
-	AutoModUpdate     bool
-
-	FactorioData LFactDataStruct
-
-	ChannelData    ChannelDataStruct
-	SlowConnect    SlowConnectStruct
-	SoftModOptions SoftModOptionsStruct
+	Paths   dataPaths
+	Options globalOptions
 }
 
-/* Global config (shared with other servers)  */
-type gconfig struct {
-	Version string
-	Domain  string
+type discord struct {
+	Token       string
+	Guild       string
+	Application string
 
-	RconPortOffset int
-	RconPass       string
-
-	GroupName      string
-	FactorioData   GFactDataStruct
-	DiscordData    DiscordDataStruct
-	RoleData       RoleDataStruct
-	PathData       PathDataStruct
-	MapPreviewData MapPreviewDataStruct
-	LogURL         string
-
-	DiscordCommandPrefix string
-	ResetPingString      string
-
-	AuthServerBans bool
+	ReportChannel   string
+	AnnounceChannel string
+	Roles           roles
 }
 
-/* Global Factorio data  */
-type GFactDataStruct struct {
-	Comment   string
-	Username  string
-	Token     string
-	Autosaves int
+type roles struct {
+	Moderator string
+	Regular   string
+	Member    string
+	New       string
 
-	ServerDescription string
+	Patreon string
+	Nitro   string
+
+	RoleCache roleCache
 }
 
-/* Local Factorio settings */
-type LFactDataStruct struct {
-	AutoSaveMinutes int
-	AutoPause       bool
-	AFKKickMinutes  int
+type roleCache struct {
+	Moderator string
+	Regular   string
+	Member    string
+	New       string
+
+	Patreon string
+	Nitro   string
 }
 
-/* Global, these are paths we need
- * bor = based on root
- * boh = based on home
- * ap = absolute path */
-type PathDataStruct struct {
-	FactorioServersRoot string /* root of Factorio server */
-	FactorioHomePrefix  string /* per-server */
-	ChatWireHomePrefix  string /* per-server */
-	FactorioBinary      string
-
-	RecordPlayersFilename string /* boh */
-	SaveFilePath          string /* boh */
-	BanFile               string /* ap */
-
-	ScriptInserterPath string /* bor */
-	DBFileName         string /* bor */
-	FactUpdaterPath    string /* bor */
-	FactUpdateCache    string /* bor */
-	MapGenPath         string /* bor */
-
-	MapPreviewPath   string /* ap */
-	MapArchivePath   string /* ap */
-	ImageMagickPath  string /* ap */
-	ShellPath        string /* ap */
-	RMPath           string /* ap */
-	FactUpdaterShell string /* ap */
-	ZipBinaryPath    string /* ap */
-	MapPreviewURL    string
-	ArchiveURL       string
+type factData struct {
+	Username string
+	Token    string
+	RCONPass string
 }
 
-/* Discord-specific data global */
-type DiscordDataStruct struct {
-	Comment string
-	Token   string
-	GuildID string
-	AppID   string
-
-	StatTotalChannelID    string
-	StatMemberChannelID   string
-	StatRegularsChannelID string
-	StatBanChannelID      string
-
-	ReportChannelID   string
-	AnnounceChannelID string
+type dataPaths struct {
+	FactorioPrefix string
+	ChatWirePrefix string
+	Folders        folderPaths
+	Binaries       binaryPaths
+	URLs           urlPaths
+	DataFiles      dataFiles
 }
 
-/* Discord role info, global */
-type RoleDataStruct struct {
-	ModeratorRoleName string
-	RegularRoleName   string
-	MemberRoleName    string
-	NewRoleName       string
-	PatreonRoleName   string
-	NitroRoleName     string
-
-	Comment         string
-	ModeratorRoleID string
-	RegularRoleID   string
-	MemberRoleID    string
-	NewRoleID       string
-	PatreonRoleID   string
-	NitroRoleID     string
+type folderPaths struct {
+	ServersRoot   string
+	Saves         string
+	MapGenerators string
+	MapPreviews   string
+	MapArchives   string
+	UpdateCache   string
 }
 
-/* Map preview generation settings, global */
-type MapPreviewDataStruct struct {
-	Comment    string
-	Args       string
-	Res        string
-	Scale      string
+type binaryPaths struct {
+	FactBinary      string
+	FactUpdater     string
+	UpdaterShell    string
+	Shell           string
+	ImgCmd          string
+	RmCmd           string
+	ZipCmd          string
+	SoftModInserter string
+}
+
+type urlPaths struct {
+	Domain        string
+	LogURL        string
+	ArchiveURL    string
+	MapPreviewURL string
+}
+
+type dataFiles struct {
+	DBFile        string
+	RecordPlayers string
+	Bans          string
+}
+
+type globalOptions struct {
+	Description     string
+	PingString      string
+	UseAuthserver   bool
+	AutosaveMax     int
+	RconOffset      int
+	PreviewSettings prevSettings
+}
+
+type prevSettings struct {
+	Arguments string
+	PNGRes    string
+	PNGScale  string
+
 	JPGQuality string
 	JPGScale   string
 }
 
-/* Discord data, per-server */
-type ChannelDataStruct struct {
-	Comment string
-	Pos     int
-	ChatID  string
+/* LOCAL CONFIG */
+type local struct {
+	Callsign string
+	Name     string
+	Port     int
+
+	Settings settings
+
+	Channel channel
+	Options localOptions
 }
 
-/* Local, Factorio setting */
-type SlowConnectStruct struct {
-	SlowConnect  bool
-	DefaultSpeed float32
+type settings struct {
+	MapGenerator string
+	MapPreset    string
+	Seed         uint64
+	AFKMin       int
+	AutosaveMin  int
+	AutoPause    bool
+}
+
+type channel struct {
+	Position    int
+	ChatChannel string
+}
+
+type localOptions struct {
+	ScheduleText string
+	PingString   string
+
+	AutoStart     bool
+	AutoUpdate    bool
+	ExpUpdates    bool
+	ReportBans    bool
+	HideAutosaves bool
+	Whitelist     bool
+	ModUpdate     bool
+
+	SoftModOptions softmodOptions
+}
+
+type softmodOptions struct {
+	Restrict          bool
+	FriendlyFire      bool
+	CleanMap          bool
+	DisableBlueprints bool
+	Cheats            bool
+	SlowConnect       slowConnect
+}
+type slowConnect struct {
+	Enabled      bool
+	Speed        float32
 	ConnectSpeed float32
 }
 
-/* Local soft-mod options */
-type SoftModOptionsStruct struct {
-	RestrictMode      bool
-	FriendlyFire      bool
-	CleanMapOnBoot    bool
-	DefaultUPSRate    int
-	DisableBlueprints bool
-	EnableCheats      bool
-}
-
 func WriteGCfg() bool {
-	tempPath := constants.CWGlobalConfig + "." + Local.ServerCallsign + ".tmp"
+	tempPath := constants.CWGlobalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWGlobalConfig
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
-
-	Global.Version = "0.0.1"
 
 	if err := enc.Encode(Global); err != nil {
 		cwlog.DoLogCW("WriteGCfg: enc.Encode failure")
@@ -233,7 +226,6 @@ func randomBase64String(l int) string {
 	return str[:l]
 }
 
-/* Read global/shared server config data */
 func ReadGCfg() bool {
 
 	_, err := os.Stat(constants.CWGlobalConfig)
@@ -245,113 +237,107 @@ func ReadGCfg() bool {
 		Global = newcfg
 
 		/* Automatic global defaults */
-		if Global.PathData.DBFileName == "" {
-			Global.PathData.DBFileName = "playerdb.dat"
-			_, err := os.Create(Global.PathData.DBFileName)
+		if Global.Paths.DataFiles.DBFile == "" {
+			Global.Paths.DataFiles.DBFile = "playerdb.dat"
+			_, err := os.Create(Global.Paths.DataFiles.DBFile)
 			if err != nil {
 				cwlog.DoLogCW("Could not create playerdb.dat")
 				return false
 			}
 		}
-		if Global.PathData.MapGenPath == "" {
-			Global.PathData.MapGenPath = "map-gen-json"
+		if Global.Paths.Folders.MapGenerators == "" {
+			Global.Paths.Folders.MapGenerators = "map-gen-json"
 
-			err := os.MkdirAll(Global.PathData.FactorioServersRoot+"/"+Global.PathData.MapGenPath, os.ModePerm)
+			err := os.MkdirAll(Global.Paths.Folders.ServersRoot+"/"+Global.Paths.Folders.MapGenerators, os.ModePerm)
 			if err != nil {
 				cwlog.DoLogCW("Could not create map-gen-json directory.")
 				//return false
 			}
 		}
-		if Global.Domain == "" {
-			Global.Domain = "private"
+		if Global.Paths.URLs.Domain == "" {
+			Global.Paths.URLs.Domain = "localhost"
 		}
-		if Global.RconPortOffset == 0 {
-			Global.RconPortOffset = 10000
+		if Global.Options.RconOffset == 0 {
+			Global.Options.RconOffset = 10000
 		}
-		if Global.RconPass == "" {
-			Global.RconPass = randomBase64String(64)
+		if Global.Factorio.RCONPass == "" {
+			Global.Factorio.RCONPass = randomBase64String(64)
 			cwlog.DoLogCW("No RCON password specified. Random one generated.")
 		}
 		if Global.GroupName == "" {
 			Global.GroupName = randomBase64String(3)
 			cwlog.DoLogCW("No group name specified. Random one generated.")
 		}
-		if Global.DiscordCommandPrefix == "" {
-			Global.DiscordCommandPrefix = "$"
-		}
 
-		if Global.PathData.FactorioServersRoot == "" {
+		if Global.Paths.Folders.ServersRoot == "" {
 			ex, err := os.Executable()
 			if err == nil {
 				exPath := filepath.Dir(ex)
 				p := filepath.Clean(filepath.Join(exPath, ".."))
-				Global.PathData.FactorioServersRoot = p
+				Global.Paths.Folders.ServersRoot = p
 			}
 		}
 
-		if Global.PathData.FactorioHomePrefix == "" {
-			Global.PathData.FactorioHomePrefix = "fact-"
+		if Global.Paths.FactorioPrefix == "" {
+			Global.Paths.FactorioPrefix = "fact-"
 		}
-		if Global.PathData.ChatWireHomePrefix == "" {
-			Global.PathData.ChatWireHomePrefix = "cw-"
+		if Global.Paths.ChatWirePrefix == "" {
+			Global.Paths.ChatWirePrefix = "cw-"
 		}
-		if Global.PathData.RecordPlayersFilename == "" {
-			Global.PathData.RecordPlayersFilename = "most-player.dat"
+		if Global.Paths.Folders.Saves == "" {
+			Global.Paths.Folders.Saves = "saves"
 		}
-		if Global.PathData.SaveFilePath == "" {
-			Global.PathData.SaveFilePath = "saves"
+		if Global.Paths.Folders.UpdateCache == "" {
+			Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "/update-cache/"
 		}
-		if Global.PathData.FactUpdateCache == "" {
-			Global.PathData.FactUpdateCache = Global.PathData.FactorioServersRoot + "/update-cache/"
+		if Global.Paths.Folders.MapPreviews == "" {
+			Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "/public_html/map-preview/"
 		}
-		if Global.PathData.MapPreviewPath == "" {
-			Global.PathData.MapPreviewPath = Global.PathData.FactorioServersRoot + "/public_html/map-preview/"
+		if Global.Paths.Folders.MapArchives == "" {
+			Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
 		}
-		if Global.PathData.MapArchivePath == "" {
-			Global.PathData.MapArchivePath = Global.PathData.FactorioServersRoot + "/public_html/archive/"
+		if Global.Paths.URLs.ArchiveURL == "" {
+			Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/map-preview/"
 		}
-		if Global.PathData.MapPreviewURL == "" {
-			Global.PathData.MapPreviewURL = "http:/* " + Global.Domain + "/~username/map-preview/"
+		if Global.Paths.URLs.ArchiveURL == "" {
+			Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
 		}
-		if Global.PathData.ArchiveURL == "" {
-			Global.PathData.ArchiveURL = "http:/* " + Global.Domain + "/~username/archive/"
+		if Global.Paths.Binaries.ImgCmd == "" {
+			Global.Paths.Binaries.ImgCmd = "/usr/bin/convert"
 		}
-		if Global.PathData.ImageMagickPath == "" {
-			Global.PathData.ImageMagickPath = "/usr/bin/convert"
+		if Global.Paths.Binaries.RmCmd == "" {
+			Global.Paths.Binaries.RmCmd = "/bin/rm"
 		}
-		if Global.PathData.RMPath == "" {
-			Global.PathData.RMPath = "/bin/rm"
+		if Global.Paths.Binaries.Shell == "" {
+			Global.Paths.Binaries.Shell = "/bin/bash"
 		}
-		if Global.PathData.ShellPath == "" {
-			Global.PathData.ShellPath = "/bin/bash"
+		if Global.Paths.Binaries.ZipCmd == "" {
+			Global.Paths.Binaries.ZipCmd = "/usr/bin/unzip"
 		}
-		if Global.PathData.ZipBinaryPath == "" {
-			Global.PathData.ZipBinaryPath = "/usr/bin/unzip"
+		if Global.Paths.Binaries.FactBinary == "" {
+			Global.Paths.Binaries.FactBinary = "bin/x64/factorio"
 		}
-		if Global.PathData.FactorioBinary == "" {
-			Global.PathData.FactorioBinary = "bin/x64/factorio"
-		}
-		if Global.DiscordData.GuildID == "" {
+		if Global.Discord.Guild == "" {
 			cwlog.DoLogCW("No Discord Guild ID specified. This MUST be set!")
-			Global.DiscordData.GuildID = "MY DISCORD GUILD/SERVER ID"
+			Global.Discord.Guild = "MY DISCORD GUILD ID"
 		}
-		if Global.DiscordData.AppID == "" {
-			Global.DiscordData.AppID = "MY DISCORD APP ID"
+		if Global.Discord.Application == "" {
+			Global.Discord.Application = "MY DISCORD APP ID"
 		}
-		if Global.DiscordData.Token == "" {
+		if Global.Discord.Token == "" {
 			cwlog.DoLogCW("No Discord Token specified. This MUST be set!")
-			Global.DiscordData.Token = "MY DISCORD BOT TOKEN"
+			Global.Discord.Token = "MY DISCORD BOT TOKEN"
 		}
-		if Global.FactorioData.Username == "" {
+		if Global.Factorio.Username == "" {
 			cwlog.DoLogCW("No Factorio Username specified. This MUST be set!")
-			Global.FactorioData.Username = "MY FACTORIO USERNAME"
+			Global.Factorio.Username = "MY FACTORIO USERNAME"
 		}
-		if Global.FactorioData.Token == "" {
+		if Global.Factorio.Token == "" {
 			cwlog.DoLogCW("No Factorio Token specified. This MUST be set!")
-			Global.FactorioData.Token = "MY FACTORIO TOKEN"
+			Global.Factorio.Token = "MY FACTORIO TOKEN"
 		}
-		if Global.FactorioData.Autosaves == 0 {
-			Global.FactorioData.Autosaves = 250
+		if Global.Options.AutosaveMax == 0 {
+			Global.Options.AutosaveMax = 250
 		}
 		return true
 	} else { /* Otherwise just read in the config */
@@ -377,26 +363,18 @@ func ReadGCfg() bool {
 	}
 }
 
-/* Make new empty gconfig data */
-func CreateGCfg() gconfig {
-	newcfg := gconfig{Version: "0.0.2"}
-	newcfg.FactorioData.Comment = "THESE ARE REQUIRED!"
-	newcfg.DiscordData.Comment = "TOKEN AND GUILD ID ARE REQUIRED!"
-	newcfg.RoleData.Comment = "THESE IDS ARE AUTOMATIC! DO NOT EDIT! ONLY SUPPLY ROLE NAMES!"
-	newcfg.MapPreviewData.Comment = "https:/* wiki.factorio.com/Command_line_parameters"
+func CreateGCfg() global {
+	newcfg := global{}
 	return newcfg
 }
 
-/* Write local server settings file */
 func WriteLCfg() bool {
-	tempPath := constants.CWLocalConfig + "." + Local.ServerCallsign + ".tmp"
+	tempPath := constants.CWLocalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWLocalConfig
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
-
-	Local.Version = "0.0.1"
 
 	if err := enc.Encode(Local); err != nil {
 		cwlog.DoLogCW("WriteLCfg: enc.Encode failure")
@@ -426,7 +404,6 @@ func WriteLCfg() bool {
 	return true
 }
 
-/* Read local server settings file */
 func ReadLCfg() bool {
 
 	_, err := os.Stat(constants.CWLocalConfig)
@@ -441,15 +418,15 @@ func ReadLCfg() bool {
 		if Local.Name == "" {
 			Local.Name = "unnamed"
 		}
-		if Local.ServerCallsign == "" {
-			Local.ServerCallsign = "a"
+		if Local.Callsign == "" {
+			Local.Callsign = "a"
 		}
 		if Local.Port <= 0 {
-			Local.Port = 34197
+			Local.Port = 7000
 		}
-		if Local.ChannelData.ChatID == "" {
+		if Local.Channel.ChatChannel == "" {
 			cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
-			Local.ChannelData.ChatID = "MY DISCORD CHANNEL ID"
+			Local.Channel.ChatChannel = "MY DISCORD CHANNEL ID"
 		}
 		WriteLCfg() /* Write the defaults */
 		return true
@@ -472,16 +449,16 @@ func ReadLCfg() bool {
 			/* Automatic local defaults */
 			found := false
 			for _, t := range constants.MapTypes {
-				if Local.MapPreset == t {
+				if Local.Settings.MapPreset == t {
 					found = true
 				}
 			}
 			if !found {
-				Local.MapPreset = constants.MapTypes[1]
-				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.MapPreset)
+				Local.Settings.MapPreset = constants.MapTypes[1]
+				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.Settings.MapPreset)
 			}
 
-			if newcfg.DoWhitelist {
+			if newcfg.Options.Whitelist {
 				ServerPrefix = constants.MembersPrefix
 			} else {
 				ServerPrefix = ""
@@ -495,9 +472,7 @@ func ReadLCfg() bool {
 	}
 }
 
-/* Make empty local config */
-func CreateLCfg() config {
-	newcfg := config{Version: "0.0.2"}
-	newcfg.ChannelData.Comment = "CHANNEL ID REQUIRED! POSITION IS OPTIONAL!"
+func CreateLCfg() local {
+	newcfg := local{}
 	return newcfg
 }

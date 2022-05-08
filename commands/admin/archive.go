@@ -36,9 +36,9 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		t := time.Now()
 		date := t.Format("2006-01-02")
-		newmapname := fmt.Sprintf("%v-%v.zip", sclean.AlphaNumOnly(constants.MembersPrefix+cfg.Local.ServerCallsign)+"-"+cfg.Local.Name, date)
-		newmappath := fmt.Sprintf("%v%v maps/%v", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
-		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.PathData.ArchiveURL, url.PathEscape(shortversion+" maps"), url.PathEscape(newmapname))
+		newmapname := fmt.Sprintf("%v-%v.zip", sclean.AlphaNumOnly(constants.MembersPrefix+cfg.Local.Callsign)+"-"+cfg.Local.Name, date)
+		newmappath := fmt.Sprintf("%v%v maps/%v", cfg.Global.Paths.Folders.MapArchives, shortversion, newmapname)
+		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.Paths.URLs.ArchiveURL, url.PathEscape(shortversion+" maps"), url.PathEscape(newmapname))
 
 		from, erra := os.Open(fact.GameMapPath)
 		if erra != nil {
@@ -47,7 +47,7 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		defer from.Close()
 
 		/* Make directory if it does not exist */
-		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.PathData.MapArchivePath, shortversion)
+		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.Paths.Folders.MapArchives, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())

@@ -34,7 +34,7 @@ func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 /* Check if Discord moderator */
 func checkModerator(m *discordgo.MessageCreate) bool {
 	for _, role := range m.Member.Roles {
-		if role == cfg.Global.RoleData.ModeratorRoleID {
+		if role == cfg.Global.Discord.Roles.RoleCache.Moderator {
 			return true
 		}
 	}

@@ -29,7 +29,7 @@ func CheckBanList(player string) {
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
-	if cfg.Global.PathData.BanFile == "" {
+	if cfg.Global.Paths.DataFiles.Bans == "" {
 		return
 	}
 
@@ -44,11 +44,11 @@ func CheckBanList(player string) {
 func WatchBanFile() {
 	for glob.ServerRunning {
 
-		if cfg.Global.PathData.BanFile == "" {
+		if cfg.Global.Paths.DataFiles.Bans == "" {
 			break
 		}
 
-		filePath := cfg.Global.PathData.BanFile
+		filePath := cfg.Global.Paths.DataFiles.Bans
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
@@ -79,11 +79,11 @@ func ReadBanFile() {
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
-	if cfg.Global.PathData.BanFile == "" {
+	if cfg.Global.Paths.DataFiles.Bans == "" {
 		return
 	}
 
-	file, err := os.Open(cfg.Global.PathData.BanFile)
+	file, err := os.Open(cfg.Global.Paths.DataFiles.Bans)
 
 	if err != nil {
 		log.Println(file, err)
@@ -145,7 +145,7 @@ func ReadBanFile() {
 		}
 
 	}
-	if oldLen > 0 && cfg.Local.ReportNewBans && buf != "" {
-		fact.CMS(cfg.Global.DiscordData.ReportChannelID, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 500))
+	if oldLen > 0 && cfg.Local.Options.ReportBans && buf != "" {
+		fact.CMS(cfg.Global.Discord.ReportChannel, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 500))
 	}
 }

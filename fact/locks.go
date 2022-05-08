@@ -221,7 +221,7 @@ func SetFactRunning(run bool, err bool) {
 	FactIsRunningLock.Unlock()
 
 	if run && GetNoResposeCount() >= 10 {
-		//CMS(cfg.Local.ChannelData.ChatID, "Server now appears to be responding again.")
+		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")
 		cwlog.DoLogCW("Server now appears to be responding again.")
 	}
 	SetNoResponseCount(0)

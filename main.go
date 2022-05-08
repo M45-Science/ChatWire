@@ -52,7 +52,7 @@ func main() {
 					for disc.DS == nil {
 						time.Sleep(time.Millisecond * 1000)
 					}
-					disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, msg)
+					disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
 				}(msg)
 
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
@@ -132,7 +132,7 @@ func main() {
 	go startbot()
 
 	time.Sleep(time.Second)
-	if cfg.Local.AutoStart {
+	if cfg.Local.Options.AutoStart {
 		fact.SetAutoStart(true)
 	}
 
@@ -158,13 +158,13 @@ var DiscordConnectAttempts int
 
 func startbot() {
 
-	if cfg.Global.DiscordData.Token == "" {
+	if cfg.Global.Discord.Token == "" {
 		cwlog.DoLogCW("Discord token not set, not starting.")
 		return
 	}
 
 	cwlog.DoLogCW("Starting Discord bot...")
-	bot, erra := discordgo.New("Bot " + cfg.Global.DiscordData.Token)
+	bot, erra := discordgo.New("Bot " + cfg.Global.Discord.Token)
 
 	if erra != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
@@ -202,7 +202,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	s.AddHandler(MessageCreate)
 	s.AddHandler(commands.SlashCommand)
 
-	botstatus := fmt.Sprintf("type %vhelp", cfg.Global.DiscordCommandPrefix)
+	botstatus := fmt.Sprintf("type %vhelp", "$")
 	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
@@ -224,32 +224,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	/* Command handling
 	 * Factorio channel ONLY */
-	if m.ChannelID == cfg.Local.ChannelData.ChatID && m.ChannelID != "" {
+	if m.ChannelID == cfg.Local.Channel.ChatChannel && m.ChannelID != "" {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
 		cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
-
-		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
-			empty := []string{}
-
-			slen := len(ctext)
-
-			if slen > 1 {
-
-				args := strings.Split(ctext, " ")
-				arglen := len(args)
-
-				if arglen > 0 {
-					name := strings.ToLower(args[0])
-					if arglen > 1 {
-						commands.RunCommand(name[1:], s, m, args[1:arglen])
-					} else {
-						commands.RunCommand(name[1:], s, m, empty)
-					}
-				}
-			}
-			return
-		}
 
 		/* Chat message handling
 		 *  Don't bother if Factorio isn't running... */

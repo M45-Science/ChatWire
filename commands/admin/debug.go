@@ -18,7 +18,7 @@ func DebugStat(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 			buf = buf + fmt.Sprintf("%v: %v\n", pname, score)
 		}
 	}
-	fact.CMS(cfg.Local.ChannelData.ChatID, buf)
+	fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 	glob.PlayerSusLock.Unlock()
 
 	glob.ChatterLock.Lock()
@@ -28,6 +28,6 @@ func DebugStat(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 			buf = buf + fmt.Sprintf("%v: %v\n", pname, score)
 		}
 	}
-	fact.CMS(cfg.Local.ChannelData.ChatID, buf)
+	fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 	glob.ChatterLock.Unlock()
 }

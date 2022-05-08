@@ -68,12 +68,12 @@ func AddFactColor(color string, text string) string {
 /* Generate full path to Factorio binary */
 func GetFactorioBinary() string {
 	bloc := ""
-	if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
+	if strings.HasPrefix(cfg.Global.Paths.Binaries.FactBinary, "/") {
 		/* Absolute path */
-		bloc = cfg.Global.PathData.FactorioBinary
+		bloc = cfg.Global.Paths.Binaries.FactBinary
 	} else {
 		/* Relative path */
-		bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
+		bloc = cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Binaries.FactBinary
 	}
 	return bloc
 }

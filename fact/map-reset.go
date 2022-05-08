@@ -23,7 +23,7 @@ import (
 func GetMapTypeNum(mapt string) int {
 	i := 0
 
-	if cfg.Local.MapGenPreset != "" {
+	if cfg.Local.Settings.MapGenerator != "" {
 		return 0
 	}
 	for i = 0; i < len(constants.MapTypes); i = i + 1 {
@@ -54,14 +54,14 @@ func Map_reset(data string) {
 	 * Otherwise, stop Factorio and generate a new map */
 	if IsFactRunning() {
 		if data != "" {
-			CMS(cfg.Local.ChannelData.ChatID, sclean.EscapeDiscordMarkdown(data))
+			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
 			WriteFact("/cchat " + AddFactColor("orange", data))
 			return
 		} else {
-			CMS(cfg.Local.ChannelData.ChatID, "Stopping server, for map reset.")
+			CMS(cfg.Local.Channel.ChatChannel, "Stopping server, for map reset.")
 
-			cfg.Local.SlowConnect.DefaultSpeed = 1.0
-			cfg.Local.SlowConnect.ConnectSpeed = 0.5
+			cfg.Local.Options.SoftModOptions.SlowConnect.Speed = 1.0
+			cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed = 0.5
 			cfg.WriteLCfg()
 			SetAutoStart(false)
 			QuitFactorio()
@@ -87,9 +87,9 @@ func Map_reset(data string) {
 
 		t := time.Now()
 		date := t.Format("2006-01-02")
-		newmapname := fmt.Sprintf("%v-%v.zip", sclean.AlphaNumOnly(cfg.Local.ServerCallsign)+"-"+cfg.Local.Name, date)
-		newmappath := fmt.Sprintf("%v%v maps/%v", cfg.Global.PathData.MapArchivePath, shortversion, newmapname)
-		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.PathData.ArchiveURL, url.PathEscape(shortversion+" maps"), url.PathEscape(newmapname))
+		newmapname := fmt.Sprintf("%v-%v.zip", sclean.AlphaNumOnly(cfg.Local.Callsign)+"-"+cfg.Local.Name, date)
+		newmappath := fmt.Sprintf("%v%v maps/%v", cfg.Global.Paths.Folders.MapArchives, shortversion, newmapname)
+		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.Paths.URLs.ArchiveURL, url.PathEscape(shortversion+" maps"), url.PathEscape(newmapname))
 
 		from, erra := os.Open(GameMapPath)
 		if erra != nil {
@@ -99,7 +99,7 @@ func Map_reset(data string) {
 		defer from.Close()
 
 		/* Make directory if it does not exist */
-		newdir := fmt.Sprintf("%v%v maps/", cfg.Global.PathData.MapArchivePath, shortversion)
+		newdir := fmt.Sprintf("%v%v maps/", cfg.Global.Paths.Folders.MapArchives, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
@@ -121,10 +121,10 @@ func Map_reset(data string) {
 		var buf string
 		if erra == nil && errb == nil && errc == nil {
 			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
-			CMS(cfg.Local.ChannelData.ChatID, buf)
+			CMS(cfg.Local.Channel.ChatChannel, buf)
 		} else {
 			buf = "Map archive failed."
-			CMS(cfg.Local.ChannelData.ChatID, buf)
+			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 	}
@@ -133,20 +133,20 @@ func Map_reset(data string) {
 	ourseed := uint64(t.UnixNano())
 
 	//Use seed if specified, then clear it
-	if cfg.Local.Seed > 0 {
-		ourseed = cfg.Local.Seed
-		cfg.Local.Seed = 0
+	if cfg.Local.Settings.Seed > 0 {
+		ourseed = cfg.Local.Settings.Seed
+		cfg.Local.Settings.Seed = 0
 		cfg.WriteLCfg()
 	}
 
-	MapPreset := cfg.Local.MapPreset
+	MapPreset := cfg.Local.Settings.MapPreset
 
 	if MapPreset == "Error" {
-		CMS(cfg.Local.ChannelData.ChatID, "Invalid map preset.")
+		CMS(cfg.Local.Channel.ChatChannel, "Invalid map preset.")
 		return
 	}
 
-	CMS(cfg.Local.ChannelData.ChatID, "Generating map...")
+	CMS(cfg.Local.Channel.ChatChannel, "Generating map...")
 	/* Delete old sav-* map to save space */
 	DeleteOldSav()
 
@@ -155,17 +155,17 @@ func Map_reset(data string) {
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-" + ourcode + ".zip"
+	filename := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-" + ourcode + ".zip"
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	/* Append map gen if set */
-	if cfg.Local.MapGenPreset != "" {
+	if cfg.Local.Settings.MapGenerator != "" {
 		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
+		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
 
 		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
 	} else {
 		factargs = append(factargs, "--preset")
 		factargs = append(factargs, MapPreset)
@@ -181,21 +181,21 @@ func Map_reset(data string) {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
 		return
 	}
-	CMS(cfg.Local.ChannelData.ChatID, "Rebooting.")
+	CMS(cfg.Local.Channel.ChatChannel, "Rebooting.")
 
 	/* If available, use per-server ping setting... otherwise use global */
 	pingstr := ""
-	if cfg.Local.ResetPingString != "" {
-		pingstr = cfg.Local.ResetPingString
-	} else if cfg.Global.ResetPingString != "" {
-		pingstr = cfg.Global.ResetPingString
+	if cfg.Local.Options.PingString != "" {
+		pingstr = cfg.Local.Options.PingString
+	} else if cfg.Global.Options.PingString != "" {
+		pingstr = cfg.Global.Options.PingString
 	}
-	CMS(cfg.Global.DiscordData.AnnounceChannelID, pingstr+" Map on server: "+cfg.Local.ServerCallsign+"-"+cfg.Local.Name+" has been reset.")
+	CMS(cfg.Global.Discord.AnnounceChannel, pingstr+" Map on server: "+cfg.Local.Callsign+"-"+cfg.Local.Name+" has been reset.")
 
 	/* Mods queue folder */
-	qPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
+	qPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
 		constants.ModsQueueFolder + "/"
-	modPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
+	modPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
 		constants.ModsFolder + "/"
 	files, err := ioutil.ReadDir(qPath)
 	if err != nil {

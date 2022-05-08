@@ -21,7 +21,7 @@ func WriteRoleList() bool {
 	RoleListLock.Lock()
 	defer RoleListLock.Unlock()
 
-	tempPath := constants.RoleListFile + "." + cfg.Local.ServerCallsign + ".tmp"
+	tempPath := constants.RoleListFile + "." + cfg.Local.Callsign + ".tmp"
 	finalPath := constants.RoleListFile
 
 	outbuf := new(bytes.Buffer)
@@ -118,7 +118,7 @@ func UpdateRoleList() {
 
 		for _, m := range g.Members {
 			for _, r := range m.Roles {
-				if r == cfg.Global.RoleData.NitroRoleID {
+				if r == cfg.Global.Discord.Roles.RoleCache.Nitro {
 					foundN := false
 					for _, u := range RoleList.NitroBooster {
 						if u == m.User.Username {
@@ -130,7 +130,7 @@ func UpdateRoleList() {
 						foundChange = true
 						RoleList.NitroBooster = append(RoleList.NitroBooster, m.User.Username)
 					}
-				} else if r == cfg.Global.RoleData.PatreonRoleID {
+				} else if r == cfg.Global.Discord.Roles.RoleCache.Patreon {
 					foundP := false
 					for _, u := range RoleList.Patreons {
 						if u == m.User.Username {
@@ -142,7 +142,7 @@ func UpdateRoleList() {
 						foundChange = true
 						RoleList.Patreons = append(RoleList.Patreons, m.User.Username)
 					}
-				} else if r == cfg.Global.RoleData.ModeratorRoleID {
+				} else if r == cfg.Global.Discord.Roles.RoleCache.Moderator {
 					foundM := false
 					for _, u := range RoleList.Moderators {
 						if u == m.User.Username {

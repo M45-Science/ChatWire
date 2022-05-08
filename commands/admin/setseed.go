@@ -16,9 +16,9 @@ func SetSeed(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		fact.CMS(m.ChannelID, "Invalid seed, numbers only. 0  for reset")
 		return
 	}
-	cfg.Local.Seed = uint64(num)
-	if cfg.Local.Seed > 0 {
-		fact.CMS(m.ChannelID, fmt.Sprintf("Map seed set to: %v (one use)", cfg.Local.Seed))
+	cfg.Local.Settings.Seed = uint64(num)
+	if cfg.Local.Settings.Seed > 0 {
+		fact.CMS(m.ChannelID, fmt.Sprintf("Map seed set to: %v (one use)", cfg.Local.Settings.Seed))
 	} else {
 		fact.CMS(m.ChannelID, "Map seed cleared.")
 	}

@@ -19,7 +19,7 @@ func CheckZip(filename string) bool {
 	defer cancel()
 
 	cmdargs := []string{"-t", filename}
-	cmd := exec.CommandContext(ctx, cfg.Global.PathData.ZipBinaryPath, cmdargs...)
+	cmd := exec.CommandContext(ctx, cfg.Global.Paths.Binaries.ZipCmd, cmdargs...)
 	o, err := cmd.CombinedOutput()
 	out := string(o)
 
@@ -41,7 +41,7 @@ func CheckZip(filename string) bool {
 /* Check if there is a new Factorio update */
 func CheckFactUpdate(logNoUpdate bool) {
 
-	if cfg.Global.PathData.FactUpdaterPath != "" {
+	if cfg.Global.Paths.Folders.UpdateCache != "" {
 
 		UpdateFactorioLock.Lock()
 		defer UpdateFactorioLock.Unlock()
@@ -51,24 +51,24 @@ func CheckFactUpdate(logNoUpdate bool) {
 		defer cancel()
 
 		/* Create cache directory */
-		err := os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+		err := os.MkdirAll(cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.UpdateCache, 0777)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
 
-		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", GetFactorioBinary(), "-d"}
-		if cfg.Local.UpdateFactExp {
+		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary(), "-d"}
+		if cfg.Local.Options.ExpUpdates {
 			cmdargs = append(cmdargs, "-x")
 		}
 		/* cwlog.DoLogCW("Update args: " + strings.Join(cmdargs, " ")) */
 
-		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
+		cmd := exec.CommandContext(ctx, cfg.Global.Paths.Binaries.UpdaterShell, cmdargs...)
 		o, err := cmd.CombinedOutput()
 		out := string(o)
 
 		if ctx.Err() == context.DeadlineExceeded {
 			cwlog.DoLogCW("fact update check: download/check timed out... purging cache.")
-			os.RemoveAll(cfg.Global.PathData.FactUpdateCache)
+			os.RemoveAll(cfg.Global.Paths.Folders.UpdateCache)
 			return
 		}
 
@@ -100,11 +100,11 @@ func CheckFactUpdate(logNoUpdate bool) {
 								if numwords > 1 &&
 									CheckZip(words[1]) {
 									mess := "Factorio update downloaded and verified, will update when no players are online."
-									CMS(cfg.Local.ChannelData.ChatID, mess)
+									CMS(cfg.Local.Channel.ChatChannel, mess)
 									WriteFact("/cchat [SYSTEM] " + mess)
 									cwlog.DoLogCW(mess)
 								} else {
-									os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
+									os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
 									/* Purge patch name so we attempt check again */
 									NewPatchName = constants.Unknown
 									cwlog.DoLogCW("fact update check: Factorio update zip invalid... purging cache.")
@@ -125,7 +125,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 							if NewVersion != newversion {
 								NewVersion = newversion
 
-								CMS(cfg.Local.ChannelData.ChatID, messdisc)
+								CMS(cfg.Local.Channel.ChatChannel, messdisc)
 
 								WriteFact("/cchat [SYSTEM] " + messfact)
 								cwlog.DoLogCW(messfact)
@@ -151,7 +151,7 @@ func FactUpdate() {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 	defer cancel()
 
-	err := os.MkdirAll(cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactUpdateCache, 0777)
+	err := os.MkdirAll(cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.UpdateCache, 0777)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
@@ -161,19 +161,19 @@ func FactUpdate() {
 		FactorioLaunchLock.Lock()
 		defer FactorioLaunchLock.Unlock()
 
-		cmdargs := []string{cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdaterPath, "-O", cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache, "-a", GetFactorioBinary()}
-		if cfg.Local.UpdateFactExp {
+		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary()}
+		if cfg.Local.Options.ExpUpdates {
 			cmdargs = append(cmdargs, "-x")
 		}
 
-		cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
+		cmd := exec.CommandContext(ctx, cfg.Global.Paths.Binaries.UpdaterShell, cmdargs...)
 		o, err := cmd.CombinedOutput()
 		out := string(o)
 
 		if ctx.Err() == context.DeadlineExceeded {
 			cwlog.DoLogCW("fact update: (error) Factorio update patching timed out, deleting possible corrupted patch file.")
 
-			os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
+			os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
 			return
 		}
 
@@ -192,7 +192,7 @@ func FactUpdate() {
 				}
 			}
 		} else {
-			os.RemoveAll(cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactUpdateCache)
+			os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
 			cwlog.DoLogCW("fact update: (error) Non-zero exit code... purging update cache.")
 			cwlog.DoLogCW(fmt.Sprintf("fact update: (error) update_fact.py:\n%v", out))
 			return

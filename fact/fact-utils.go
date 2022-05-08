@@ -26,15 +26,15 @@ import (
 
 /* Delete old sav-*.zip, gen-*.zip files, to save space. */
 func DeleteOldSav() {
-	patha := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/sav-*.zip"
-	pathb := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-*.zip"
+	patha := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/sav-*.zip"
+	pathb := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-*.zip"
 
 	var tempargs []string
 	tempargs = append(tempargs, "-f")
 	tempargs = append(tempargs, patha)
 	tempargs = append(tempargs, pathb)
 
-	out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
+	out, errs := exec.Command(cfg.Global.Paths.Binaries.RmCmd, tempargs...).Output()
 
 	if errs != nil {
 		cwlog.DoLogCW(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
@@ -46,7 +46,7 @@ func DeleteOldSav() {
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
 	if IsFactRunning() {
-		if cfg.Local.DoWhitelist {
+		if cfg.Local.Options.Whitelist {
 			if level > 0 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
 			}
@@ -57,10 +57,10 @@ func WhitelistPlayer(pname string, level int) {
 /* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
-	wpath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix +
-		cfg.Local.ServerCallsign + "/" + constants.WhitelistName
+	wpath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix +
+		cfg.Local.Callsign + "/" + constants.WhitelistName
 
-	if cfg.Local.DoWhitelist {
+	if cfg.Local.Options.Whitelist {
 		glob.PlayerListLock.RLock()
 		var count = 0
 		var buf = "[\n"
@@ -205,13 +205,13 @@ func AutoPromote(pname string) string {
 
 			newrole := ""
 			if plevel == 0 {
-				newrole = cfg.Global.RoleData.NewRoleName
+				newrole = cfg.Global.Discord.Roles.New
 			} else if plevel == 1 {
-				newrole = cfg.Global.RoleData.MemberRoleName
+				newrole = cfg.Global.Discord.Roles.Member
 			} else if plevel == 2 {
-				newrole = cfg.Global.RoleData.RegularRoleName
+				newrole = cfg.Global.Discord.Roles.Regular
 			} else if plevel == 255 {
-				newrole = cfg.Global.RoleData.ModeratorRoleName
+				newrole = cfg.Global.Discord.Roles.Moderator
 			}
 
 			guild := GetGuild()
@@ -221,7 +221,7 @@ func AutoPromote(pname string) string {
 				errrole, regrole := disc.RoleExists(guild, newrole)
 
 				if errrole {
-					errset := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, discid, regrole.ID)
+					errset := disc.SmartRoleAdd(cfg.Global.Discord.Guild, discid, regrole.ID)
 					if errset != nil {
 						cwlog.DoLogCW(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
 					}
@@ -244,9 +244,9 @@ func UpdateChannelName() {
 	nump := GetNumPlayers()
 
 	if nump == 0 {
-		newchname = fmt.Sprintf("%v", cfg.Local.ServerCallsign+"-"+cfg.Local.Name)
+		newchname = fmt.Sprintf("%v", cfg.Local.Callsign+"-"+cfg.Local.Name)
 	} else {
-		newchname = fmt.Sprintf("%v🔵%v", nump, cfg.Local.ServerCallsign+"-"+cfg.Local.Name)
+		newchname = fmt.Sprintf("%v🔵%v", nump, cfg.Local.Callsign+"-"+cfg.Local.Name)
 	}
 
 	disc.UpdateChannelLock.Lock()
@@ -267,12 +267,12 @@ func DoUpdateChannelName() {
 	oldchname := disc.OldChanName
 	disc.UpdateChannelLock.Unlock()
 
-	if chname != oldchname && cfg.Local.ChannelData.ChatID != "" {
+	if chname != oldchname && cfg.Local.Channel.ChatChannel != "" {
 		disc.UpdateChannelLock.Lock()
 		disc.OldChanName = disc.NewChanName
 		disc.UpdateChannelLock.Unlock()
 
-		_, aerr := disc.DS.ChannelEditComplex(cfg.Local.ChannelData.ChatID, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.ChannelData.Pos})
+		_, aerr := disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.Channel.Position})
 
 		if aerr != nil {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
@@ -281,7 +281,7 @@ func DoUpdateChannelName() {
 }
 
 func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
+	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
 
 	files, err := ioutil.ReadDir(path)
 	/* We can't read saves dir */
@@ -354,7 +354,7 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
+	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
 	num, err := strconv.Atoi(arg)
 	/* Seems to be a number */
 	if err == nil {
@@ -365,7 +365,7 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 			notfound := os.IsNotExist(err)
 
 			if notfound {
-				rewindSyntax(m)
+				//rewindSyntax(m)
 				return
 			} else {
 				SetAutoStart(false)
@@ -412,14 +412,9 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				return
 			}
 		} else {
-			rewindSyntax(m)
+			//rewindSyntax(m)
 		}
 	} else {
-		rewindSyntax(m)
+		//rewindSyntax(m)
 	}
-}
-
-func rewindSyntax(m *discordgo.MessageCreate) {
-	CMS(m.ChannelID, "Not a valid autosave number, `"+cfg.Global.DiscordCommandPrefix+"rewind` to see a list of autosaves.")
-	CMS(m.ChannelID, "Syntax: `"+cfg.Global.DiscordCommandPrefix+"rewind <autosave number>`")
 }

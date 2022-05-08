@@ -102,7 +102,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 	/* Only if allowed */
 	if !disc.CheckRegular(m) && !disc.CheckModerator(m) {
-		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.RoleData.RegularRoleName)+"` Discord role to use this command. See $help register for more info.")
+		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.Discord.Roles.Regular)+"` Discord role to use this command. See $help register for more info.")
 		return
 	}
 
@@ -132,7 +132,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			return
 		}
 		if num > 0 || num < 9999 {
-			path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath
+			path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
 			/* Check if file is valid and found */
 			autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
 			_, err := os.Stat(path + "/" + autoSaveStr)

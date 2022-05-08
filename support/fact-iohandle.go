@@ -100,8 +100,8 @@ func handlePlayerReport(line string, lineList []string, lineListlen int) bool {
 		cwlog.DoLogGame(line)
 		if lineListlen >= 3 {
 			buf := fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v",
-				cfg.Local.ServerCallsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
-			fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
+				cfg.Local.Callsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
+			fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 		}
 		return true
 	}
@@ -140,16 +140,16 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 
 					newrole := ""
 					if ptype == "trusted" {
-						newrole = cfg.Global.RoleData.MemberRoleName
+						newrole = cfg.Global.Discord.Roles.Member
 						plevel = 1
 					} else if ptype == "regular" {
-						newrole = cfg.Global.RoleData.RegularRoleName
+						newrole = cfg.Global.Discord.Roles.Regular
 						plevel = 2
 					} else if ptype == "admin" {
-						newrole = cfg.Global.RoleData.ModeratorRoleName
+						newrole = cfg.Global.Discord.Roles.Moderator
 						plevel = 255
 					} else {
-						newrole = cfg.Global.RoleData.NewRoleName
+						newrole = cfg.Global.Discord.Roles.New
 						plevel = 0
 					}
 
@@ -180,24 +180,24 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 							errrole, regrole := disc.RoleExists(guild, newrole)
 
 							if !errrole {
-								fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I could not find the Discord role '%s'.", newrole))
+								fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Sorry, there is an error. I could not find the Discord role '%s'.", newrole))
 								fact.WriteFact(fmt.Sprintf("/cwhisper %s  [SYSTEM] Sorry, there was an internal error, I could not find the Discord role '%s' Let the moderators know!", newrole, pname))
 								continue
 							}
 
-							erradd := disc.SmartRoleAdd(cfg.Global.DiscordData.GuildID, pid, regrole.ID)
+							erradd := disc.SmartRoleAdd(cfg.Global.Discord.Guild, pid, regrole.ID)
 
 							if erradd != nil || disc.DS == nil {
-								fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("Sorry, there is an error. I could not assign the Discord role '%s'.", newrole))
+								fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Sorry, there is an error. I could not assign the Discord role '%s'.", newrole))
 								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s' Let the moderators know!", newrole, pname))
 								continue
 							}
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
-							fact.LogCMS(cfg.Local.ChannelData.ChatID, pname+": Registration complete!")
+							fact.LogCMS(cfg.Local.Channel.ChatChannel, pname+": Registration complete!")
 							continue
 						} else {
 							cwlog.DoLogCW("No guild info.")
-							fact.CMS(cfg.Local.ChannelData.ChatID, "Sorry, I couldn't find the guild info!")
+							fact.CMS(cfg.Local.Channel.ChatChannel, "Sorry, I couldn't find the guild info!")
 							continue
 						}
 					}
@@ -245,7 +245,7 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 				}()
 
 				buf := fmt.Sprintf("**New record!** Players online: %v", glob.RecordPlayers)
-				fact.CMS(cfg.Local.ChannelData.ChatID, buf)
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 				/* write to Factorio as well */
 				buf = fmt.Sprintf("New record! Players online: %v", glob.RecordPlayers)
@@ -279,7 +279,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			pname = sclean.EscapeDiscordMarkdown(pname)
 
 			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
-			fact.CMS(cfg.Local.ChannelData.ChatID, buf)
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 			/* Give people patreon/nitro tags in-game. */
 			did := disc.GetDiscordIDFromFactorioName(pname)
@@ -329,7 +329,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 		cwlog.DoLogGame(line)
 
 		/* Don't bother on whitelist servers */
-		if lineListLen > 2 && !cfg.Local.DoWhitelist {
+		if lineListLen > 2 && !cfg.Local.Options.Whitelist {
 			pname := lineList[1]
 			if pname != "" {
 				p := disc.GetPlayerDataFromName(pname)
@@ -361,7 +361,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. Rating: %v", pname, glob.PlayerSus[pname])
 
 								fact.WriteFact("/cchat [color=red]" + sbuf + "[/color]")
-								fact.CMS(cfg.Local.ChannelData.ChatID, sbuf)
+								fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
 							}
 						}
 					}
@@ -395,7 +395,7 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 				cmess = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(cmess, 500))
 			}
 
-			fact.CMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` **%s**", fact.GetGameTime(), cmess))
+			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` **%s**", fact.GetGameTime(), cmess))
 		}
 
 		if lineListlen > 1 {
@@ -431,7 +431,7 @@ func handleSlowConnect(NoTC string, line string) {
 	/* *****************
 	 * Slow on catch-up
 	 ******************/
-	if cfg.Local.SlowConnect.SlowConnect {
+	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
 
 		tn := time.Now()
 
@@ -442,10 +442,10 @@ func handleSlowConnect(NoTC string, line string) {
 
 				/* Fix for players leaving with no leave message */
 			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
-				if cfg.Local.SlowConnect.ConnectSpeed <= 0.0 {
+				if cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed <= 0.0 {
 					fact.WriteFact("/gspeed 0.5")
 				} else {
-					fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.ConnectSpeed))
+					fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed))
 				}
 
 				fact.ConnectPauseLock.Lock()
@@ -462,8 +462,8 @@ func handleSlowConnect(NoTC string, line string) {
 					fact.ConnectPauseCount = 0
 					fact.ConnectPauseTimer = 0
 
-					if cfg.Local.SlowConnect.DefaultSpeed >= 0.0 {
-						fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.SlowConnect.DefaultSpeed))
+					if cfg.Local.Options.SoftModOptions.SlowConnect.Speed >= 0.0 {
+						fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.Speed))
 					} else {
 						fact.WriteFact("/gspeed 1.0")
 					}
@@ -550,19 +550,19 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			if strings.Contains(NoDS, "was banned by") {
 				time.Sleep(time.Second * 5)
 				fact.PlayerLevelSet(trustname, -1, false)
-				if cfg.Local.ReportNewBans {
+				if cfg.Local.Options.ReportBans {
 					if strings.Contains(NoDS, "Reason") {
 						reasonList := strings.Split(NoDS, "Reason: ")
 						buf := fmt.Sprintf("M45 ban: %v, Reason: %v", trustname, reasonList[1])
-						fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
+						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					} else {
 						buf := fmt.Sprintf("M45 ban: %v", trustname)
-						fact.CMS(cfg.Global.DiscordData.ReportChannelID, buf)
+						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					}
 				}
 			}
 
-			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
 		}
 		return true
 	}
@@ -583,7 +583,7 @@ func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 				fact.PlayerLevelSet(trustname, 0, false)
 			}
 
-			fact.LogCMS(cfg.Local.ChannelData.ChatID, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
 		}
 		return true
 	}
@@ -597,7 +597,7 @@ func handleFactGoodbye(NoTC string) bool {
 	if strings.HasPrefix(NoTC, "Goodbye") {
 		cwlog.DoLogGame(NoTC)
 
-		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio is now offline.")
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.SetFactorioBooted(false)
 		fact.SetFactRunning(false, false)
 		return true
@@ -613,44 +613,40 @@ func handleFactReady(NoTC string) bool {
 
 		fact.SetFactorioBooted(true)
 		fact.SetFactRunning(true, false)
-		fact.LogCMS(cfg.Local.ChannelData.ChatID, "Factorio "+fact.FactorioVersion+" is now online.")
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/p o c")
 
-		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.ServerCallsign+"-"+cfg.Local.Name))
+		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.Callsign+"-"+cfg.Local.Name))
 
 		/* Config new-player restrictions */
-		if cfg.Local.SoftModOptions.RestrictMode {
+		if cfg.Local.Options.SoftModOptions.Restrict {
 			fact.WriteFact("/restrict on")
 		} else {
 			fact.WriteFact("/restrict off")
 		}
 
 		/* Config friendly fire */
-		if cfg.Local.SoftModOptions.FriendlyFire {
+		if cfg.Local.Options.SoftModOptions.FriendlyFire {
 			fact.WriteFact("/friendlyfire on")
 		} else {
 			fact.WriteFact("/friendlyfire off")
 		}
 
 		/* Config reset-interval */
-		if cfg.Local.ResetScheduleText != "" {
-			fact.WriteFact("/resetint " + cfg.Local.ResetScheduleText)
+		if cfg.Local.Options.ScheduleText != "" {
+			fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleText)
 		}
-		if cfg.Local.SoftModOptions.CleanMapOnBoot {
-			//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cleaning map.")
+		if cfg.Local.Options.SoftModOptions.CleanMap {
+			//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")
 			fact.WriteFact("/cleanmap")
 		}
-		if cfg.Local.SoftModOptions.DefaultUPSRate > 0 && cfg.Local.SoftModOptions.DefaultUPSRate < 1000 {
-			fact.WriteFact("/aspeed " + fmt.Sprintf("%d", cfg.Local.SoftModOptions.DefaultUPSRate))
-			//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Game UPS set to "+fmt.Sprintf("%d", cfg.Local.DefaultUPSRate)+"hz.")
-		}
-		if cfg.Local.SoftModOptions.DisableBlueprints {
+		if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 			fact.WriteFact("/blueprints off")
-			//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Blueprints disabled.")
+			//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Blueprints disabled.")
 		}
-		if cfg.Local.SoftModOptions.EnableCheats {
+		if cfg.Local.Options.SoftModOptions.Cheats {
 			fact.WriteFact("/enablecheats on")
-			//fact.LogCMS(cfg.Local.ChannelData.ChatID, "Cheats enabled.")
+			//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cheats enabled.")
 		}
 
 		/* Patreon list */
@@ -707,7 +703,7 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.GetGameTime(), pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.WriteFact("/cchat " + fmsg)
-			fact.CMS(cfg.Local.ChannelData.ChatID, dmsg)
+			fact.CMS(cfg.Local.Channel.ChatChannel, dmsg)
 			return true
 		}
 	}
@@ -732,13 +728,13 @@ func handleSaveMsg(NoTC string) bool {
 	 * CAPTURE SAVE MESSAGES
 	 *************************/
 	if strings.HasPrefix(NoTC, "Info AppManager") && strings.Contains(NoTC, "Saving to") {
-		if !cfg.Local.HideAutosaves {
+		if !cfg.Local.Options.HideAutosaves {
 			savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
 			savmatch := savreg.FindStringSubmatch(NoTC)
 			if len(savmatch) > 1 {
-				if !cfg.Local.HideAutosaves {
+				if !cfg.Local.Options.HideAutosaves {
 					buf := fmt.Sprintf("`%v` 💾 %s", fact.GetGameTime(), savmatch[1])
-					fact.LogCMS(cfg.Local.ChannelData.ChatID, buf)
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, buf)
 				}
 				fact.LastSaveName = savmatch[1]
 			}
@@ -800,7 +796,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 
 		/* Lock error */
 		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
-			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio is already running.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
 			fact.SetAutoStart(false)
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
@@ -808,14 +804,14 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Mod Errors */
 		if strings.Contains(NoTC, "caused a non-recoverable error.") {
-			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
 			return true
 		}
 		/* Stack traces */
 		if strings.Contains(NoTC, "Hosting multiplayer game failed") {
-			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio was unable to launch.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to launch.")
 			fact.SetAutoStart(false)
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
@@ -823,7 +819,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* level.dat */
 		if strings.Contains(NoTC, "level.dat not found.") {
-			fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 			fact.SetAutoStart(false)
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
@@ -831,7 +827,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Stack traces */
 		if strings.Contains(NoTC, "Unexpected error occurred.") {
-			fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio crashed.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
 			return true
@@ -839,14 +835,14 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
 			if strings.Contains(NoTC, "syntax error") {
-				fact.CMS(cfg.Local.ChannelData.ChatID, "Factorio encountered a lua syntax error, stopping.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error, stopping.")
 				fact.SetAutoStart(false)
 				fact.SetFactorioBooted(false)
 				fact.SetFactRunning(false, true)
 				return true
 			}
 			if strings.Contains(NoTC, "info.json not found") {
-				fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to load save-game.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 				fact.SetAutoStart(false)
 				fact.SetFactorioBooted(false)
 				fact.SetFactRunning(false, true)
@@ -858,8 +854,8 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				if numwords > 6 {
 					if strings.HasPrefix(
 						words[7],
-						cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.FactorioHomePrefix+
-							cfg.Local.ServerCallsign) &&
+						cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.FactorioPrefix+
+							cfg.Local.Callsign) &&
 						(strings.HasSuffix(words[7], ".zip") || strings.HasSuffix(words[7], ".tmp.zip")) {
 						err := os.Remove(words[7])
 						if err != nil {
@@ -882,15 +878,15 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				tempargs = append(tempargs, "-f")
 				tempargs = append(tempargs, path)
 
-				out, errs := exec.Command(cfg.Global.PathData.RMPath, tempargs...).Output()
+				out, errs := exec.Command(cfg.Global.Paths.Binaries.RmCmd, tempargs...).Output()
 
 				if errs != nil {
 					cwlog.DoLogCW(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
 					fact.SetAutoStart(false)
-					fact.CMS(cfg.Local.ChannelData.ChatID, "Unable to remove corrupted save-game, stopping.")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game, stopping.")
 				} else {
 					cwlog.DoLogCW("Deleted corrupted savegame.")
-					fact.CMS(cfg.Local.ChannelData.ChatID, "Save-game corrupted, performing roll-back.")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Save-game corrupted, performing roll-back.")
 				}
 
 				fact.SetFactorioBooted(false)
@@ -948,8 +944,8 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						fact.WriteFact(bbuf)
 
 					} else if glob.ChatterSpamScore[pname] > 12 {
-						if cfg.Global.LogURL != "" {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.LogURL, "/"), cfg.Local.ServerCallsign, strings.TrimPrefix(glob.GameLogName, "log/"))
+						if cfg.Global.Paths.URLs.LogURL != "" {
+							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.Paths.URLs.LogURL, "/"), cfg.Local.Callsign, strings.TrimPrefix(glob.GameLogName, "log/"))
 						} else {
 							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
 						}
@@ -1018,7 +1014,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						MessageEmbed
 
 						/* Send it off! */
-					err := disc.SmartWriteDiscordEmbed(cfg.Local.ChannelData.ChatID, myembed)
+					err := disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
 					if err != nil {
 						/* On failure, send normal message */
 						cwlog.DoLogCW("Failed to send chat embed.")
@@ -1027,7 +1023,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						return true
 					}
 				}
-				fact.CMS(cfg.Local.ChannelData.ChatID, fbuf)
+				fact.CMS(cfg.Local.Channel.ChatChannel, fbuf)
 			}
 			return true
 		}
@@ -1054,7 +1050,7 @@ func handleOnlineMsg(line string) bool {
 	if strings.HasPrefix(line, "~") {
 		cwlog.DoLogGame(line)
 		if strings.Contains(line, "Online:") {
-			fact.CMS(cfg.Local.ChannelData.ChatID, "`"+line+"`")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "`"+line+"`")
 			return true
 		}
 	}

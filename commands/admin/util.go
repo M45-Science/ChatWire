@@ -77,7 +77,7 @@ var SettingList = []SettingListData{
 		Desc: "Port",
 		Type: TYPE_INT,
 
-		MaxInt: 65535 - cfg.Global.RconPortOffset,
+		MaxInt: 65535 - cfg.Global.Options.RconOffset,
 		MinInt: 1024,
 
 		IData: &cfg.Local.Port,
@@ -91,7 +91,7 @@ var SettingList = []SettingListData{
 		MinStrLen:    4,
 		ValidStrings: constants.MapTypes,
 
-		SData: &cfg.Local.MapPreset,
+		SData: &cfg.Local.Settings.MapPreset,
 	},
 	{
 		Name: "MapGenPreset",
@@ -104,7 +104,7 @@ var SettingList = []SettingListData{
 		CheckString: CheckMapGen,
 		ListString:  GetMapGenNames,
 
-		SData: &cfg.Local.MapGenPreset,
+		SData: &cfg.Local.Settings.MapGenerator,
 	},
 	{
 		Name: "AutoStart",
@@ -113,7 +113,7 @@ var SettingList = []SettingListData{
 
 		DefBool: true,
 
-		BData: &cfg.Local.AutoStart,
+		BData: &cfg.Local.Options.AutoStart,
 	},
 	{
 		Name: "AutoUpdate",
@@ -122,7 +122,7 @@ var SettingList = []SettingListData{
 
 		DefBool: true,
 
-		BData: &cfg.Local.AutoUpdate,
+		BData: &cfg.Local.Options.AutoUpdate,
 	},
 	{
 		Name: "UpdateFactExp",
@@ -131,7 +131,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData: &cfg.Local.UpdateFactExp,
+		BData: &cfg.Local.Options.ExpUpdates,
 	},
 	{
 		Name: "ResetScheduleText",
@@ -141,7 +141,7 @@ var SettingList = []SettingListData{
 		MinStrLen: 4,
 		MaxStrLen: 256,
 
-		SData:             &cfg.Local.ResetScheduleText,
+		SData:             &cfg.Local.Options.ScheduleText,
 		FactUpdateCommand: "/resetint",
 	},
 	{
@@ -151,7 +151,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData:             &cfg.Local.SoftModOptions.DisableBlueprints,
+		BData:             &cfg.Local.Options.SoftModOptions.DisableBlueprints,
 		FactUpdateCommand: "/blueprints",
 	},
 	{
@@ -161,7 +161,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData:             &cfg.Local.SoftModOptions.EnableCheats,
+		BData:             &cfg.Local.Options.SoftModOptions.Cheats,
 		FactUpdateCommand: "/cheats",
 	},
 	{
@@ -171,7 +171,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData: &cfg.Local.HideAutosaves,
+		BData: &cfg.Local.Options.HideAutosaves,
 	},
 	{
 		Name: "SlowConnect",
@@ -180,7 +180,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData: &cfg.Local.SlowConnect.SlowConnect,
+		BData: &cfg.Local.Options.SoftModOptions.SlowConnect.Enabled,
 	},
 	{
 		Name: "DefaultSpeed",
@@ -191,7 +191,7 @@ var SettingList = []SettingListData{
 		MinF32: 0.1,
 		DefF32: 1.0,
 
-		FData32: &cfg.Local.SlowConnect.DefaultSpeed,
+		FData32: &cfg.Local.Options.SoftModOptions.SlowConnect.Speed,
 	},
 	{
 		Name: "ConnectSpeed",
@@ -202,7 +202,7 @@ var SettingList = []SettingListData{
 		MinF32: 0.1,
 		DefF32: 0.5,
 
-		FData32: &cfg.Local.SlowConnect.ConnectSpeed,
+		FData32: &cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed,
 	},
 	{
 		Name: "DoWhitelist",
@@ -211,14 +211,14 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData: &cfg.Local.DoWhitelist,
+		BData: &cfg.Local.Options.Whitelist,
 	},
 	{
 		Name: "RestrictMode",
 		Desc: "New player restrictions",
 		Type: TYPE_BOOL,
 
-		BData: &cfg.Local.SoftModOptions.RestrictMode,
+		BData: &cfg.Local.Options.SoftModOptions.Restrict,
 
 		DefBool: false,
 
@@ -229,7 +229,7 @@ var SettingList = []SettingListData{
 		Desc: "Friendly fire",
 		Type: TYPE_BOOL,
 
-		BData: &cfg.Local.SoftModOptions.FriendlyFire,
+		BData: &cfg.Local.Options.SoftModOptions.FriendlyFire,
 
 		DefBool: false,
 
@@ -244,7 +244,7 @@ var SettingList = []SettingListData{
 		MinInt: 5,
 		DefInt: 15,
 
-		IData: &cfg.Local.FactorioData.AFKKickMinutes,
+		IData: &cfg.Local.Settings.AFKMin,
 	},
 	{
 		Name: "AutoSaveMinutes",
@@ -255,7 +255,7 @@ var SettingList = []SettingListData{
 		MinInt: 5,
 		DefInt: 10,
 
-		IData: &cfg.Local.FactorioData.AutoSaveMinutes,
+		IData: &cfg.Local.Settings.AutosaveMin,
 	},
 	{
 		Name:    "AutoPause",
@@ -263,7 +263,7 @@ var SettingList = []SettingListData{
 		Type:    TYPE_BOOL,
 		DefBool: true,
 
-		BData: &cfg.Local.FactorioData.AutoPause,
+		BData: &cfg.Local.Settings.AutoPause,
 	},
 	{
 		Name:    "AutoModUpdate",
@@ -271,7 +271,7 @@ var SettingList = []SettingListData{
 		Type:    TYPE_BOOL,
 		DefBool: true,
 
-		BData: &cfg.Local.AutoModUpdate,
+		BData: &cfg.Local.Options.AutoUpdate,
 	},
 	{
 		Name:    "CleanMapOnBoot",
@@ -279,13 +279,13 @@ var SettingList = []SettingListData{
 		Type:    TYPE_BOOL,
 		DefBool: false,
 
-		BData: &cfg.Local.SoftModOptions.CleanMapOnBoot,
+		BData: &cfg.Local.Options.SoftModOptions.CleanMap,
 	},
 }
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */
 func GetMapGenNames() []string {
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.MapGenPath
+	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.MapGenerators
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())

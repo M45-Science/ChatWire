@@ -3,13 +3,11 @@ package commands
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/commands/user"
 	"ChatWire/disc"
-	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -139,16 +137,12 @@ var cmds = []Command{
 	{Name: "Vote-Rewind", Command: user.VoteRewind, ModeratorOnly: false,
 		Help:  "Vote to rewind the map",
 		XHelp: "This shows the last `20 autosaves` and `all votes`.\nMap-rewind has a one-minute cooldown, and votes expire after `30 minutes`, although you can `change your vote` a few times.\nYou must wait for your old vote to `expire` to vote `again`.\nTo vote: `vote-rewind <autosave number>`\nThis command is only accessible to `REGULARS` on `DISCORD`! (see `help register`).\n`NOTE:` Any autosave can be loaded, not just ones displayed in the command."},
-
-	{Name: "Help", Command: Help, ModeratorOnly: false,
-		Help:  "help <command name> for more detailed information",
-		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."},
 }
 
 func ClearCommands() {
 	for _, v := range CL {
 		if v.AppCmd != nil {
-			disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.DiscordData.GuildID, v.AppCmd.ID)
+			disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.AppCmd.ID)
 		}
 	}
 }
@@ -161,7 +155,7 @@ func RegisterCommands(s *discordgo.Session) {
 
 	for i, c := range CL {
 		if c.AppCmd != nil {
-			cmd, err := s.ApplicationCommandCreate(cfg.Global.DiscordData.AppID, cfg.Global.DiscordData.GuildID, c.AppCmd)
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
 			if err != nil {
 				log.Println("Failed to create command:", c.Name, err)
 				continue
@@ -173,97 +167,4 @@ func RegisterCommands(s *discordgo.Session) {
 
 func SlashCommand(s *discordgo.Session, i *discordgo.MessageCreate) {
 	fmt.Println("MEEP!!!")
-}
-
-/*  RunCommand runs a specified command. */
-func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-	for _, command := range CL {
-		if strings.EqualFold(command.Name, name) {
-			if command.ModeratorOnly && disc.CheckModerator(m) {
-				command.Command(s, m, args)
-			} else if !command.ModeratorOnly {
-				command.Command(s, m, args)
-			}
-			return
-		}
-	}
-
-	fact.CMS(m.ChannelID, "Invalid command, try "+cfg.Global.DiscordCommandPrefix+"help")
-}
-
-/* Display help, based on player level */
-func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-
-	buf := ""
-	arglen := len(args)
-	multiArg := strings.Join(args, " ")
-	found := false
-	isModerator := disc.CheckModerator(m)
-	count := 0
-
-	if arglen > 0 {
-		argOne := strings.TrimPrefix(args[0], cfg.Global.DiscordCommandPrefix)
-
-		for _, command := range CL {
-			if !command.ModeratorOnly || (command.ModeratorOnly && isModerator) {
-				admin := ""
-				if strings.EqualFold(command.Name, argOne) {
-					if command.ModeratorOnly {
-						admin = " (MOD ONLY)"
-					}
-					buf = buf + fmt.Sprintf("`%14v -- %-25v %v`\n\n%v", cfg.Global.DiscordCommandPrefix+command.Name, command.Help, admin, command.XHelp)
-					count++
-					found = true
-					fact.CMS(m.ChannelID, buf)
-					return
-				}
-			}
-		}
-		buf = "`Command not found!`\n\n"
-		if len(multiArg) > 2 {
-			lMultiArg := strings.ToLower(multiArg)
-			buf = buf + "Search results:\n"
-			if !found {
-				for _, command := range CL {
-					if !command.ModeratorOnly || (command.ModeratorOnly && isModerator) {
-						lName := strings.ToLower(command.Name)
-						lHelp := strings.ToLower(command.Help)
-						if strings.Contains(lName, lMultiArg) || strings.Contains(lHelp, lMultiArg) {
-							buf = buf + fmt.Sprintf("`%14v -- %v`\n\n%v\n\n", cfg.Global.DiscordCommandPrefix+command.Name, command.Help, command.XHelp)
-							count++
-						}
-					}
-				}
-			}
-		} else {
-			buf = buf + "That search term is too broad."
-		}
-		if count > 0 {
-			fact.CMS(m.ChannelID, buf)
-		} else {
-			fact.CMS(m.ChannelID, "No help was found for that.")
-		}
-		return
-	}
-
-	buf = "```"
-
-	if disc.CheckModerator(m) {
-		for _, command := range CL {
-			admin := ""
-			if command.ModeratorOnly {
-				admin = "(MOD ONLY)"
-			}
-			buf = buf + fmt.Sprintf("%14v -- %-25v %v\n", cfg.Global.DiscordCommandPrefix+command.Name, command.Help, admin)
-		}
-	} else {
-		for _, command := range CL {
-			if !command.ModeratorOnly {
-				buf = buf + fmt.Sprintf("%14v -- %v\n", cfg.Global.DiscordCommandPrefix+command.Name, command.Help)
-			}
-		}
-
-	}
-	buf = buf + "```"
-	fact.CMS(m.ChannelID, buf)
 }

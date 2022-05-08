@@ -12,12 +12,12 @@ import (
 )
 
 func CheckMods(force bool) {
-	if !cfg.Local.AutoModUpdate && !force {
+	if !cfg.Local.Options.AutoUpdate && !force {
 		return
 	}
 
 	/* Update mods if needed */
-	modPath := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" +
+	modPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
 		constants.ModsFolder + "/"
 	mCount := 0
 
@@ -44,21 +44,21 @@ func UpdateMods() {
 	defer cancel()
 
 	cmdargs := []string{
-		cfg.Global.PathData.FactorioServersRoot + constants.ModUpdaterPath,
+		cfg.Global.Paths.Folders.ServersRoot + constants.ModUpdaterPath,
 		"-u",
-		cfg.Global.FactorioData.Username,
+		cfg.Global.Factorio.Username,
 		"-t",
-		cfg.Global.FactorioData.Token,
+		cfg.Global.Factorio.Token,
 		"-s",
-		cfg.Global.PathData.FactorioServersRoot +
-			cfg.Global.PathData.FactorioHomePrefix +
-			cfg.Local.ServerCallsign + "/" +
+		cfg.Global.Paths.Folders.ServersRoot +
+			cfg.Global.Paths.FactorioPrefix +
+			cfg.Local.Callsign + "/" +
 			constants.ServSettingsName,
 
 		"-m",
-		cfg.Global.PathData.FactorioServersRoot +
-			cfg.Global.PathData.FactorioHomePrefix +
-			cfg.Local.ServerCallsign + "/mods/",
+		cfg.Global.Paths.Folders.ServersRoot +
+			cfg.Global.Paths.FactorioPrefix +
+			cfg.Local.Callsign + "/mods/",
 
 		"--fact-path",
 		fact.GetFactorioBinary(),
@@ -67,7 +67,7 @@ func UpdateMods() {
 
 	//temp := strings.ReplaceAll(strings.Join(cmdargs, " "), cfg.Global.FactorioData.Token, "**private**")
 	//cwlog.DoLogCW(temp)
-	cmd := exec.CommandContext(ctx, cfg.Global.PathData.FactUpdaterShell, cmdargs...)
+	cmd := exec.CommandContext(ctx, cfg.Global.Paths.Binaries.UpdaterShell, cmdargs...)
 
 	o, err := cmd.CombinedOutput()
 	out := string(o)
@@ -86,7 +86,7 @@ func UpdateMods() {
 		}
 	}
 	if buf != "" {
-		fact.CMS(cfg.Local.ChannelData.ChatID, "Some Factorio mods were updated, and will take effect on the next reboot (when server is empty)")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Some Factorio mods were updated, and will take effect on the next reboot (when server is empty)")
 		fact.SetQueued(true)
 	}
 

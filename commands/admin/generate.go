@@ -22,7 +22,7 @@ import (
 func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	if fact.IsFactRunning() {
-		fact.CMS(m.ChannelID, "Stop server first! ("+cfg.Global.DiscordCommandPrefix+"stop)")
+		fact.CMS(m.ChannelID, "Stop server first! ($stop)")
 		return
 	}
 
@@ -33,16 +33,16 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	ourseed := uint64(t.UnixNano())
 	argnum := len(args)
 
-	MapPreset := cfg.Local.MapPreset
+	MapPreset := cfg.Local.Settings.MapPreset
 
 	if fact.LastMapSeed > 0 {
 		ourseed = fact.LastMapSeed
 	}
 
 	//Use seed if specified, then clear it
-	if cfg.Local.Seed > 0 {
-		ourseed = cfg.Local.Seed
-		cfg.Local.Seed = 0
+	if cfg.Local.Settings.Seed > 0 {
+		ourseed = cfg.Local.Settings.Seed
+		cfg.Local.Settings.Seed = 0
 		cfg.WriteLCfg()
 	}
 
@@ -83,17 +83,17 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.SaveFilePath + "/gen-" + ourcode + ".zip"
+	filename := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-" + ourcode + ".zip"
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	/* Append map gen if set */
-	if cfg.Local.MapGenPreset != "" {
+	if cfg.Local.Settings.MapGenerator != "" {
 		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-gen.json")
+		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
 
 		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, cfg.Global.PathData.FactorioServersRoot+cfg.Global.PathData.MapGenPath+"/"+cfg.Local.MapGenPreset+"-set.json")
+		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
 	} else {
 		factargs = append(factargs, "--preset")
 		factargs = append(factargs, MapPreset)
