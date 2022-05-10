@@ -9,18 +9,18 @@ import (
 )
 
 /* Reload config files */
-func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	fact.GameMapLock.Lock()
 	defer fact.GameMapLock.Unlock()
 
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {
-		fact.CMS(m.ChannelID, "Global config file seems to be invalid.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Global config file seems to be invalid.")
 		return
 	}
 	if !cfg.ReadLCfg() {
-		fact.CMS(m.ChannelID, "Local config file seems to be invalid.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Local config file seems to be invalid.")
 		return
 	}
 
@@ -28,7 +28,7 @@ func ReloadConfig(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	cfg.WriteGCfg()
 	cfg.WriteLCfg()
 	fact.DoUpdateChannelName()
-	fact.CMS(m.ChannelID, "Config files reloaded.")
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Config files reloaded.")
 
 	/* Config reset-interval */
 	if cfg.Local.Options.ScheduleText != "" {

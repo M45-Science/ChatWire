@@ -32,9 +32,13 @@ func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
 /* Check if Discord moderator */
-func checkModerator(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.Discord.Roles.RoleCache.Moderator {
+func checkModerator(roles []string) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
+		return false
+	}
+	for _, r := range roles {
+		if r == cfg.Global.Discord.Roles.RoleCache.Moderator {
 			return true
 		}
 	}
@@ -42,12 +46,13 @@ func checkModerator(m *discordgo.MessageCreate) bool {
 }
 
 /*  Get info on a specific player */
-func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
+	var args []string = strings.Split(i.Message.Content, " ")
 	layoutUS := "01-02-06 3:04 PM"
 
 	maxresults := constants.WhoisResults
-	if checkModerator(m) {
+	if checkModerator(i.Member.Roles) {
 		maxresults = constants.AdminWhoisResults
 	}
 	var slist []glob.PlayerData
@@ -63,7 +68,7 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 	buf := ""
 
 	if argnum < 1 {
-		fact.CMS(m.ChannelID, "**Arguments:** <option>\n\n```options:\nrecent (recently online)\nnew (by time joined)\nregistered (recently registered)\n<factorio/discord name search>```")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "**Arguments:** <option>\n\n```options:\nrecent (recently online)\nnew (by time joined)\nregistered (recently registered)\n<factorio/discord name search>```")
 		return
 		/* SHOW RECENTLY SEEN PLAYERS */
 	} else if strings.ToLower(args[0]) == "recent" {
@@ -73,8 +78,6 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
-		tnow := time.Now()
-		tnow = tnow.Round(time.Second)
 
 		count := 0
 		for _, p := range slist {
@@ -106,9 +109,6 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
-		tnow := time.Now()
-		tnow = tnow.Round(time.Second)
-
 		count := 0
 		for _, p := range slist {
 			if p.LastSeen > 0 && count < maxresults {
@@ -139,9 +139,6 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		sort.Sort(ByNew(slist))
 
 		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
-
-		tnow := time.Now()
-		tnow = tnow.Round(time.Second)
 
 		count := 0
 		for _, p := range slist {
@@ -202,5 +199,5 @@ func Whois(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		}
 	}
 
-	fact.CMS(m.ChannelID, buf)
+	fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 }

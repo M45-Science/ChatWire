@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,10 +18,10 @@ import (
 )
 
 /* Generate map */
-func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func Generate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.IsFactRunning() {
-		fact.CMS(m.ChannelID, "Stop server first! ($stop)")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Stop server first! ($stop)")
 		return
 	}
 
@@ -31,7 +30,6 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
-	argnum := len(args)
 
 	MapPreset := cfg.Local.Settings.MapPreset
 
@@ -46,34 +44,17 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		cfg.WriteLCfg()
 	}
 
-	/* If seed given */
-	if argnum > 0 {
-		arg := args[0]
-		pnum := 0
-
-		/* Remove leading zero */
-		if arg[0] == '0' {
-			pnum, _ = strconv.Atoi(fmt.Sprintf("%c", arg[1]))
-		} else {
-			pnum, _ = strconv.Atoi(arg[0:1])
-		}
-
-		MapPreset = fact.GetMapTypeName(pnum)
-		decoded, _ := base64.RawURLEncoding.DecodeString(arg[2:])
-		ourseed = binary.BigEndian.Uint64(decoded)
-	}
-
 	if ourseed <= 0 {
-		fact.CMS(m.ChannelID, "Error, no seed.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Error, no seed.")
 		return
 	}
 
 	if MapPreset == "Error" {
-		fact.CMS(m.ChannelID, "Invalid map preset.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid map preset.")
 		return
 	}
 
-	fact.CMS(m.ChannelID, "Generating map...")
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Generating map...")
 
 	/* Delete old sav-* map to save space */
 	fact.DeleteOldSav()
@@ -120,10 +101,10 @@ func Generate(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
-			fact.CMS(m.ChannelID, "New map saved as: "+filename)
+			fact.CMS(cfg.Local.Channel.ChatChannel, "New map saved as: "+filename)
 			return
 		}
 	}
 
-	fact.CMS(m.ChannelID, "Unknown error.")
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Unknown error.")
 }

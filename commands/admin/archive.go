@@ -18,7 +18,7 @@ import (
 )
 
 /* Archive map */
-func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	fact.GameMapLock.Lock()
 	defer fact.GameMapLock.Unlock()
@@ -71,9 +71,9 @@ func ArchiveMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			buf = "Map archive failed."
 		}
 
-		fact.CMS(m.ChannelID, buf)
+		fact.CMS(i.ChannelID, buf)
 	} else {
-		fact.CMS(m.ChannelID, "No map has been loaded yet.")
+		fact.CMS(i.ChannelID, "No map has been loaded yet.")
 	}
 
 }

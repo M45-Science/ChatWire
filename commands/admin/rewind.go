@@ -3,14 +3,16 @@ package admin
 import (
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 /* Load a different save-game */
-func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func Rewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
+	var args []string = strings.Split("", " ")
 	argnum := len(args)
 
 	/* Correct number of arguments (1) */
@@ -22,9 +24,9 @@ func Rewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		fact.WriteRewindVotes() /* Save to file before exiting */
 		glob.VoteBoxLock.Unlock()
 
-		fact.DoRewindMap(s, m, args[0])
+		fact.DoRewindMap(s, args[0])
 	} else {
-		fact.ShowRewindList(s, m)
+		fact.ShowRewindList(s)
 		return
 	}
 }

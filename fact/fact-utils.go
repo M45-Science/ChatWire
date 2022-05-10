@@ -280,14 +280,14 @@ func DoUpdateChannelName() {
 	}
 }
 
-func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
+func ShowRewindList(s *discordgo.Session) {
 	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
 
 	files, err := ioutil.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
 		log.Fatal(err)
-		CMS(m.ChannelID, "Error: Unable to read autosave directory.")
+		CMS(cfg.Local.Channel.ChatChannel, "Error: Unable to read autosave directory.")
 	}
 
 	lastNum := -1
@@ -347,13 +347,13 @@ func ShowRewindList(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if lastNum == -1 {
-		CMS(m.ChannelID, "No autosaves found.")
+		CMS(cfg.Local.Channel.ChatChannel, "No autosaves found.")
 	} else {
-		CMS(m.ChannelID, buf)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
 	}
 }
 
-func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
+func DoRewindMap(s *discordgo.Session, arg string) {
 	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
 	num, err := strconv.Atoi(arg)
 	/* Seems to be a number */
@@ -374,7 +374,7 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 				for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
 					time.Sleep(time.Millisecond * 100)
 					if x == (constants.MaxFactorioCloseWait - 1) {
-						CMS(m.ChannelID, "Factorio may be frozen, canceling rewind.")
+						CMS(cfg.Local.Channel.ChatChannel, "Factorio may be frozen, canceling rewind.")
 						return
 					}
 				}
@@ -407,7 +407,7 @@ func DoRewindMap(s *discordgo.Session, m *discordgo.MessageCreate, arg string) {
 					return
 				}
 
-				CMS(m.ChannelID, fmt.Sprintf("Loading autosave%v", num))
+				CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading autosave%v", num))
 				SetAutoStart(true)
 				return
 			}

@@ -18,17 +18,16 @@ import (
 )
 
 /* RandomMap locks FactorioLaunchLock */
-func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []string) {
-
+func RandomMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.IsFactRunning() {
-		fact.CMS(m.ChannelID, "Stop server first! ($stop)")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Stop server first! ($stop)")
 		return
 	}
 
 	fact.FactorioLaunchLock.Lock()
 	defer fact.FactorioLaunchLock.Unlock()
 
-	fact.CMS(m.ChannelID, "Generating map preview...")
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Generating map preview...")
 
 	var preview_made = false
 	t := time.Now()
@@ -92,5 +91,5 @@ func RandomMap(s *discordgo.Session, m *discordgo.MessageCreate, arguments []str
 		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, cfg.Global.Paths.URLs.MapPreviewURL, ourcode)
 	}
 
-	fact.CMS(m.ChannelID, buffer)
+	fact.CMS(cfg.Local.Channel.ChatChannel, buffer)
 }

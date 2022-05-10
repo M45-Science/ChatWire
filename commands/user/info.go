@@ -9,7 +9,6 @@ import (
 	"ChatWire/glob"
 	"ChatWire/support"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -18,12 +17,9 @@ import (
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	verbose := false
-	if len(args) > 0 && strings.EqualFold(args[0], "verbose") {
-		verbose = true
-	}
 
 	buf := "```"
 	/* STATS */
@@ -91,35 +87,37 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	var oneHour []fact.TickInt
 
 	tickHistoryLen := len(fact.TickHistory) - 1
-	end := fact.TickHistory[tickHistoryLen]
-	endInt := float64(end.Day*86400.0 + end.Hour*3600.0 + end.Min*60.0 + end.Sec)
-
 	var tenMinAvr, thirtyMinAvr, oneHourAvr float64
-	if tickHistoryLen >= 600 {
-		tenMin = fact.TickHistory[tickHistoryLen-600 : tickHistoryLen]
+	if tickHistoryLen > 0 {
+		end := fact.TickHistory[tickHistoryLen]
+		endInt := float64(end.Day*86400.0 + end.Hour*3600.0 + end.Min*60.0 + end.Sec)
 
-		for _, item := range tenMin {
-			tenMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+		if tickHistoryLen >= 600 {
+			tenMin = fact.TickHistory[tickHistoryLen-600 : tickHistoryLen]
+
+			for _, item := range tenMin {
+				tenMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			}
 		}
-	}
-	if tickHistoryLen >= 1800 {
-		thirtyMin = fact.TickHistory[tickHistoryLen-1800.0 : tickHistoryLen]
+		if tickHistoryLen >= 1800 {
+			thirtyMin = fact.TickHistory[tickHistoryLen-1800.0 : tickHistoryLen]
 
-		for _, item := range thirtyMin {
-			thirtyMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			for _, item := range thirtyMin {
+				thirtyMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			}
 		}
-	}
-	if tickHistoryLen >= 3600 {
-		oneHour = fact.TickHistory[tickHistoryLen-3600 : tickHistoryLen]
+		if tickHistoryLen >= 3600 {
+			oneHour = fact.TickHistory[tickHistoryLen-3600 : tickHistoryLen]
 
-		for _, item := range oneHour {
-			oneHourAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			for _, item := range oneHour {
+				oneHourAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			}
 		}
-	}
 
-	tenMinAvr = tenMinAvr / 180300.0 * 60.0
-	thirtyMinAvr = thirtyMinAvr / 1620900.0 * 60.0
-	oneHourAvr = oneHourAvr / 6481800.0 * 60.0
+		tenMinAvr = tenMinAvr / 180300.0 * 60.0
+		thirtyMinAvr = thirtyMinAvr / 1620900.0 * 60.0
+		oneHourAvr = oneHourAvr / 6481800.0 * 60.0
+	}
 	fact.TickHistoryLock.Unlock()
 
 	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled && cfg.Local.Options.SoftModOptions.SlowConnect.Speed != 1.0 {
@@ -138,6 +136,6 @@ func ShowSettings(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 		buf = buf + "(Server is paused)\n"
 	}
 
-	fact.CMS(m.ChannelID, buf)
+	fact.CMS(i.ChannelID, buf)
 
 }

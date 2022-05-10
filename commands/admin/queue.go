@@ -1,16 +1,17 @@
 package admin
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 /* Reboot when server is empty */
-func Queue(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func Queue(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if !fact.IsQueued() {
-		fact.CMS(m.ChannelID, "Reload is now queued.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Reload is now queued.")
 		fact.SetQueued(true)
 	}
 }

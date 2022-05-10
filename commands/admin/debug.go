@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func DebugStat(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func DebugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	glob.PlayerSusLock.Lock()
 	var buf string = "Debug:\nSusList:"

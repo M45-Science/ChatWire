@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"strings"
 
+	"ChatWire/cfg"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 /* Set a player's level. Needs to support level names, and have useful help/errors */
-func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
+	var args []string = strings.Split("", " ")
 	argnum := len(args)
 
 	if argnum > 1 {
@@ -42,7 +44,7 @@ func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 			strings.EqualFold(plevelStr, "Delete") {
 			plevel = -255
 		} else {
-			fact.CMS(m.ChannelID, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
 			return
 		}
 
@@ -55,14 +57,14 @@ func SetPlayerLevel(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 		if fact.PlayerLevelSet(pname, plevel, true) {
 			fact.AutoPromote(pname)
 			fact.SetPlayerListDirty()
-			fact.CMS(m.ChannelID, fmt.Sprintf("Set: Player: %s, Level: %v", pname, fact.LevelToString(plevel)))
+			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Set: Player: %s, Level: %v", pname, fact.LevelToString(plevel)))
 			return
 		} else {
-			fact.CMS(m.ChannelID, fmt.Sprintf("Error: Player not found (case sensitive): %s", pname))
+			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Error: Player not found (case sensitive): %s", pname))
 			return
 		}
 	} else {
-		fact.CMS(m.ChannelID, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
 	}
 
 }

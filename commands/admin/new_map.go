@@ -7,6 +7,6 @@ import (
 )
 
 /* Generate map */
-func NewMap(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func NewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	fact.Map_reset("")
 }

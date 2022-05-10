@@ -224,7 +224,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	/* Command handling
 	 * Factorio channel ONLY */
-	if m.ChannelID == cfg.Local.Channel.ChatChannel && m.ChannelID != "" {
+	if cfg.Local.Channel.ChatChannel == cfg.Local.Channel.ChatChannel && cfg.Local.Channel.ChatChannel != "" {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
 		cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)

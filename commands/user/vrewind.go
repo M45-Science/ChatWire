@@ -16,20 +16,23 @@ import (
 )
 
 /* Allow regulars to vote to rewind the map */
-func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	var args []string = strings.Split("", " ")
+
 	glob.VoteBoxLock.Lock()
 	defer glob.VoteBoxLock.Unlock()
 
 	argnum := len(args)
 
 	/* Mod commands */
-	if disc.CheckModerator(m) {
+	if disc.CheckModerator(i.Member.Roles) {
 		if argnum > 0 {
 			if strings.EqualFold(args[0], "erase") {
 				/* Clear votes */
 				glob.VoteBox.Votes = []glob.RewindVoteData{}
 
-				fact.CMS(m.ChannelID, "All votes cleared.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "All votes cleared.")
 				fact.TallyRewindVotes()
 				fact.WriteRewindVotes()
 				return
@@ -38,7 +41,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 				for vpos := range glob.VoteBox.Votes {
 					glob.VoteBox.Votes[vpos].Voided = true
 				}
-				fact.CMS(m.ChannelID, "All votes voided.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "All votes voided.")
 				fact.TallyRewindVotes()
 				fact.WriteRewindVotes()
 				return
@@ -57,52 +60,52 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					buf = buf + tags + "\n"
 				}
 				buf = buf + " \n```"
-				fact.CMS(m.ChannelID, buf)
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				return
 			} else if strings.EqualFold(args[0], "tally") {
 				/* Retally votes */
 				fact.TallyRewindVotes()
-				fact.CMS(m.ChannelID, "Votes re-tallied (debug).")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Votes re-tallied (debug).")
 				return
 			} else if strings.EqualFold(args[0], "save") {
 				/* Force save */
-				fact.CMS(m.ChannelID, "Votes database saved.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Votes database saved.")
 				fact.WriteRewindVotes()
 				return
 			} else if strings.EqualFold(args[0], "reset-cooldown") {
 				/* Reset cooldown */
 				glob.VoteBox.LastRewindTime = time.Now()
-				fact.CMS(m.ChannelID, "Cooldown reset.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Cooldown reset.")
 				fact.WriteRewindVotes()
 				return
 			} else if strings.EqualFold(args[0], "no-cooldown") {
 				/* Reset cooldown */
 				glob.VoteBox.LastRewindTime = time.Now().Add(time.Duration((-constants.RewindCooldownMinutes) * time.Minute))
-				fact.CMS(m.ChannelID, "Cooldown removed.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Cooldown removed.")
 				fact.WriteRewindVotes()
 				return
 			} else if strings.EqualFold(args[0], "cooldown") {
 				/* 60m cooldown */
 				glob.VoteBox.LastRewindTime = time.Now().Add(time.Duration((60 - constants.RewindCooldownMinutes) * time.Minute))
-				fact.CMS(m.ChannelID, "Cooldown set to 60m")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Cooldown set to 60m")
 				fact.WriteRewindVotes()
 				return
 			} else if strings.EqualFold(args[0], "help") {
 				/* Show help */
-				fact.CMS(m.ChannelID, "`vote-rewind erase` to erase all votes\n`vote-rewind void` to void all votes (no re-voting for 15m)\n`vote-rewind show` to display whole database\n`vote-rewind tally` to re-tally votes (debug)\n`vote-rewind save` to force-save votes\n`vote-rewind reset-cooldown` to disallow rewinding for a few minutes\n`vote-rewind cooldown` to disallow rewinding for 1 hour\n`vote-rewind no-cooldown` to allow rewinding again immediately.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "`vote-rewind erase` to erase all votes\n`vote-rewind void` to void all votes (no re-voting for 15m)\n`vote-rewind show` to display whole database\n`vote-rewind tally` to re-tally votes (debug)\n`vote-rewind save` to force-save votes\n`vote-rewind reset-cooldown` to disallow rewinding for a few minutes\n`vote-rewind cooldown` to disallow rewinding for 1 hour\n`vote-rewind no-cooldown` to allow rewinding again immediately.")
 				return
 			}
 		}
 	}
 
 	if !fact.IsFactorioBooted() || !fact.IsFactRunning() || !glob.ServerRunning {
-		fact.CMS(m.ChannelID, "Factorio isn't running!")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio isn't running!")
 		return
 	}
 
 	/* Only if allowed */
-	if !disc.CheckRegular(m) && !disc.CheckModerator(m) {
-		fact.CMS(m.ChannelID, "You must have the `"+strings.ToUpper(cfg.Global.Discord.Roles.Regular)+"` Discord role to use this command. See $help register for more info.")
+	if !disc.CheckRegular(i.Message.Member.Roles) && !disc.CheckModerator(i.Message.Member.Roles) {
+		fact.CMS(cfg.Local.Channel.ChatChannel, "You must have the `"+strings.ToUpper(cfg.Global.Discord.Roles.Regular)+"` Discord role to use this command. See $help register for more info.")
 		return
 	}
 
@@ -111,10 +114,10 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		_, err = strconv.Atoi(args[0])
 	}
 	if argnum == 0 || err != nil {
-		fact.ShowRewindList(s, m)
+		fact.ShowRewindList(s)
 		buf, _ := fact.TallyRewindVotes()
 		if buf != "" {
-			fact.CMS(m.ChannelID, buf)
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 		}
 		return
 	}
@@ -128,7 +131,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		num, err := strconv.Atoi(arg)
 
 		if err != nil {
-			fact.CMS(m.ChannelID, "Not a valid autosave number.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Not a valid autosave number.")
 			return
 		}
 		if num > 0 || num < 9999 {
@@ -139,18 +142,18 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			notfound := os.IsNotExist(err)
 
 			if notfound {
-				fact.CMS(m.ChannelID, "That autosave number does not exist.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "That autosave number does not exist.")
 				return
 			}
 		} else {
-			fact.CMS(m.ChannelID, "Not a valid autosave number.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Not a valid autosave number.")
 			return
 		}
 
 		/* Cooldown */
 		if time.Since(glob.VoteBox.LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
 			left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(glob.VoteBox.LastRewindTime)
-			fact.CMS(m.ChannelID, fmt.Sprintf("The map can not be rewound for another %v.", left.Round(time.Second).String()))
+			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("The map can not be rewound for another %v.", left.Round(time.Second).String()))
 			return
 		}
 
@@ -161,7 +164,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		foundVote := false
 		fact.TallyRewindVotes()
 		for vpos, v = range glob.VoteBox.Votes {
-			if v.DiscID == m.Author.ID {
+			if v.DiscID == i.Message.Author.ID {
 				left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
 
 				if v.AutosaveNum != num && !v.Voided && v.NumChanges < constants.MaxRewindChanges {
@@ -171,18 +174,18 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 					glob.VoteBox.Votes[vpos].Expired = false
 					glob.VoteBox.Votes[vpos].NumChanges++
 					glob.VoteBox.Votes[vpos].TotalVotes++
-					fact.CMS(m.ChannelID, "You have changed your vote to autosave #"+strconv.Itoa(num))
+					fact.CMS(cfg.Local.Channel.ChatChannel, "You have changed your vote to autosave #"+strconv.Itoa(num))
 					fact.TallyRewindVotes()
 					changedVote = true
 					break
 				} else if v.NumChanges >= constants.MaxRewindChanges {
-					fact.CMS(m.ChannelID, "You can't change your vote again.")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "You can't change your vote again.")
 					return
 				}
 
 				/* If they didn't change a already valid vote, then check cooldown */
 				if left > 0 && !changedVote {
-					fact.CMS(m.ChannelID, "You can not vote again yet, you must wait "+left.Round(time.Second).String()+".")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "You can not vote again yet, you must wait "+left.Round(time.Second).String()+".")
 					return
 				}
 
@@ -196,12 +199,12 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		/* Create new vote, if we didn't already change it above */
 		if !changedVote {
 
-			newVote := glob.RewindVoteData{Name: m.Author.Username, DiscID: m.Author.ID, TotalVotes: 0, Time: time.Now(), AutosaveNum: num, NumChanges: 0, Voided: false, Expired: false}
+			newVote := glob.RewindVoteData{Name: i.Message.Author.Username, DiscID: i.Message.Author.ID, TotalVotes: 0, Time: time.Now(), AutosaveNum: num, NumChanges: 0, Voided: false, Expired: false}
 
 			/* Re-use old vote if we found one, or old votes will block new ones */
 			if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
 				if glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
-					fact.CMS(m.ChannelID, "You are over the maximum number of votes per map.")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "You are over the maximum number of votes per map.")
 					return
 				} else {
 					glob.VoteBox.Votes[vpos] = newVote
@@ -210,13 +213,13 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			} else if !changedVote {
 				glob.VoteBox.Votes = append(glob.VoteBox.Votes, newVote)
 			}
-			fact.CMS(m.ChannelID, "You have voted to rewind the map to autosave #"+args[0])
+			fact.CMS(cfg.Local.Channel.ChatChannel, "You have voted to rewind the map to autosave #"+args[0])
 		}
 
 		/* Mark dirty, so vote is saved after we are done here */
 		glob.VoteBox.Dirty = true
 		if buf, c := fact.TallyRewindVotes(); c < constants.VotesNeededRewind {
-			fact.CMS(m.ChannelID, buf)
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		} else {
 			/* Enough votes to check, lets tally them and see if there is a winner */
@@ -226,7 +229,7 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			asnum := 0
 			for _, t := range glob.VoteBox.Tally {
 				if t.Count >= constants.VotesNeededRewind {
-					//fact.CMS(m.ChannelID, "Players voted to rewind map to autosave #"+strconv.Itoa(as.Autosave))
+					//fact.CMS(cfg.Local.Channel.ChatChannel, "Players voted to rewind map to autosave #"+strconv.Itoa(as.Autosave))
 					found = true
 					asnum = t.Autosave
 				}
@@ -246,13 +249,13 @@ func VoteRewind(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 			for vpos = range glob.VoteBox.Votes {
 				glob.VoteBox.Votes[vpos].Voided = true
 			}
-			fact.CMS(m.ChannelID, "Rewinding the map to autosave #"+strconv.Itoa(asnum))
-			fact.DoRewindMap(s, m, strconv.Itoa(asnum))
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Rewinding the map to autosave #"+strconv.Itoa(asnum))
+			fact.DoRewindMap(s, strconv.Itoa(asnum))
 			return
 		}
 
 	} else {
-		fact.CMS(m.ChannelID, "Invalid arguments.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid arguments.")
 		return
 	}
 

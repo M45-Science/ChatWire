@@ -13,9 +13,13 @@ import (
 )
 
 /*  Check if Discord moderator */
-func CheckModerator(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.Discord.Roles.RoleCache.Moderator {
+func CheckModerator(roles []string) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
+		return false
+	}
+	for _, r := range roles {
+		if r == cfg.Global.Discord.Roles.RoleCache.Moderator {
 			return true
 		}
 	}
@@ -23,9 +27,13 @@ func CheckModerator(m *discordgo.MessageCreate) bool {
 }
 
 /* Check if Discord regular */
-func CheckRegular(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.Discord.Roles.RoleCache.Regular {
+func CheckRegular(roles []string) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.Regular == "" {
+		return false
+	}
+	for _, r := range roles {
+		if r == cfg.Global.Discord.Roles.RoleCache.Regular {
 			return true
 		}
 	}
@@ -33,9 +41,13 @@ func CheckRegular(m *discordgo.MessageCreate) bool {
 }
 
 /* Check if Discord member */
-func CheckMember(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.Discord.Roles.RoleCache.Member {
+func CheckMember(roles []string) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.Member == "" {
+		return false
+	}
+	for _, r := range roles {
+		if r == cfg.Global.Discord.Roles.RoleCache.Member {
 			return true
 		}
 	}
@@ -43,9 +55,13 @@ func CheckMember(m *discordgo.MessageCreate) bool {
 }
 
 /* Check if Discord 'new' */
-func CheckNew(m *discordgo.MessageCreate) bool {
-	for _, role := range m.Member.Roles {
-		if role == cfg.Global.Discord.Roles.RoleCache.New {
+func CheckNew(roles []string) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.New == "" {
+		return false
+	}
+	for _, r := range roles {
+		if r == cfg.Global.Discord.Roles.RoleCache.New {
 			return true
 		}
 	}

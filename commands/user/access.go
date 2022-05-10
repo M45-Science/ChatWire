@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -13,10 +14,10 @@ import (
 
 /* AccessServer locks PasswordListLock
  * This allows players to register, for discord roles and in-game perks */
-func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func AccessServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if !fact.IsFactRunning() {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Factorio isn't currently running.")
+		_, _ = s.ChannelMessageSend(cfg.Local.Channel.ChatChannel, "Factorio isn't currently running.")
 		return
 	}
 	/* Do before lock */
@@ -29,19 +30,19 @@ func AccessServer(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	t := time.Now()
 
 	glob.PasswordListLock.Lock()
-	if glob.PassList[m.Author.ID] != nil {
-		delete(glob.PassList, m.Author.ID)
+	if glob.PassList[i.Message.Author.ID] != nil {
+		delete(glob.PassList, i.Message.Author.ID)
 		cwlog.DoLogCW("Invalidating previous unused password...")
 	}
 	np := glob.PassData{
 		Code:   password,
-		DiscID: m.Author.ID,
+		DiscID: i.Message.Author.ID,
 		Time:   t.Unix(),
 	}
-	glob.PassList[m.Author.ID] = &np
+	glob.PassList[i.Message.Author.ID] = &np
 
 	glob.PasswordListLock.Unlock()
 
 	//Rewrite reply
-	fact.CMS(m.ChannelID, "Access code was direct-messaged to you (check if dms are on)!")
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Access code was direct-messaged to you (check if dms are on)!")
 }

@@ -14,7 +14,7 @@ import (
 
 type Command struct {
 	Name          string
-	Command       func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
+	Command       func(s *discordgo.Session, i *discordgo.InteractionCreate)
 	ModeratorOnly bool
 	Help          string
 	XHelp         string
@@ -207,6 +207,21 @@ func RegisterCommands(s *discordgo.Session) {
 	}
 }
 
-func SlashCommand(s *discordgo.Session, i *discordgo.MessageCreate) {
-	fmt.Println("MEEP!!!")
+func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+
+	data := i.ApplicationCommandData()
+	//Don't respond to other channels
+	if i.AppID == cfg.Global.Discord.Application && i.ChannelID == cfg.Local.Channel.ChatChannel {
+		for _, c := range CL {
+			if c.AppCmd != nil && c.AppCmd.ID == data.ID {
+				c.Command(s, i)
+				return
+			}
+		}
+	} else {
+		fmt.Println("Ignoring command from non-chat channel:", i.Message.ChannelID)
+	}
 }
