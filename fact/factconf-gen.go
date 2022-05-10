@@ -202,7 +202,7 @@ func GenerateFactorioConfig() bool {
 
 	err = os.Rename(tempPath, finalPath)
 	if err != nil {
-		cwlog.DoLogCW("GenerateFactorioConfig: Rename failure")
+		cwlog.DoLogCW("GenerateFactorioConfig: Rename failure: " + err.Error() + ", " + tempPath + ", " + finalPath)
 		return false
 	}
 

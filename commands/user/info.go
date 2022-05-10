@@ -23,7 +23,6 @@ func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	buf := "```"
 	/* STATS */
-	buf = buf + "Stats:\n"
 	buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire version", constants.Version)
 	buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
 	tnow := time.Now()
@@ -136,6 +135,11 @@ func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf = buf + "(Server is paused)\n"
 	}
 
-	fact.CMS(i.ChannelID, buf)
+	buf = buf + "```"
+
+	respData := &discordgo.InteractionResponseData{Content: buf}
+	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
+	s.InteractionRespond(i.Interaction, resp)
+	//fact.CMS(i.ChannelID, buf)
 
 }
