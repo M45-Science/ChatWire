@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
@@ -10,7 +10,9 @@ import (
 /* Reboots cw */
 func Reboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Now rebooting!")
+	buf := "Rebooting!"
+	embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
+	disc.InteractionResponse(s, i, embed)
 	fact.SetRelaunchThrottle(0)
 	fact.DoExit(false)
 }

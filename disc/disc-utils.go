@@ -255,3 +255,15 @@ func GetPlayerDataFromName(pname string) *glob.PlayerData {
 	p := glob.PlayerList[pname]
 	return p
 }
+
+func InteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
+	var embedList []*discordgo.MessageEmbed
+	embedList = append(embedList, embed)
+	respData := &discordgo.InteractionResponseData{Embeds: embedList}
+	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
+	s.InteractionRespond(i.Interaction, resp)
+}
+
+func FollowupResponse(s *discordgo.Session, i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
+	s.FollowupMessageCreate(i.Interaction, false, f)
+}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
@@ -44,7 +44,9 @@ func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			strings.EqualFold(plevelStr, "Delete") {
 			plevel = -255
 		} else {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
+			buf := "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`."
+			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
 			return
 		}
 
@@ -57,14 +59,20 @@ func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if fact.PlayerLevelSet(pname, plevel, true) {
 			fact.AutoPromote(pname)
 			fact.SetPlayerListDirty()
-			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Set: Player: %s, Level: %v", pname, fact.LevelToString(plevel)))
+			buf := fmt.Sprintf("Player: %v level set to %v", pname, fact.LevelToString(plevel))
+			embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
 			return
 		} else {
-			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Error: Player not found (case sensitive): %s", pname))
+			buf := fmt.Sprintf("Player not found: %s", pname)
+			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
 			return
 		}
 	} else {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`.")
+		buf := "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`."
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 	}
 
 }

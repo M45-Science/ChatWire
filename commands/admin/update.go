@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
@@ -19,11 +20,16 @@ func Update(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if argnum > 0 && strings.ToLower(args[0]) == "cancel" {
 			fact.SetDoUpdateFactorio(false)
 			cfg.Local.Options.AutoUpdate = false
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Update canceled, and update check disabled.")
+
+			buf := "Update canceled, and auto-update disabled."
+			embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
 			return
 		}
 		fact.CheckFactUpdate(true)
 	} else {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "AutoUpdate is disabled.")
+		buf := "The Factorio updater isn't configured."
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 	}
 }

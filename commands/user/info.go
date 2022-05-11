@@ -1,10 +1,10 @@
 package user
 
 import (
-	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/constants"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
@@ -24,7 +24,9 @@ func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	buf := "```"
 	/* STATS */
 	buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire version", constants.Version)
-	buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
+	if fact.FactorioVersion != constants.Unknown {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
+	}
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
 	buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire up-time", tnow.Sub(glob.Uptime.Round(time.Second)).String())
@@ -37,8 +39,10 @@ func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.LastSaveName != constants.Unknown || verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
 	}
-	buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
-	buf = buf + fmt.Sprintf("%17v: %v (most ever %v)\n", "Players online", fact.GetNumPlayers(), glob.RecordPlayers)
+	if fact.GametimeString != constants.Unknown {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
+		buf = buf + fmt.Sprintf("%17v: %v (most ever %v)\n", "Players online", fact.GetNumPlayers(), glob.RecordPlayers)
+	}
 
 	/* SETTINGS */
 	buf = buf + "\nServer settings:\n"
@@ -66,15 +70,8 @@ func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	modStr := fact.GetModLoadString()
-	if modStr != "" {
+	if modStr != constants.Unknown {
 		buf = buf + "\nLoaded mods: " + modStr + "\n"
-	}
-	banlist.BanListLock.Lock()
-	banCount := len(banlist.BanList)
-	banlist.BanListLock.Unlock()
-
-	if banCount > 0 {
-		buf = buf + "\nBan count " + fmt.Sprintf("%v", banCount) + "\n"
 	}
 
 	/*************************
@@ -137,9 +134,12 @@ func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	buf = buf + "```"
 
-	respData := &discordgo.InteractionResponseData{Content: buf}
-	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	s.InteractionRespond(i.Interaction, resp)
-	//fact.CMS(i.ChannelID, buf)
+	msg, isConfigured := fact.MakeSteamURL()
+	if isConfigured {
+		buf = buf + "Steam connect link: " + msg
+	}
+
+	embed := &discordgo.MessageEmbed{Title: "Server Info:", Description: buf}
+	disc.InteractionResponse(s, i, embed)
 
 }

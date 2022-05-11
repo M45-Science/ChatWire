@@ -645,7 +645,7 @@ func MainLoops() {
 				/* New map */
 				if _, err = os.Stat(".newmap"); err == nil {
 					if errb = os.Remove(".newmap"); errb == nil {
-						fact.Map_reset("")
+						fact.Map_reset("", false)
 					} else if errb != nil && !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
@@ -661,7 +661,7 @@ func MainLoops() {
 							if msglen > 5 && msglen < 250 {
 								message = strings.ReplaceAll(message, "\n", "") /* replace newline */
 								message = strings.ReplaceAll(message, "\r", "") /* replace return */
-								fact.Map_reset(message)
+								fact.Map_reset(message, false)
 							} else {
 								fact.LogCMS(cfg.Local.Channel.ChatChannel, ".message text is invalid, ignoring.")
 							}
@@ -766,7 +766,7 @@ func MainLoops() {
 	go func() {
 		time.Sleep(time.Minute)
 		for glob.ServerRunning {
-			modupdate.CheckMods(false)
+			modupdate.CheckMods(false, false)
 
 			time.Sleep(time.Hour * 3)
 		}

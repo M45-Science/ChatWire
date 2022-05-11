@@ -2,6 +2,7 @@ package admin
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/support"
 	"fmt"
@@ -29,7 +30,7 @@ func Set(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if arg1 == "help" || arg1 == "" {
 
 		buf := ""
-		buf = buf + fmt.Sprintf("`%24v: -- %-19v %15v %v`\n\n", "Description", "Name", "Data", "(Limits)")
+		buf = buf + fmt.Sprintf("%24v: -- %-19v %15v %v\n", "Description", "Name", "Data", "(Limits)")
 		for _, setting := range SettingList {
 			data := ""
 			limits := ""
@@ -55,10 +56,12 @@ func Set(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			if data == "" {
 				data = "(empty)"
 			}
-			buf = buf + fmt.Sprintf("`%24v: -- %-19v %15v %v`\n\n", setting.Desc, setting.Name, data, limits)
+			buf = buf + fmt.Sprintf("%24v: -- %-19v %15v %v\n\n", setting.Desc, setting.Name, data, limits)
 		}
-		buf = buf + "\n`set <setting>` will show options. (EMPTY) can be used to blank a string.\n"
-		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+		buf = buf + "\nset <setting> will show options. (EMPTY) can be used to blank a string.\n"
+
+		embed := &discordgo.MessageEmbed{Title: "Settings:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 	} else if arg1 != "" {
 		found := false
 		for _, setting := range SettingList {

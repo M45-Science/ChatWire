@@ -44,11 +44,23 @@ func GetMapTypeName(num int) string {
 }
 
 /* Generate map */
-func Map_reset(data string) {
+func Map_reset(data string, doReport bool) {
 
 	/* Prevent another map reset from accidentally running at the same time */
 	GameMapLock.Lock()
 	defer GameMapLock.Unlock()
+
+	/* Get Factorio version, for archive folder name */
+	version := strings.Split(FactorioVersion, ".")
+	vlen := len(version)
+	if vlen < 3 {
+		buf := "Unable to determine Factorio version."
+		cwlog.DoLogCW(buf)
+		if doReport {
+			CMS(cfg.Local.Channel.ChatChannel, buf)
+		}
+		return
+	}
 
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
@@ -73,14 +85,6 @@ func Map_reset(data string) {
 		time.Sleep(time.Millisecond * 100)
 	}
 
-	/* Get Factorio version, for archive folder name */
-	version := strings.Split(FactorioVersion, ".")
-	vlen := len(version)
-	if vlen < 3 {
-		cwlog.DoLogCW("Unable to determine Factorio version.")
-		return
-	}
-
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
 		shortversion := strings.Join(version[0:2], ".")
@@ -93,7 +97,10 @@ func Map_reset(data string) {
 
 		from, erra := os.Open(GameMapPath)
 		if erra != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
+
+			buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
+			cwlog.DoLogCW(buf)
+			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 		defer from.Close()
@@ -107,14 +114,18 @@ func Map_reset(data string) {
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
+			buf := fmt.Sprintf("An error occurred when attempting to create the map archive file: %s", errb)
+			cwlog.DoLogCW(buf)
+			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 		defer to.Close()
 
 		_, errc := io.Copy(to, from)
 		if errc != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
+			buf := fmt.Sprintf("An error occurred when attempting to write the map archive file: %s", errc)
+			cwlog.DoLogCW(buf)
+			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 
@@ -124,6 +135,7 @@ func Map_reset(data string) {
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 		} else {
 			buf = "Map archive failed."
+			cwlog.DoLogCW(buf)
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
@@ -142,7 +154,9 @@ func Map_reset(data string) {
 	MapPreset := cfg.Local.Settings.MapPreset
 
 	if MapPreset == "Error" {
-		CMS(cfg.Local.Channel.ChatChannel, "Invalid map preset.")
+		buf := "Invalid map preset."
+		cwlog.DoLogCW(buf)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
 		return
 	}
 
@@ -178,10 +192,11 @@ func Map_reset(data string) {
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
+		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
+		cwlog.DoLogCW(buf)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
 		return
 	}
-	CMS(cfg.Local.Channel.ChatChannel, "Rebooting.")
 
 	/* If available, use per-server ping setting... otherwise use global */
 	pingstr := ""
@@ -215,6 +230,10 @@ func Map_reset(data string) {
 				err := os.Rename(qPath+f.Name(), modPath+f.Name())
 				if err != nil {
 					cwlog.DoLogCW(err.Error())
+				} else {
+					buf := "Installed new mod-settings.dat"
+					cwlog.DoLogCW(buf)
+					CMS(cfg.Local.Channel.ChatChannel, buf)
 				}
 			}
 
@@ -230,6 +249,10 @@ func Map_reset(data string) {
 					err = os.Remove(qPath + f.Name())
 					if err != nil {
 						cwlog.DoLogCW(err.Error())
+					} else {
+						buf := fmt.Sprintf("Removed mod: %v", strings.TrimPrefix(f.Name(), "deleteme-"))
+						cwlog.DoLogCW(buf)
+						CMS(cfg.Local.Channel.ChatChannel, buf)
 					}
 				} else {
 
@@ -237,6 +260,10 @@ func Map_reset(data string) {
 					err := os.Rename(qPath+f.Name(), modPath+f.Name())
 					if err != nil {
 						cwlog.DoLogCW(err.Error())
+					} else {
+						buf := fmt.Sprintf("Installed mod: %v", f.Name())
+						cwlog.DoLogCW(buf)
+						CMS(cfg.Local.Channel.ChatChannel, buf)
 					}
 				}
 			}
@@ -249,5 +276,6 @@ func Map_reset(data string) {
 	ResetTotalVotes()  /* New map, reset player's vote limits */
 	WriteRewindVotes() /* Save to file before exiting */
 	glob.VoteBoxLock.Unlock()
+	CMS(cfg.Local.Channel.ChatChannel, "Map reset complete, rebooting.")
 	DoExit(true)
 }

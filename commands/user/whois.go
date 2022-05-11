@@ -78,7 +78,6 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
-
 		count := 0
 		for _, p := range slist {
 			if p.LastSeen > 0 && count < maxresults {

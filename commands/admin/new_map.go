@@ -8,5 +8,5 @@ import (
 
 /* Generate map */
 func NewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	fact.Map_reset("")
+	fact.Map_reset("", true)
 }

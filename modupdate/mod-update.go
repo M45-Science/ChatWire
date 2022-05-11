@@ -6,12 +6,13 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"strings"
 )
 
-func CheckMods(force bool) {
+func CheckMods(force bool, doReport bool) {
 	if !cfg.Local.Options.AutoUpdate && !force {
 		return
 	}
@@ -34,11 +35,11 @@ func CheckMods(force bool) {
 
 	/* There are mods, so check for updates */
 	if mCount > 0 {
-		UpdateMods()
+		UpdateMods(doReport)
 	}
 }
 
-func UpdateMods() {
+func UpdateMods(doReport bool) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ModUpdateLimit)
 	defer cancel()
@@ -73,7 +74,9 @@ func UpdateMods() {
 	out := string(o)
 
 	if err != nil {
-		cwlog.DoLogCW("Error running mod updater: " + err.Error())
+		buf := fmt.Sprintf("Error while attempting to update game mods: %v", err.Error())
+		cwlog.DoLogCW(buf)
+		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 	} else {
 		//cwlog.DoLogCW(out)
 	}
@@ -88,6 +91,8 @@ func UpdateMods() {
 	if buf != "" {
 		fact.CMS(cfg.Local.Channel.ChatChannel, "Some Factorio mods were updated, and will take effect on the next reboot (when server is empty)")
 		fact.SetQueued(true)
+	} else if doReport {
+		fact.CMS(cfg.Local.Channel.ChatChannel, "All game mods are up-to-date.")
 	}
 
 }

@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
@@ -10,11 +10,18 @@ import (
 /* Reboots Factorio only */
 func Restart(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Now starting!")
+	if fact.IsFactRunning() {
+
+		buf := "Restarting Factorio..."
+		embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
+		fact.QuitFactorio()
+	} else {
+		buf := "Starting Factorio..."
+		embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
+	}
 
 	fact.SetAutoStart(true)
 	fact.SetRelaunchThrottle(0)
-	if fact.IsFactRunning() {
-		fact.QuitFactorio()
-	}
 }

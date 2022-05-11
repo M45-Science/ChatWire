@@ -11,6 +11,7 @@ import (
 
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 
@@ -21,7 +22,9 @@ import (
 func Generate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.IsFactRunning() {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Stop server first! ($stop)")
+		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 
@@ -45,16 +48,23 @@ func Generate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if ourseed <= 0 {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Error, no seed.")
+		buf := "Invalid seed data. (internal error)"
+		cwlog.DoLogCW(buf)
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 
 	if MapPreset == "Error" {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid map preset.")
+		buf := "Invalid map preset."
+		cwlog.DoLogCW(buf)
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Generating map...")
+	embed := &discordgo.MessageEmbed{Title: "Status:", Description: "Generating map..."}
+	disc.InteractionResponse(s, i, embed)
 
 	/* Delete old sav-* map to save space */
 	fact.DeleteOldSav()
@@ -87,7 +97,13 @@ func Generate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred attempting to generate the map. Details: %s", aerr))
+		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
+		cwlog.DoLogCW(buf)
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(s, i, &f)
+		return
 	}
 
 	glob.VoteBoxLock.Lock()
@@ -101,10 +117,17 @@ func Generate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "New map saved as: "+filename)
+			buf := fmt.Sprintf("New map saved as: %v", filename)
+			var elist []*discordgo.MessageEmbed
+			elist = append(elist, &discordgo.MessageEmbed{Title: "Complete:", Description: buf})
+			f := discordgo.WebhookParams{Embeds: elist}
+			disc.FollowupResponse(s, i, &f)
 			return
 		}
 	}
 
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Unknown error.")
+	var elist []*discordgo.MessageEmbed
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unknwon error."})
+	f := discordgo.WebhookParams{Embeds: elist}
+	disc.FollowupResponse(s, i, &f)
 }

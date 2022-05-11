@@ -282,7 +282,7 @@ func ReadGCfg() bool {
 			if err == nil {
 				exPath := filepath.Dir(ex)
 				p := filepath.Clean(filepath.Join(exPath, ".."))
-				Global.Paths.Folders.ServersRoot = p
+				Global.Paths.Folders.ServersRoot = p + "/"
 			}
 		}
 
@@ -346,6 +346,18 @@ func ReadGCfg() bool {
 		}
 		if Global.Options.AutosaveMax == 0 {
 			Global.Options.AutosaveMax = 250
+		}
+		if Global.Options.PreviewSettings.JPGQuality == "" {
+			Global.Options.PreviewSettings.JPGQuality = "85"
+		}
+		if Global.Options.PreviewSettings.JPGScale == "" {
+			Global.Options.PreviewSettings.JPGScale = "256x256"
+		}
+		if Global.Options.PreviewSettings.PNGRes == "" {
+			Global.Options.PreviewSettings.PNGRes = "256"
+		}
+		if Global.Options.PreviewSettings.PNGScale == "" {
+			Global.Options.PreviewSettings.PNGRes = "1"
 		}
 		return true
 	} else { /* Otherwise just read in the config */

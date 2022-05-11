@@ -12,6 +12,7 @@ import (
 
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
 
 	"github.com/bwmarrin/discordgo"
@@ -20,14 +21,18 @@ import (
 /* RandomMap locks FactorioLaunchLock */
 func RandomMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.IsFactRunning() {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Stop server first! ($stop)")
+		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 
 	fact.FactorioLaunchLock.Lock()
 	defer fact.FactorioLaunchLock.Unlock()
 
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Generating map preview...")
+	buff := "Generating map preview..."
+	embed := &discordgo.MessageEmbed{Title: "Status:", Description: buff}
+	disc.InteractionResponse(s, i, embed)
 
 	var preview_made = false
 	t := time.Now()
@@ -62,7 +67,12 @@ func RandomMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	out, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to generate the preview. Details: %s", aerr))
+		buf := fmt.Sprintf("An error occurred when attempting to generate the map preview: %s", aerr)
+		cwlog.DoLogCW(buf)
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(s, i, &f)
 	}
 
 	lines := strings.Split(string(out), "\n")
@@ -71,6 +81,15 @@ func RandomMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if strings.Contains(l, "Wrote map preview image file:") {
 			preview_made = true
 		}
+	}
+	if !preview_made {
+		buf := "The game did not generate a map preview. Try clearing map-gen."
+		cwlog.DoLogCW(buf)
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(s, i, &f)
+		return
 	}
 
 	imgargs := []string{path, "-quality", cfg.Global.Options.PreviewSettings.JPGQuality, "-scale", cfg.Global.Options.PreviewSettings.JPGScale, jpgpath}
@@ -83,13 +102,19 @@ func RandomMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if berr != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to convert the map preview. Details: %s", berr))
+		buf := fmt.Sprintf("An error occurred when attempting to convert the map preview: %s", berr)
+		cwlog.DoLogCW(buf)
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(s, i, &f)
+		return
 	}
 
-	buffer := "Preview failed."
-	if preview_made {
-		buffer = fmt.Sprintf("**Map code:** `%v`\nPreview: %s%s.jpg\n", ourcode, cfg.Global.Paths.URLs.MapPreviewURL, ourcode)
-	}
-
-	fact.CMS(cfg.Local.Channel.ChatChannel, buffer)
+	url := fmt.Sprintf("%v%v.jpg", cfg.Global.Paths.URLs.MapPreviewURL, ourcode)
+	img := &discordgo.MessageEmbedImage{URL: url}
+	var elist []*discordgo.MessageEmbed
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Map preview:", Image: img})
+	f := discordgo.WebhookParams{Embeds: elist}
+	disc.FollowupResponse(s, i, &f)
 }

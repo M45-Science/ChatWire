@@ -11,6 +11,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/sclean"
 
@@ -27,7 +28,9 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	vlen := len(version)
 
 	if vlen < 3 {
-		cwlog.DoLogCW("Unable to determine Factorio version.")
+		buf := "Unable to determine Factorio version."
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 
@@ -42,7 +45,11 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		from, erra := os.Open(fact.GameMapPath)
 		if erra != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the map to archive. Details: %s", erra))
+			buf := fmt.Sprintf("An error occurred reading the map to archive: %s", erra)
+			cwlog.DoLogCW(buf)
+			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
+			return
 		}
 		defer from.Close()
 
@@ -50,30 +57,41 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		newdir := fmt.Sprintf("%s%s maps/", cfg.Global.Paths.Folders.MapArchives, shortversion)
 		err := os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
-			cwlog.DoLogCW(err.Error())
+			buf := fmt.Sprintf("Unable to create archive directory: %v", err.Error())
+			cwlog.DoLogCW(buf)
+			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
+			return
 		}
 
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the archive map file. Details: %s", errb))
+			buf := fmt.Sprintf("Unable to write archive file: %v", errb)
+			cwlog.DoLogCW(buf)
+			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
+			return
 		}
 		defer to.Close()
 
 		_, errc := io.Copy(to, from)
 		if errc != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the archived map. Details: %s", errc))
+			buf := fmt.Sprintf("Unable to write map archive file: %s", errc)
+			cwlog.DoLogCW(buf)
+			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+			disc.InteractionResponse(s, i, embed)
+			return
 		}
 
-		var buf string
-		if erra == nil && errb == nil && errc == nil {
-			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
-		} else {
-			buf = "Map archive failed."
-		}
+		buf := fmt.Sprintf("Map archived as: %v", newmapurl)
+		embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
+		return
 
-		fact.CMS(i.ChannelID, buf)
 	} else {
-		fact.CMS(i.ChannelID, "No map has been loaded yet.")
+
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "No map has been loaded yet."}
+		disc.InteractionResponse(s, i, embed)
 	}
 
 }

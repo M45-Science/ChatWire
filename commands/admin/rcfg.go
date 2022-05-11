@@ -2,6 +2,7 @@ package admin
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/support"
 
@@ -16,11 +17,15 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Global config file seems to be invalid.")
+		buf := "Unable to reload global config file."
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 	if !cfg.ReadLCfg() {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Local config file seems to be invalid.")
+		buf := "Unable to reload local config file."
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
 		return
 	}
 
@@ -28,7 +33,9 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg.WriteGCfg()
 	cfg.WriteLCfg()
 	fact.DoUpdateChannelName()
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Config files reloaded.")
+	buf := "Config files have been reloaded."
+	embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
+	disc.InteractionResponse(s, i, embed)
 
 	/* Config reset-interval */
 	if cfg.Local.Options.ScheduleText != "" {
