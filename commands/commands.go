@@ -92,6 +92,14 @@ var cmds = []Command{
 		Name:        "update-factorio",
 		Description: "Updates Factorio to the latest version if there is a new version available.",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Name:        "cancel",
+				Description: "Cancel an ongoing upgrade, and disable auto-update.",
+				Required:    false,
+			},
+		},
 	},
 
 		Command: admin.Update, ModeratorOnly: true},
@@ -99,7 +107,46 @@ var cmds = []Command{
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-set",
 		Description: "Sets a player's rank.",
-		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "name",
+				Description: "Factorio name of target player",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+			{
+				Name:        "level",
+				Description: "player level",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Moderator",
+						Value: 255,
+					},
+					{
+						Name:  "Regular",
+						Value: 2,
+					},
+					{
+						Name:  "Member",
+						Value: 1,
+					},
+					{
+						Name:  "New",
+						Value: 0,
+					},
+					{
+						Name:  "Banned",
+						Value: -1,
+					},
+					{
+						Name:  "Deleted",
+						Value: -255,
+					},
+				},
+			},
+		},
 	},
 		Command: admin.SetPlayerLevel, ModeratorOnly: true},
 
