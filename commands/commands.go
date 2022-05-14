@@ -161,6 +161,86 @@ var cmds = []Command{
 		Name:        "config",
 		Description: "Change server configuration options.",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "name",
+				Description: "Factorio server name, excluding callsign.",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "port",
+				Description: "UDP Port the game will run on.",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "map-preset",
+				Description: "These are built-in Factorio presets",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Default",
+						Value: 0,
+					},
+					{
+						Name:  "Rich Resources",
+						Value: 1,
+					},
+					{
+						Name:  "Marathon",
+						Value: 2,
+					},
+					{
+						Name:  "Death-World",
+						Value: 3,
+					},
+					{
+						Name:  "Death-World-Marathon",
+						Value: 4,
+					},
+					{
+						Name:  "Rail-World",
+						Value: 5,
+					},
+					{
+						Name:  "Ribbon-World",
+						Value: 6,
+					},
+					{
+						Name:  "Island",
+						Value: 7,
+					},
+				},
+			},
+			{
+				Name:        "map-generator",
+				Description: "A custom map generator",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "auto-start",
+				Description: "If enabled, ChatWire will automatically boot up Factorio.",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "auto-update-factorio",
+				Description: "If enabled, ChatWire will automatically update Factorio to the latest stable version.",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Off",
+						Value: 0,
+					},
+					{
+						Name:  "Auto-Update (stable)",
+						Value: 1,
+					},
+					{
+						Name:  "Auto-Update (experimental)",
+						Value: 2,
+					},
+				},
+			},
+		},
 	},
 		Command: admin.Set, ModeratorOnly: true},
 

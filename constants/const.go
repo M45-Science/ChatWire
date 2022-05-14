@@ -62,4 +62,4 @@ const (
 )
 
 /* Factorio map preset names */
-var MapTypes = []string{"custom", "default", "rich-resources", "marathon", "death-world", "death-world-marathon", "rail-world", "ribbon-world", "island"}
+var MapTypes = []string{"default", "rich-resources", "marathon", "death-world", "death-world-marathon", "rail-world", "ribbon-world", "island"}
