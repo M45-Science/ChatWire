@@ -55,7 +55,7 @@ func GenerateFactorioConfig() bool {
 	var servName string = ""
 	if cfg.Local.Options.Whitelist {
 		cfg.ServerPrefix = constants.MembersPrefix
-		servName = "\u0080 [" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
+		servName = "\u0080[" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
 	} else {
 		cfg.ServerPrefix = ""
@@ -82,12 +82,11 @@ func GenerateFactorioConfig() bool {
 
 	var descrLines []string
 
-	descrLines = strings.Split(cfg.Global.Options.Description, "\n")
 	if cfg.Local.Options.ScheduleText != "" {
 		descrLines = append(descrLines, AddFactColor("orange", "MAP RESETS: "+cfg.Local.Options.ScheduleText))
 	}
 	if cfg.Local.Options.Whitelist {
-		descrLines = append(descrLines, AddFactColor("orange", "MEMBERS-ONLY"))
+		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
 	}
 	if cfg.Local.Options.SoftModOptions.FriendlyFire {
 		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
@@ -116,6 +115,9 @@ func GenerateFactorioConfig() bool {
 		descrLines = append(descrLines, "Server owner: "+cfg.Global.FactorioData.Username)
 	}*/
 	descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)))
+
+	gdesc := strings.Split(cfg.Global.Options.Description, "\n")
+	descrLines = append(descrLines, gdesc...)
 
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
