@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"log"
+	"strings"
 
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
@@ -13,11 +13,8 @@ import (
 )
 
 type Command struct {
-	Name          string
 	Command       func(s *discordgo.Session, i *discordgo.InteractionCreate)
 	ModeratorOnly bool
-	Help          string
-	XHelp         string
 	AppCmd        *discordgo.ApplicationCommand
 }
 
@@ -322,16 +319,18 @@ func RegisterCommands(s *discordgo.Session) {
 	/* Bypasses init loop compile error. */
 	CL = append(CL, cmds...)
 
-	for i, c := range CL {
-		if c.AppCmd != nil {
-			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
-			if err != nil {
-				log.Println("Failed to create command:", c.Name, err)
-				continue
+	/*
+		for i, c := range CL {
+			if c.AppCmd != nil {
+				cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
+				if err != nil {
+					log.Println("Failed to create command:", c.AppCmd.Name, err)
+					continue
+				}
+				CL[i].AppCmd = cmd
 			}
-			CL[i].AppCmd = cmd
 		}
-	}
+	*/
 }
 
 func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -340,14 +339,17 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	data := i.ApplicationCommandData()
+	fmt.Println("Data:", data.Name, i.ChannelID)
+
 	//Don't respond to other channels
-	if i.AppID == cfg.Global.Discord.Application && i.ChannelID == cfg.Local.Channel.ChatChannel {
+	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
 		for _, c := range CL {
-			if c.AppCmd != nil && c.AppCmd.ID == data.ID {
+			if strings.EqualFold(c.AppCmd.Name, data.Name) {
 				c.Command(s, i)
 				return
 			}
 		}
+		fmt.Println("No such command, ignoring.")
 	} else {
 		fmt.Println("Ignoring command from non-chat channel:", i.Message.ChannelID)
 	}

@@ -141,7 +141,7 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	commands.ClearCommands()
+	//go func() { commands.ClearCommands() }()
 
 	_ = os.Remove("cw.lock")
 	fact.SetAutoStart(false)
@@ -198,15 +198,15 @@ func startbot() {
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
-	commands.RegisterCommands(s)
-	s.AddHandler(MessageCreate)
-	s.AddHandler(commands.SlashCommand)
-
 	botstatus := fmt.Sprintf("type %vhelp", "$")
 	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
 	}
+
+	commands.RegisterCommands(s)
+	s.AddHandler(MessageCreate)
+	s.AddHandler(commands.SlashCommand)
 
 	if s != nil {
 		/* Save Discord descriptor here */

@@ -2,7 +2,6 @@ package admin
 
 import (
 	"fmt"
-	"strings"
 
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -13,38 +12,46 @@ import (
 /* Set a player's level. Needs to support level names, and have useful help/errors */
 func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	var args []string = strings.Split("", " ")
-	argnum := len(args)
+	var aname string
+	var alevel int
 
-	if argnum > 1 {
-		pname := args[0]
-		plevelStr := args[1]
+	a := i.ApplicationCommandData()
+	if !disc.CheckModerator(i.Member.Roles) {
+		buf := "This commands is only for moderators."
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, embed)
+		return
+	}
 
-		oldLevel := fact.PlayerLevelGet(pname, true)
+	for _, arg := range a.Options {
+		if arg.Type == discordgo.ApplicationCommandOptionString {
+			if arg.StringValue() == "Moderator" {
+				aname = arg.StringValue()
+			}
+		} else if arg.Type == discordgo.ApplicationCommandOptionInteger {
+			alevel = int(arg.IntValue())
+		}
+	}
+
+	if aname != "" {
+
+		oldLevel := fact.PlayerLevelGet(aname, true)
 
 		plevel := 0
-		if strings.EqualFold(plevelStr, "Admin") ||
-			strings.EqualFold(plevelStr, "Mod") ||
-			strings.EqualFold(plevelStr, "Moderator") {
+		if alevel == 255 {
 			plevel = 255
-		} else if strings.EqualFold(plevelStr, "Regular") ||
-			strings.EqualFold(plevelStr, "Regulars") {
+		} else if alevel == 2 {
 			plevel = 2
-		} else if strings.EqualFold(plevelStr, "Member") ||
-			strings.EqualFold(plevelStr, "Members") {
+		} else if alevel == 1 {
 			plevel = 1
-		} else if strings.EqualFold(plevelStr, "New") ||
-			strings.EqualFold(plevelStr, "Clear") ||
-			strings.EqualFold(plevelStr, "Reset") {
+		} else if alevel == 0 {
 			plevel = 0
-		} else if strings.EqualFold(plevelStr, "Banned") ||
-			strings.EqualFold(plevelStr, "Ban") {
+		} else if alevel == -1 {
 			plevel = -1
-		} else if strings.EqualFold(plevelStr, "Deleted") ||
-			strings.EqualFold(plevelStr, "Delete") {
+		} else if alevel == -255 {
 			plevel = -255
 		} else {
-			buf := "Invalid level.\nValid levels are:\n`Admin, Regular, Member, New`. Also: `Banned` and `Deleted`."
+			buf := "Invalid level."
 			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
 			disc.InteractionResponse(s, i, embed)
 			return
@@ -52,19 +59,19 @@ func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		/* Unban automatically */
 		if plevel >= 0 && oldLevel == -1 {
-			fact.WriteFact("/unban " + pname)
+			fact.WriteFact("/unban " + aname)
 		}
 
 		/* TRUE, modify only */
-		if fact.PlayerLevelSet(pname, plevel, true) {
-			fact.AutoPromote(pname)
+		if fact.PlayerLevelSet(aname, plevel, true) {
+			fact.AutoPromote(aname)
 			fact.SetPlayerListDirty()
-			buf := fmt.Sprintf("Player: %v level set to %v", pname, fact.LevelToString(plevel))
+			buf := fmt.Sprintf("Player: %v level set to %v", aname, fact.LevelToString(plevel))
 			embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
 			disc.InteractionResponse(s, i, embed)
 			return
 		} else {
-			buf := fmt.Sprintf("Player not found: %s", pname)
+			buf := fmt.Sprintf("Player not found: %s", aname)
 			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
 			disc.InteractionResponse(s, i, embed)
 			return
