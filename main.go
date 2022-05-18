@@ -141,7 +141,8 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	//go func() { commands.ClearCommands() }()
+	//Bypass for faster shutdown
+	//commands.ClearCommands()
 
 	_ = os.Remove("cw.lock")
 	fact.SetAutoStart(false)

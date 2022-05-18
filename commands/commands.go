@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"strings"
 
 	"ChatWire/cfg"
@@ -319,6 +318,8 @@ func RegisterCommands(s *discordgo.Session) {
 	/* Bypasses init loop compile error. */
 	CL = append(CL, cmds...)
 
+	//Bypass register, very slow
+	//TODO: Cache info and correct for changes when needed
 	/*
 		for i, c := range CL {
 			if c.AppCmd != nil {
@@ -339,7 +340,6 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	data := i.ApplicationCommandData()
-	fmt.Println("Data:", data.Name, i.ChannelID)
 
 	//Don't respond to other channels
 	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
@@ -349,8 +349,5 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				return
 			}
 		}
-		fmt.Println("No such command, ignoring.")
-	} else {
-		fmt.Println("Ignoring command from non-chat channel:", i.Message.ChannelID)
 	}
 }
