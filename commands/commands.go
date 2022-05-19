@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/commands/user"
@@ -13,8 +15,6 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type Command struct {
@@ -49,6 +49,7 @@ var cmds = []Command{
 	},
 		Command: admin.Reload, ModeratorOnly: true},
 
+	//Add "confirm"
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "force-reboot-chatwire",
 		Description: "Big red button. Don't use this lightly. This does not cleanly exit Factorio or ChatWire.",
@@ -91,6 +92,7 @@ var cmds = []Command{
 	},
 		Command: admin.NewMap, ModeratorOnly: true},
 
+	//Add the cancel peram
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "update-factorio",
 		Description: "Updates Factorio to the latest version if there is a new version available.",
@@ -107,6 +109,7 @@ var cmds = []Command{
 
 		Command: admin.Update, ModeratorOnly: true},
 
+	//Complete
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-set",
 		Description: "Sets a player's rank.",
@@ -160,6 +163,7 @@ var cmds = []Command{
 	},
 		Command: admin.ReloadConfig, ModeratorOnly: true},
 
+	//TODO: Do params
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config",
 		Description: "Change server configuration options.",
@@ -260,6 +264,7 @@ var cmds = []Command{
 	},
 		Command: admin.ForceUpdateMods, ModeratorOnly: true},
 
+	//Add param
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "set-map-seed",
 		Description: "Sets the map seed for the next map reset. Value is cleared after use.",
@@ -275,6 +280,7 @@ var cmds = []Command{
 		Command: admin.DebugStat, ModeratorOnly: true},
 
 	/*  Player Commands */
+	//Add player
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "whois",
 		Description: "Shows information about a player.",
@@ -282,6 +288,7 @@ var cmds = []Command{
 	},
 		Command: user.Whois, ModeratorOnly: false},
 
+	//Maybe make this slicker?
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "players-online",
 		Description: "Shows detailed info about players currently online.",
@@ -289,6 +296,7 @@ var cmds = []Command{
 	},
 		Command: user.PlayersOnline, ModeratorOnly: false},
 
+	//Slicker?
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "server-info",
 		Description: "Shows detailed information on the server settings.",
@@ -296,6 +304,7 @@ var cmds = []Command{
 	},
 		Command: user.ShowSettings, ModeratorOnly: false},
 
+	//Cleanup, possibly handle other chat channels
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "register",
 		Description: "Registers a new account, giving you accociated Discord roles with more privleges.",
@@ -303,6 +312,7 @@ var cmds = []Command{
 	},
 		Command: user.AccessServer, ModeratorOnly: false},
 
+	//Add params, make slicker
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-rewind",
 		Description: "Vote to rewind the map to the specified autosave (two votes needed!).",
@@ -324,8 +334,10 @@ func ClearCommands() {
 	}
 }
 
-var modPerms int64 = (1 << 28)
-var playerPerms int64 = (1 << 10)
+//https://discord.com/developers/docs/topics/permissions
+
+var modPerms int64 = (1 << 28)    //MANAGE_ROLES
+var playerPerms int64 = (1 << 11) //SEND_MESSAGES
 
 /*  RegisterCommands registers the commands on start up. */
 func RegisterCommands(s *discordgo.Session) {
@@ -337,25 +349,28 @@ func RegisterCommands(s *discordgo.Session) {
 	//TODO: Cache info and correct for changes when needed
 
 	if *glob.DoRegisterCommands {
+
 		for i, c := range CL {
+			if c.AppCmd == nil {
+				continue
+			}
+
 			if c.ModeratorOnly {
 				CL[i].AppCmd.DefaultMemberPermissions = &modPerms
 			} else {
 				CL[i].AppCmd.DefaultMemberPermissions = &playerPerms
 			}
-		}
-		for i, c := range CL {
-			if c.AppCmd != nil {
-				cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
-				if err != nil {
-					log.Println("Failed to create command:", c.AppCmd.Name, err)
-					continue
-				}
-				CL[i].AppCmd = cmd
-				cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", c.AppCmd.Name))
 
-				time.Sleep(constants.ApplicationCommmandSleep)
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
+			if err != nil {
+				log.Println("Failed to create command:", c.AppCmd.Name, err)
+				continue
 			}
+			CL[i].AppCmd = cmd
+			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", c.AppCmd.Name))
+
+			time.Sleep(constants.ApplicationCommmandSleep)
+
 		}
 	}
 

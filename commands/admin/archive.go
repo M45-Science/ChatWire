@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/sclean"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Archive map */
