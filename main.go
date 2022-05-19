@@ -199,7 +199,7 @@ func startbot() {
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
-	botstatus := fmt.Sprintf("type %vhelp", "$")
+	botstatus := "m45sci.xyz"
 	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
@@ -225,15 +225,14 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	/* Command handling
 	 * Factorio channel ONLY */
-	if cfg.Local.Channel.ChatChannel == cfg.Local.Channel.ChatChannel && cfg.Local.Channel.ChatChannel != "" {
+	if cfg.Local.Channel.ChatChannel == m.ChannelID && cfg.Local.Channel.ChatChannel != "" {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
-		cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
 		/* Chat message handling
 		 *  Don't bother if Factorio isn't running... */
 		if fact.IsFactorioBooted() {
-			/* block mee6 commands */
+			cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
