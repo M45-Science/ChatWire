@@ -20,6 +20,7 @@ type Command struct {
 var CL []Command
 
 var cmds = []Command{
+
 	/*  Admin Commands */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "stop-factorio",
@@ -345,8 +346,15 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
 		for _, c := range CL {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
-				c.Command(s, i)
-				return
+				if c.ModeratorOnly {
+					if disc.CheckModerator(i.Member.Roles) {
+						c.Command(s, i)
+						return
+					}
+				} else {
+					c.Command(s, i)
+					return
+				}
 			}
 		}
 	}
