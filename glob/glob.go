@@ -56,6 +56,9 @@ type VoteTallyData struct {
 }
 
 var (
+	DoRegisterCommands   *bool
+	DoDeregisterCommands *bool
+
 	/* Vote Rewind */
 	VoteBox     RewindVoteContainerData
 	VoteBoxLock sync.Mutex

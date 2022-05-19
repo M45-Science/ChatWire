@@ -1,12 +1,18 @@
 package commands
 
 import (
+	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/commands/user"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -306,12 +312,20 @@ var cmds = []Command{
 }
 
 func ClearCommands() {
-	for _, v := range CL {
-		if v.AppCmd != nil {
-			disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.AppCmd.ID)
+	if *glob.DoDeregisterCommands && disc.DS != nil {
+		for _, v := range CL {
+			if v.AppCmd != nil {
+				cwlog.DoLogCW(fmt.Sprintf("Deregistered command: %s", v.AppCmd.Name))
+				disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.AppCmd.ID)
+
+				time.Sleep(constants.ApplicationCommmandSleep)
+			}
 		}
 	}
 }
+
+var modPerms int64 = (1 << 28)
+var playerPerms int64 = (1 << 10)
 
 /*  RegisterCommands registers the commands on start up. */
 func RegisterCommands(s *discordgo.Session) {
@@ -321,7 +335,15 @@ func RegisterCommands(s *discordgo.Session) {
 
 	//Bypass register, very slow
 	//TODO: Cache info and correct for changes when needed
-	/*
+
+	if *glob.DoRegisterCommands {
+		for i, c := range CL {
+			if c.ModeratorOnly {
+				CL[i].AppCmd.DefaultMemberPermissions = &modPerms
+			} else {
+				CL[i].AppCmd.DefaultMemberPermissions = &playerPerms
+			}
+		}
 		for i, c := range CL {
 			if c.AppCmd != nil {
 				cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
@@ -330,9 +352,13 @@ func RegisterCommands(s *discordgo.Session) {
 					continue
 				}
 				CL[i].AppCmd = cmd
+				cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", c.AppCmd.Name))
+
+				time.Sleep(constants.ApplicationCommmandSleep)
 			}
 		}
-	*/
+	}
+
 }
 
 func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -344,6 +370,8 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	//Don't respond to other channels
 	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
+		cwlog.DoLogCW(fmt.Sprintf("slash command: %s", data.Name))
+
 		for _, c := range CL {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
 				if c.ModeratorOnly {

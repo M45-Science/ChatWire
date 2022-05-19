@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,6 +26,10 @@ import (
 )
 
 func main() {
+
+	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register commands")
+	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister commands")
+	flag.Parse()
 
 	/* Mark uptime start */
 	glob.Uptime = time.Now().Round(time.Second)
@@ -142,7 +147,7 @@ func main() {
 	<-sc
 
 	//Bypass for faster shutdown
-	//commands.ClearCommands()
+	commands.ClearCommands()
 
 	_ = os.Remove("cw.lock")
 	fact.SetAutoStart(false)
@@ -205,7 +210,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 		cwlog.DoLogCW(errc.Error())
 	}
 
-	commands.RegisterCommands(s)
+	go commands.RegisterCommands(s)
 	s.AddHandler(MessageCreate)
 	s.AddHandler(commands.SlashCommand)
 
