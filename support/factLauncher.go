@@ -4,7 +4,9 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"bytes"
 	"fmt"
 	"io"
@@ -14,6 +16,9 @@ import (
 )
 
 func launchFactortio() {
+
+	/* Clear this so we know if the the loaded map has our soft mod or not */
+	glob.SoftModVersion = constants.Unknown
 
 	/* Insert soft mod */
 	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
@@ -159,4 +164,49 @@ func launchFactortio() {
 
 	/* Unlock launch lock */
 	fact.FactorioLaunchLock.Unlock()
+}
+
+func ConfigSoftMod() {
+	fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.Callsign+"-"+cfg.Local.Name))
+
+	/* Config new-player restrictions */
+	if cfg.Local.Options.SoftModOptions.Restrict {
+		fact.WriteFact("/restrict on")
+	} else {
+		fact.WriteFact("/restrict off")
+	}
+
+	/* Config friendly fire */
+	if cfg.Local.Options.SoftModOptions.FriendlyFire {
+		fact.WriteFact("/friendlyfire on")
+	} else {
+		fact.WriteFact("/friendlyfire off")
+	}
+
+	/* Config reset-interval */
+	if cfg.Local.Options.ScheduleText != "" {
+		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleText)
+	}
+	if cfg.Local.Options.SoftModOptions.CleanMap {
+		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")
+		fact.WriteFact("/cleanmap")
+	}
+	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
+		fact.WriteFact("/blueprints off")
+		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Blueprints disabled.")
+	}
+	if cfg.Local.Options.SoftModOptions.Cheats {
+		fact.WriteFact("/enablecheats on")
+		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cheats enabled.")
+	}
+
+	/* Patreon list */
+	disc.RoleListLock.Lock()
+	if len(disc.RoleList.Patreons) > 0 {
+		fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
+	}
+	if len(disc.RoleList.NitroBooster) > 0 {
+		fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
+	}
+	disc.RoleListLock.Unlock()
 }
