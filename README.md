@@ -23,7 +23,7 @@ Improved player-online command (caching, event based)<br>
 Fixed multiple issues with ban messages.<br>
 Cleaned up code for waiting for factorio to close (faster).<br>
 HideResearch setting.<br>
-Experimental detection/warning of possible sgriefing.<br>
+Experimental detection/warning of possible griefing.<br>
 Automatically ban players from global ban list if they are already playing.<br>
 Automatically put steam URL in channel topic.<br>
 No longer require DMs to be on to register. (Ephemeral message)<br>
