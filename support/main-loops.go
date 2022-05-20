@@ -240,7 +240,7 @@ func MainLoops() {
 			glob.PasswordListLock.Lock()
 			for _, pass := range glob.PassList {
 				if (t.Unix() - pass.Time) > 300 {
-					cwlog.DoLogCW("Invalidating old unused access code for player: " + disc.GetNameFromID(pass.DiscID, false))
+					cwlog.DoLogCW("Invalidating unused registration code for player: " + disc.GetNameFromID(pass.DiscID, false))
 					delete(glob.PassList, pass.DiscID)
 				}
 			}
@@ -487,7 +487,7 @@ func MainLoops() {
 	 *******************************/
 	go func() {
 		for glob.ServerRunning {
-			time.Sleep(time.Minute * 5)
+			time.Sleep(time.Minute * 15)
 			if fact.IsFactorioBooted() {
 				disc.UpdateRoleList()
 
