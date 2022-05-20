@@ -1,6 +1,7 @@
 package glob
 
 import (
+	"ChatWire/constants"
 	"os"
 	"sync"
 	"time"
@@ -68,8 +69,9 @@ var (
 	VoteBoxLock sync.Mutex
 
 	/* Server status */
-	ServerRunning bool = true
-	Uptime        time.Time
+	ServerRunning  bool = true
+	Uptime         time.Time
+	SoftModVersion = constants.Unknown
 
 	/* Log data */
 	GameLogName = ""
