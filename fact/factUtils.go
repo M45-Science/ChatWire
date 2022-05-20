@@ -278,6 +278,7 @@ func UpdateChannelName() {
 /* When appropriate, actually update the channel name */
 func DoUpdateChannelName() {
 
+	var aerr error
 	if disc.DS == nil {
 		return
 	}
@@ -292,7 +293,12 @@ func DoUpdateChannelName() {
 		disc.OldChanName = disc.NewChanName
 		disc.UpdateChannelLock.Unlock()
 
-		_, aerr := disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.Channel.Position})
+		URL, found := MakeSteamURL()
+		if URL != "" && found {
+			_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.Channel.Position, Topic: URL})
+		} else {
+			_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.Channel.Position})
+		}
 
 		if aerr != nil {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
