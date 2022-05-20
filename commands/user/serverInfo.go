@@ -22,25 +22,39 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	verbose := false
 
+	a := i.ApplicationCommandData()
+	for _, arg := range a.Options {
+		if arg.Type == discordgo.ApplicationCommandOptionBoolean &&
+			arg.Name == "verbose" && arg.BoolValue() {
+			verbose = true
+			break
+		}
+	}
+
 	buf := "```"
 	/* STATS */
-	buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire version", constants.Version)
-	if glob.SoftModVersion != constants.Unknown {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
+	if verbose {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire version", constants.Version)
+		if glob.SoftModVersion != constants.Unknown {
+			buf = buf + fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
+		}
 	}
 	if fact.FactorioVersion != constants.Unknown {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
 	}
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
-	buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire up-time", tnow.Sub(glob.Uptime.Round(time.Second)).String())
-	if !fact.FactorioBootedAt.IsZero() && fact.IsFactorioBooted() {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio up-time", tnow.Sub(fact.FactorioBootedAt.Round(time.Second)).String())
-	} else {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio up-time", "not running")
+	if verbose {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire up-time", tnow.Sub(glob.Uptime.Round(time.Second)).String())
+
+		if !fact.FactorioBootedAt.IsZero() && fact.IsFactorioBooted() {
+			buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio up-time", tnow.Sub(fact.FactorioBootedAt.Round(time.Second)).String())
+		} else {
+			buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio up-time", "not running")
+		}
 	}
 
-	if fact.LastSaveName != constants.Unknown || verbose {
+	if verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
 	}
 	if fact.GametimeString != constants.Unknown {

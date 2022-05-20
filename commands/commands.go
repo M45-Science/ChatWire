@@ -302,6 +302,14 @@ var cmds = []Command{
 		Name:        "server-info",
 		Description: "Shows detailed information on the server settings.",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Name:        "verbose",
+				Description: "Show everything, instead of just relevant info.",
+				Required:    false,
+			},
+		},
 	},
 		Command: user.ServerInfo, ModeratorOnly: false},
 
