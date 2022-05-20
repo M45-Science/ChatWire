@@ -118,7 +118,7 @@ var (
 	/* Update warning */
 	UpdateWarnCounterLock sync.Mutex
 	UpdateWarnCounter     = 0
-	UpdateGraceMinutes    = 10
+	UpdateGraceMinutes    = 15
 
 	ChatterLock      sync.Mutex
 	ChatterList      map[string]time.Time
