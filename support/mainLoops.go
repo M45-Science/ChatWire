@@ -222,7 +222,7 @@ func MainLoops() {
 			time.Sleep(1 * time.Minute)
 
 			if fact.IsFactRunning() {
-				fact.WriteFact("/p o c")
+				fact.WriteFact(glob.OnlineCommand)
 			}
 		}
 	}()

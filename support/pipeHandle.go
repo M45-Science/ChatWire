@@ -268,7 +268,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 *****************/
 	if strings.HasPrefix(NoDS, "[JOIN]") {
 		cwlog.DoLogGame(NoDS)
-		fact.WriteFact("/p o c")
+		fact.WriteFact(glob.OnlineCommand)
 
 		if NoDSlistlen > 1 {
 			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
@@ -306,7 +306,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") {
 		cwlog.DoLogGame(NoDS)
-		fact.WriteFact("/p o c")
+		fact.WriteFact(glob.OnlineCommand)
 
 		if NoDSlistlen > 1 {
 			pname := NoDSlist[1]
@@ -325,7 +325,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 	 * ACT AREA
 	 ******************/
 
-	if strings.HasPrefix(line, "~[ACT]") {
+	if strings.HasPrefix(line, "[ACT]") {
 
 		cwlog.DoLogGame(line)
 
@@ -445,7 +445,7 @@ func handleSlowConnect(NoTC string, line string) {
 		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
 			if strings.Contains(line, "removing peer") {
-				fact.WriteFact("/p o c")
+				fact.WriteFact(glob.OnlineCommand)
 
 				/* Fix for players leaving with no leave message */
 			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
@@ -585,6 +585,7 @@ func handleSVersion(line string, lineList []string, lineListlen int) bool {
 
 		if lineListlen > 0 {
 			glob.SoftModVersion = lineList[1]
+			glob.OnlineCommand = constants.SoftModOnlineCMD
 		}
 		ConfigSoftMod()
 		return true
@@ -638,7 +639,7 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true, false)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
-		fact.WriteFact("/p o c")
+		fact.WriteFact(glob.OnlineCommand)
 	}
 	return false
 }
@@ -828,7 +829,6 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				fact.SetFactRunning(false, true)
 				return true
 			}
-			/*Error ServerMultiplayerManager.cpp:91: MultiplayerManager failed: "Opening zip /home/dist/github/fact-t/saves/_autosave949.tmp.zip failed: Bad zip file"*/
 			/* Bad zip file */
 			if strings.Contains(NoTC, "failed: Bad zip file") {
 				if numwords > 6 {
@@ -1028,15 +1028,17 @@ func handleOnlineMsg(line string) bool {
 	 * "/online"
 	 ******************/
 	if strings.HasPrefix(line, "[ONLINE]") {
-		buf := ""
+		newPlayerList := []glob.OnlinePlayerData{}
 		count := 0
 
 		cwlog.DoLogGame(line)
+		line = strings.TrimPrefix(line, "[ONLINE] ")
+
 		players := strings.Split(line, ";")
 		if len(players) > 0 {
 			for _, p := range players {
 				fields := strings.Split(p, ",")
-				if len(fields) == 4 {
+				if len(fields) > 2 {
 
 					//name,score,time,type;
 					pname := fields[0]
@@ -1044,18 +1046,26 @@ func handleOnlineMsg(line string) bool {
 					ptime := fields[2]
 					ptype := fields[3]
 
+					plevel := fact.StringToLevel(ptype)
+
 					if pname != "" {
+						fact.UpdateSeen(pname)
+
 						timeInt, _ := strconv.Atoi(ptime)
-						timeStr := time.Duration(timeInt * 16666666).String()
-						buf = buf + fmt.Sprintf("Name: %-15v, Score: %-5v, Time: %-5v, Level: %v\n", fact.GetGameTime(), pname, pscore, timeStr, ptype)
+						scoreInt, _ := strconv.Atoi(pscore)
+						timeStr := time.Duration(timeInt * 16666666).Round(time.Second).String()
+						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, Score: float32(scoreInt) / 60.0 / 60.0, Time: timeStr, Level: plevel})
 						count++
 					}
+
 				}
 			}
 			if count > 0 {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "```"+buf+"```")
+				fact.SetNumPlayers(count)
+				glob.OnlinePlayers = newPlayerList
 			}
 		}
+		return true
 	}
 	return false
 }
