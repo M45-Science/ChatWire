@@ -3,7 +3,6 @@ package disc
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -103,32 +102,7 @@ func SmartWriteDiscord(ch string, text string) {
 
 			cwlog.DoLogCW(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
 		}
-	} else {
-
-		time.Sleep(5 * time.Second)
-		SmartWriteDiscord(ch, text)
 	}
-}
-
-/* Create a Discord channel */
-func SmartChannelCreate(id string) *discordgo.Channel {
-
-	if DS != nil {
-		ch, err := DS.UserChannelCreate(id)
-
-		if err != nil || ch == nil {
-
-			cwlog.DoLogCW(fmt.Sprintf("SmartChannelCreate: ERROR: %v", err))
-		} else {
-			return ch
-		}
-	} else {
-
-		time.Sleep(30 * time.Second)
-		SmartChannelCreate(id)
-	}
-
-	return nil
 }
 
 /* Give a player a role */
