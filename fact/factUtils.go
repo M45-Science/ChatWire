@@ -371,13 +371,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				SetAutoStart(false)
 				QuitFactorio()
 
-				for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
-					time.Sleep(time.Millisecond * 100)
-					if x == (constants.MaxFactorioCloseWait - 1) {
-						CMS(cfg.Local.Channel.ChatChannel, "Factorio may be frozen, canceling rewind.")
-						return
-					}
-				}
+				WaitFactQuit()
 				selSaveName := path + "/" + autoSaveStr
 				from, erra := os.Open(selSaveName)
 				if erra != nil {

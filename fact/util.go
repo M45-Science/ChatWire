@@ -14,6 +14,12 @@ import (
 	"ChatWire/sclean"
 )
 
+func WaitFactQuit() {
+	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
+		time.Sleep(time.Millisecond * 100)
+	}
+}
+
 func MakeSteamURL() (string, bool) {
 	if cfg.Global.Paths.URLs.Domain != "localhost" {
 		buf := fmt.Sprintf("steam://run/427520//--mp-connect%%20%v:%v/", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)

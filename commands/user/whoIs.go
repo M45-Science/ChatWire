@@ -52,9 +52,6 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	layoutUS := "01-02-06 3:04 PM"
 
 	maxresults := constants.WhoisResults
-	if checkModerator(i.Member.Roles) {
-		maxresults = constants.AdminWhoisResults
-	}
 	var slist []glob.PlayerData
 	argnum := len(args)
 

@@ -81,9 +81,7 @@ func Map_reset(data string, doReport bool) {
 	}
 
 	/* Wait for server to stop if running */
-	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
-		time.Sleep(time.Millisecond * 100)
-	}
+	WaitFactQuit()
 
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {

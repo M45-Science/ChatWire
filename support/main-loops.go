@@ -60,9 +60,7 @@ func MainLoops() {
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio unresponsive for over two minutes... rebooting.")
 					fact.SetRelaunchThrottle(0)
 					fact.QuitFactorio()
-					for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-						time.Sleep(time.Millisecond * 100)
-					}
+					fact.WaitFactQuit()
 				}
 
 				/* We aren't running, but should be! */
@@ -604,9 +602,7 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting, closing Factorio.")
 						fact.SetAutoStart(false)
 						fact.QuitFactorio()
-						for x := 0; x < constants.MaxFactorioCloseWait && fact.IsFactRunning(); x++ {
-							time.Sleep(time.Millisecond * 100)
-						}
+						fact.WaitFactQuit()
 						fact.DoExit(false)
 					} else {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting.")
