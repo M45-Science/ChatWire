@@ -161,6 +161,7 @@ type localOptions struct {
 	ExpUpdates    bool
 	ReportBans    bool
 	HideAutosaves bool
+	HideResearch  bool
 	Whitelist     bool
 	ModUpdate     bool
 
