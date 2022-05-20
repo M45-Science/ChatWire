@@ -91,6 +91,7 @@ func main() {
 	glob.ChatterSpamScore = make(map[string]int)
 	glob.PlayerList = make(map[string]*glob.PlayerData)
 	glob.PassList = make(map[string]*glob.PassData)
+	glob.PlayerSus = make(map[string]int)
 
 	/* Set up rewind cooldown */
 	now := time.Now()
