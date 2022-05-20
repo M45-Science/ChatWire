@@ -5,6 +5,35 @@
 [![ReportCard](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
 [![CodeQL](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
 [![BinaryBuild](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml)
+### V2 Changes:
+Disord slash commands, with autocomplete.<br>
+Better handling of LUA errors.<br>
+Suppress server list slow-transfer messages.<br>
+Updated to very latest version of DiscordGo.<br>
+Much faster boot/shutdown, with clean close.<br>
+Map reset messages, and other messages will not get lost on shutdown.<br>
+Utilize BotReady event in the new Discord API.<br>
+Major config file reorganization.<br>
+Discord command renamed, much clearer<br>
+Always auto-configure any missing settings.<br>
+Discord channel sorting improved.<br>
+SoftMod presence/version detection<br>
+Handle absent soft-mod chat/online commands<br>
+Improved player-online command (caching), event based.<br>
+Fixed multiple issues with ban messages.<br>
+Cleaned up code for waiting for factorio to close.<br>
+HideResearch setting.<br>
+Experimental detection of griefing.<br>
+Automatically ban players from global ban list if they are already playing.<br>
+Automatically put steam URL in channel topic.<br>
+No longer require DMs to be on to register. (Ephemeral message)<br>
+Registration automatically supplies a steam link to connect with.<br>
+Removed a number of unused or obsolete functions and files.<br>
+Many messages rewritten to be clearer.<br>
+Vast majority of messagess moved to ephemeral/private messages.<br>
+Many timers relaxed to reduce load.s<br>
+Many other small adjustments.<br>
+
 ### Requirements:
 Linux<br>
 Golang 1.17+<br>
