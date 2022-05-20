@@ -22,7 +22,7 @@ func launchFactortio() {
 		if errs != nil {
 			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
 		} else {
-			cwlog.DoLogCW("Soft-mod inserted into save file.")
+			//cwlog.DoLogCW("Soft-mod inserted into save file.")
 		}
 	}
 

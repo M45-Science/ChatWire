@@ -222,6 +222,6 @@ func GenerateFactorioConfig() bool {
 		return false
 	}
 
-	cwlog.DoLogCW("Server settings json written.")
+	//cwlog.DoLogCW("Server settings json written.")
 	return true
 }
