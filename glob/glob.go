@@ -60,10 +60,10 @@ type VoteTallyData struct {
 }
 
 type OnlinePlayerData struct {
-	Name  string
-	Score float32
-	Time  string
-	Level int
+	Name       string
+	ScoreTicks int
+	TimeTicks  int
+	Level      int
 }
 
 var (

@@ -1053,8 +1053,7 @@ func handleOnlineMsg(line string) bool {
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)
-						timeStr := time.Duration(timeInt * 16666666).Round(time.Second).String()
-						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, Score: float32(scoreInt) / 60.0 / 60.0, Time: timeStr, Level: plevel})
+						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, ScoreTicks: scoreInt, TimeTicks: timeInt, Level: plevel})
 						count++
 					}
 

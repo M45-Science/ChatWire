@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -19,7 +20,8 @@ func PlayersOnline(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		} else {
 			buf := ""
 			for _, p := range glob.OnlinePlayers {
-				buf = buf + fmt.Sprintf("Name: %15v, Score: %5v, Time: %5v, Level: %v\n", p.Name, p.Score, p.Time, p.Level)
+				timeStr := time.Duration(p.TimeTicks * 16666666).Round(time.Second).String()
+				buf = buf + fmt.Sprintf("%15v: Score: %5.2v, Time: %6v, Level: %v\n", p.Name, p.ScoreTicks/60.0/60.0, timeStr, fact.LevelToString(p.Level))
 			}
 			disc.EphemeralResponse(s, i, "Players Online:", buf)
 		}
