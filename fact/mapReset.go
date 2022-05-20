@@ -67,7 +67,7 @@ func Map_reset(data string, doReport bool) {
 	if IsFactRunning() {
 		if data != "" {
 			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
-			WriteFact("/cchat " + AddFactColor("orange", data))
+			FactChat(AddFactColor("orange", data))
 			return
 		} else {
 			CMS(cfg.Local.Channel.ChatChannel, "Stopping server, for map reset.")

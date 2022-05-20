@@ -108,9 +108,10 @@ func QuitFactorio() {
 
 		/* Running, but players connected... Give them quick feedback. */
 	} else if IsFactorioBooted() && GetNumPlayers() > 0 {
-		WriteFact("/cchat [color=red]Server quitting.[/color]")
-		WriteFact("/cchat [color=green]Server quitting..[/color]")
-		WriteFact("/cchat [color=blue]Server quitting...[/color]")
+		FactChat("[color=red]Server quitting.[/color]")
+		FactChat("[color=green]Server quitting..[/color]")
+		FactChat("[color=blue]Server quitting...[/color]")
+		time.Sleep(time.Second * 5)
 		WriteFact("/quit")
 	}
 }

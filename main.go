@@ -287,12 +287,12 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			/* Check if Discord name contains Factorio name, if not lets show both their names */
 			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
 
-				nbuf = fmt.Sprintf("/cchat [color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordname, factuser, cmess)
+				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordname, factuser, cmess)
 			} else {
-				nbuf = fmt.Sprintf("/cchat [color=0,0.5,1][Discord] %s:[/color] %s", cordname, cmess)
+				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordname, cmess)
 			}
 
-			fact.WriteFact(nbuf)
+			fact.FactChat(nbuf)
 
 		}
 	}

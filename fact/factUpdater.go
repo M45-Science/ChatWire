@@ -101,7 +101,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 									CheckZip(words[1]) {
 									mess := "Factorio update downloaded and verified, will update when no players are online."
 									CMS(cfg.Local.Channel.ChatChannel, mess)
-									WriteFact("/cchat [SYSTEM] " + mess)
+									FactChat("[SYSTEM] " + mess)
+
 									cwlog.DoLogCW(mess)
 								} else {
 									os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
@@ -127,7 +128,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 								CMS(cfg.Local.Channel.ChatChannel, messdisc)
 
-								WriteFact("/cchat [SYSTEM] " + messfact)
+								FactChat("[SYSTEM] " + messfact)
 								cwlog.DoLogCW(messfact)
 							}
 						}

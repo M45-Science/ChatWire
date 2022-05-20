@@ -14,6 +14,15 @@ import (
 	"ChatWire/sclean"
 )
 
+func FactChat(input string) {
+
+	if glob.SoftModVersion != constants.Unknown {
+		FactChat("/cchat " + input)
+	} else {
+		WriteFact("/shout " + input)
+	}
+}
+
 func WaitFactQuit() {
 	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
 		time.Sleep(time.Millisecond * 100)
