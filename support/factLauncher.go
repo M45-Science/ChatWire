@@ -19,6 +19,8 @@ func launchFactortio() {
 
 	/* Clear this so we know if the the loaded map has our soft mod or not */
 	glob.SoftModVersion = constants.Unknown
+	glob.OnlineCommand = constants.OnlineCommand
+	glob.OnlinePlayers = []glob.OnlinePlayerData{}
 
 	/* Insert soft mod */
 	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
@@ -26,8 +28,6 @@ func launchFactortio() {
 		out, errs := exec.Command(command, cfg.Local.Callsign).Output()
 		if errs != nil {
 			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
-		} else {
-			//cwlog.DoLogCW("Soft-mod inserted into save file.")
 		}
 	}
 
