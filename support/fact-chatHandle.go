@@ -11,7 +11,7 @@ import (
 )
 
 /*  Chat pipes in-game chat to Discord, and handles log events */
-func Chat() {
+func HandleChat() {
 
 	for glob.ServerRunning {
 		if fact.GameBuffer != nil {

@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands"
@@ -21,8 +23,6 @@ import (
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"ChatWire/support"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 func main() {
@@ -130,7 +130,7 @@ func main() {
 	go support.MainLoops()
 
 	/* Loop to read Factorio stdout, runs in a goroutine */
-	go support.Chat()
+	go support.HandleChat()
 
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
