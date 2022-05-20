@@ -54,8 +54,10 @@ func main() {
 
 				cwlog.DoLogCW(msg)
 				go func(msg string) {
-					for disc.DS == nil {
-						time.Sleep(time.Millisecond * 1000)
+					for i := 0; i < 30; i++ {
+						if disc.DS == nil {
+							time.Sleep(time.Millisecond * 1000)
+						}
 					}
 					disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
 				}(msg)
@@ -136,7 +138,6 @@ func main() {
 	 * We want Factorio online even if Discord is down. */
 	go startbot()
 
-	time.Sleep(time.Second)
 	if cfg.Local.Options.AutoStart {
 		fact.SetAutoStart(true)
 	}
