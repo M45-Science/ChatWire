@@ -18,6 +18,10 @@ const (
 	MembersPrefix       = "M"
 	ArchiveFolderSuffix = " maps"
 
+	/* Online commands */
+	OnlineCommand    = "/p o c"
+	SoftModOnlineCMD = "/online"
+
 	/* ChatWire settings */
 	PauseThresh              = 5  /* Number of repeated time reports before we assume server is paused */
 	ErrorDelayShutdown       = 30 /* If we close on error, sleep this long before exiting */
