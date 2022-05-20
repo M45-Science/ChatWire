@@ -227,6 +227,130 @@ func randomBase64String(l int) string {
 	return str[:l]
 }
 
+func setGlobalDefaults() {
+	/* Automatic global defaults */
+	if Global.Paths.DataFiles.DBFile == "" {
+		Global.Paths.DataFiles.DBFile = "playerdb.dat"
+		_, err := os.Create(Global.Paths.DataFiles.DBFile)
+		if err != nil {
+			cwlog.DoLogCW("Could not create playerdb.dat")
+		}
+	}
+	if Global.Paths.DataFiles.RecordPlayers == "" {
+		Global.Paths.DataFiles.RecordPlayers = "recordPlayers.dat"
+		_, err := os.Create(Global.Paths.DataFiles.RecordPlayers)
+		if err != nil {
+			cwlog.DoLogCW("Could not create recordPlayers.dat")
+		}
+	}
+	if Global.Paths.Folders.MapGenerators == "" {
+		Global.Paths.Folders.MapGenerators = "map-gen-json"
+
+		err := os.MkdirAll(Global.Paths.Folders.ServersRoot+"/"+Global.Paths.Folders.MapGenerators, os.ModePerm)
+		if err != nil {
+			cwlog.DoLogCW("Could not create map-gen-json directory.")
+			//return false
+		}
+	}
+	if Global.Paths.URLs.Domain == "" {
+		Global.Paths.URLs.Domain = "localhost"
+	}
+	if Global.Options.RconOffset == 0 {
+		Global.Options.RconOffset = 10000
+	}
+	if Global.Factorio.RCONPass == "" {
+		Global.Factorio.RCONPass = randomBase64String(64)
+		cwlog.DoLogCW("No RCON password specified. Random one generated.")
+	}
+	if Global.GroupName == "" {
+		Global.GroupName = randomBase64String(3)
+		cwlog.DoLogCW("No group name specified. Random one generated.")
+	}
+
+	if Global.Paths.Folders.ServersRoot == "" {
+		ex, err := os.Executable()
+		if err == nil {
+			exPath := filepath.Dir(ex)
+			p := filepath.Clean(filepath.Join(exPath, ".."))
+			Global.Paths.Folders.ServersRoot = p + "/"
+		}
+	}
+
+	if Global.Paths.FactorioPrefix == "" {
+		Global.Paths.FactorioPrefix = "fact-"
+	}
+	if Global.Paths.ChatWirePrefix == "" {
+		Global.Paths.ChatWirePrefix = "cw-"
+	}
+	if Global.Paths.Folders.Saves == "" {
+		Global.Paths.Folders.Saves = "saves"
+	}
+	if Global.Paths.Folders.UpdateCache == "" {
+		Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "/update-cache/"
+	}
+	if Global.Paths.Folders.MapPreviews == "" {
+		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "/public_html/map-preview/"
+	}
+	if Global.Paths.Folders.MapArchives == "" {
+		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
+	}
+	if Global.Paths.URLs.ArchiveURL == "" {
+		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/map-preview/"
+	}
+	if Global.Paths.URLs.ArchiveURL == "" {
+		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
+	}
+	if Global.Paths.Binaries.ImgCmd == "" {
+		Global.Paths.Binaries.ImgCmd = "/usr/bin/convert"
+	}
+	if Global.Paths.Binaries.RmCmd == "" {
+		Global.Paths.Binaries.RmCmd = "/bin/rm"
+	}
+	if Global.Paths.Binaries.Shell == "" {
+		Global.Paths.Binaries.Shell = "/bin/bash"
+	}
+	if Global.Paths.Binaries.ZipCmd == "" {
+		Global.Paths.Binaries.ZipCmd = "/usr/bin/unzip"
+	}
+	if Global.Paths.Binaries.FactBinary == "" {
+		Global.Paths.Binaries.FactBinary = "bin/x64/factorio"
+	}
+	if Global.Discord.Guild == "" {
+		cwlog.DoLogCW("No Discord Guild ID specified. This MUST be set!")
+		Global.Discord.Guild = "MY DISCORD GUILD ID"
+	}
+	if Global.Discord.Application == "" {
+		Global.Discord.Application = "MY DISCORD APP ID"
+	}
+	if Global.Discord.Token == "" {
+		cwlog.DoLogCW("No Discord Token specified. This MUST be set!")
+		Global.Discord.Token = "MY DISCORD BOT TOKEN"
+	}
+	if Global.Factorio.Username == "" {
+		cwlog.DoLogCW("No Factorio Username specified. This MUST be set!")
+		Global.Factorio.Username = "MY FACTORIO USERNAME"
+	}
+	if Global.Factorio.Token == "" {
+		cwlog.DoLogCW("No Factorio Token specified. This MUST be set!")
+		Global.Factorio.Token = "MY FACTORIO TOKEN"
+	}
+	if Global.Options.AutosaveMax == 0 {
+		Global.Options.AutosaveMax = 250
+	}
+	if Global.Options.PreviewSettings.JPGQuality == "" {
+		Global.Options.PreviewSettings.JPGQuality = "85"
+	}
+	if Global.Options.PreviewSettings.JPGScale == "" {
+		Global.Options.PreviewSettings.JPGScale = "256x256"
+	}
+	if Global.Options.PreviewSettings.PNGRes == "" {
+		Global.Options.PreviewSettings.PNGRes = "256"
+	}
+	if Global.Options.PreviewSettings.PNGScale == "" {
+		Global.Options.PreviewSettings.PNGRes = "1"
+	}
+}
+
 func ReadGCfg() bool {
 
 	_, err := os.Stat(constants.CWGlobalConfig)
@@ -237,129 +361,7 @@ func ReadGCfg() bool {
 		newcfg := CreateGCfg()
 		Global = newcfg
 
-		/* Automatic global defaults */
-		if Global.Paths.DataFiles.DBFile == "" {
-			Global.Paths.DataFiles.DBFile = "playerdb.dat"
-			_, err := os.Create(Global.Paths.DataFiles.DBFile)
-			if err != nil {
-				cwlog.DoLogCW("Could not create playerdb.dat")
-				return false
-			}
-		}
-		if Global.Paths.DataFiles.RecordPlayers == "" {
-			Global.Paths.DataFiles.RecordPlayers = "recordPlayers.dat"
-			_, err := os.Create(Global.Paths.DataFiles.RecordPlayers)
-			if err != nil {
-				cwlog.DoLogCW("Could not create recordPlayers.dat")
-				return false
-			}
-		}
-		if Global.Paths.Folders.MapGenerators == "" {
-			Global.Paths.Folders.MapGenerators = "map-gen-json"
-
-			err := os.MkdirAll(Global.Paths.Folders.ServersRoot+"/"+Global.Paths.Folders.MapGenerators, os.ModePerm)
-			if err != nil {
-				cwlog.DoLogCW("Could not create map-gen-json directory.")
-				//return false
-			}
-		}
-		if Global.Paths.URLs.Domain == "" {
-			Global.Paths.URLs.Domain = "localhost"
-		}
-		if Global.Options.RconOffset == 0 {
-			Global.Options.RconOffset = 10000
-		}
-		if Global.Factorio.RCONPass == "" {
-			Global.Factorio.RCONPass = randomBase64String(64)
-			cwlog.DoLogCW("No RCON password specified. Random one generated.")
-		}
-		if Global.GroupName == "" {
-			Global.GroupName = randomBase64String(3)
-			cwlog.DoLogCW("No group name specified. Random one generated.")
-		}
-
-		if Global.Paths.Folders.ServersRoot == "" {
-			ex, err := os.Executable()
-			if err == nil {
-				exPath := filepath.Dir(ex)
-				p := filepath.Clean(filepath.Join(exPath, ".."))
-				Global.Paths.Folders.ServersRoot = p + "/"
-			}
-		}
-
-		if Global.Paths.FactorioPrefix == "" {
-			Global.Paths.FactorioPrefix = "fact-"
-		}
-		if Global.Paths.ChatWirePrefix == "" {
-			Global.Paths.ChatWirePrefix = "cw-"
-		}
-		if Global.Paths.Folders.Saves == "" {
-			Global.Paths.Folders.Saves = "saves"
-		}
-		if Global.Paths.Folders.UpdateCache == "" {
-			Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "/update-cache/"
-		}
-		if Global.Paths.Folders.MapPreviews == "" {
-			Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "/public_html/map-preview/"
-		}
-		if Global.Paths.Folders.MapArchives == "" {
-			Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
-		}
-		if Global.Paths.URLs.ArchiveURL == "" {
-			Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/map-preview/"
-		}
-		if Global.Paths.URLs.ArchiveURL == "" {
-			Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
-		}
-		if Global.Paths.Binaries.ImgCmd == "" {
-			Global.Paths.Binaries.ImgCmd = "/usr/bin/convert"
-		}
-		if Global.Paths.Binaries.RmCmd == "" {
-			Global.Paths.Binaries.RmCmd = "/bin/rm"
-		}
-		if Global.Paths.Binaries.Shell == "" {
-			Global.Paths.Binaries.Shell = "/bin/bash"
-		}
-		if Global.Paths.Binaries.ZipCmd == "" {
-			Global.Paths.Binaries.ZipCmd = "/usr/bin/unzip"
-		}
-		if Global.Paths.Binaries.FactBinary == "" {
-			Global.Paths.Binaries.FactBinary = "bin/x64/factorio"
-		}
-		if Global.Discord.Guild == "" {
-			cwlog.DoLogCW("No Discord Guild ID specified. This MUST be set!")
-			Global.Discord.Guild = "MY DISCORD GUILD ID"
-		}
-		if Global.Discord.Application == "" {
-			Global.Discord.Application = "MY DISCORD APP ID"
-		}
-		if Global.Discord.Token == "" {
-			cwlog.DoLogCW("No Discord Token specified. This MUST be set!")
-			Global.Discord.Token = "MY DISCORD BOT TOKEN"
-		}
-		if Global.Factorio.Username == "" {
-			cwlog.DoLogCW("No Factorio Username specified. This MUST be set!")
-			Global.Factorio.Username = "MY FACTORIO USERNAME"
-		}
-		if Global.Factorio.Token == "" {
-			cwlog.DoLogCW("No Factorio Token specified. This MUST be set!")
-			Global.Factorio.Token = "MY FACTORIO TOKEN"
-		}
-		if Global.Options.AutosaveMax == 0 {
-			Global.Options.AutosaveMax = 250
-		}
-		if Global.Options.PreviewSettings.JPGQuality == "" {
-			Global.Options.PreviewSettings.JPGQuality = "85"
-		}
-		if Global.Options.PreviewSettings.JPGScale == "" {
-			Global.Options.PreviewSettings.JPGScale = "256x256"
-		}
-		if Global.Options.PreviewSettings.PNGRes == "" {
-			Global.Options.PreviewSettings.PNGRes = "256"
-		}
-		if Global.Options.PreviewSettings.PNGScale == "" {
-			Global.Options.PreviewSettings.PNGRes = "1"
-		}
+		setGlobalDefaults()
 		return true
 	} else { /* Otherwise just read in the config */
 		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
@@ -375,6 +377,7 @@ func ReadGCfg() bool {
 			}
 
 			Global = newcfg
+			setGlobalDefaults()
 
 			return true
 		} else {
@@ -425,6 +428,29 @@ func WriteLCfg() bool {
 	return true
 }
 
+func setLocalDefaults() {
+	/* Automatical local defaults */
+	if Local.Name == "" {
+		Local.Name = "unnamed"
+	}
+	if Local.Callsign == "" {
+		Local.Callsign = "a"
+	}
+	if Local.Port <= 0 {
+		Local.Port = 7000
+	}
+	if Local.Settings.AFKMin <= 0 {
+		Local.Settings.AFKMin = 15
+	}
+	if Local.Settings.AutosaveMin <= 0 {
+		Local.Settings.AutosaveMin = 15
+	}
+	if Local.Channel.ChatChannel == "" {
+		cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
+		Local.Channel.ChatChannel = "MY DISCORD CHANNEL ID"
+	}
+}
+
 func ReadLCfg() bool {
 
 	_, err := os.Stat(constants.CWLocalConfig)
@@ -434,29 +460,9 @@ func ReadLCfg() bool {
 		cwlog.DoLogCW("ReadLCfg: os.Stat failed, auto-defaults generated.")
 		newcfg := CreateLCfg()
 		Local = newcfg
-
-		/* Automatical local defaults */
-		if Local.Name == "" {
-			Local.Name = "unnamed"
-		}
-		if Local.Callsign == "" {
-			Local.Callsign = "a"
-		}
-		if Local.Port <= 0 {
-			Local.Port = 7000
-		}
-		if Local.Settings.AFKMin <= 0 {
-			Local.Settings.AFKMin = 15
-		}
-		if Local.Settings.AutosaveMin <= 0 {
-			Local.Settings.AutosaveMin = 15
-		}
+		setLocalDefaults()
 		if !Local.Settings.AutoPause {
 			Local.Settings.AutoPause = true
-		}
-		if Local.Channel.ChatChannel == "" {
-			cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
-			Local.Channel.ChatChannel = "MY DISCORD CHANNEL ID"
 		}
 		WriteLCfg() /* Write the defaults */
 		return true
@@ -475,6 +481,7 @@ func ReadLCfg() bool {
 			}
 
 			Local = newcfg
+			setLocalDefaults()
 
 			/* Automatic local defaults */
 			found := false
