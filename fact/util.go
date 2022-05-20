@@ -43,7 +43,7 @@ func MakeSteamURL() (string, bool) {
 	}
 }
 
-/* Prgram shutdown */
+/* Program shutdown */
 func DoExit(delay bool) {
 
 	//Wait a few seconds for CMS to finish

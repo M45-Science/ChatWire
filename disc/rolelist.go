@@ -1,14 +1,15 @@
 package disc
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/cwlog"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"sync"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
 )
 
 /* Discord role member-lists */

@@ -1,10 +1,11 @@
 package disc
 
 import (
-	"ChatWire/constants"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/constants"
 )
 
 var (

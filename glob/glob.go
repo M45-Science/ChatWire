@@ -1,10 +1,11 @@
 package glob
 
 import (
-	"ChatWire/constants"
 	"os"
 	"sync"
 	"time"
+
+	"ChatWire/constants"
 )
 
 /* Most of these are here, because go is unable to handle import cycles */

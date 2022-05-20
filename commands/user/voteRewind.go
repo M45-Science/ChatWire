@@ -1,11 +1,6 @@
 package user
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/disc"
-	"ChatWire/fact"
-	"ChatWire/glob"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,6 +8,12 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
 /* Allow regulars to vote to rewind the map */
@@ -65,7 +66,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			} else if strings.EqualFold(args[0], "tally") {
 				/* Retally votes */
 				fact.TallyRewindVotes()
-				disc.EphemeralResponse(s, i, "Status:", "All votes re-tallyed (debug).")
+				disc.EphemeralResponse(s, i, "Status:", "All votes re-tallied (debug).")
 				return
 			} else if strings.EqualFold(args[0], "save") {
 				/* Force save */

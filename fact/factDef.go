@@ -1,13 +1,14 @@
 package fact
 
 import (
-	"ChatWire/constants"
 	"bytes"
 	"io"
 	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/constants"
 )
 
 var (

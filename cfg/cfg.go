@@ -429,7 +429,7 @@ func WriteLCfg() bool {
 }
 
 func setLocalDefaults() {
-	/* Automatical local defaults */
+	/* Automatic local defaults */
 	if Local.Name == "" {
 		Local.Name = "unnamed"
 	}

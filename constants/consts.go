@@ -59,11 +59,11 @@ const (
 	WatchdogInterval = time.Second
 
 	/* Throttle chat, 1.5 seconds per message. */
-	CMSRate                  = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
-	CMSRestTime              = 2000 * time.Millisecond //Time to sleep after sending a message
-	CMSPollRate              = 100 * time.Millisecond  //Time between polls
-	MaxDiscordAttempts       = 100
-	ApplicationCommmandSleep = time.Millisecond * 100
+	CMSRate                 = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
+	CMSRestTime             = 2000 * time.Millisecond //Time to sleep after sending a message
+	CMSPollRate             = 100 * time.Millisecond  //Time between polls
+	MaxDiscordAttempts      = 100
+	ApplicationCommandSleep = time.Millisecond * 100
 )
 
 /* Factorio map preset names */

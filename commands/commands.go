@@ -92,7 +92,7 @@ var cmds = []Command{
 	},
 		Command: admin.MapReset, ModeratorOnly: true},
 
-	//Add the cancel peram
+	//Add the cancel param
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "update-factorio",
 		Description: "Updates Factorio to the latest version if there is a new version available.",
@@ -316,7 +316,7 @@ var cmds = []Command{
 	//Cleanup, possibly handle other chat channels
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "register",
-		Description: "Registers a new account, giving you accociated Discord roles with more privleges.",
+		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: user.Register, ModeratorOnly: false},
@@ -340,7 +340,7 @@ func ClearCommands() {
 					cwlog.DoLogCW(err.Error())
 				}
 
-				time.Sleep(constants.ApplicationCommmandSleep)
+				time.Sleep(constants.ApplicationCommandSleep)
 			}
 		}
 	}
@@ -381,7 +381,7 @@ func RegisterCommands(s *discordgo.Session) {
 			CL[i].AppCmd = cmd
 			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", c.AppCmd.Name))
 
-			time.Sleep(constants.ApplicationCommmandSleep)
+			time.Sleep(constants.ApplicationCommandSleep)
 
 		}
 	}
