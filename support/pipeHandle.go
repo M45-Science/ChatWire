@@ -396,6 +396,12 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 				cmess = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(cmess, 500))
 			}
 
+			if strings.HasPrefix(cmess, "Research") {
+				if cfg.Local.Options.HideResearch {
+					return true
+				}
+			}
+
 			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` **%s**", fact.GetGameTime(), cmess))
 		}
 
