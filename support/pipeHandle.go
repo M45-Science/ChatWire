@@ -814,7 +814,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
-			if strings.Contains(NoTC, "syntax error") {
+			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error, stopping.")
 				fact.SetAutoStart(false)
 				fact.SetFactorioBooted(false)
@@ -1027,11 +1027,34 @@ func handleOnlineMsg(line string) bool {
 	/* ****************
 	 * "/online"
 	 ******************/
-	if strings.HasPrefix(line, "~") {
+	if strings.HasPrefix(line, "[ONLINE]") {
+		buf := ""
+		count := 0
+
 		cwlog.DoLogGame(line)
-		if strings.Contains(line, "Online:") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "`"+line+"`")
-			return true
+		players := strings.Split(line, ";")
+		if len(players) > 0 {
+			for _, p := range players {
+				fields := strings.Split(p, ",")
+				if len(fields) == 4 {
+
+					//name,score,time,type;
+					pname := fields[0]
+					pscore := fields[1]
+					ptime := fields[2]
+					ptype := fields[3]
+
+					if pname != "" {
+						timeInt, _ := strconv.Atoi(ptime)
+						timeStr := time.Duration(timeInt * 16666666).String()
+						buf = buf + fmt.Sprintf("Name: %-15v, Score: %-5v, Time: %-5v, Level: %v\n", fact.GetGameTime(), pname, pscore, timeStr, ptype)
+						count++
+					}
+				}
+			}
+			if count > 0 {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "```"+buf+"```")
+			}
 		}
 	}
 	return false
