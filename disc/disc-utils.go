@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /*  Check if Discord moderator */
@@ -261,9 +261,15 @@ func InteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, e
 	embedList = append(embedList, embed)
 	respData := &discordgo.InteractionResponseData{Embeds: embedList}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	s.InteractionRespond(i.Interaction, resp)
+	err := s.InteractionRespond(i.Interaction, resp)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
 }
 
 func FollowupResponse(s *discordgo.Session, i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
-	s.FollowupMessageCreate(i.Interaction, false, f)
+	_, err := s.FollowupMessageCreate(i.Interaction, false, f)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
 }

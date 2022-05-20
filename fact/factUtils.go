@@ -13,15 +13,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+	"github.com/hako/durafmt"
+
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-
-	"github.com/bwmarrin/discordgo"
-	"github.com/hako/durafmt"
 )
 
 /* Delete old sav-*.zip, gen-*.zip files, to save space. */
@@ -411,10 +411,6 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				SetAutoStart(true)
 				return
 			}
-		} else {
-			//rewindSyntax(m)
 		}
-	} else {
-		//rewindSyntax(m)
 	}
 }

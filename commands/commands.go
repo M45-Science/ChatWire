@@ -327,7 +327,10 @@ func ClearCommands() {
 		for _, v := range CL {
 			if v.AppCmd != nil {
 				cwlog.DoLogCW(fmt.Sprintf("Deregistered command: %s", v.AppCmd.Name))
-				disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.AppCmd.ID)
+				err := disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.AppCmd.ID)
+				if err != nil {
+					cwlog.DoLogCW(err.Error())
+				}
 
 				time.Sleep(constants.ApplicationCommmandSleep)
 			}

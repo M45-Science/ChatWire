@@ -8,6 +8,7 @@ import (
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -72,5 +73,8 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	s.InteractionRespond(i.Interaction, resp)
+	err := s.InteractionRespond(i.Interaction, resp)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
 }

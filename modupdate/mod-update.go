@@ -1,15 +1,16 @@
 package modupdate
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/cwlog"
-	"ChatWire/fact"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"strings"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/fact"
 )
 
 func CheckMods(force bool, doReport bool) {
@@ -77,8 +78,6 @@ func UpdateMods(doReport bool) {
 		buf := fmt.Sprintf("Error while attempting to update game mods: %v", err.Error())
 		cwlog.DoLogCW(buf)
 		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-	} else {
-		//cwlog.DoLogCW(out)
 	}
 
 	lines := strings.Split(out, "\n")

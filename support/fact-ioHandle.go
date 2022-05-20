@@ -1,13 +1,6 @@
 package support
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/cwlog"
-	"ChatWire/disc"
-	"ChatWire/fact"
-	"ChatWire/glob"
-	"ChatWire/sclean"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,6 +10,14 @@ import (
 	"time"
 
 	embed "github.com/Clinet/discordgo-embed"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
@@ -44,7 +45,7 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 				}
 			}
 
-			newtime := constants.Unknown
+			var newtime string
 			if day > 0 {
 				newtime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
 			} else if hour > 0 {
@@ -912,7 +913,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 			if pname != "<server>" {
 
-				var nores int = 0
+				var nores int
 				glob.NoResponseCountLock.Lock()
 				nores = glob.NoResponseCount
 				glob.NoResponseCountLock.Unlock()
@@ -921,7 +922,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 				//Do not ban for chat spam if game is lagging
 				if nores < 4 {
-					var bbuf string = ""
+					var bbuf string
 
 					//Automatically ban people for chat spam
 					//TODO: Make this configurable
