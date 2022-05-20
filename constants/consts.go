@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "534-05.05.2022-0556p"
+	Version = "535-05.20.2022-0507"
 	Unknown = "Unknown"
 
 	/* ChatWire files */
@@ -33,7 +33,7 @@ const (
 	MaxRewindResults      = 20
 
 	/* Max results to return */
-	WhoisResults      = 20
+	WhoisResults = 20
 
 	/* Maximum time to wait for Factorio update download */
 	FactorioUpdateCheckLimit = 15 * time.Minute
