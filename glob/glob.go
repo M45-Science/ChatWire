@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+/* Most of these are here, because go is unable to handle import cycles */
+/* I wish they would address this issue, because people avoid packages due to this */
+
 /* Player database */
 type PlayerData struct {
 	Name     string

@@ -49,7 +49,7 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	buf := ""
 	if didDelete {
-		buf = buf + "NOTICE: Invalidating previous registration code.\n"
+		buf = buf + "**NOTICE: Invalidating previous registration code.**\n"
 	}
 	buf = buf + fmt.Sprintf("1: Connect to the Factorio server: `%v-%v`\n", cfg.Local.Callsign, cfg.Local.Name)
 	buf = buf + "2: Copy/Paste or type this registration command into the Factorio console/chat window:\n"
@@ -64,9 +64,8 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	buf = buf + "You can use control-c and control-v to copy-paste the command and code (command on Mac)\n"
-	buf = buf + "**DO NOT PASTE THE CODE IN CHAT OR DISCORD BY ACCIDENT!**\n"
-	buf = buf + "**IF YOU DO RUN `/register` AGAIN TO INVALIDATE THE OLD CODE.**\n"
 	buf = buf + "The code expires after 15 minutes, if you need another one just use `/register` again.\n"
+	buf = buf + "**IF YOU ACCIDENTLY SHARE THE CODE, RUN `/REGISTER` AGAIN TO INVALIDATE THE CODE.**\n"
 
 	var elist []*discordgo.MessageEmbed
 	elist = append(elist, &discordgo.MessageEmbed{Title: "How to complete registration:", Description: buf})

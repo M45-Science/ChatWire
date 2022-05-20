@@ -7,15 +7,16 @@ const (
 	Unknown = "Unknown"
 
 	/* ChatWire files */
-	CWGlobalConfig   = "../cw-global-config.json"
-	CWLocalConfig    = "cw-local-config.json"
-	WhitelistName    = "server-whitelist.json"
-	ServSettingsName = "server-settings.json"
-	ModsQueueFolder  = "mods-queue"
-	ModsFolder       = "mods"
-	RoleListFile     = "../RoleList.dat"
-	VoteRewindFile   = "vote-rewind.dat"
-	MembersPrefix    = "M"
+	CWGlobalConfig      = "../cw-global-config.json"
+	CWLocalConfig       = "cw-local-config.json"
+	WhitelistName       = "server-whitelist.json"
+	ServSettingsName    = "server-settings.json"
+	ModsQueueFolder     = "mods-queue"
+	ModsFolder          = "mods"
+	RoleListFile        = "../RoleList.dat"
+	VoteRewindFile      = "vote-rewind.dat"
+	MembersPrefix       = "M"
+	ArchiveFolderSuffix = " maps"
 
 	/* ChatWire settings */
 	PauseThresh              = 5  /* Number of repeated time reports before we assume server is paused */
