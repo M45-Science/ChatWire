@@ -1,16 +1,17 @@
 package fact
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/cwlog"
-	"ChatWire/glob"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/glob"
 )
 
 func ResetTotalVotes() {
