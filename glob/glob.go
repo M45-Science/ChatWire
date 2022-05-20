@@ -59,7 +59,17 @@ type VoteTallyData struct {
 	Count    int
 }
 
+type OnlinePlayerData struct {
+	Name  string
+	Score float32
+	Time  string
+	Level int
+}
+
 var (
+	OnlineCommand = constants.OnlineCommand
+	OnlinePlayers []OnlinePlayerData
+
 	/* Slash command registration */
 	DoRegisterCommands   *bool
 	DoDeregisterCommands *bool
