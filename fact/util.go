@@ -32,6 +32,13 @@ func MakeSteamURL() (string, bool) {
 /* Prgram shutdown */
 func DoExit(delay bool) {
 
+	//Wait a few seconds for CMS to finish
+	for i := 0; i < 15; i++ {
+		if len(disc.CMSBuffer) > 0 {
+			time.Sleep(time.Second)
+		}
+	}
+
 	/* Show stats */
 	tnow := time.Now()
 	tnow = tnow.Round(time.Second)
