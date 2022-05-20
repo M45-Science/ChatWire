@@ -212,25 +212,6 @@ func MainLoops() {
 		}
 	}()
 
-	/***********************
-	 * Check players online
-	 ***********************/
-	/* Safety, in case player count gets off
-	 * Also helps detect servers crash/dead while paused */
-	go func() {
-		for glob.ServerRunning {
-			time.Sleep(1 * time.Minute)
-
-			if glob.SoftModVersion != constants.Unknown {
-				break
-			}
-
-			if fact.IsFactRunning() {
-				fact.WriteFact(glob.OnlineCommand)
-			}
-		}
-	}()
-
 	/***********************************
 	 * Delete expired registration codes
 	 ***********************************/
