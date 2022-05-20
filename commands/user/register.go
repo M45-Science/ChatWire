@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
+
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-
-	"github.com/bwmarrin/discordgo"
-	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
 
 /* AccessServer locks PasswordListLock
  * This allows players to register, for discord roles and in-game perks */
-func AccessServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if !fact.IsFactRunning() && 1 == 2 {
 		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running."}

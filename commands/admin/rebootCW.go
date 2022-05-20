@@ -1,14 +1,14 @@
 package admin
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /*  Restart saves and restarts the server */
-func Reload(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func RebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	fact.CMS(cfg.Local.Channel.ChatChannel, "Now reloading!")
 

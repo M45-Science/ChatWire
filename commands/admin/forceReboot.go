@@ -1,14 +1,14 @@
 package admin
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Reboots cw */
-func Reboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	buf := "Rebooting!"
 	embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}

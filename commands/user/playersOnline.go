@@ -1,11 +1,11 @@
 package user
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* executes /online on the server, response handled in chat.go */

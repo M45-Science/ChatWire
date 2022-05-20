@@ -3,10 +3,10 @@ package admin
 import (
 	"fmt"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Set a player's level */

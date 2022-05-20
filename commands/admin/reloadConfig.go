@@ -1,12 +1,12 @@
 package admin
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/support"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Reload config files */

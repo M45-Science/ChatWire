@@ -1,14 +1,14 @@
 package admin
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /*  StopServer saves the map and closes Factorio.  */
-func StopServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	fact.SetRelaunchThrottle(0)
 	fact.SetAutoStart(false)
 

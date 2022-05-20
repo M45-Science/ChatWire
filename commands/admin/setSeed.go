@@ -1,13 +1,14 @@
 package admin
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/disc"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/cfg"
+	"ChatWire/disc"
 )
 
 /* Set map seed */

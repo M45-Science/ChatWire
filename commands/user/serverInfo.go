@@ -1,6 +1,11 @@
 package user
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
 	"ChatWire/constants"
@@ -8,16 +13,12 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
-	"fmt"
-	"time"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func ShowSettings(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	verbose := false
 

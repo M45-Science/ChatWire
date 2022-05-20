@@ -1,16 +1,17 @@
 package admin
 
 import (
-	"ChatWire/fact"
-	"ChatWire/glob"
 	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
 /* Load a different save-game */
-func Rewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func RewindMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	argnum := len(args)

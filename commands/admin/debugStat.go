@@ -1,11 +1,12 @@
 package admin
 
 import (
-	"ChatWire/disc"
-	"ChatWire/glob"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/disc"
+	"ChatWire/glob"
 )
 
 func DebugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {

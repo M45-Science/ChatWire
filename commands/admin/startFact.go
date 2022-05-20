@@ -1,14 +1,14 @@
 package admin
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Reboots Factorio only */
-func Restart(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.IsFactRunning() {
 

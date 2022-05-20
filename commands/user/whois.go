@@ -6,14 +6,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* SORT FUNCTIONS */

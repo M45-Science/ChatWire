@@ -1,19 +1,20 @@
 package admin
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/disc"
-	"ChatWire/fact"
-	"ChatWire/support"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/cfg"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/support"
 )
 
 /* Change server settings */
-func Set(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	arglen := len(args)

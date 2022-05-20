@@ -10,16 +10,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* RandomMap locks FactorioLaunchLock */
-func RandomMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.IsFactRunning() {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
 		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}

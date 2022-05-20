@@ -9,17 +9,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Generate map */
-func Generate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.IsFactRunning() {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"

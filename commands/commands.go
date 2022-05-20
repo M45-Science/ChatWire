@@ -33,21 +33,21 @@ var cmds = []Command{
 		Description: "Stops Factorio, if running.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.StopServer, ModeratorOnly: true},
+		Command: admin.StopFact, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "start-factorio",
-		Description: "Starts or restarts Factorio, even if already running.",
+		Description: "Starts OR restarts Factorio, even if already running.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Restart, ModeratorOnly: true},
+		Command: admin.StartFact, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "reboot-chatwire",
 		Description: "Closes Factorio (if running), and restarts ChatWire.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Reload, ModeratorOnly: true},
+		Command: admin.RebootCW, ModeratorOnly: true},
 
 	//Add "confirm"
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -55,14 +55,14 @@ var cmds = []Command{
 		Description: "Big red button. Don't use this lightly. This does not cleanly exit Factorio or ChatWire.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Reboot, ModeratorOnly: true},
+		Command: admin.ForceReboot, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "queue-reboot",
 		Description: "Queues up a reboot. This waits until no players are online to reboot Factorio and ChatWire.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Queue, ModeratorOnly: true},
+		Command: admin.QueReboot, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "archive-map",
@@ -76,21 +76,21 @@ var cmds = []Command{
 		Description: "Posts a new map, with preview to discord. Use /make-new-map after to create it.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.RandomMap, ModeratorOnly: true},
+		Command: admin.NewMapPrev, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "make-new-map",
 		Description: "Creates a new map.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Generate, ModeratorOnly: true},
+		Command: admin.MakeNewMap, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
 		Description: "Stops Factorio, archives current map, generates new one, and starts Factorio.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.NewMap, ModeratorOnly: true},
+		Command: admin.MapReset, ModeratorOnly: true},
 
 	//Add the cancel peram
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -107,7 +107,7 @@ var cmds = []Command{
 		},
 	},
 
-		Command: admin.Update, ModeratorOnly: true},
+		Command: admin.UpdateFact, ModeratorOnly: true},
 
 	//Complete
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -249,22 +249,23 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.Set, ModeratorOnly: true},
+		Command: admin.Config, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rewind-map",
 		Description: "Rewinds the map to specified autosave.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Rewind, ModeratorOnly: true},
+		Command: admin.RewindMap, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "update-mods",
 		Description: "Updates Factorio mods to the latest version if there is a new version available.",
 	},
-		Command: admin.ForceUpdateMods, ModeratorOnly: true},
+		Command: admin.UpdateMods, ModeratorOnly: true},
 
 	//Add param
+	//This should go in config, possibly
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "set-map-seed",
 		Description: "Sets the map seed for the next map reset. Value is cleared after use.",
@@ -302,7 +303,7 @@ var cmds = []Command{
 		Description: "Shows detailed information on the server settings.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.ShowSettings, ModeratorOnly: false},
+		Command: user.ServerInfo, ModeratorOnly: false},
 
 	//Cleanup, possibly handle other chat channels
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -310,7 +311,7 @@ var cmds = []Command{
 		Description: "Registers a new account, giving you accociated Discord roles with more privleges.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.AccessServer, ModeratorOnly: false},
+		Command: user.Register, ModeratorOnly: false},
 
 	//Add params, make slicker
 	{AppCmd: &discordgo.ApplicationCommand{

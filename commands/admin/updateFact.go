@@ -3,15 +3,15 @@ package admin
 import (
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Update Factorio  */
-func Update(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	argnum := len(args)
