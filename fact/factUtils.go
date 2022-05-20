@@ -139,7 +139,7 @@ func WriteFact(input string) {
 
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write to Factorio. Details: %s", err))
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input))
 			SetFactRunning(false, true)
 			return
 		}
