@@ -83,9 +83,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 
 	} else {
-
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "No map has been loaded yet."}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", "No map has been loaded yet.")
 	}
 
 }
