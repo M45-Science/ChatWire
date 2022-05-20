@@ -25,6 +25,9 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	buf := "```"
 	/* STATS */
 	buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire version", constants.Version)
+	if glob.SoftModVersion != constants.Unknown {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
+	}
 	if fact.FactorioVersion != constants.Unknown {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
 	}
