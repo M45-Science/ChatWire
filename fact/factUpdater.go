@@ -77,7 +77,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			for _, line := range clines {
 				linelen := len(line)
 				var newversion string
-				var oldversion string
+				//var oldversion string
 
 				if linelen > 0 {
 
@@ -114,11 +114,11 @@ func CheckFactUpdate(logNoUpdate bool) {
 						}
 					} else if strings.HasPrefix(line, "Dry run: would have fetched update from") {
 						if numwords >= 9 {
-							oldversion = words[7]
+							//oldversion = words[7]
 							newversion = words[9]
 
-							messdisc := fmt.Sprintf("**Factorio update available:** '%v' to '%v'", oldversion, newversion)
-							messfact := fmt.Sprintf("Factorio update available: '%v' to '%v'", oldversion, newversion)
+							messdisc := "**Factorio update available!**"
+							messfact := "Factorio update available!"
 							SetDoUpdateFactorio(true)
 
 							/* Don't message, unless this is actually a unique new version */
