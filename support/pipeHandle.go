@@ -250,7 +250,7 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 
 				/* write to Factorio as well */
 				buf = fmt.Sprintf("New record! Players online: %v", glob.RecordPlayers)
-				fact.WriteFact("/cchat " + buf)
+				fact.FactChat(buf)
 
 			}
 			glob.RecordPlayersLock.Unlock()
@@ -361,7 +361,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 								glob.LastSusWarning = time.Now()
 								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. Rating: %v", pname, glob.PlayerSus[pname])
 
-								fact.WriteFact("/cchat [color=red]" + sbuf + "[/color]")
+								fact.FactChat("[color=red]" + sbuf + "[/color]")
 								fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
 							}
 						}
@@ -570,6 +570,22 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	return false
 }
 
+func handleSVersion(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
+	/******************
+	 * SVERSION
+	 ******************/
+	if strings.HasPrefix(NoDS, "[SVERSION]") {
+		cwlog.DoLogGame(NoDS)
+
+		if NoDSlistlen > 1 {
+			glob.SoftModVersion = NoDSlist[1]
+			ConfigSoftMod()
+		}
+		return true
+	}
+	return false
+}
+
 func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	/******************
 	 * UNBAN
@@ -616,50 +632,6 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true, false)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/p o c")
-
-		fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.Callsign+"-"+cfg.Local.Name))
-
-		/* Config new-player restrictions */
-		if cfg.Local.Options.SoftModOptions.Restrict {
-			fact.WriteFact("/restrict on")
-		} else {
-			fact.WriteFact("/restrict off")
-		}
-
-		/* Config friendly fire */
-		if cfg.Local.Options.SoftModOptions.FriendlyFire {
-			fact.WriteFact("/friendlyfire on")
-		} else {
-			fact.WriteFact("/friendlyfire off")
-		}
-
-		/* Config reset-interval */
-		if cfg.Local.Options.ScheduleText != "" {
-			fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleText)
-		}
-		if cfg.Local.Options.SoftModOptions.CleanMap {
-			//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")
-			fact.WriteFact("/cleanmap")
-		}
-		if cfg.Local.Options.SoftModOptions.DisableBlueprints {
-			fact.WriteFact("/blueprints off")
-			//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Blueprints disabled.")
-		}
-		if cfg.Local.Options.SoftModOptions.Cheats {
-			fact.WriteFact("/enablecheats on")
-			//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cheats enabled.")
-		}
-
-		/* Patreon list */
-		disc.RoleListLock.Lock()
-		if len(disc.RoleList.Patreons) > 0 {
-			fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
-		}
-		if len(disc.RoleList.NitroBooster) > 0 {
-			fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
-		}
-		disc.RoleListLock.Unlock()
-		return true
 	}
 	return false
 }
@@ -703,7 +675,7 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.GetGameTime(), pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
-			fact.WriteFact("/cchat " + fmsg)
+			fact.FactChat(fmsg)
 			fact.CMS(cfg.Local.Channel.ChatChannel, dmsg)
 			return true
 		}
