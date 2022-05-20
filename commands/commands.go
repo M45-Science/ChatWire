@@ -389,7 +389,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	//Don't respond to other channels
 	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
-		cwlog.DoLogCW(fmt.Sprintf("slash command: %s", data.Name))
+		cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
 
 		for _, c := range CL {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
