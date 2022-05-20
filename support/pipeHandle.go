@@ -11,6 +11,7 @@ import (
 
 	embed "github.com/Clinet/discordgo-embed"
 
+	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
@@ -1050,6 +1051,7 @@ func handleOnlineMsg(line string) bool {
 
 					if pname != "" {
 						fact.UpdateSeen(pname)
+						banlist.CheckBanList(pname)
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)
