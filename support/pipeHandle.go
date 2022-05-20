@@ -269,7 +269,9 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 *****************/
 	if strings.HasPrefix(NoDS, "[JOIN]") {
 		cwlog.DoLogGame(NoDS)
-		fact.WriteFact(glob.OnlineCommand)
+		if glob.SoftModVersion != constants.Unknown {
+			fact.WriteFact(glob.OnlineCommand)
+		}
 
 		if NoDSlistlen > 1 {
 			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
@@ -307,7 +309,9 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") {
 		cwlog.DoLogGame(NoDS)
-		fact.WriteFact(glob.OnlineCommand)
+		if glob.SoftModVersion != constants.Unknown {
+			fact.WriteFact(glob.OnlineCommand)
+		}
 
 		if NoDSlistlen > 1 {
 			pname := NoDSlist[1]
@@ -446,7 +450,9 @@ func handleSlowConnect(NoTC string, line string) {
 		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
 			if strings.Contains(line, "removing peer") {
-				fact.WriteFact(glob.OnlineCommand)
+				if glob.SoftModVersion != constants.Unknown {
+					fact.WriteFact(glob.OnlineCommand)
+				}
 
 				/* Fix for players leaving with no leave message */
 			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
@@ -640,7 +646,9 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true, false)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
-		fact.WriteFact(glob.OnlineCommand)
+		if glob.SoftModVersion != constants.Unknown {
+			fact.WriteFact(glob.OnlineCommand)
+		}
 	}
 	return false
 }
@@ -770,6 +778,7 @@ func handleDesync(NoTC string, line string) bool {
 }
 
 func handleCrashes(NoTC string, line string, words []string, numwords int) bool {
+
 	/* *****************
 	 * CAPTURE CRASHES
 	 ******************/
@@ -786,7 +795,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Mod Errors */
 		if strings.Contains(NoTC, "caused a non-recoverable error.") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and closed.")
 			fact.SetFactorioBooted(false)
 			fact.SetFactRunning(false, true)
 			return true
@@ -1064,8 +1073,14 @@ func handleOnlineMsg(line string) bool {
 			if count > 0 {
 				fact.SetNumPlayers(count)
 				glob.OnlinePlayers = newPlayerList
+				return true
 			}
 		}
+
+		/* Otherwise clear list */
+		fact.SetNumPlayers(0)
+		glob.OnlinePlayers = []glob.OnlinePlayerData{}
+
 		return true
 	}
 	return false
