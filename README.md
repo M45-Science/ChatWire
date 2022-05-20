@@ -12,26 +12,26 @@ Suppress server list slow-transfer messages.<br>
 Updated to very latest version of DiscordGo.<br>
 Much faster boot/shutdown, with clean close.<br>
 Map reset messages, and other messages will not get lost on shutdown.<br>
-Utilize BotReady event in the new Discord API.<br>
+Utilize BotReady event in the new Discord API (faster).<br>
 Major config file reorganization.<br>
-Discord command renamed, much clearer<br>
+Discord commands renamed, much clearer.<br>
 Always auto-configure any missing settings.<br>
 Discord channel sorting improved.<br>
-SoftMod presence/version detection<br>
-Handle absent soft-mod chat/online commands<br>
-Improved player-online command (caching), event based.<br>
+SoftMod presence/version detection.<br>
+Handle absent soft-mod, chat/online commands... etc.<br>
+Improved player-online command (caching, event baseds)<br>
 Fixed multiple issues with ban messages.<br>
-Cleaned up code for waiting for factorio to close.<br>
+Cleaned up code for waiting for factorio to close (faster).<br>
 HideResearch setting.<br>
-Experimental detection of griefing.<br>
+Experimental detection/warning of possible sgriefing.<br>
 Automatically ban players from global ban list if they are already playing.<br>
 Automatically put steam URL in channel topic.<br>
 No longer require DMs to be on to register. (Ephemeral message)<br>
 Registration automatically supplies a steam link to connect with.<br>
 Removed a number of unused or obsolete functions and files.<br>
 Many messages rewritten to be clearer.<br>
-Vast majority of messagess moved to ephemeral/private messages.<br>
-Many timers relaxed to reduce load.s<br>
+Vast majority of messages moved to ephemeral/private messages.<br>
+Many timers relaxed to reduce load.<br>
 Many other small adjustments.<br>
 
 ### Requirements:
@@ -42,7 +42,7 @@ ImageMagick *(optional)*<br>
 Zip *(optional)*<br>
 <br>
 Launching will create a default auto-config to get you started.<br>
-Needs permisisons to create files and directories in its own directory, and **up one directory**.<br>
+Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
 `Discord token, guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
