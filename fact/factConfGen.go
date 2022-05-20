@@ -1,9 +1,6 @@
 package fact
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/cwlog"
-	"ChatWire/disc"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -12,9 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"ChatWire/constants"
-
 	"github.com/Distortions81/rcon"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/disc"
 )
 
 /* Generate a server-settings.json file for Factorio */
