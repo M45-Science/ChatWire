@@ -172,6 +172,25 @@ func LevelToString(level int) string {
 	return name
 }
 
+func StringToLevel(input string) int {
+
+	level := 0
+
+	if strings.EqualFold(input, "new") {
+		level = 0
+	} else if strings.EqualFold(input, "members") {
+		level = 1
+	} else if strings.EqualFold(input, "regulars") {
+		level = 2
+	} else if strings.EqualFold(input, "banished") {
+		level = 0
+	} else if strings.EqualFold(input, "ADMINS") {
+		level = 255
+	}
+
+	return level
+}
+
 /* Promote a player to the level they have, in Factorio and on Discord */
 func AutoPromote(pname string) string {
 	playerName := " *(New Player)* "
