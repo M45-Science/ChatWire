@@ -95,7 +95,7 @@ func ReadRoleList() bool {
 				return false
 			}
 
-			cwlog.DoLogCW("Readcfg.RoleList: Successfully read.")
+			//cwlog.DoLogCW("Readcfg.RoleList: Successfully read.")
 			RoleList = newcfg
 
 			return true
