@@ -332,7 +332,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 		/* Don't bother on whitelist servers */
 		if lineListLen > 2 && !cfg.Local.Options.Whitelist {
 			pname := lineList[1]
-			if pname != "" {
+			if pname != "" && glob.PlayerSus != nil {
 				p := disc.GetPlayerDataFromName(pname)
 				if p != nil && p.Name != "" && p.Level < 1 {
 					action := lineList[2]
@@ -576,17 +576,17 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	return false
 }
 
-func handleSVersion(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
+func handleSVersion(line string, lineList []string, lineListlen int) bool {
 	/******************
 	 * SVERSION
 	 ******************/
-	if strings.HasPrefix(NoDS, "[SVERSION]") {
-		cwlog.DoLogGame(NoDS)
+	if strings.HasPrefix(line, "[SVERSION]") {
+		cwlog.DoLogGame(line)
 
-		if NoDSlistlen > 1 {
-			glob.SoftModVersion = NoDSlist[1]
-			ConfigSoftMod()
+		if lineListlen > 0 {
+			glob.SoftModVersion = lineList[1]
 		}
+		ConfigSoftMod()
 		return true
 	}
 	return false
@@ -637,6 +637,7 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactorioBooted(true)
 		fact.SetFactRunning(true, false)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
+		fact.WriteFact("/sversion")
 		fact.WriteFact("/p o c")
 	}
 	return false
