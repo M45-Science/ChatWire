@@ -7,7 +7,7 @@ import (
 )
 
 /* Most of these are here, because go is unable to handle import cycles */
-/* I wish they would address this issue, because people avoid packages due to this */
+/* I wish they would address this issue, because many people avoid packages due to this */
 
 /* Player database */
 type PlayerData struct {
@@ -59,6 +59,7 @@ type VoteTallyData struct {
 }
 
 var (
+	/* Slash command registration */
 	DoRegisterCommands   *bool
 	DoDeregisterCommands *bool
 
@@ -113,15 +114,6 @@ var (
 	/* Factorio server watchdog */
 	NoResponseCount     = 0
 	NoResponseCountLock sync.RWMutex
-
-	/* Random color */
-	LastColor = 0
-
-	/* Member-count status */
-	LastRegularStat = ""
-	LastMemberStat  = ""
-	LastBanStat     = ""
-	LastTotalStat   = ""
 
 	/* Update warning */
 	UpdateWarnCounterLock sync.Mutex
