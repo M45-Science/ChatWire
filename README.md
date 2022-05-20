@@ -32,6 +32,7 @@ Removed a number of unused or obsolete functions and files.<br>
 Many messages rewritten to be clearer.<br>
 Vast majority of messages moved to ephemeral/private messages.<br>
 Many timers relaxed to reduce load.<br>
+Fixed many typos.<br>
 Many other small adjustments.<br>
 
 ### Requirements:
