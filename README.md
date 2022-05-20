@@ -19,7 +19,7 @@ Always auto-configure any missing settings.<br>
 Discord channel sorting improved.<br>
 SoftMod presence/version detection.<br>
 Handle absent soft-mod, chat/online commands... etc.<br>
-Improved player-online command (caching, event baseds)<br>
+Improved player-online command (caching, event based)<br>
 Fixed multiple issues with ban messages.<br>
 Cleaned up code for waiting for factorio to close (faster).<br>
 HideResearch setting.<br>
