@@ -73,7 +73,7 @@ func HandleChat() {
 				 * FILTERED AREA
 				 * NO ESCAPED OR CONSOLE CHAT
 				 **********************************/
-				if !strings.HasPrefix(line, "~") && !strings.HasPrefix(line, "<server>") {
+				if !strings.HasPrefix(line, "<server>") {
 
 					/******************
 					 * NO CHAT AREA
@@ -168,6 +168,12 @@ func HandleChat() {
 						if handleCmdMsg(line) {
 							continue
 						}
+						if handleActMsg(line, lineList, lineListlen) {
+							continue
+						}
+						if handleOnlineMsg(line) {
+							continue
+						}
 					} else {
 						if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
 							continue
@@ -176,15 +182,6 @@ func HandleChat() {
 					/******************
 					 * END FILTERED
 					 ******************/
-
-					/* Escaped */
-				} else {
-					if handleActMsg(line, lineList, lineListlen) {
-						continue
-					}
-					if handleOnlineMsg(line) {
-						continue
-					}
 				}
 			}
 		}
