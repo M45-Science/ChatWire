@@ -36,7 +36,7 @@ func main() {
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
-	cwlog.DoLogCW("Version: " + constants.Version)
+	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
 	/* Handle lock file */
 	bstr, err := ioutil.ReadFile("cw.lock")
