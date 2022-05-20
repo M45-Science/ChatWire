@@ -233,7 +233,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(10 * time.Second)
+			time.Sleep(1 * time.Minute)
 
 			t := time.Now()
 
@@ -254,7 +254,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(10 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			glob.VoteBoxLock.Lock()
 
@@ -307,7 +307,7 @@ func MainLoops() {
 	 ********************************/
 	go func() {
 		for glob.ServerRunning {
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			wasDirty := false
 
@@ -363,7 +363,7 @@ func MainLoops() {
 
 		for glob.ServerRunning {
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			/* Detect update */
 			glob.PlayerListUpdatedLock.Lock()
@@ -516,7 +516,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 
 			if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
 				if fact.IsFactRunning() {
@@ -548,7 +548,7 @@ func MainLoops() {
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.WriteFact("/cchat " + fact.AddFactColor("orange", msg))
 						}
-						time.Sleep(1 * time.Minute)
+						time.Sleep(2 * time.Minute)
 
 						/* Reboot anyway */
 						if numwarn > glob.UpdateGraceMinutes {
