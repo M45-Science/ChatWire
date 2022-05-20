@@ -221,6 +221,10 @@ func MainLoops() {
 		for glob.ServerRunning {
 			time.Sleep(1 * time.Minute)
 
+			if glob.SoftModVersion != constants.Unknown {
+				break
+			}
+
 			if fact.IsFactRunning() {
 				fact.WriteFact(glob.OnlineCommand)
 			}
