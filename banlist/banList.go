@@ -66,7 +66,7 @@ func WatchBanFile() {
 			}
 
 			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				go ReadBanFile()
+				ReadBanFile()
 				break
 			}
 
