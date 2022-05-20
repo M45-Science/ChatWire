@@ -16,7 +16,7 @@ func HandleChat() {
 	for glob.ServerRunning {
 		if fact.GameBuffer != nil {
 			reader := bufio.NewScanner(fact.GameBuffer)
-			time.Sleep(time.Millisecond * 10)
+			time.Sleep(time.Millisecond * 100)
 			for reader.Scan() {
 				line := reader.Text()
 				/* Remove return/newline */
@@ -81,7 +81,7 @@ func HandleChat() {
 					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
 						/* Don't eat event, this is capable of eating random text */
-						handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
+						go handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 
 						if handlePlayerReport(line, lineList, lowerCaseListlen) {
 							continue
@@ -108,7 +108,7 @@ func HandleChat() {
 						}
 
 						/* Don't eat event, used for fixLockers */
-						handleSlowConnect(NoTC, line)
+						go handleSlowConnect(NoTC, line)
 
 						if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
 							continue
@@ -118,9 +118,10 @@ func HandleChat() {
 							continue
 						}
 
-						if handleBan(NoDS, NoDSlist, NoDSlistlen) {
+						/*if handleBan(NoDS, NoDSlist, NoDSlistlen) {
 							continue
-						}
+						}*/
+						go handleBan(NoDS, NoDSlist, NoDSlistlen)
 
 						if handleUnBan(NoDS, NoDSlist, NoDSlistlen) {
 							continue
@@ -142,7 +143,7 @@ func HandleChat() {
 							continue
 						}
 
-						handleFactVersion(NoTC, line, NoTClist, NoTClistlen)
+						go handleFactVersion(NoTC, line, NoTClist, NoTClistlen)
 
 						if handleSaveMsg(NoTC) {
 							continue
