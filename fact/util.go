@@ -17,9 +17,14 @@ import (
 func FactChat(input string) {
 
 	if glob.SoftModVersion != constants.Unknown {
-		FactChat("/cchat " + input)
+		WriteFact("/cchat " + input)
 	} else {
-		WriteFact("/shout " + input)
+		input = sclean.StripControlAndSubSpecial(input)
+		input = sclean.RemoveFactorioTags(input)
+		input = sclean.RemoveDiscordMarkdown(input)
+		input = strings.TrimLeft(input, " ")
+		input = strings.TrimLeft(input, "/")
+		WriteFact(input)
 	}
 }
 
