@@ -30,7 +30,7 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/* Re-Write global and local configs */
 	cfg.WriteGCfg()
 	cfg.WriteLCfg()
-	fact.DoUpdateChannelName()
+	fact.DoUpdateChannelName(true)
 	buf := "Config files have been reloaded."
 	disc.EphemeralResponse(s, i, "Complete:", buf)
 

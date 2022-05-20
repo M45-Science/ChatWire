@@ -276,7 +276,7 @@ func UpdateChannelName() {
 }
 
 /* When appropriate, actually update the channel name */
-func DoUpdateChannelName() {
+func DoUpdateChannelName(doSort bool) {
 
 	var aerr error
 	if disc.DS == nil {
@@ -293,11 +293,18 @@ func DoUpdateChannelName() {
 		disc.OldChanName = disc.NewChanName
 		disc.UpdateChannelLock.Unlock()
 
+		newpos := cfg.Local.Channel.Position
+
+		ch, err := disc.DS.Channel(cfg.Local.Channel.ChatChannel)
+		if err == nil && !doSort {
+			newpos = ch.Position
+		}
+
 		URL, found := MakeSteamURL()
 		if URL != "" && found {
-			_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.Channel.Position, Topic: URL})
+			_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: newpos, Topic: URL})
 		} else {
-			_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: cfg.Local.Channel.Position})
+			_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: newpos})
 		}
 
 		if aerr != nil {

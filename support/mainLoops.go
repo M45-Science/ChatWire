@@ -709,6 +709,7 @@ func MainLoops() {
 	****************************/
 	go func() {
 
+		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			fact.UpdateChannelName()
 
@@ -718,7 +719,7 @@ func MainLoops() {
 			disc.UpdateChannelLock.Unlock()
 
 			if oldchname != chname {
-				fact.DoUpdateChannelName()
+				fact.DoUpdateChannelName(false)
 			}
 
 			time.Sleep(time.Second * 10)
