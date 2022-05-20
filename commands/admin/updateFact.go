@@ -22,14 +22,12 @@ func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			cfg.Local.Options.AutoUpdate = false
 
 			buf := "Update canceled, and auto-update disabled."
-			embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Status:", buf)
 			return
 		}
 		fact.CheckFactUpdate(true)
 	} else {
 		buf := "The Factorio updater isn't configured."
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 	}
 }

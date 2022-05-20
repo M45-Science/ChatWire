@@ -23,8 +23,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.IsFactRunning() {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 
@@ -50,21 +49,18 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if ourseed <= 0 {
 		buf := "Invalid seed data. (internal error)"
 		cwlog.DoLogCW(buf)
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 
 	if MapPreset == "Error" {
 		buf := "Invalid map preset."
 		cwlog.DoLogCW(buf)
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 
-	embed := &discordgo.MessageEmbed{Title: "Status:", Description: "Generating map..."}
-	disc.InteractionResponse(s, i, embed)
+	disc.EphemeralResponse(s, i, "Status:", "Generating map...")
 
 	/* Delete old sav-* map to save space */
 	fact.DeleteOldSav()
@@ -127,7 +123,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	var elist []*discordgo.MessageEmbed
-	elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unknwon error."})
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unknown error."})
 	f := discordgo.WebhookParams{Embeds: elist}
 	disc.FollowupResponse(s, i, &f)
 }

@@ -18,20 +18,17 @@ func SetSeed(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	num, err := strconv.Atoi(args[0])
 	if err != nil {
 		buf := "Numbers only."
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 	cfg.Local.Settings.Seed = uint64(num)
 	if cfg.Local.Settings.Seed > 0 {
 		buf := fmt.Sprintf("Map seed set to: %v (one use)", cfg.Local.Settings.Seed)
 
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Complete:", buf)
 	} else {
 		buf := "Map seed cleared."
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Complete:", buf)
 	}
 	cfg.WriteLCfg()
 

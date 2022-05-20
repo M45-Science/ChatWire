@@ -9,7 +9,6 @@ import (
 
 func UpdateMods(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	embed := &discordgo.MessageEmbed{Title: "Status:", Description: "Attempting to update game mods.\n"}
-	disc.InteractionResponse(s, i, embed)
+	disc.EphemeralResponse(s, i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)
 }

@@ -29,9 +29,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if vlen < 3 {
 		buf := "Unable to determine Factorio version."
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
-		return
+		disc.EphemeralResponse(s, i, "Error:", buf)
 	}
 
 	if fact.GameMapPath != "" && fact.FactorioVersion != constants.Unknown {
@@ -47,8 +45,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if erra != nil {
 			buf := fmt.Sprintf("An error occurred reading the map to archive: %s", erra)
 			cwlog.DoLogCW(buf)
-			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
 		defer from.Close()
@@ -59,8 +56,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil {
 			buf := fmt.Sprintf("Unable to create archive directory: %v", err.Error())
 			cwlog.DoLogCW(buf)
-			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
 
@@ -68,8 +64,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if errb != nil {
 			buf := fmt.Sprintf("Unable to write archive file: %v", errb)
 			cwlog.DoLogCW(buf)
-			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
 		defer to.Close()
@@ -78,8 +73,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if errc != nil {
 			buf := fmt.Sprintf("Unable to write map archive file: %s", errc)
 			cwlog.DoLogCW(buf)
-			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
 

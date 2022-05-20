@@ -13,13 +13,11 @@ func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.IsFactRunning() {
 
 		buf := "Restarting Factorio..."
-		embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Status:", buf)
 		fact.QuitFactorio()
 	} else {
 		buf := "Starting Factorio..."
-		embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Status:", buf)
 	}
 
 	fact.SetAutoStart(true)

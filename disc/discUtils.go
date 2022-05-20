@@ -231,6 +231,8 @@ func GetPlayerDataFromName(pname string) *glob.PlayerData {
 }
 
 func InteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
+	cwlog.DoLogCW("InteractionResponse:\n" + i.Member.User.Username + "\n" + embed.Title + "\n" + embed.Description)
+
 	var embedList []*discordgo.MessageEmbed
 	embedList = append(embedList, embed)
 	respData := &discordgo.InteractionResponseData{Embeds: embedList}
@@ -242,7 +244,26 @@ func InteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, e
 }
 
 func FollowupResponse(s *discordgo.Session, i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
-	_, err := s.FollowupMessageCreate(i.Interaction, false, f)
+	if f.Embeds[0] != nil {
+		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
+
+		_, err := s.FollowupMessageCreate(i.Interaction, false, f)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
+	}
+}
+
+func EphemeralResponse(s *discordgo.Session, i *discordgo.InteractionCreate, title, message string) {
+	cwlog.DoLogCW("EphemeralResponse:\n" + i.Member.User.Username + "\n" + title + "\n" + message)
+
+	var elist []*discordgo.MessageEmbed
+	elist = append(elist, &discordgo.MessageEmbed{Title: title, Description: message})
+
+	//1 << 6 is ephemeral/private
+	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
+	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
+	err := s.InteractionRespond(i.Interaction, resp)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}

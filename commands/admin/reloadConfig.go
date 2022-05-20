@@ -18,14 +18,12 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {
 		buf := "Unable to reload global config file."
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 	if !cfg.ReadLCfg() {
 		buf := "Unable to reload local config file."
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 
@@ -34,8 +32,7 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg.WriteLCfg()
 	fact.DoUpdateChannelName()
 	buf := "Config files have been reloaded."
-	embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
-	disc.InteractionResponse(s, i, embed)
+	disc.EphemeralResponse(s, i, "Complete:", buf)
 
 	/* Config reset-interval */
 	if cfg.Local.Options.ScheduleText != "" {

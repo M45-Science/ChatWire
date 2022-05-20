@@ -35,10 +35,8 @@ func DebugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	glob.ChatterLock.Unlock()
 
 	if count == 0 {
-		embed := &discordgo.MessageEmbed{Title: "No debug info at this time."}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "No debug info at this time.", "")
 	} else {
-		embed := &discordgo.MessageEmbed{Title: "Debug Info:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Debug Info:", buf)
 	}
 }

@@ -41,13 +41,11 @@ func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			fact.AutoPromote(aname)
 			fact.SetPlayerListDirty()
 			buf := fmt.Sprintf("Player: %v level set to %v", aname, fact.LevelToString(alevel))
-			embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Complete:", buf)
 			return
 		} else {
 			buf := fmt.Sprintf("Player not found: %s", aname)
-			embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-			disc.InteractionResponse(s, i, embed)
+			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
 	}

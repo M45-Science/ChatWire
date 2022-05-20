@@ -140,7 +140,6 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf = buf + "Steam connect link: " + msg
 	}
 
-	embed := &discordgo.MessageEmbed{Title: "Server Info:", Description: buf}
-	disc.InteractionResponse(s, i, embed)
+	disc.EphemeralResponse(s, i, "Server Info:", buf)
 
 }

@@ -22,17 +22,14 @@ import (
 func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.IsFactRunning() {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
 
 	fact.FactorioLaunchLock.Lock()
 	defer fact.FactorioLaunchLock.Unlock()
 
-	buff := "Generating map preview..."
-	embed := &discordgo.MessageEmbed{Title: "Status:", Description: buff}
-	disc.InteractionResponse(s, i, embed)
+	disc.EphemeralResponse(s, i, "Status:", "Generating map preview...")
 
 	var preview_made = false
 	t := time.Now()

@@ -11,8 +11,7 @@ import (
 func QueReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if !fact.IsQueued() {
-		embed := &discordgo.MessageEmbed{Title: "Complete:", Description: "Reboot has been queued. Server will reboot when map is unoccupied."}
-		disc.InteractionResponse(s, i, embed)
+		disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
 		fact.SetQueued(true)
 	}
 }

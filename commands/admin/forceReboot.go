@@ -10,9 +10,7 @@ import (
 /* Reboots cw */
 func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	buf := "Rebooting!"
-	embed := &discordgo.MessageEmbed{Title: "Status:", Description: buf}
-	disc.InteractionResponse(s, i, embed)
+	disc.EphemeralResponse(s, i, "Status:", "Rebooting!")
 	fact.SetRelaunchThrottle(0)
 	fact.DoExit(false)
 }

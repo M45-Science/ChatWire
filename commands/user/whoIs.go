@@ -31,20 +31,6 @@ func (a ByNew) Len() int           { return len(a) }
 func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
-/* Check if Discord moderator */
-func checkModerator(roles []string) bool {
-
-	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
-		return false
-	}
-	for _, r := range roles {
-		if r == cfg.Global.Discord.Roles.RoleCache.Moderator {
-			return true
-		}
-	}
-	return false
-}
-
 /*  Get info on a specific player */
 func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
@@ -195,5 +181,5 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+	disc.EphemeralResponse(s, i, "WhoIs:", buf)
 }
