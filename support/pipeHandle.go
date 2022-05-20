@@ -1072,7 +1072,9 @@ func handleOnlineMsg(line string) bool {
 			}
 			if count > 0 {
 				fact.SetNumPlayers(count)
+				fact.OnlinePlayersLock.Lock()
 				glob.OnlinePlayers = newPlayerList
+				fact.OnlinePlayersLock.Unlock()
 				return true
 			}
 		}

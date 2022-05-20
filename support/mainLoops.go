@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/constants"
@@ -16,8 +18,6 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 func LinuxSetProcessGroup(cmd *exec.Cmd) {
@@ -65,9 +65,9 @@ func MainLoops() {
 
 				/* We aren't running, but should be! */
 			} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() {
-				/* Dont relaunch if we are set to auto update */
+				/* Don't relaunch if we are set to auto update */
 
-				launchFactortio()
+				launchFactorio()
 			}
 		}
 	}()

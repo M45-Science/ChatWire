@@ -64,7 +64,7 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	buf = buf + "You can use control-c and control-v to copy-paste the command and code (command on Mac)\n"
 	buf = buf + "The code expires after 5 minutes, if you need another one just use `/register` again.\n"
-	buf = buf + "**IF YOU ACCIDENTLY SHARE THE CODE, RUN `/REGISTER` AGAIN TO INVALIDATE THE CODE.**\n"
+	buf = buf + "**IF YOU ACCIDENTALLY SHARE THE CODE, RUN `/REGISTER` AGAIN TO INVALIDATE THE CODE.**\n"
 
 	var elist []*discordgo.MessageEmbed
 	elist = append(elist, &discordgo.MessageEmbed{Title: "How to complete registration:", Description: buf})

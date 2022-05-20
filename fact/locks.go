@@ -1,13 +1,14 @@
 package fact
 
 import (
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"time"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /************************
@@ -145,15 +146,15 @@ func GetModLoadString() string {
 }
 
 func SetNumPlayers(num int) {
-	NumPlayersLock.Lock()
+	OnlinePlayersLock.Lock()
 	NumPlayers = num
-	NumPlayersLock.Unlock()
+	OnlinePlayersLock.Unlock()
 }
 
 func GetNumPlayers() int {
-	NumPlayersLock.RLock()
+	OnlinePlayersLock.RLock()
 	temp := NumPlayers
-	NumPlayersLock.RUnlock()
+	OnlinePlayersLock.RUnlock()
 
 	return temp
 }

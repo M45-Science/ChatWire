@@ -1,27 +1,29 @@
 package support
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/cwlog"
-	"ChatWire/disc"
-	"ChatWire/fact"
-	"ChatWire/glob"
 	"bytes"
 	"fmt"
 	"io"
 	"os/exec"
 	"strings"
 	"time"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
-func launchFactortio() {
+func launchFactorio() {
 
 	/* Clear this so we know if the the loaded map has our soft mod or not */
 	glob.SoftModVersion = constants.Unknown
 	glob.OnlineCommand = constants.OnlineCommand
+	fact.OnlinePlayersLock.Lock()
 	glob.OnlinePlayers = []glob.OnlinePlayerData{}
-
+	fact.OnlinePlayersLock.Unlock()
 	/* Insert soft mod */
 	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
 		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
@@ -45,7 +47,7 @@ func launchFactortio() {
 		delay := throt * throt * 10
 
 		if delay > 0 {
-			cwlog.DoLogCW(fmt.Sprintf("Automatically rebooting Factroio in %d seconds.", delay))
+			cwlog.DoLogCW(fmt.Sprintf("Automatically rebooting Factorio in %d seconds.", delay))
 			for i := 0; i < delay*11 && throt > 0; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}

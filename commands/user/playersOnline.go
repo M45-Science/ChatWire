@@ -19,10 +19,12 @@ func PlayersOnline(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			disc.EphemeralResponse(s, i, "Players Online:", "None")
 		} else {
 			buf := ""
+			fact.OnlinePlayersLock.Lock()
 			for _, p := range glob.OnlinePlayers {
 				timeStr := time.Duration(p.TimeTicks * 16666666).Round(time.Second).String()
 				buf = buf + fmt.Sprintf("%15v: Score: %5.2v, Time: %6v, Level: %v\n", p.Name, p.ScoreTicks/60.0/60.0, timeStr, fact.LevelToString(p.Level))
 			}
+			fact.OnlinePlayersLock.Unlock()
 			disc.EphemeralResponse(s, i, "Players Online:", buf)
 		}
 	} else {

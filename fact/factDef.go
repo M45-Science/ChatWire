@@ -71,8 +71,8 @@ var (
 	GameMapLock sync.Mutex
 
 	/* Players online */
-	NumPlayers     = 0
-	NumPlayersLock sync.RWMutex
+	NumPlayers        = 0
+	OnlinePlayersLock sync.RWMutex
 
 	/* Slow-connect status */
 	ConnectPauseLock  sync.Mutex
