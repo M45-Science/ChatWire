@@ -39,6 +39,7 @@ type discord struct {
 }
 
 type roles struct {
+	Admin     string
 	Moderator string
 	Regular   string
 	Member    string
@@ -51,6 +52,7 @@ type roles struct {
 }
 
 type roleCache struct {
+	Admin     string
 	Moderator string
 	Regular   string
 	Member    string

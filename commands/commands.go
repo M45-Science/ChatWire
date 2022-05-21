@@ -14,12 +14,14 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
 )
 
 type Command struct {
 	Command       func(s *discordgo.Session, i *discordgo.InteractionCreate)
 	ModeratorOnly bool
+	AdminOnly     bool
 	AppCmd        *discordgo.ApplicationCommand
 }
 
@@ -34,21 +36,21 @@ var cmds = []Command{
 		Description: "Stops Factorio, if running.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.StopFact, ModeratorOnly: true},
+		Command: admin.StopFact, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "start-factorio",
 		Description: "Starts OR restarts Factorio, even if already running.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.StartFact, ModeratorOnly: true},
+		Command: admin.StartFact, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "reboot-chatwire",
 		Description: "Closes Factorio (if running), and restarts ChatWire.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.RebootCW, ModeratorOnly: true},
+		Command: admin.RebootCW, AdminOnly: true},
 
 	//Add "confirm"
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -56,35 +58,35 @@ var cmds = []Command{
 		Description: "Big red button. Don't use this lightly. This does not cleanly exit Factorio or ChatWire.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.ForceReboot, ModeratorOnly: true},
+		Command: admin.ForceReboot, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "queue-reboot",
 		Description: "Queues up a reboot. This waits until no players are online to reboot Factorio and ChatWire.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.QueReboot, ModeratorOnly: true},
+		Command: admin.QueReboot, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "archive-map",
 		Description: "Archives the current map to our website, and posts the link to the chat.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.ArchiveMap, ModeratorOnly: true},
+		Command: admin.ArchiveMap, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "new-map-preview",
 		Description: "Posts a new map, with preview to discord. Use /make-new-map after to create it.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.NewMapPrev, ModeratorOnly: true},
+		Command: admin.NewMapPrev, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "make-new-map",
 		Description: "Creates a new map.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.MakeNewMap, ModeratorOnly: true},
+		Command: admin.MakeNewMap, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
@@ -108,7 +110,7 @@ var cmds = []Command{
 		},
 	},
 
-		Command: admin.UpdateFact, ModeratorOnly: true},
+		Command: admin.UpdateFact, AdminOnly: true},
 
 	//Complete
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -162,7 +164,7 @@ var cmds = []Command{
 		Description: "Reloads config files from disk, only used when manually editing config files.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.ReloadConfig, ModeratorOnly: true},
+		Command: admin.ReloadConfig, AdminOnly: true},
 
 	/* Future: Possibly generate this from SettingList */
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -183,7 +185,7 @@ var cmds = []Command{
 		Name:        "update-mods",
 		Description: "Updates Factorio mods to the latest version if there is a new version available.",
 	},
-		Command: admin.UpdateMods, ModeratorOnly: true},
+		Command: admin.UpdateMods, AdminOnly: true},
 
 	//Add param
 	//This should go in config, possibly
@@ -199,7 +201,7 @@ var cmds = []Command{
 		Description: "Only used for development and testing.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.DebugStat, ModeratorOnly: true},
+		Command: admin.DebugStat, AdminOnly: true},
 
 	/*  Player Commands */
 	//Add player
@@ -278,6 +280,7 @@ func ClearCommands() {
 
 //https://discord.com/developers/docs/topics/permissions
 
+var adminPerms int64 = (1 << 3)   //Administrator
 var modPerms int64 = (1 << 28)    //MANAGE_ROLES
 var playerPerms int64 = (1 << 11) //SEND_MESSAGES
 
@@ -301,7 +304,9 @@ func RegisterCommands(s *discordgo.Session) {
 				LinkConfigData(i)
 			}
 
-			if c.ModeratorOnly {
+			if c.AdminOnly {
+				CL[i].AppCmd.DefaultMemberPermissions = &adminPerms
+			} else if c.ModeratorOnly {
 				CL[i].AppCmd.DefaultMemberPermissions = &modPerms
 			} else {
 				CL[i].AppCmd.DefaultMemberPermissions = &playerPerms
@@ -384,10 +389,19 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		for _, c := range CL {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
-				if c.ModeratorOnly {
+				if c.AdminOnly {
+					if disc.CheckAdmin(i.Member.Roles) {
+						c.Command(s, i)
+						return
+					} else {
+						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+					}
+				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i.Member.Roles) {
 						c.Command(s, i)
 						return
+					} else {
+						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
 					}
 				} else {
 					c.Command(s, i)
