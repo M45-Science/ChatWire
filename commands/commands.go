@@ -322,6 +322,12 @@ func RegisterCommands(s *discordgo.Session) {
 
 }
 
+func filterName(name string) string {
+	outname := strings.ToLower(name)
+	outname = strings.Replace(outname, " ", "-", -1)
+	return outname
+}
+
 func LinkConfigData(cnum int) {
 	c := CL[cnum]
 
@@ -329,13 +335,13 @@ func LinkConfigData(cnum int) {
 		if o.Type == admin.TYPE_STRING {
 			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        o.Name,
+				Name:        filterName(o.Name),
 				Description: o.Desc,
 			})
 		} else if o.Type == admin.TYPE_INT {
 			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				Name:        o.Name,
+				Name:        filterName(o.Name),
 				Description: o.Desc,
 				MinValue:    glob.Ptr(float64(o.MinInt)),
 				MaxValue:    float64(o.MaxInt),
@@ -343,13 +349,13 @@ func LinkConfigData(cnum int) {
 		} else if o.Type == admin.TYPE_BOOL {
 			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Name:        o.Name,
+				Name:        filterName(o.Name),
 				Description: o.Desc,
 			})
 		} else if o.Type == admin.TYPE_F32 {
 			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
-				Name:        o.Name,
+				Name:        filterName(o.Name),
 				Description: o.Desc,
 				MinValue:    glob.Ptr(float64(o.MinF32)),
 				MaxValue:    float64(o.MaxF32),
@@ -357,7 +363,7 @@ func LinkConfigData(cnum int) {
 		} else if o.Type == admin.TYPE_F64 {
 			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
-				Name:        o.Name,
+				Name:        filterName(o.Name),
 				Description: o.Desc,
 				MinValue:    glob.Ptr(o.MinF64),
 				MaxValue:    o.MaxF64,
