@@ -63,8 +63,8 @@ var SettingType = []int{
 /* List of settings */
 var SettingList = []SettingListData{
 	{
-		Name: "Name",
-		Desc: "Name",
+		Name: "name",
+		Desc: "Server name, not including callsign.",
 		Type: TYPE_STRING,
 
 		MaxStrLen: 64,
@@ -74,8 +74,8 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/cname",
 	},
 	{
-		Name: "Port",
-		Desc: "Port",
+		Name: "port",
+		Desc: "UDP port the server will run on.",
 		Type: TYPE_INT,
 
 		MaxInt: 65535 - cfg.Global.Options.RconOffset,
@@ -84,8 +84,8 @@ var SettingList = []SettingListData{
 		IData: &cfg.Local.Port,
 	},
 	{
-		Name: "MapPreset",
-		Desc: "Map preset",
+		Name: "map-preset",
+		Desc: "Factorio map preset to use, set to default for mods that delete stock resources.",
 		Type: TYPE_STRING,
 
 		MaxStrLen:    64,
@@ -95,8 +95,8 @@ var SettingList = []SettingListData{
 		SData: &cfg.Local.Settings.MapPreset,
 	},
 	{
-		Name: "MapGenPreset",
-		Desc: "Map generator",
+		Name: "map-generator",
+		Desc: "Map generator to use, list on our github.",
 		Type: TYPE_STRING,
 
 		MinStrLen: 0,
@@ -108,8 +108,8 @@ var SettingList = []SettingListData{
 		SData: &cfg.Local.Settings.MapGenerator,
 	},
 	{
-		Name: "AutoStart",
-		Desc: "Start on boot",
+		Name: "auto-start-factorio",
+		Desc: "Auto-start Factorio when ChatWire boots.",
 		Type: TYPE_BOOL,
 
 		DefBool: true,
@@ -117,8 +117,8 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.AutoStart,
 	},
 	{
-		Name: "AutoUpdate",
-		Desc: "Auto-update Factorio",
+		Name: "auto-update-factorio",
+		Desc: "Auto-update Factorio to newest stable version.",
 		Type: TYPE_BOOL,
 
 		DefBool: true,
@@ -126,8 +126,8 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.AutoUpdate,
 	},
 	{
-		Name: "UpdateFactExp",
-		Desc: "Update Factorio to exp",
+		Name: "auto-update-experimental",
+		Desc: "Force Factorio updater to use experimental versions if auto-update is on.",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
@@ -135,8 +135,8 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.ExpUpdates,
 	},
 	{
-		Name: "ResetScheduleText",
-		Desc: "Map reset schedule",
+		Name: "reset-schedule-description",
+		Desc: "Description of map reset schedule for server description and info window.",
 		Type: TYPE_STRING,
 
 		MinStrLen: 4,
@@ -146,8 +146,8 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/resetint",
 	},
 	{
-		Name: "DisableBlueprints",
-		Desc: "Blueprints disabled",
+		Name: "disable-blueprints",
+		Desc: "Disable blueprints",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
@@ -156,8 +156,8 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/blueprints",
 	},
 	{
-		Name: "EnableCheats",
-		Desc: "Cheats enabled",
+		Name: "enable-cheats",
+		Desc: "Cheats enabled (sandbox mode)",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
@@ -166,8 +166,8 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/cheats",
 	},
 	{
-		Name: "HideAutosaves",
-		Desc: "Hide autosaves(Discord)",
+		Name: "hide-autosaves",
+		Desc: "Don't display autosaves on Discord.",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
@@ -175,8 +175,8 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.HideAutosaves,
 	},
 	{
-		Name: "SlowConnect",
-		Desc: "Slow on connect",
+		Name: "slow-connect",
+		Desc: "Slow game to connect-speed when players are connecting, helps with large maps or slow computers.",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
@@ -184,8 +184,8 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.SoftModOptions.SlowConnect.Enabled,
 	},
 	{
-		Name: "DefaultSpeed",
-		Desc: "Speed while playing",
+		Name: "default-speed",
+		Desc: "Normal speed while playing, 1.0 is normal, 0.5 would be half (30fps)",
 		Type: TYPE_F32,
 
 		MaxF32: 10.0,
@@ -195,8 +195,8 @@ var SettingList = []SettingListData{
 		FData32: &cfg.Local.Options.SoftModOptions.SlowConnect.Speed,
 	},
 	{
-		Name: "ConnectSpeed",
-		Desc: "Speed while connecting",
+		Name: "connect-speed",
+		Desc: "Speed to slow to when players are connecting, 1.0 is normal speed so 0.5 is half (30fps).",
 		Type: TYPE_F32,
 
 		MaxF32: 10.0,
@@ -206,8 +206,8 @@ var SettingList = []SettingListData{
 		FData32: &cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed,
 	},
 	{
-		Name: "DoWhitelist",
-		Desc: "Members-only",
+		Name: "members-only",
+		Desc: "Only members, regulars and moderators can connect.",
 		Type: TYPE_BOOL,
 
 		DefBool: false,
@@ -215,8 +215,8 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.Whitelist,
 	},
 	{
-		Name: "RestrictMode",
-		Desc: "New player restrictions",
+		Name: "restrict-new-players",
+		Desc: "New player permission restrictions.",
 		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.Restrict,
@@ -226,8 +226,8 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/restrict",
 	},
 	{
-		Name: "FriendlyFire",
-		Desc: "Friendly fire",
+		Name: "friendly-fire",
+		Desc: "Do not allow friendly fire (damage to teammates or buildings).",
 		Type: TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.FriendlyFire,
@@ -237,8 +237,8 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/friendlyfire",
 	},
 	{
-		Name: "AFKKickMinutes",
-		Desc: "AFK kick minutes",
+		Name: "afk-kick-mins",
+		Desc: "If AFK, kick after this amount of time (in game time, based on 60fps).",
 		Type: TYPE_INT,
 
 		MaxInt: 120,
@@ -248,8 +248,8 @@ var SettingList = []SettingListData{
 		IData: &cfg.Local.Settings.AFKMin,
 	},
 	{
-		Name: "AutoSaveMinutes",
-		Desc: "Autosave minutes",
+		Name: "autosave-mins",
+		Desc: "Save the map every X minutes (in game time, based on 60fps)",
 		Type: TYPE_INT,
 
 		MaxInt: 30,
@@ -259,24 +259,24 @@ var SettingList = []SettingListData{
 		IData: &cfg.Local.Settings.AutosaveMin,
 	},
 	{
-		Name:    "AutoPause",
-		Desc:    "Pause when empty",
+		Name:    "auto-pause",
+		Desc:    "Game pauses when no players are connected.",
 		Type:    TYPE_BOOL,
 		DefBool: true,
 
 		BData: &cfg.Local.Settings.AutoPause,
 	},
 	{
-		Name:    "AutoModUpdate",
-		Desc:    "Auto-update game mods",
+		Name:    "auto-mod-update",
+		Desc:    "Auto-update game mods.",
 		Type:    TYPE_BOOL,
 		DefBool: true,
 
 		BData: &cfg.Local.Options.AutoUpdate,
 	},
 	{
-		Name:    "CleanMapOnBoot",
-		Desc:    "Run CleanMap mod on boot",
+		Name:    "auto-clean-map",
+		Desc:    "Run CleanMap mod on boot (only works with mod installed)",
 		Type:    TYPE_BOOL,
 		DefBool: false,
 
