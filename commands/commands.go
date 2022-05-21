@@ -164,7 +164,7 @@ var cmds = []Command{
 	},
 		Command: admin.ReloadConfig, ModeratorOnly: true},
 
-	//TODO: Do params
+	/* Future: Possibly generate this from SettingList */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config",
 		Description: "Change server configuration options.",
