@@ -24,6 +24,7 @@ type Command struct {
 }
 
 var CL []Command
+var BugOne float64 = 1
 
 var cmds = []Command{
 
@@ -326,6 +327,15 @@ var cmds = []Command{
 		Name:        "vote-rewind",
 		Description: "Vote to rewind the map to the specified autosave (two votes needed!).",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "Autosave",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Description: "The number of the autosave to rewind to.",
+				MinValue:    &BugOne,
+				MaxValue:    float64(cfg.Global.Options.AutosaveMax),
+			},
+		},
 	},
 		Command: user.VoteRewind, ModeratorOnly: false},
 }
