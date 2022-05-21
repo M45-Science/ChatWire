@@ -67,23 +67,23 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	for _, item := range admin.SettingList {
 		if item.Type == admin.TYPE_STRING {
 			if *item.SData != "" || verbose {
-				buf = buf + fmt.Sprintf("%23v: %v\n", item.Desc, *item.SData)
+				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, *item.SData)
 			}
 		} else if item.Type == admin.TYPE_INT {
 			if (*item.IData != 0 && *item.IData != item.DefInt) || verbose {
-				buf = buf + fmt.Sprintf("%23v: %v\n", item.Desc, *item.IData)
+				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, *item.IData)
 			}
 		} else if item.Type == admin.TYPE_BOOL {
 			if *item.BData != item.DefBool || verbose {
-				buf = buf + fmt.Sprintf("%23v: %v\n", item.Desc, support.BoolToString(*item.BData))
+				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, support.BoolToString(*item.BData))
 			}
 		} else if item.Type == admin.TYPE_F32 {
 			if (*item.FData32 != 0 && *item.FData32 != item.DefF32) || verbose {
-				buf = buf + fmt.Sprintf("%23v: %v\n", item.Desc, *item.FData32)
+				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, *item.FData32)
 			}
 		} else if item.Type == admin.TYPE_F64 {
 			if (*item.FData64 != 0 && *item.FData64 != item.DefF64) || verbose {
-				buf = buf + fmt.Sprintf("%23v: %v\n", item.Desc, *item.FData64)
+				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, *item.FData64)
 			}
 		}
 	}
