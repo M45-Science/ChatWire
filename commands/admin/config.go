@@ -1,209 +1,63 @@
 package admin
 
 import (
+	"ChatWire/disc"
+	"ChatWire/glob"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
-
-	"ChatWire/cfg"
-	"ChatWire/disc"
-	"ChatWire/fact"
-	"ChatWire/support"
 )
 
 /* Change server settings */
 func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	var args []string = strings.Split("", " ")
-	arglen := len(args)
-	arg1 := ""
-	arg2thru := ""
+	a := i.ApplicationCommandData()
+	buf := ""
 
-	if arglen > 0 {
-		arg1 = strings.ToLower(args[0])
-	}
-	if arglen > 1 {
-		arg2thru = strings.Join(args[1:], " ")
-	}
-
-	if arg1 == "help" || arg1 == "" {
-
-		buf := ""
-		buf = buf + fmt.Sprintf("%24v: -- %-19v %15v %v\n", "Description", "Name", "Data", "(Limits)")
-		for _, setting := range SettingList {
-			data := ""
-			limits := ""
-			if setting.Type == TYPE_STRING {
-				data = *setting.SData
-				if setting.ValidStrings != nil {
-					limits = "(valid check)"
-				} else if setting.CheckString != nil {
-					limits = "(valid check)"
+	for _, o := range a.Options {
+		for _, co := range SettingList {
+			if co.Name == o.Name {
+				if o.Type == discordgo.ApplicationCommandOptionBoolean {
+					if o.BoolValue() {
+						*co.BData = true
+					} else {
+						*co.BData = false
+					}
+					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.BData)
+				} else if o.Type == discordgo.ApplicationCommandOptionString {
+					co.SData = glob.Ptr(o.StringValue())
+					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.SData)
+				} else if o.Type == discordgo.ApplicationCommandOptionInteger {
+					val := int(o.IntValue())
+					if val > co.MaxInt || val < co.MinInt {
+						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
+					} else {
+						co.IData = &val
+						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.IData)
+					}
 				}
-			} else if setting.Type == TYPE_INT {
-				data = fmt.Sprintf("%v", *setting.IData)
-				limits = fmt.Sprintf("(%v-%v)", setting.MinInt, setting.MaxInt)
-			} else if setting.Type == TYPE_BOOL {
-				data = support.BoolToString(*setting.BData)
-			} else if setting.Type == TYPE_F32 {
-				data = fmt.Sprintf("%v", *setting.FData32)
-				limits = fmt.Sprintf("(%v-%v)", setting.MinF32, setting.MaxF32)
-			} else if setting.Type == TYPE_F64 {
-				data = fmt.Sprintf("%v", *setting.FData64)
-				limits = fmt.Sprintf("(%v-%v)", setting.MinF64, setting.MaxF64)
-			}
-			if data == "" {
-				data = "(empty)"
-			}
-			buf = buf + fmt.Sprintf("%24v: -- %-19v %15v %v\n\n", setting.Desc, setting.Name, data, limits)
-		}
-		buf = buf + "\nset <setting> will show options. (EMPTY) can be used to blank a string.\n"
-
-		embed := &discordgo.MessageEmbed{Title: "Settings:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
-	} else if arg1 != "" {
-		found := false
-		for _, setting := range SettingList {
-			if strings.EqualFold(setting.Name, arg1) {
-				found = true
-				/* STRING TYPE */
-				if setting.Type == TYPE_STRING {
-					if arg2thru == "(EMPTY)" {
-						arg2thru = ""
-					}
-					if len(setting.ValidStrings) > 0 {
-						foundValid := false
-						for _, validstring := range setting.ValidStrings {
-							if strings.EqualFold(validstring, arg2thru) {
-								foundValid = true
-								break
-							}
-						}
-						if !foundValid {
-							buf := "```"
-							buf = buf + "Valid options below:\n"
-							for _, validstring := range setting.ValidStrings {
-								buf = buf + fmt.Sprintf("%v\n", validstring)
-							}
-							buf = buf + "```"
-							fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-							return
-						}
-					} else if setting.CheckString != nil {
-						if !setting.CheckString(arg2thru) {
-							if setting.ListString != nil {
-								buf := "```"
-								buf = buf + "Valid options below:\n"
-								for _, validstring := range setting.ListString() {
-									buf = buf + fmt.Sprintf("%v\n", validstring)
-								}
-								buf = buf + "```"
-								fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-							}
-							return
-						}
-					}
-					if setting.MinStrLen > 0 && len(arg2thru) < setting.MinStrLen {
-						fact.CMS(cfg.Local.Channel.ChatChannel, "String too short. Minimum length: "+strconv.Itoa(setting.MinStrLen))
-						return
-					} else if setting.MaxStrLen > 0 && len(arg2thru) > setting.MaxStrLen {
-						fact.CMS(cfg.Local.Channel.ChatChannel, "String too long. Maximum length: "+strconv.Itoa(setting.MaxStrLen))
-					}
-					*setting.SData = arg2thru
-					cfg.WriteLCfg()
-					fact.GenerateFactorioConfig()
-					fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Set %v to %v", setting.Name, arg2thru))
-					if setting.FactUpdateCommand != "" {
-						fact.WriteFact(setting.FactUpdateCommand + " " + arg2thru)
-						fact.CMS(cfg.Local.Channel.ChatChannel, "Live-updated setting on Factorio.")
-					}
-					/* INTEGER TYPE  */
-				} else if setting.Type == TYPE_INT {
-					val, err := strconv.Atoi(arg2thru)
-					if err != nil {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Numbers only!", setting.Name))
-						return
-					} else if val > setting.MaxInt || val < setting.MinInt {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Must be between %v and %v!", setting.Name, setting.MinInt, setting.MaxInt))
-						return
+			} else if o.Type == discordgo.ApplicationCommandOptionNumber {
+				if co.Type == TYPE_F32 {
+					val := float32(o.FloatValue())
+					if val > co.MaxF32 || val < co.MinF32 {
+						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
-						*setting.IData = val
-						cfg.WriteLCfg()
-						fact.GenerateFactorioConfig()
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Set %v to %v", setting.Name, val))
-						if setting.FactUpdateCommand != "" {
-							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", val))
-							fact.CMS(cfg.Local.Channel.ChatChannel, "Live-updated setting on Factorio.")
-						}
+						co.FData32 = &val
+						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.FData32)
 					}
-					/* BOOL TYPE */
-				} else if setting.Type == TYPE_BOOL {
-					val, err := support.StringToBool(arg2thru)
-					if err {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Must be true/on/t/1 or false/off/f/0!", setting.Name))
-						return
+				} else if co.Type == TYPE_F64 {
+					val := float64(o.FloatValue())
+					if val > co.MaxF64 || val < co.MinF64 {
+						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
-						*setting.BData = val
-						cfg.WriteLCfg()
-						fact.GenerateFactorioConfig()
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("%v is now %v", setting.Name, support.BoolToString(val)))
-						if setting.FactUpdateCommand != "" {
-							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", support.BoolToString(val)))
-							fact.CMS(cfg.Local.Channel.ChatChannel, "Live-updated setting on Factorio.")
-						}
+						co.FData64 = &val
+						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.FData64)
 					}
-					/* FLOAT32 TYPE */
-				} else if setting.Type == TYPE_F32 {
-					val64, err := strconv.ParseFloat(arg2thru, 32)
-					val := float32(val64)
-
-					if err != nil {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Must be a number!", setting.Name))
-						return
-					} else if val > setting.MaxF32 || val < setting.MinF32 {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Must be between %v and %v!", setting.Name, setting.MinF32, setting.MaxF32))
-						return
-					} else {
-						*setting.FData32 = val
-						cfg.WriteLCfg()
-						fact.GenerateFactorioConfig()
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Set %v to %v", setting.Name, val))
-						if setting.FactUpdateCommand != "" {
-							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", val))
-							fact.CMS(cfg.Local.Channel.ChatChannel, "Live-updated setting on Factorio.")
-						}
-					}
-					/* FLOAT64 TYPE */
-				} else if setting.Type == TYPE_F64 {
-					val, err := strconv.ParseFloat(arg2thru, 64)
-					if err != nil {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Must be a number!", setting.Name))
-						return
-					} else if val > setting.MaxF64 || val < setting.MinF64 {
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Invalid value for %v. Must be between %v and %v!", setting.Name, setting.MinF64, setting.MaxF64))
-						return
-					} else {
-						*setting.FData64 = val
-						cfg.WriteLCfg()
-						fact.GenerateFactorioConfig()
-						fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Set %v to %v", setting.Name, val))
-						if setting.FactUpdateCommand != "" {
-							fact.WriteFact(setting.FactUpdateCommand + fmt.Sprintf(" %v", val))
-							fact.CMS(cfg.Local.Channel.ChatChannel, "Live-updated setting on Factorio.")
-						}
-					}
-
-				} else {
-					fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Unknown type %v for %v", setting.Type, setting.Name))
 				}
 			}
 		}
-		if !found {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "No setting by that name.")
-		}
-	} else {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "`set <setting> <value>`")
+	}
+	if buf != "" {
+		disc.EphemeralResponse(s, i, "Status:", buf)
 	}
 }
