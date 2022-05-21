@@ -11,6 +11,20 @@ import (
 	"ChatWire/glob"
 )
 
+/*  Check if Discord admin */
+func CheckAdmin(roles []string) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.Admin == "" {
+		return false
+	}
+	for _, r := range roles {
+		if r == cfg.Global.Discord.Roles.RoleCache.Admin {
+			return true
+		}
+	}
+	return false
+}
+
 /*  Check if Discord moderator */
 func CheckModerator(roles []string) bool {
 
