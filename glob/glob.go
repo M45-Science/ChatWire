@@ -8,6 +8,10 @@ import (
 	"ChatWire/constants"
 )
 
+func Ptr[T any](v T) *T {
+	return &v
+}
+
 /* Most of these are here, because go is unable to handle import cycles */
 /* I wish they would address this issue, because many people avoid packages due to this */
 

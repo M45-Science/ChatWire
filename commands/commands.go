@@ -169,86 +169,6 @@ var cmds = []Command{
 		Name:        "config",
 		Description: "Change server configuration options.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Name:        "name",
-				Description: "Factorio server name, excluding callsign.",
-				Type:        discordgo.ApplicationCommandOptionString,
-			},
-			{
-				Name:        "port",
-				Description: "UDP Port the game will run on.",
-				Type:        discordgo.ApplicationCommandOptionString,
-			},
-			{
-				Name:        "map-preset",
-				Description: "These are built-in Factorio presets",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
-					{
-						Name:  "Default",
-						Value: 0,
-					},
-					{
-						Name:  "Rich Resources",
-						Value: 1,
-					},
-					{
-						Name:  "Marathon",
-						Value: 2,
-					},
-					{
-						Name:  "Death-World",
-						Value: 3,
-					},
-					{
-						Name:  "Death-World-Marathon",
-						Value: 4,
-					},
-					{
-						Name:  "Rail-World",
-						Value: 5,
-					},
-					{
-						Name:  "Ribbon-World",
-						Value: 6,
-					},
-					{
-						Name:  "Island",
-						Value: 7,
-					},
-				},
-			},
-			{
-				Name:        "map-generator",
-				Description: "A custom map generator",
-				Type:        discordgo.ApplicationCommandOptionString,
-			},
-			{
-				Name:        "auto-start",
-				Description: "If enabled, ChatWire will automatically boot up Factorio.",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-			},
-			{
-				Name:        "auto-update-factorio",
-				Description: "If enabled, ChatWire will automatically update Factorio to the latest stable version.",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
-					{
-						Name:  "Off",
-						Value: 0,
-					},
-					{
-						Name:  "Auto-Update (stable)",
-						Value: 1,
-					},
-					{
-						Name:  "Auto-Update (experimental)",
-						Value: 2,
-					},
-				},
-			},
-		},
 	},
 		Command: admin.Config, ModeratorOnly: true},
 
@@ -377,6 +297,10 @@ func RegisterCommands(s *discordgo.Session) {
 				continue
 			}
 
+			if strings.EqualFold(c.AppCmd.Name, "config") {
+				LinkConfigData(i)
+			}
+
 			if c.ModeratorOnly {
 				CL[i].AppCmd.DefaultMemberPermissions = &modPerms
 			} else {
@@ -396,6 +320,50 @@ func RegisterCommands(s *discordgo.Session) {
 		}
 	}
 
+}
+
+func LinkConfigData(cnum int) {
+	c := CL[cnum]
+
+	for i, o := range admin.SettingList {
+		if o.Type == admin.TYPE_STRING {
+			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        o.Name,
+				Description: o.Desc,
+			})
+		} else if o.Type == admin.TYPE_INT {
+			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Name:        o.Name,
+				Description: o.Desc,
+				MinValue:    glob.Ptr(float64(o.MinInt)),
+				MaxValue:    float64(o.MaxInt),
+			})
+		} else if o.Type == admin.TYPE_BOOL {
+			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Name:        o.Name,
+				Description: o.Desc,
+			})
+		} else if o.Type == admin.TYPE_F32 {
+			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionNumber,
+				Name:        o.Name,
+				Description: o.Desc,
+				MinValue:    glob.Ptr(float64(o.MinF32)),
+				MaxValue:    float64(o.MaxF32),
+			})
+		} else if o.Type == admin.TYPE_F64 {
+			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionNumber,
+				Name:        o.Name,
+				Description: o.Desc,
+				MinValue:    glob.Ptr(o.MinF64),
+				MaxValue:    o.MaxF64,
+			})
+		}
+	}
 }
 
 func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
