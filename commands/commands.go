@@ -249,7 +249,7 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "Autosave",
+				Name:        "autosave",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Description: "The number of the autosave to rewind to.",
 				MinValue:    &BugOne,
@@ -328,18 +328,17 @@ func filterName(name string) string {
 	return outname
 }
 
-func LinkConfigData(cnum int) {
-	c := CL[cnum]
+func LinkConfigData(p int) {
 
-	for i, o := range admin.SettingList {
+	for _, o := range admin.SettingList {
 		if o.Type == admin.TYPE_STRING {
-			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Name:        filterName(o.Name),
 				Description: o.Desc,
 			})
 		} else if o.Type == admin.TYPE_INT {
-			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        filterName(o.Name),
 				Description: o.Desc,
@@ -347,13 +346,13 @@ func LinkConfigData(cnum int) {
 				MaxValue:    float64(o.MaxInt),
 			})
 		} else if o.Type == admin.TYPE_BOOL {
-			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Name:        filterName(o.Name),
 				Description: o.Desc,
 			})
 		} else if o.Type == admin.TYPE_F32 {
-			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: o.Desc,
@@ -361,7 +360,7 @@ func LinkConfigData(cnum int) {
 				MaxValue:    float64(o.MaxF32),
 			})
 		} else if o.Type == admin.TYPE_F64 {
-			CL[i].AppCmd.Options = append(c.AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: o.Desc,
