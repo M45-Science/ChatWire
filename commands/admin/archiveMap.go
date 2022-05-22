@@ -67,6 +67,14 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
+		respData := &discordgo.InteractionResponseData{Content: newmapurl, Files: []*discordgo.File{
+			{Name: newmapname, Reader: to, ContentType: "application/zip"}}}
+
+		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
+		err = s.InteractionRespond(i.Interaction, resp)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
 		defer to.Close()
 
 		_, errc := io.Copy(to, from)
@@ -76,10 +84,6 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
-
-		buf := fmt.Sprintf("Map archived as: %v", newmapurl)
-		embed := &discordgo.MessageEmbed{Title: "Complete:", Description: buf}
-		disc.InteractionResponse(s, i, embed)
 		return
 
 	} else {
