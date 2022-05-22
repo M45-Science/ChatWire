@@ -66,11 +66,11 @@ var SettingList = []SettingListData{
 	{
 		Name:      "name",
 		ShortDesc: "Server Name",
-		Desc:      "Server name, not including callsign.",
+		Desc:      "Server name, not including callsign/letter.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 64,
-		MinStrLen: 4,
+		MinStrLen: 1,
 		SData:     &cfg.Local.Name,
 
 		FactUpdateCommand: "/cname",
@@ -89,22 +89,23 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-preset",
 		ShortDesc: "Map preset",
-		Desc:      "Factorio map preset to use, set to default for mods that delete stock resources.",
+		Desc:      "Factorio map preset to use.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen:    64,
-		MinStrLen:    4,
+		MinStrLen:    1,
 		ValidStrings: constants.MapTypes,
+		CheckString:  CheckMapTypes,
 
 		SData: &cfg.Local.Settings.MapPreset,
 	},
 	{
 		Name:      "map-generator",
 		ShortDesc: "Map Generator",
-		Desc:      "Map generator to use, list on our github.",
+		Desc:      "Map generator to use, select 'none' for mods that remove vanilla resources.",
 		Type:      TYPE_STRING,
 
-		MinStrLen: 0,
+		MinStrLen: 1,
 		MaxStrLen: 64,
 
 		CheckString: CheckMapGen,
@@ -148,8 +149,8 @@ var SettingList = []SettingListData{
 		Desc:      "Description of map reset schedule for server description and info window.",
 		Type:      TYPE_STRING,
 
-		MinStrLen: 4,
-		MaxStrLen: 256,
+		MinStrLen: 1,
+		MaxStrLen: 99,
 
 		SData:             &cfg.Local.Options.ScheduleText,
 		FactUpdateCommand: "/resetint",
@@ -189,7 +190,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "slow-connect",
 		ShortDesc: "Slow Connect",
-		Desc:      "Slow game to connect-speed when players are connecting, helps with large maps or slow computers.",
+		Desc:      "Slow game to connect-speed when players are connecting.",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -318,6 +319,7 @@ func GetMapGenNames() []string {
 
 	var output []string
 
+	output = append(output, "none")
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), "-gen.json") {
 			output = append(output, strings.TrimSuffix(f.Name(), "-gen.json"))
@@ -329,11 +331,23 @@ func GetMapGenNames() []string {
 /* See if this map gen exists */
 func CheckMapGen(text string) bool {
 
+	/* Allow no generator */
 	if text == "" {
 		return true
 	}
 	genNames := GetMapGenNames()
 	for _, name := range genNames {
+		if strings.EqualFold(name, text) {
+			return true
+		}
+	}
+	return false
+}
+
+func CheckMapTypes(text string) bool {
+
+	names := constants.MapTypes
+	for _, name := range names {
 		if strings.EqualFold(name, text) {
 			return true
 		}
