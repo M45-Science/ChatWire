@@ -32,6 +32,11 @@ Removed a number of unused or obsolete functions and files.<br>
 Many messages rewritten to be clearer.<br>
 Vast majority of messages moved to ephemeral/private messages.<br>
 Many timers relaxed to reduce load.<br>
+Better handling of operations that need to detect if Factorio is running or fully booted.<br>
+Map archives now show as attachments in chat.<br>
+Map previews now directly emebed in response.<br>
+Automatically create map preview directory.<br>
+Changed map seed generation, as well as new map names.<br>
 Fixed many typos.<br>
 Many other small adjustments.<br>
 
