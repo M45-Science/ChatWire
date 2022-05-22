@@ -16,8 +16,11 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func GetMapTypeNum(mapt string) int {
@@ -101,6 +104,10 @@ func Map_reset(data string, doReport bool) {
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
+		/* Attach map and list url */
+		dData := &discordgo.MessageSend{Files: []*discordgo.File{
+			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
+		disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
 		defer from.Close()
 
 		/* Make directory if it does not exist */
