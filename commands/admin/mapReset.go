@@ -9,6 +9,6 @@ import (
 
 /* Generate map */
 func MapReset(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	fact.Map_reset("", true)
 	disc.EphemeralResponse(s, i, "Status:", "Resetting map...")
+	fact.Map_reset("", true)
 }
