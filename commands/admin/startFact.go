@@ -10,7 +10,7 @@ import (
 /* Reboots Factorio only */
 func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if fact.IsFactRunning() {
+	if fact.IsFactorioBooted() {
 
 		buf := "Restarting Factorio..."
 		disc.EphemeralResponse(s, i, "Status:", buf)

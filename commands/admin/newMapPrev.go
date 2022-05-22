@@ -21,7 +21,7 @@ import (
 
 /* RandomMap locks FactorioLaunchLock */
 func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if fact.IsFactRunning() {
+	if fact.IsFactorioBooted() || fact.IsFactRunning() {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
 		disc.EphemeralResponse(s, i, "Error:", buf)
 		return

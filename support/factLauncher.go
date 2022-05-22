@@ -157,7 +157,7 @@ func launchFactorio() {
 	}
 
 	/* Okay, Factorio is running now, prep */
-	fact.SetFactRunning(true, false)
+	fact.SetFactRunning(true)
 	fact.SetFactorioBooted(false)
 
 	fact.SetGameTime(constants.Unknown)

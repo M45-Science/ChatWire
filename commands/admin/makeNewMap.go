@@ -22,7 +22,7 @@ import (
 /* Generate map */
 func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if fact.IsFactRunning() {
+	if fact.IsFactorioBooted() || fact.IsFactRunning() {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
 		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
@@ -113,7 +113,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	for _, l := range lines {
 		if strings.Contains(l, "Creating new map") {
-			buf := fmt.Sprintf("New map saved as: %v", filename)
+			buf := fmt.Sprintf("New map saved as: %v", ourcode+".zip")
 			var elist []*discordgo.MessageEmbed
 			elist = append(elist, &discordgo.MessageEmbed{Title: "Complete:", Description: buf})
 			f := discordgo.WebhookParams{Embeds: elist}

@@ -27,7 +27,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						*co.BData = false
 					}
 					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.BData)
-					if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+					if co.FactUpdateCommand != "" && fact.IsFactorioBooted() {
 						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", support.BoolToString(*co.BData)))
 						buf = buf + " (live update)\n"
 					} else {
@@ -56,7 +56,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 					*co.SData = o.StringValue()
 					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.SData)
-					if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+					if co.FactUpdateCommand != "" && fact.IsFactorioBooted() {
 						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
 						buf = buf + " (live update)\n"
 					} else {
@@ -70,7 +70,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						*co.IData = val
 						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.IData)
 
-						if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+						if co.FactUpdateCommand != "" && fact.IsFactorioBooted() {
 							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
 							buf = buf + " (live update)\n"
 						} else {
@@ -87,7 +87,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						*co.FData32 = val
 						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData32)
 
-						if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+						if co.FactUpdateCommand != "" && fact.IsFactorioBooted() {
 							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
 							buf = buf + " (live update)\n"
 						} else {
@@ -101,7 +101,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					} else {
 						*co.FData64 = val
 						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData64)
-						if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+						if co.FactUpdateCommand != "" && fact.IsFactorioBooted() {
 							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
 							buf = buf + " (live update)\n"
 						} else {
@@ -114,7 +114,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	if buf != "" {
 		if cfg.WriteLCfg() {
-			if fact.IsFactRunning() {
+			if fact.IsFactorioBooted() {
 				if !fact.GenerateFactorioConfig() {
 					disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
 					return

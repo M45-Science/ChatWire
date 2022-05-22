@@ -45,7 +45,7 @@ func DeleteOldSav() {
 
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
-	if IsFactRunning() {
+	if IsFactorioBooted() {
 		if cfg.Local.Options.Whitelist {
 			if level > 0 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
@@ -140,13 +140,13 @@ func WriteFact(input string) {
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input))
-			SetFactRunning(false, true)
+			SetFactRunning(false)
 			return
 		}
 
 	} else {
 		cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
-		SetFactRunning(false, true)
+		SetFactRunning(false)
 		return
 	}
 }

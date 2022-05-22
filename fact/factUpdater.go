@@ -157,7 +157,7 @@ func FactUpdate() {
 		cwlog.DoLogCW(err.Error())
 	}
 
-	if !IsFactRunning() {
+	if !IsFactRunning() && IsFactorioBooted() {
 		/* Keep us from stepping on a factorio launch or update */
 		FactorioLaunchLock.Lock()
 		defer FactorioLaunchLock.Unlock()

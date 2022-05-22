@@ -12,7 +12,7 @@ func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	fact.SetRelaunchThrottle(0)
 	fact.SetAutoStart(false)
 
-	if fact.IsFactRunning() {
+	if fact.IsFactorioBooted() {
 
 		buf := "Stopping Factorio."
 		disc.EphemeralResponse(s, i, "Status:", buf)

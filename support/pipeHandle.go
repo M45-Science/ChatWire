@@ -630,7 +630,7 @@ func handleFactGoodbye(NoTC string) bool {
 
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.SetFactorioBooted(false)
-		fact.SetFactRunning(false, false)
+		fact.SetFactRunning(false)
 		return true
 	}
 	return false
@@ -643,7 +643,7 @@ func handleFactReady(NoTC string) bool {
 	if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 
 		fact.SetFactorioBooted(true)
-		fact.SetFactRunning(true, false)
+		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
 		if glob.SoftModVersion != constants.Unknown {
@@ -790,14 +790,14 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
 			fact.SetAutoStart(false)
 			fact.SetFactorioBooted(false)
-			fact.SetFactRunning(false, true)
+			fact.SetFactRunning(false)
 			return true
 		}
 		/* Mod Errors */
 		if strings.Contains(NoTC, "caused a non-recoverable error.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and closed.")
 			fact.SetFactorioBooted(false)
-			fact.SetFactRunning(false, true)
+			fact.SetFactRunning(false)
 			return true
 		}
 		/* Stack traces */
@@ -805,7 +805,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to launch.")
 			fact.SetAutoStart(false)
 			fact.SetFactorioBooted(false)
-			fact.SetFactRunning(false, true)
+			fact.SetFactRunning(false)
 			return true
 		}
 		/* level.dat */
@@ -813,14 +813,14 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 			fact.SetAutoStart(false)
 			fact.SetFactorioBooted(false)
-			fact.SetFactRunning(false, true)
+			fact.SetFactRunning(false)
 			return true
 		}
 		/* Stack traces */
 		if strings.Contains(NoTC, "Unexpected error occurred.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
 			fact.SetFactorioBooted(false)
-			fact.SetFactRunning(false, true)
+			fact.SetFactRunning(false)
 			return true
 		}
 		/* Multiplayer manger */
@@ -829,14 +829,14 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error, stopping.")
 				fact.SetAutoStart(false)
 				fact.SetFactorioBooted(false)
-				fact.SetFactRunning(false, true)
+				fact.SetFactRunning(false)
 				return true
 			}
 			if strings.Contains(NoTC, "info.json not found") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 				fact.SetAutoStart(false)
 				fact.SetFactorioBooted(false)
-				fact.SetFactRunning(false, true)
+				fact.SetFactRunning(false)
 				return true
 			}
 			/* Bad zip file */
@@ -880,7 +880,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				}
 
 				fact.SetFactorioBooted(false)
-				fact.SetFactRunning(false, true)
+				fact.SetFactRunning(false)
 				return true
 			}
 		}

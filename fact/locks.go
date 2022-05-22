@@ -215,7 +215,7 @@ func IsSetAutoStart() bool {
 	return temp
 }
 
-func SetFactRunning(run bool, err bool) {
+func SetFactRunning(run bool) {
 	FactIsRunningLock.Lock()
 	wasrun := FactIsRunning
 	FactIsRunning = run

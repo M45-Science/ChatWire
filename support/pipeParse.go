@@ -32,7 +32,7 @@ func HandleChat() {
 					continue
 				}
 				/* Server is alive */
-				fact.SetFactRunning(true, false)
+				fact.SetFactRunning(true)
 
 				/* Timecode removal */
 				trimmed := strings.TrimLeft(line, " ")

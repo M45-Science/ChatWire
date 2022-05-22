@@ -67,7 +67,7 @@ func Map_reset(data string, doReport bool) {
 
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
-	if IsFactRunning() {
+	if IsFactorioBooted() || IsFactRunning() {
 		if data != "" {
 			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
 			FactChat(AddFactColor("orange", data))

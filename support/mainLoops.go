@@ -45,7 +45,7 @@ func MainLoops() {
 				fact.DoExit(true)
 
 				/* We are running normally */
-			} else if fact.IsFactRunning() {
+			} else if fact.IsFactRunning() && fact.IsFactorioBooted() {
 
 				nores := 0
 				if fact.GetPausedTicks() <= constants.PauseThresh {
@@ -61,10 +61,12 @@ func MainLoops() {
 					fact.SetRelaunchThrottle(0)
 					fact.QuitFactorio()
 					fact.WaitFactQuit()
+					fact.SetFactorioBooted(false)
+					fact.SetFactRunning(false)
 				}
 
 				/* We aren't running, but should be! */
-			} else if !fact.IsFactRunning() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() {
+			} else if !fact.IsFactRunning() && !fact.IsFactorioBooted() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() {
 				/* Don't relaunch if we are set to auto update */
 
 				launchFactorio()
@@ -504,7 +506,7 @@ func MainLoops() {
 			time.Sleep(2 * time.Second)
 
 			if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
-				if fact.IsFactRunning() {
+				if fact.IsFactRunning() && fact.IsFactorioBooted() {
 					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
 					fact.QuitFactorio()
 					break //We don't need to loop anymore
@@ -522,7 +524,7 @@ func MainLoops() {
 			time.Sleep(30 * time.Second)
 
 			if cfg.Local.Options.AutoUpdate {
-				if fact.IsFactRunning() && fact.NewVersion != constants.Unknown {
+				if fact.IsFactRunning() && fact.IsFactorioBooted() && fact.NewVersion != constants.Unknown {
 					if fact.GetNumPlayers() > 0 {
 
 						numwarn := fact.GetUpdateWarnCounter()
@@ -583,7 +585,7 @@ func MainLoops() {
 			/* Halt, regardless of game state */
 			if _, err = os.Stat(".halt"); err == nil {
 				if errb = os.Remove(".halt"); errb == nil {
-					if fact.IsFactRunning() {
+					if fact.IsFactRunning() || fact.IsFactorioBooted() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting, closing Factorio.")
 						fact.SetAutoStart(false)
 						fact.QuitFactorio()
@@ -600,7 +602,7 @@ func MainLoops() {
 			}
 
 			/* Only if game is running */
-			if fact.IsFactRunning() {
+			if fact.IsFactRunning() && fact.IsFactorioBooted() {
 				/* Quick reboot
 				 * This should eventually grab save name from file */
 				if _, err = os.Stat(".qrestart"); err == nil {
