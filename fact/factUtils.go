@@ -262,11 +262,25 @@ func UpdateChannelName() {
 
 	var newchname string
 	nump := GetNumPlayers()
+	icon := "🔵"
+
+	if cfg.Local.Options.Whitelist {
+		icon = "🟣"
+	}
+	if nump == 0 {
+		icon = "⚫"
+	}
+
+	if IsFactorioBooted() && IsFactRunning() && GetNoResposeCount() >= 30 {
+		icon = "🟠"
+	} else if !IsFactorioBooted() {
+		icon = "🔴"
+	}
 
 	if nump == 0 {
-		newchname = fmt.Sprintf("%v", cfg.Local.Callsign+"-"+cfg.Local.Name)
+		newchname = fmt.Sprintf("%v%v", icon, cfg.Local.Callsign+"-"+cfg.Local.Name)
 	} else {
-		newchname = fmt.Sprintf("%v🔵%v", nump, cfg.Local.Callsign+"-"+cfg.Local.Name)
+		newchname = fmt.Sprintf("%v%v%v", nump, icon, cfg.Local.Callsign+"-"+cfg.Local.Name)
 	}
 
 	disc.UpdateChannelLock.Lock()
