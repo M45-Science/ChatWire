@@ -95,12 +95,12 @@ func GetRelaunchThrottle() int {
 
 func SetFactorioBooted(isbooted bool) {
 	FactorioBootedLock.Lock()
-	FactorioBooted = isbooted
 	if isbooted {
 		FactorioBootedAt = time.Now()
 	} else {
 		FactorioBootedAt = time.Time{}
 	}
+	FactorioBooted = isbooted
 	FactorioBootedLock.Unlock()
 
 }
@@ -221,7 +221,7 @@ func SetFactRunning(run bool) {
 	FactIsRunning = run
 	FactIsRunningLock.Unlock()
 
-	if run && GetNoResposeCount() >= 10 {
+	if run && GetNoResposeCount() >= 15 && time.Since(FactorioBootedAt) > time.Minute {
 		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")
 		cwlog.DoLogCW("Server now appears to be responding again.")
 	}
