@@ -98,10 +98,9 @@ type binaryPaths struct {
 }
 
 type urlPaths struct {
-	Domain        string
-	LogURL        string
-	ArchiveURL    string
-	MapPreviewURL string
+	Domain     string
+	LogURL     string
+	ArchiveURL string
 }
 
 type dataFiles struct {
@@ -291,7 +290,7 @@ func setGlobalDefaults() {
 		Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "/update-cache/"
 	}
 	if Global.Paths.Folders.MapPreviews == "" {
-		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "/public_html/map-preview/"
+		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "/map-preview/"
 	}
 	if Global.Paths.Folders.MapArchives == "" {
 		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
