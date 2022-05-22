@@ -290,7 +290,7 @@ func RegisterCommands(s *discordgo.Session) {
 
 	if *glob.DoRegisterCommands {
 
-		for i, _ := range CL {
+		for i := range CL {
 
 			if CL[i].AppCmd == nil {
 				continue
@@ -350,31 +350,34 @@ func filterDesc(desc string) string {
 
 func LinkConfigData(p int) {
 
-	for _, o := range admin.SettingList {
+	for i, o := range admin.SettingList {
+		if i > 25 {
+			cwlog.DoLogCW("LinkConfigData: Max 25 settings reached!")
+			break
+		}
 		if o.Type == admin.TYPE_STRING {
 
 			if len(o.ValidStrings) > 0 {
 				choices := []*discordgo.ApplicationCommandOptionChoice{}
 				for _, v := range o.ValidStrings {
 					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
-						Name:  v,
-						Value: v,
+						Name:  filterName(v),
+						Value: filterName(v),
 					})
-					fmt.Println("ValidStrings:", o.Name, v)
 				}
 
 				if len(choices) > 0 {
 					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
-						Description: o.Desc,
+						Description: filterDesc(o.Desc),
 						Choices:     choices,
 					})
 				} else {
 					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
-						Description: o.Desc,
+						Description: filterDesc(o.Desc),
 					})
 				}
 			} else if o.ListString != nil {
@@ -382,10 +385,9 @@ func LinkConfigData(p int) {
 				list := o.ListString()
 				for _, v := range list {
 					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
-						Name:  v,
-						Value: v,
+						Name:  filterName(v),
+						Value: filterName(v),
 					})
-					fmt.Println("ListString: ", o.Name, v)
 				}
 
 				if len(choices) > 0 {
@@ -393,21 +395,21 @@ func LinkConfigData(p int) {
 					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
-						Description: o.Desc,
+						Description: filterDesc(o.Desc),
 						Choices:     choices,
 					})
 				} else {
 					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
-						Description: o.Desc,
+						Description: filterDesc(o.Desc),
 					})
 				}
 			} else {
 				CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        filterName(o.Name),
-					Description: o.Desc,
+					Description: filterDesc(o.Desc),
 				})
 			}
 
@@ -415,7 +417,7 @@ func LinkConfigData(p int) {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        filterName(o.Name),
-				Description: o.Desc,
+				Description: filterDesc(o.Desc),
 				MinValue:    glob.Ptr(float64(o.MinInt)),
 				MaxValue:    float64(o.MaxInt),
 			})
@@ -423,13 +425,13 @@ func LinkConfigData(p int) {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Name:        filterName(o.Name),
-				Description: o.Desc,
+				Description: filterDesc(o.Desc),
 			})
 		} else if o.Type == admin.TYPE_F32 {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
-				Description: o.Desc,
+				Description: filterDesc(o.Desc),
 				MinValue:    glob.Ptr(float64(o.MinF32)),
 				MaxValue:    float64(o.MaxF32),
 			})
@@ -437,7 +439,7 @@ func LinkConfigData(p int) {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
-				Description: o.Desc,
+				Description: filterDesc(o.Desc),
 				MinValue:    glob.Ptr(o.MinF64),
 				MaxValue:    o.MaxF64,
 			})
@@ -454,29 +456,36 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	//Don't respond to other channels
 	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
-		cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
 
 		for _, c := range CL {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
+
 				if c.AdminOnly {
 					if disc.CheckAdmin(i.Member.Roles) {
 						c.Command(s, i)
+						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s", i.Member.User.Username, data.Name))
 						return
 					} else {
 						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						return
 					}
 				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i.Member.Roles) {
+						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
 						c.Command(s, i)
 						return
 					} else {
 						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						return
 					}
 				} else {
+					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
 					c.Command(s, i)
 					return
 				}
 			}
 		}
+		cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
+
 	}
 }
