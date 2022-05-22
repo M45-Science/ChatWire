@@ -121,6 +121,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				}
 			}
 			disc.EphemeralResponse(s, i, "Status:", buf)
+			fact.UpdateChannelName() //For channel renaming, only updates if changed.
 		} else {
 			disc.EphemeralResponse(s, i, "Error:", "Unable to save cw-local, check file permissions.")
 		}
