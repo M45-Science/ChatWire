@@ -37,7 +37,8 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		t := time.Now()
 		date := t.Format("2006-01-02")
-		newmapname := fmt.Sprintf("%v-%v.zip", sclean.AlphaNumOnly(constants.MembersPrefix+cfg.Local.Callsign)+"-"+cfg.Local.Name, date)
+
+		newmapname := fmt.Sprintf("%v-%v-%v.zip", sclean.AlphaNumOnly(cfg.Local.Callsign), cfg.Local.Name, date)
 		newmappath := fmt.Sprintf("%v%v%v/%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, newmapname)
 		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.Paths.URLs.ArchiveURL, url.PathEscape(shortversion+constants.ArchiveFolderSuffix), url.PathEscape(newmapname))
 
