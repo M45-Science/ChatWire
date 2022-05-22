@@ -14,6 +14,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 	buf := ""
 
+	/* Check all values, Discord limits could be bypassed */
 	for _, o := range a.Options {
 		for _, co := range SettingList {
 			if co.Name == o.Name {
@@ -25,6 +26,26 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.BData)
 				} else if o.Type == discordgo.ApplicationCommandOptionString {
+					val := o.StringValue()
+					if co.CheckString != nil {
+						if !co.CheckString(val) {
+							buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
+							continue
+						}
+					}
+					if co.MaxStrLen != 0 {
+						if len(val) > co.MaxStrLen {
+							buf = buf + fmt.Sprintf("%v: text too long %v\n", co.Name, val)
+							continue
+						}
+					}
+					if co.MinStrLen != 0 {
+						if len(val) < co.MinStrLen {
+							buf = buf + fmt.Sprintf("%v: text too short %v\n", co.Name, val)
+							continue
+						}
+					}
+
 					co.SData = glob.Ptr(o.StringValue())
 					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.SData)
 				} else if o.Type == discordgo.ApplicationCommandOptionInteger {

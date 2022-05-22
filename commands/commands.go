@@ -16,6 +16,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
 type Command struct {
@@ -30,7 +31,9 @@ var BugOne float64 = 1
 
 var cmds = []Command{
 
-	/*  Admin Commands */
+	/* Admin Commands */
+
+	//Make "reboot" command with all of these contained __START__
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "stop-factorio",
 		Description: "Stops Factorio, if running.",
@@ -52,7 +55,6 @@ var cmds = []Command{
 	},
 		Command: admin.RebootCW, AdminOnly: true},
 
-	//Add "confirm"
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "force-reboot-chatwire",
 		Description: "Big red button. Don't use this lightly. This does not cleanly exit Factorio or ChatWire.",
@@ -66,7 +68,9 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.QueReboot, AdminOnly: true},
+	//Make "reboot" command with all of these contained __END__
 
+	//Put all these in a map command
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "archive-map",
 		Description: "Archives the current map to our website, and posts the link to the chat.",
@@ -88,14 +92,7 @@ var cmds = []Command{
 	},
 		Command: admin.MakeNewMap, AdminOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "map-reset",
-		Description: "Stops Factorio, archives current map, generates new one, and starts Factorio.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.MapReset, ModeratorOnly: true},
-
-	//Add the cancel param
+	//Put this in a "update" command
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "update-factorio",
 		Description: "Updates Factorio to the latest version if there is a new version available.",
@@ -109,10 +106,40 @@ var cmds = []Command{
 			},
 		},
 	},
-
 		Command: admin.UpdateFact, AdminOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "reload-config",
+		Description: "Reloads config files from disk, only used when manually editing config files.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.ReloadConfig, AdminOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "debug",
+		Description: "Only used for development and testing.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.DebugStat, AdminOnly: true},
+	//Put this in a "update" command
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "update-mods",
+		Description: "Updates Factorio mods to the latest version if there is a new version available.",
+	},
+		Command: admin.UpdateMods, AdminOnly: true},
 
-	//Complete
+	/*  Moderator Commands ------------- */
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "config",
+		Description: "Change server configuration options.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.Config, ModeratorOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "map-reset",
+		Description: "Stops Factorio, archives current map, generates new one, and starts Factorio.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.MapReset, ModeratorOnly: true},
+
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-set",
 		Description: "Sets a player's rank.",
@@ -160,35 +187,13 @@ var cmds = []Command{
 		Command: admin.SetPlayerLevel, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "reload-config",
-		Description: "Reloads config files from disk, only used when manually editing config files.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.ReloadConfig, AdminOnly: true},
-
-	/* Future: Possibly generate this from SettingList */
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "config",
-		Description: "Change server configuration options.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.Config, ModeratorOnly: true},
-
-	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rewind-map",
 		Description: "Rewinds the map to specified autosave.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.RewindMap, ModeratorOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "update-mods",
-		Description: "Updates Factorio mods to the latest version if there is a new version available.",
-	},
-		Command: admin.UpdateMods, AdminOnly: true},
-
-	//Add param
-	//This should go in config, possibly
+	/* Move to config */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "set-map-seed",
 		Description: "Sets the map seed for the next map reset. Value is cleared after use.",
@@ -196,15 +201,7 @@ var cmds = []Command{
 	},
 		Command: admin.SetSeed, ModeratorOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "debug",
-		Description: "Only used for development and testing.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.DebugStat, AdminOnly: true},
-
-	/*  Player Commands */
-	//Add player
+	/* PLAYER COMMMANDS -------------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "whois",
 		Description: "Shows information about a player.",
@@ -212,7 +209,6 @@ var cmds = []Command{
 	},
 		Command: user.Whois, ModeratorOnly: false},
 
-	//Maybe make this slicker?
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "players-online",
 		Description: "Shows detailed info about players currently online.",
@@ -220,7 +216,6 @@ var cmds = []Command{
 	},
 		Command: user.PlayersOnline, ModeratorOnly: false},
 
-	//Slicker?
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "server-info",
 		Description: "Shows detailed information on the server settings.",
@@ -295,53 +290,127 @@ func RegisterCommands(s *discordgo.Session) {
 
 	if *glob.DoRegisterCommands {
 
-		for i, c := range CL {
-			if c.AppCmd == nil {
+		for i, _ := range CL {
+
+			if CL[i].AppCmd == nil {
+				continue
+			}
+			time.Sleep(constants.ApplicationCommandSleep)
+			CL[i].AppCmd.Name = filterName(CL[i].AppCmd.Name)
+			CL[i].AppCmd.Description = filterDesc(CL[i].AppCmd.Description)
+
+			if CL[i].AppCmd.Name == "" {
 				continue
 			}
 
-			if strings.EqualFold(c.AppCmd.Name, "config") {
+			if strings.EqualFold(CL[i].AppCmd.Name, "config") {
 				LinkConfigData(i)
 			}
 
-			if c.AdminOnly {
+			if CL[i].AdminOnly {
 				CL[i].AppCmd.DefaultMemberPermissions = &adminPerms
-			} else if c.ModeratorOnly {
+			} else if CL[i].ModeratorOnly {
 				CL[i].AppCmd.DefaultMemberPermissions = &modPerms
 			} else {
 				CL[i].AppCmd.DefaultMemberPermissions = &playerPerms
 			}
 
-			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, c.AppCmd)
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, CL[i].AppCmd)
 			if err != nil {
-				log.Println("Failed to create command:", c.AppCmd.Name, err)
+				log.Println("Failed to create command: ",
+					CL[i].AppCmd.Name, ": ", err)
 				continue
 			}
 			CL[i].AppCmd = cmd
-			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", c.AppCmd.Name))
-
-			time.Sleep(constants.ApplicationCommandSleep)
-
+			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", CL[i].AppCmd.Name))
 		}
 	}
 
 }
 
 func filterName(name string) string {
-	outname := strings.ToLower(name)
+	outname := sclean.StripControl(name)
+	outname = strings.ToLower(outname)
 	outname = strings.Replace(outname, " ", "-", -1)
+	outname = sclean.TruncateString(outname, 32)
+
 	return outname
+}
+
+func filterDesc(desc string) string {
+	outdesc := sclean.StripControl(desc)
+	outdesc = sclean.TruncateStringEllipsis(outdesc, 99)
+
+	if len(outdesc) > 0 {
+		return outdesc
+	} else {
+		return "No description available."
+	}
 }
 
 func LinkConfigData(p int) {
 
 	for _, o := range admin.SettingList {
 		if o.Type == admin.TYPE_STRING {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
-				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        filterName(o.Name),
-				Description: o.Desc,
-			})
+
+			if len(o.ValidStrings) > 0 {
+				choices := []*discordgo.ApplicationCommandOptionChoice{}
+				for _, v := range o.ValidStrings {
+					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+						Name:  v,
+						Value: v,
+					})
+					fmt.Println("ValidStrings:", o.Name, v)
+				}
+
+				if len(choices) > 0 {
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: o.Desc,
+						Choices:     choices,
+					})
+				} else {
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: o.Desc,
+					})
+				}
+			} else if o.ListString != nil {
+				choices := []*discordgo.ApplicationCommandOptionChoice{}
+				list := o.ListString()
+				for _, v := range list {
+					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+						Name:  v,
+						Value: v,
+					})
+					fmt.Println("ListString: ", o.Name, v)
+				}
+
+				if len(choices) > 0 {
+
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: o.Desc,
+						Choices:     choices,
+					})
+				} else {
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: o.Desc,
+					})
+				}
+			} else {
+				CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        filterName(o.Name),
+					Description: o.Desc,
+				})
+			}
+
 		} else if o.Type == admin.TYPE_INT {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionInteger,
