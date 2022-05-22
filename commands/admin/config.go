@@ -1,8 +1,8 @@
 package admin
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/disc"
-	"ChatWire/glob"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
@@ -46,14 +46,14 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						}
 					}
 
-					co.SData = glob.Ptr(o.StringValue())
+					*co.SData = o.StringValue()
 					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.SData)
 				} else if o.Type == discordgo.ApplicationCommandOptionInteger {
 					val := int(o.IntValue())
 					if val > co.MaxInt || val < co.MinInt {
 						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
-						co.IData = &val
+						*co.IData = val
 						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.IData)
 					}
 				}
@@ -63,7 +63,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					if val > co.MaxF32 || val < co.MinF32 {
 						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
-						co.FData32 = &val
+						*co.FData32 = val
 						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.FData32)
 					}
 				} else if co.Type == TYPE_F64 {
@@ -71,7 +71,7 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					if val > co.MaxF64 || val < co.MinF64 {
 						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
-						co.FData64 = &val
+						*co.FData64 = val
 						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.FData64)
 					}
 				}
@@ -79,6 +79,10 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		if cfg.WriteLCfg() {
+			disc.EphemeralResponse(s, i, "Status:", buf)
+		} else {
+			disc.EphemeralResponse(s, i, "Error:", "Unable to save config, check file permissions.")
+		}
 	}
 }
