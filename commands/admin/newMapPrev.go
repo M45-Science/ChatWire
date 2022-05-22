@@ -31,6 +31,17 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	//disc.EphemeralResponse(s, i, "Status:", "Generating map preview...")
 
+	/* Make directory if it does not exist */
+	newdir := fmt.Sprintf("%s/", cfg.Global.Paths.Folders.MapPreviews)
+	err := os.MkdirAll(newdir, os.ModePerm)
+	if err != nil {
+		buf := fmt.Sprintf("Unable to create map preview directory: %v", err.Error())
+		cwlog.DoLogCW(buf)
+		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
+		disc.InteractionResponse(s, i, &elist)
+		return
+	}
+
 	var preview_made = false
 	t := time.Now()
 	ourseed := uint64(t.UnixNano())
@@ -103,7 +114,7 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	//Attempt to attach a map preview
-	to, errb := os.OpenFile(jpgpath, os.O_RDWR|os.O_CREATE, 0666)
+	to, errb := os.OpenFile(jpgpath, os.O_RDONLY, 0666)
 	if errb != nil {
 		buf := fmt.Sprintf("Unable to read jpg file: %v", errb)
 		cwlog.DoLogCW(buf)
