@@ -466,6 +466,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s", i.Member.User.Username, data.Name))
 						return
 					} else {
+						disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
 						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
 						return
 					}
@@ -475,6 +476,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						c.Command(s, i)
 						return
 					} else {
+						disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
 						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
 						return
 					}
@@ -485,6 +487,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				}
 			}
 		}
+		disc.EphemeralResponse(s, i, "Error", "That is not a valid command.")
 		cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
 
 	}
