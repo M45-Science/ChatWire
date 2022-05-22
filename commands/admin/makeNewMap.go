@@ -12,6 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -31,8 +32,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	defer fact.FactorioLaunchLock.Unlock()
 
 	t := time.Now()
-	ourseed := uint64(t.UnixNano())
-
+	ourseed := uint64(t.UnixNano() - constants.CWEpoch)
 	MapPreset := cfg.Local.Settings.MapPreset
 
 	if fact.LastMapSeed > 0 {

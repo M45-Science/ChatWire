@@ -104,7 +104,7 @@ func Map_reset(data string, doReport bool) {
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
-		/* Attach map and list url */
+		/* Attach map, send to chat */
 		dData := &discordgo.MessageSend{Files: []*discordgo.File{
 			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
 		disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
@@ -147,7 +147,7 @@ func Map_reset(data string, doReport bool) {
 	}
 
 	t := time.Now()
-	ourseed := uint64(t.UnixNano())
+	ourseed := uint64(t.UnixNano() - constants.CWEpoch)
 
 	//Use seed if specified, then clear it
 	if cfg.Local.Settings.Seed > 0 {

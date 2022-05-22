@@ -7,6 +7,7 @@ const (
 	Unknown = "Unknown"
 
 	/* ChatWire files */
+	CWEpoch             = 1653239822390688174
 	CWGlobalConfig      = "../cw-global-config.json"
 	CWLocalConfig       = "cw-local-config.json"
 	WhitelistName       = "server-whitelist.json"
