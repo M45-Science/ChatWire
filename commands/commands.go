@@ -283,39 +283,40 @@ var playerPerms int64 = (1 << 11) //SEND_MESSAGES
 func RegisterCommands(s *discordgo.Session) {
 
 	/* Bypasses init loop compile error. */
-	CL = append(CL, cmds...)
+	CL = cmds
 
 	//Bypass register, very slow
 	//TODO: Cache info and correct for changes when needed
 
 	if *glob.DoRegisterCommands {
 
-		for i := range CL {
+		for i, o := range CL {
 
-			if CL[i].AppCmd == nil {
+			if o.AppCmd == nil {
+				continue
+			}
+			if o.AppCmd.Name == "" || o.AppCmd.Description == "" {
+				cwlog.DoLogCW("Command has no name or description, skipping")
 				continue
 			}
 			time.Sleep(constants.ApplicationCommandSleep)
-			CL[i].AppCmd.Name = filterName(CL[i].AppCmd.Name)
-			CL[i].AppCmd.Description = filterDesc(CL[i].AppCmd.Description)
 
-			if CL[i].AppCmd.Name == "" {
-				continue
-			}
-
-			if strings.EqualFold(CL[i].AppCmd.Name, "config") {
+			if strings.EqualFold(o.AppCmd.Name, "config") {
 				LinkConfigData(i)
 			}
 
-			if CL[i].AdminOnly {
-				CL[i].AppCmd.DefaultMemberPermissions = &adminPerms
-			} else if CL[i].ModeratorOnly {
-				CL[i].AppCmd.DefaultMemberPermissions = &modPerms
+			if o.AdminOnly {
+				o.AppCmd.DefaultMemberPermissions = &adminPerms
+			} else if o.ModeratorOnly {
+				o.AppCmd.DefaultMemberPermissions = &modPerms
 			} else {
-				CL[i].AppCmd.DefaultMemberPermissions = &playerPerms
+				o.AppCmd.DefaultMemberPermissions = &playerPerms
 			}
 
-			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, CL[i].AppCmd)
+			o.AppCmd.Name = filterName(o.AppCmd.Name)
+			o.AppCmd.Description = filterDesc(o.AppCmd.Description)
+
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, o.AppCmd)
 			if err != nil {
 				log.Println("Failed to create command: ",
 					CL[i].AppCmd.Name, ": ", err)
@@ -329,22 +330,21 @@ func RegisterCommands(s *discordgo.Session) {
 }
 
 func filterName(name string) string {
-	outname := sclean.StripControl(name)
-	outname = strings.ToLower(outname)
-	outname = strings.Replace(outname, " ", "-", -1)
-	outname = sclean.TruncateString(outname, 32)
+	newName := strings.ToLower(name)
+	newName = strings.Replace(newName, " ", "-", -1)
+	newName = sclean.TruncateString(newName, 32)
 
-	return outname
+	return newName
 }
 
 func filterDesc(desc string) string {
-	outdesc := sclean.StripControl(desc)
-	outdesc = sclean.TruncateStringEllipsis(outdesc, 99)
+	newDesc := sclean.TruncateStringEllipsis(desc, 100)
 
-	if len(outdesc) > 0 {
-		return outdesc
+	if len(desc) > 0 {
+		return newDesc
 	} else {
-		return "No description available."
+		buf := "No description available."
+		return buf
 	}
 }
 
