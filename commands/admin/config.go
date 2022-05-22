@@ -3,6 +3,8 @@ package admin
 import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/support"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
@@ -24,7 +26,13 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					} else {
 						*co.BData = false
 					}
-					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.BData)
+					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.BData)
+					if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", support.BoolToString(*co.BData)))
+						buf = buf + " (live update)\n"
+					} else {
+						buf = buf + "\n"
+					}
 				} else if o.Type == discordgo.ApplicationCommandOptionString {
 					val := o.StringValue()
 					if co.CheckString != nil {
@@ -47,14 +55,27 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 
 					*co.SData = o.StringValue()
-					buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.SData)
+					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.SData)
+					if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+						buf = buf + " (live update)\n"
+					} else {
+						buf = buf + "\n"
+					}
 				} else if o.Type == discordgo.ApplicationCommandOptionInteger {
 					val := int(o.IntValue())
 					if val > co.MaxInt || val < co.MinInt {
 						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
 						*co.IData = val
-						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.IData)
+						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.IData)
+
+						if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							buf = buf + " (live update)\n"
+						} else {
+							buf = buf + "\n"
+						}
 					}
 				}
 			} else if o.Type == discordgo.ApplicationCommandOptionNumber {
@@ -64,7 +85,14 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
 						*co.FData32 = val
-						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.FData32)
+						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData32)
+
+						if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							buf = buf + " (live update)\n"
+						} else {
+							buf = buf + "\n"
+						}
 					}
 				} else if co.Type == TYPE_F64 {
 					val := float64(o.FloatValue())
@@ -72,7 +100,13 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 					} else {
 						*co.FData64 = val
-						buf = buf + fmt.Sprintf("%v: set to: %v\n", co.Name, *co.FData64)
+						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData64)
+						if co.FactUpdateCommand != "" && fact.IsFactRunning() {
+							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							buf = buf + " (live update)\n"
+						} else {
+							buf = buf + "\n"
+						}
 					}
 				}
 			}
@@ -80,9 +114,15 @@ func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	if buf != "" {
 		if cfg.WriteLCfg() {
+			if fact.IsFactRunning() {
+				if !fact.GenerateFactorioConfig() {
+					disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
+					return
+				}
+			}
 			disc.EphemeralResponse(s, i, "Status:", buf)
 		} else {
-			disc.EphemeralResponse(s, i, "Error:", "Unable to save config, check file permissions.")
+			disc.EphemeralResponse(s, i, "Error:", "Unable to save cw-local, check file permissions.")
 		}
 	}
 }
