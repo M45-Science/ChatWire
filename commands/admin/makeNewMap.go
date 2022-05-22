@@ -75,7 +75,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
 	/* Append map gen if set */
-	if cfg.Local.Settings.MapGenerator != "" {
+	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
 		factargs = append(factargs, "--map-gen-settings")
 		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
 

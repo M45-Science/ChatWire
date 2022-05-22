@@ -106,7 +106,7 @@ func GenerateFactorioConfig() bool {
 	/*if cfg.Global.AuthServerBans {
 		descrLines = append(descrLines, "Auth-server bans enabled")
 	}*/
-	if cfg.Local.Settings.MapGenerator != "" {
+	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
 		descrLines = append(descrLines, "Map generator: "+cfg.Local.Settings.MapGenerator)
 	} else if cfg.Local.Settings.MapPreset != "" {
 		descrLines = append(descrLines, "Map preset: "+cfg.Local.Settings.MapPreset)
