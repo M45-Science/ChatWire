@@ -42,7 +42,6 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	//Use seed if specified, then clear it
 	if cfg.Local.Settings.Seed > 0 {
 		ourseed = cfg.Local.Settings.Seed
-		cfg.Local.Settings.Seed = 0
 		cfg.WriteLCfg()
 	}
 
