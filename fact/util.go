@@ -32,6 +32,7 @@ func WaitFactQuit() {
 	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
 		time.Sleep(time.Millisecond * 100)
 	}
+
 }
 
 func MakeSteamURL() (string, bool) {
@@ -62,7 +63,7 @@ func DoExit(delay bool) {
 	/* This kills all loops! */
 	glob.ServerRunning = false
 
-	cwlog.DoLogCW("CW closing, load/save db, and waiting for locks...")
+	cwlog.DoLogCW("CW closing, load/save db.")
 	LoadPlayers()
 	WritePlayers()
 
@@ -77,13 +78,13 @@ func DoExit(delay bool) {
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */
 
-	if disc.DS != nil {
-		disc.DS.Close()
-	}
-
 	fmt.Println("Goodbye.")
 	if delay {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+	}
+
+	if disc.DS != nil {
+		disc.DS.Close()
 	}
 	os.Exit(1)
 }
