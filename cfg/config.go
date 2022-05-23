@@ -20,9 +20,10 @@ var Global global
 
 /* GLOBAL CONFIG */
 type global struct {
-	GroupName string
-	Discord   discord
-	Factorio  factData
+	GroupName     string
+	PrimaryServer string
+	Discord       discord
+	Factorio      factData
 
 	Paths   dataPaths
 	Options globalOptions
@@ -160,7 +161,6 @@ type localOptions struct {
 	AutoStart     bool
 	AutoUpdate    bool
 	ExpUpdates    bool
-	ReportBans    bool
 	HideAutosaves bool
 	HideResearch  bool
 	Whitelist     bool
@@ -349,6 +349,9 @@ func setGlobalDefaults() {
 	}
 	if Global.Options.PreviewSettings.PNGScale == "" {
 		Global.Options.PreviewSettings.PNGRes = "1"
+	}
+	if Global.PrimaryServer == "" {
+		Global.PrimaryServer = "a"
 	}
 }
 

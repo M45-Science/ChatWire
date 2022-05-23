@@ -24,6 +24,7 @@ type Command struct {
 	ModeratorOnly bool
 	AdminOnly     bool
 	AppCmd        *discordgo.ApplicationCommand
+	PrimaryOnly   bool
 }
 
 var CL []Command
@@ -184,7 +185,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.SetPlayerLevel, ModeratorOnly: true},
+		Command: admin.SetPlayerLevel, ModeratorOnly: true, PrimaryOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rewind-map",
@@ -223,7 +224,7 @@ var cmds = []Command{
 		Description: "Shows information about a player.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Whois, ModeratorOnly: false},
+		Command: user.Whois, ModeratorOnly: false, PrimaryOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "players-online",
@@ -253,7 +254,7 @@ var cmds = []Command{
 		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Register, ModeratorOnly: false},
+		Command: user.Register, ModeratorOnly: false, PrimaryOnly: true},
 
 	//Add params, make slicker
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -464,16 +465,35 @@ func LinkConfigData(p int) {
 }
 
 func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.Type != discordgo.InteractionApplicationCommand {
+	/* Ignore events and appid that aren't relevant to us */
+	if i.Type != discordgo.InteractionApplicationCommand || i.AppID != cfg.Global.Discord.Application {
 		return
 	}
 
 	data := i.ApplicationCommandData()
 
-	//Don't respond to other channels
-	if i.ChannelID == cfg.Local.Channel.ChatChannel && i.AppID == cfg.Global.Discord.Application {
+	/* Handle these commands from anywhere, if we are the primary server */
+	if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
+		for _, c := range CL {
+			if strings.EqualFold(c.AppCmd.Name, data.Name) {
+				if c.PrimaryOnly {
+					c.Command(s, i)
+					return
+				}
+			}
+		}
+	}
+
+	/* Don't respond to other channels for normal commands */
+	if i.ChannelID == cfg.Local.Channel.ChatChannel {
 
 		for _, c := range CL {
+
+			/* Don't process these commands here */
+			if c.PrimaryOnly {
+				continue
+			}
+
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
 				if c.AdminOnly {

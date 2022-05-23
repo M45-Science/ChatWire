@@ -580,7 +580,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 			if strings.Contains(NoDS, "was banned by") {
 				fact.PlayerLevelSet(trustname, -1, false)
-				if cfg.Local.Options.ReportBans {
+				if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
 					if strings.Contains(NoDS, "Reason") {
 						reasonList := strings.Split(NoDS, "Reason: ")
 						buf := fmt.Sprintf("M45 ban: %v, Reason: %v", trustname, reasonList[1])

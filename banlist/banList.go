@@ -145,7 +145,7 @@ func ReadBanFile() {
 		}
 
 	}
-	if oldLen > 0 && cfg.Local.Options.ReportBans && buf != "" {
+	if oldLen > 0 && strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) && buf != "" {
 		fact.CMS(cfg.Global.Discord.ReportChannel, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 500))
 	}
 }
