@@ -5,6 +5,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/sclean"
 	"os"
 	"strings"
 )
@@ -13,14 +14,12 @@ func ProtectIdiots(text string) bool {
 	//If there are any active register codes, check if an idiot pasted it in chat
 	idiotID := ""
 	checkme := strings.ToLower(text)
-	checkme = strings.ReplaceAll(checkme, "-", "")
-	checkme = strings.ReplaceAll(checkme, " ", "")
+	checkme = sclean.AlphaOnly(checkme)
 
 	if len(glob.PassList) > 0 {
 		for i, o := range glob.PassList {
 			password := strings.ToLower(o.Code)
-			password = strings.ReplaceAll(password, "-", "")
-			password = strings.ReplaceAll(password, " ", "")
+			password = sclean.AlphaOnly(password)
 
 			if strings.ContainsAny(checkme, strings.ToLower(password)) {
 				glob.PassList[i].Code = ""
