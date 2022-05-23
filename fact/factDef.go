@@ -85,8 +85,8 @@ var (
 	ManMinutesLock sync.Mutex
 
 	/*  Map gen data */
-	LastMapSeed uint64 = 0
-	LastMapCode        = ""
+	LastMapSeed int = 0
+	LastMapCode     = ""
 )
 
 type TickInt struct {

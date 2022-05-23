@@ -306,6 +306,15 @@ var SettingList = []SettingListData{
 
 		BData: &cfg.Local.Options.SoftModOptions.CleanMap,
 	},
+	{
+		Name:      "map-seed",
+		ShortDesc: "Map Seed",
+		Desc:      "Seed for map gen, clears after map reset.",
+		Type:      TYPE_INT,
+		DefInt:    0,
+
+		IData: &cfg.Local.Settings.Seed,
+	},
 }
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */

@@ -32,7 +32,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	defer fact.FactorioLaunchLock.Unlock()
 
 	t := time.Now()
-	ourseed := uint64(t.UnixNano() - constants.CWEpoch)
+	ourseed := int(t.UnixNano() - constants.CWEpoch)
 	MapPreset := cfg.Local.Settings.MapPreset
 
 	if fact.LastMapSeed > 0 {

@@ -147,7 +147,7 @@ func Map_reset(data string, doReport bool) {
 	}
 
 	t := time.Now()
-	ourseed := uint64(t.UnixNano() - constants.CWEpoch)
+	ourseed := int(t.UnixNano() - constants.CWEpoch)
 
 	//Use seed if specified, then clear it
 	if cfg.Local.Settings.Seed > 0 {
@@ -172,7 +172,7 @@ func Map_reset(data string, doReport bool) {
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
 
-	_ = binary.Write(buf, binary.BigEndian, ourseed)
+	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	filename := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-" + ourcode + ".zip"
 

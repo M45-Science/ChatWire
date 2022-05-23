@@ -21,7 +21,7 @@ func SetSeed(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
-	cfg.Local.Settings.Seed = uint64(num)
+	cfg.Local.Settings.Seed = int(num)
 	if cfg.Local.Settings.Seed > 0 {
 		buf := fmt.Sprintf("Map seed set to: %v (one use)", cfg.Local.Settings.Seed)
 

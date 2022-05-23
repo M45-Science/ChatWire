@@ -142,7 +142,7 @@ type local struct {
 type settings struct {
 	MapGenerator string
 	MapPreset    string
-	Seed         uint64
+	Seed         int
 	AFKMin       int
 	AutosaveMin  int
 	AutoPause    bool

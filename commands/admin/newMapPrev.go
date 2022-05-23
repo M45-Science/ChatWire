@@ -45,7 +45,7 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var preview_made = false
 	t := time.Now()
-	ourseed := uint64(t.UnixNano() - constants.CWEpoch)
+	ourseed := int(t.UnixNano() - constants.CWEpoch)
 
 	buf := new(bytes.Buffer)
 	_ = binary.Write(buf, binary.BigEndian, ourseed)
