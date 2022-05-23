@@ -15,6 +15,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/glob"
 )
 
 /* Generate a server-settings.json file for Factorio */
@@ -126,6 +127,12 @@ func GenerateFactorioConfig() bool {
 	//+ "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n"
 
 	disc.RoleListLock.Lock()
+
+	normalMode := true
+	if *glob.LocalTestMode {
+		normalMode = false
+	}
+
 	conf := FactConf{
 		Comment:     "Auto-generated! DO NOT MODIFY! Changes will be overwritten!",
 		Name:        servName,
@@ -133,14 +140,14 @@ func GenerateFactorioConfig() bool {
 		Tags:        tags,
 		Max_players: 0,
 		Visibility: VisData{
-			Public: true,  /* DEBUG ONLY */
-			Lan:    false, /* DEBUG ONLY */
-			Steam:  true,
+			Public: normalMode, /* DEBUG ONLY */
+			Lan:    false,      /* DEBUG ONLY */
+			Steam:  normalMode,
 		},
 
 		Username:                  cfg.Global.Factorio.Username,
 		Token:                     cfg.Global.Factorio.Token,
-		Require_user_verification: true, /* DEBUG ONLY */
+		Require_user_verification: normalMode, /* DEBUG ONLY */
 		Max_heartbeats_per_second: heartbeats,
 		Allow_commands:            "admins-only",
 

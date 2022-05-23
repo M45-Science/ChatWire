@@ -75,9 +75,10 @@ var (
 	OnlineCommand = constants.OnlineCommand
 	OnlinePlayers []OnlinePlayerData
 
-	/* Slash command registration */
+	/* Boot flags */
 	DoRegisterCommands   *bool
 	DoDeregisterCommands *bool
+	LocalTestMode        *bool
 
 	/* Vote Rewind */
 	VoteBox     RewindVoteContainerData

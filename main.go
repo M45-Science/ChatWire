@@ -27,8 +27,10 @@ import (
 
 func main() {
 
-	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register commands")
-	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister commands")
+	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register discord commands")
+	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
+	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
+
 	flag.Parse()
 
 	/* Mark uptime start */
