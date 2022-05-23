@@ -56,6 +56,10 @@ Zip *(optional)*<br>
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
+Some dirs and files that can be auto-created:<br>
+cw-local-config.json, ../cw-global-config.json<br>
+cw.lock, ../playerdb.dat, recordPlayers.dat,<br>
+../map-gen-json/, ./logs/, ../update-cache/, ../map-preview/, ../public_html/archive/, ../<br>
 `Discord token, guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
 ### Default path layout:<br>
