@@ -129,7 +129,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 	 * ACCESS
 	 ******************/
 	if strings.HasPrefix(line, "[ACCESS]") {
-		if lineListlen == 4 {
+		if lineListlen >= 4 {
 			/* Format:
 			 * print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter) */
 
