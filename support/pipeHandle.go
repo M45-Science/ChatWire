@@ -135,7 +135,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 
 			ptype := lineList[1]
 			pname := lineList[2]
-			code := strings.Join(lineList[3:lineListlen], "")
+			code := strings.Join(lineList[3:lineListlen-1], "")
 
 			/* Filter non-letters */
 			inputCode := sclean.AlphaOnly(code)
