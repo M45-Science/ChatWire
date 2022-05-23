@@ -27,6 +27,7 @@ func handleIdiots(line string) bool {
 	if ProtectIdiots(line) {
 		buf := "You didn't enter that as a command. You posted your registration code publicly, invalidating code. Please read the directions more carefully."
 		fact.FactChat(buf)
+		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 		return true
 	}
 
