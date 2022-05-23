@@ -236,7 +236,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if support.ProtectIdiots(m.Content) {
 		/* If they manage to post it into chat in Factorio on a different server,
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
-		buf := "You are supposed to type that into Factorio, not Discord... Invalididating code. Please read the directions more carefully..."
+		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
 		disc.DS.ChannelMessageSend(m.ChannelID, buf)
 	}
 
