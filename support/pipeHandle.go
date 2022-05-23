@@ -362,7 +362,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 							if time.Since(glob.LastSusWarning) > time.Minute {
 								glob.LastSusWarning = time.Now()
-								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. Rating: %v", pname, glob.PlayerSus[pname])
+								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
 
 								fact.FactChat("[color=red]" + sbuf + "[/color]")
 								fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
