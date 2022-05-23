@@ -309,7 +309,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-seed",
 		ShortDesc: "Map Seed",
-		Desc:      "Seed for map gen, clears after map reset.",
+		Desc:      "Seed for map gen, clears after automatic map resets.",
 		Type:      TYPE_INT,
 		DefInt:    0,
 
