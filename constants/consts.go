@@ -18,6 +18,16 @@ const (
 	VoteRewindFile      = "vote-rewind.dat"
 	MembersPrefix       = "M"
 	ArchiveFolderSuffix = " maps"
+	BootUpdateDelayMin  = 15
+
+	SpamScoreLimit   = 12
+	SpamScoreWarning = 9
+
+	SpamSlowThres = time.Second * 2
+	SpamFastThres = time.Millisecond * 1250
+
+	SpamCoolThres  = time.Second * 6
+	SpamResetThres = time.Second * 10
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"

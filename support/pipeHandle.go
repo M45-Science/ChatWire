@@ -631,6 +631,8 @@ func handleFactGoodbye(NoTC string) bool {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.SetFactorioBooted(false)
 		fact.SetFactRunning(false)
+		fact.UpdateChannelName()
+		fact.DoUpdateChannelName(false)
 		return true
 	}
 	return false
@@ -826,7 +828,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
 			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error, stopping.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error.")
 				fact.SetAutoStart(false)
 				fact.SetFactorioBooted(false)
 				fact.SetFactRunning(false)
@@ -871,12 +873,12 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				out, errs := exec.Command(cfg.Global.Paths.Binaries.RmCmd, tempargs...).Output()
 
 				if errs != nil {
-					cwlog.DoLogCW(fmt.Sprintf("Unabled to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+					cwlog.DoLogCW(fmt.Sprintf("Unable to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
 					fact.SetAutoStart(false)
-					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game, stopping.")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game.")
 				} else {
 					cwlog.DoLogCW("Deleted corrupted savegame.")
-					fact.CMS(cfg.Local.Channel.ChatChannel, "Save-game corrupted, performing roll-back.")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Save-game corrupted, performing automatic roll-back.")
 				}
 
 				fact.SetFactorioBooted(false)
@@ -910,30 +912,30 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				glob.ChatterLock.Lock()
 
 				//Do not ban for chat spam if game is lagging
-				if nores < 4 {
+				if nores < 5 && fact.PlayerLevelGet(pname, true) != 255 {
 					var bbuf string
 
 					//Automatically ban people for chat spam
 					//TODO: Make this configurable
-					if time.Since(glob.ChatterList[pname]) < time.Second*2 {
+					if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
 						glob.ChatterSpamScore[pname]++
 						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) < time.Millisecond*1250 {
+					} else if time.Since(glob.ChatterList[pname]) < constants.SpamFastThres {
 						glob.ChatterSpamScore[pname] += 2
 						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) > time.Second*6 {
+					} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
 						glob.ChatterSpamScore[pname] -= 1
 						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) > time.Second*10 {
+					} else if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
 						glob.ChatterSpamScore[pname] = 0
 						glob.ChatterList[pname] = time.Now()
 					}
 
-					if glob.ChatterSpamScore[pname] > 9 {
-						bbuf = fmt.Sprintf("/whisper %v [color=red]CHAT SPAM AUTO-BAN WARNING! SHUT UP![/color]\n", pname)
+					if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
+						bbuf = fmt.Sprintf("/whisper %v [color=red]***CHAT SPAM WARNING!***[/color]\n", pname)
 						fact.WriteFact(bbuf)
 
-					} else if glob.ChatterSpamScore[pname] > 12 {
+					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if cfg.Global.Paths.URLs.LogURL != "" {
 							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.Paths.URLs.LogURL, "/"), cfg.Local.Callsign, strings.TrimPrefix(glob.GameLogName, "log/"))
 						} else {
@@ -943,8 +945,10 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						fact.WriteFact(bbuf)
 					}
 				} else {
-					//Just zero it out to be safe
-					glob.ChatterSpamScore[pname] = 0
+					/* Lower score if server isn't responding */
+					if glob.ChatterSpamScore[pname] > 0 {
+						glob.ChatterSpamScore[pname]--
+					}
 				}
 
 				glob.ChatterLock.Unlock()
