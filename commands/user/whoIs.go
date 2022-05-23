@@ -34,7 +34,7 @@ func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 /*  Get info on a specific player */
 func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	var args []string = strings.Split(i.Message.Content, " ")
+	var args []string
 	layoutUS := "01-02-06 3:04 PM"
 
 	maxresults := constants.WhoisResults
