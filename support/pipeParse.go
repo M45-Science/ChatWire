@@ -178,6 +178,11 @@ func HandleChat() {
 							continue
 						}
 					} else {
+						/* Protect players from dumb mistakes with registration codes */
+						if handleIdiots(line) {
+							continue
+						}
+
 						if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
 							continue
 						}

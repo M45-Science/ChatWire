@@ -21,6 +21,18 @@ import (
 	"ChatWire/sclean"
 )
 
+/* Protect players from dumb mistakes with registration codes */
+func handleIdiots(line string) bool {
+	/* Protect players from dumb mistakes with registration codes */
+	if ProtectIdiots(line) {
+		buf := "You didn't enter that as a command. You posted your registration code publicly, invalidating code. Please read the directions more carefully."
+		fact.FactChat(buf)
+		return true
+	}
+
+	return false
+}
+
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
 	/********************
 	 * GET FACTORIO TIME

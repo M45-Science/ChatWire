@@ -228,7 +228,19 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	if m.Author.ID == s.State.User.ID || m.Author.Bot {
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	/* Protect players from dumb mistakes with registration codes, even on other maps */
+	if support.ProtectIdiots(m.Content) {
+		/* If they manage to post it into chat in Factorio on a different server,
+		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
+		buf := "You are supposed to type that into Factorio, not Discord... Invalididating code. Please read the directions more carefully..."
+		disc.DS.ChannelMessageSend(m.ChannelID, buf)
+	}
+
+	if m.Author.Bot {
 		return
 	}
 

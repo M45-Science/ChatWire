@@ -4,9 +4,35 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/glob"
 	"os"
 	"strings"
 )
+
+func ProtectIdiots(text string) bool {
+	//If there are any valid reg codes, and the text contains a dash we will take a look
+
+	var idiotID string = ""
+
+	if len(glob.PassList) > 0 && strings.ContainsAny(text, "-") {
+		for i, o := range glob.PassList {
+			if strings.ContainsAny(text, o.Code) {
+				glob.PassList[i].Code = ""
+				glob.PassList[i].DiscID = ""
+				glob.PassList[i].Time = 0
+				idiotID = i
+				break
+			}
+		}
+		if idiotID != "" {
+			delete(glob.PassList, idiotID)
+			return true
+		}
+		return false
+	}
+
+	return false
+}
 
 /*  IsPatreon checks if player has patreon role */
 func IsPatreon(id string) bool {
