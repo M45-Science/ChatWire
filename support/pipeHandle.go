@@ -137,9 +137,8 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 			pname := lineList[2]
 			code := lineList[3]
 
-			/* Filter just in case, and so accidental spaces won't ruin passcodes */
-			code = strings.ReplaceAll(code, " ", "")
-			pname = strings.ReplaceAll(pname, " ", "")
+			/* Filter non-letters */
+			inputCode := sclean.AlphaOnly(code)
 
 			codegood := true
 			codefound := false
@@ -147,7 +146,11 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 
 			glob.PasswordListLock.Lock()
 			for i, pass := range glob.PassList {
-				if pass.Code == code {
+
+				/* Case insensitive match */
+				chkCode := sclean.AlphaOnly(pass.Code)
+				if strings.EqualFold(chkCode, inputCode) {
+
 					codefound = true
 					/* Delete password from list */
 					pid := pass.DiscID
