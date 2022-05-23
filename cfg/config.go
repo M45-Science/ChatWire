@@ -296,9 +296,6 @@ func setGlobalDefaults() {
 		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
 	}
 	if Global.Paths.URLs.ArchiveURL == "" {
-		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/map-preview/"
-	}
-	if Global.Paths.URLs.ArchiveURL == "" {
 		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
 	}
 	if Global.Paths.Binaries.ImgCmd == "" {
