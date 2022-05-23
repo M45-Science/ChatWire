@@ -276,16 +276,15 @@ var cmds = []Command{
 
 func ClearCommands() {
 	if *glob.DoDeregisterCommands && disc.DS != nil {
-		for _, v := range CL {
-			if v.AppCmd != nil {
-				cwlog.DoLogCW(fmt.Sprintf("Deregistered command: %s", v.AppCmd.Name))
-				err := disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.AppCmd.ID)
-				if err != nil {
-					cwlog.DoLogCW(err.Error())
-				}
-
-				time.Sleep(constants.ApplicationCommandSleep)
+		cmds, _ := disc.DS.ApplicationCommands(cfg.Global.Discord.Application, cfg.Global.Discord.Guild)
+		for _, v := range cmds {
+			cwlog.DoLogCW(fmt.Sprintf("Deregistered command: %s", v.Name))
+			err := disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.ID)
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
 			}
+
+			time.Sleep(constants.ApplicationCommandSleep)
 		}
 	}
 }
