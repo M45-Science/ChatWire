@@ -67,22 +67,12 @@ A 'base' folder the chatwire folder resides in.<br>
 `~/factServers/`<br>
 <br>
 For ChatWire:<br>
-`~/factServers/cw-a/ChatWire-binary-here`<br>
+`./cw-a/ChatWire-binary-here`<br>
 <br>
 Factorio:<br>
-`~/factServers/fact-a/`<br>
+`./fact-a/`<br>
 <br>
 Binary:<br>
-`~/factServers/fact-a/bin/x64/Factorio`<br>
-<br>
-In the cw-global-config.json:<br>
-```
-"PathData": {
-		"FactorioServersRoot": "/home/user/factServers/",
-		"FactorioHomePrefix": "fact-",
-		"ChatWireHomePrefix": "cw-",
-		"FactorioBinary": "bin/x64/factorio",
-	},
- ```
+`./fact-a/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 
