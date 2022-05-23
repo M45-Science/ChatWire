@@ -39,6 +39,9 @@ Automatically create map preview directory.<br>
 Changed map seed generation, as well as new map names.<br>
 Fixed many typos.<br>
 Many other small adjustments.<br>
+Attempt to protect players from publicly posting registration codes.<br>
+(invalidates code if typed in chat/discord)<br>
+Automatically warn/inform players about using /register on members-only servers.<br>
 
 ### Requirements:
 Linux<br>
