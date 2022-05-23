@@ -21,24 +21,21 @@ func ProtectIdiots(text string) bool {
 			password := strings.ToLower(o.Code)
 			password = sclean.AlphaOnly(password)
 
-			if strings.ContainsAny(checkme, strings.ToLower(password)) {
-				glob.PassList[i].Code = ""
-				glob.PassList[i].DiscID = ""
-				glob.PassList[i].Time = 0
+			if strings.Contains(checkme, password) {
 				idiotID = i
 				break
 			}
 
 			/* Just in case they miss part of it when copying */
 			clen := len(password)
-			if clen > 4 {
-				trimEnd := checkme[0 : clen-3]
-				trimStart := checkme[3:]
+			if clen > 3 {
+				trimEnd := password[0 : clen-2]
+				trimStart := password[2:clen]
 
-				if strings.ContainsAny(trimEnd, password) {
+				if strings.Contains(checkme, trimEnd) {
 					idiotID = i
 					break
-				} else if strings.ContainsAny(trimStart, password) {
+				} else if strings.Contains(checkme, trimStart) {
 					idiotID = i
 					break
 				}
