@@ -79,7 +79,7 @@ func Map_reset(data string, doReport bool) {
 			cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed = 0.5
 			cfg.WriteLCfg()
 			SetAutoStart(false)
-			QuitFactorio()
+			QuitFactorio("Server rebooting for map reset...")
 		}
 	}
 

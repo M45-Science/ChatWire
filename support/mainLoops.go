@@ -58,9 +58,11 @@ func MainLoops() {
 					fact.WriteFact("/time")
 				}
 				if nores == 120 {
-					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio unresponsive for over two minutes... rebooting.")
+					msg := "Factorio unresponsive for over two minutes... rebooting."
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, msg)
 					fact.SetRelaunchThrottle(0)
-					fact.QuitFactorio()
+					fact.QuitFactorio(msg)
+
 					fact.WaitFactQuit()
 					fact.SetFactorioBooted(false)
 					fact.SetFactRunning(false)
@@ -509,7 +511,7 @@ func MainLoops() {
 			if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
 				if fact.IsFactRunning() && fact.IsFactorioBooted() {
 					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
-					fact.QuitFactorio()
+					fact.QuitFactorio("Server rebooting for maintenance.")
 					break //We don't need to loop anymore
 				}
 			}
@@ -544,13 +546,13 @@ func MainLoops() {
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.FactChat(fact.AddFactColor("orange", msg))
 							fact.SetUpdateWarnCounter(0)
-							fact.QuitFactorio()
+							fact.QuitFactorio("Rebooting for Factorio update.")
 							break /* Stop looping */
 						}
 						fact.SetUpdateWarnCounter(numwarn + 1)
 					} else {
 						fact.SetUpdateWarnCounter(0)
-						fact.QuitFactorio()
+						fact.QuitFactorio("Rebooting for Factorio update.")
 						break /* Stop looping */
 					}
 				}
@@ -589,7 +591,7 @@ func MainLoops() {
 					if fact.IsFactRunning() || fact.IsFactorioBooted() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting, closing Factorio.")
 						fact.SetAutoStart(false)
-						fact.QuitFactorio()
+						fact.QuitFactorio("Server halted, quitting Factorio.")
 						fact.WaitFactQuit()
 						fact.DoExit(false)
 					} else {
@@ -609,7 +611,7 @@ func MainLoops() {
 				if _, err = os.Stat(".qrestart"); err == nil {
 					if errb = os.Remove(".qrestart"); errb == nil {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio quick restarting!")
-						fact.QuitFactorio()
+						fact.QuitFactorio("Server quick restarting...")
 					} else if errb != nil && !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .qrestart file, ignoring.")
@@ -620,7 +622,7 @@ func MainLoops() {
 					if errb = os.Remove(".stop"); errb == nil {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio stopping!")
 						fact.SetAutoStart(false)
-						fact.QuitFactorio()
+						fact.QuitFactorio("Server manually stopped.")
 					} else if errb != nil && !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")

@@ -97,7 +97,11 @@ func WriteWhitelist() int {
 }
 
 /* Quit Factorio */
-func QuitFactorio() {
+func QuitFactorio(message string) {
+
+	if message == "" {
+		message = "Server quitting."
+	}
 
 	SetRelaunchThrottle(0)
 	SetNoResponseCount(0)
@@ -108,10 +112,10 @@ func QuitFactorio() {
 
 		/* Running, but players connected... Give them quick feedback. */
 	} else if IsFactorioBooted() && GetNumPlayers() > 0 {
-		FactChat("[color=red]Server quitting.[/color]")
-		FactChat("[color=green]Server quitting..[/color]")
-		FactChat("[color=blue]Server quitting...[/color]")
-		time.Sleep(time.Second * 5)
+		FactChat("[color=red]" + message + "[/color]")
+		FactChat("[color=green]" + message + "[/color]")
+		FactChat("[color=blue]" + message + "[/color]")
+		time.Sleep(time.Second * 3)
 		WriteFact("/quit")
 	}
 }
@@ -416,7 +420,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				return
 			} else {
 				SetAutoStart(false)
-				QuitFactorio()
+				QuitFactorio("Server rebooting for map rewind...")
 
 				WaitFactQuit()
 				selSaveName := path + "/" + autoSaveStr

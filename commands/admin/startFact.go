@@ -14,7 +14,7 @@ func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		buf := "Restarting Factorio..."
 		disc.EphemeralResponse(s, i, "Status:", buf)
-		fact.QuitFactorio()
+		fact.QuitFactorio("Server rebooting...")
 	} else {
 		buf := "Starting Factorio..."
 		disc.EphemeralResponse(s, i, "Status:", buf)

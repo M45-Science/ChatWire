@@ -157,7 +157,7 @@ func main() {
 	fact.SetAutoStart(false)
 	fact.SetCWReboot(false)
 	fact.SetQueued(false)
-	fact.QuitFactorio()
+	fact.QuitFactorio("Server quitting...")
 	fact.WaitFactQuit()
 	fact.DoExit(false)
 }

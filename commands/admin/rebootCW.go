@@ -14,5 +14,5 @@ func RebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	fact.SetCWReboot(true)
 	fact.SetRelaunchThrottle(0)
-	fact.QuitFactorio()
+	fact.QuitFactorio("Server rebooting...")
 }

@@ -16,7 +16,7 @@ func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		buf := "Stopping Factorio."
 		disc.EphemeralResponse(s, i, "Status:", buf)
-		fact.QuitFactorio()
+		fact.QuitFactorio("Server quitting...")
 	} else {
 		buf := "Factorio isn't running, disabling auto-reboot."
 		disc.EphemeralResponse(s, i, "Warning:", buf)
