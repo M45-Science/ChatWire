@@ -331,14 +331,14 @@ func DoUpdateChannelName(doSort bool) {
 	}
 }
 
-func ShowRewindList(s *discordgo.Session) {
+func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
 
 	files, err := ioutil.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
 		log.Fatal(err)
-		CMS(cfg.Local.Channel.ChatChannel, "Error: Unable to read autosave directory.")
+		disc.EphemeralResponse(s, i, "Error:", "Unable to read saves directory.")
 	}
 
 	lastNum := -1
@@ -398,9 +398,9 @@ func ShowRewindList(s *discordgo.Session) {
 	}
 
 	if lastNum == -1 {
-		CMS(cfg.Local.Channel.ChatChannel, "No autosaves found.")
+		disc.EphemeralResponse(s, i, "Error:", "No autosaves were found.")
 	} else {
-		CMS(cfg.Local.Channel.ChatChannel, buf)
+		disc.EphemeralResponse(s, i, "Available autosaves:", buf)
 	}
 }
 

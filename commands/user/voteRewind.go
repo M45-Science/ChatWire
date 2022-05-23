@@ -106,7 +106,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	/* Only if allowed */
-	if !disc.CheckRegular(i.Message.Member.Roles) && !disc.CheckModerator(i.Message.Member.Roles) {
+	if !disc.CheckRegular(i.Member.Roles) && !disc.CheckModerator(i.Member.Roles) {
 		buf := "You must have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role to use this command. See /register and the read-this-first channel for more info."
 		disc.EphemeralResponse(s, i, "Notice:", buf)
 		return
@@ -117,7 +117,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		_, err = strconv.Atoi(args[0])
 	}
 	if argnum == 0 || err != nil {
-		fact.ShowRewindList(s)
+		fact.ShowRewindList(s, i)
 		buf, _ := fact.TallyRewindVotes()
 		if buf != "" {
 			fact.CMS(cfg.Local.Channel.ChatChannel, buf)

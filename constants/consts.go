@@ -45,7 +45,7 @@ const (
 	VoteLifetime          = 60 * 3 /* How long a vote lasts */
 	MaxRewindChanges      = 2      /* Max number of times a player can change their vote */
 	MaxVotesPerMap        = 4      /* Max number of votes per map */
-	MaxRewindResults      = 20
+	MaxRewindResults      = 40
 
 	/* Max results to return */
 	WhoisResults = 20
