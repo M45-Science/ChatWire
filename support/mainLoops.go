@@ -38,11 +38,12 @@ func MainLoops() {
 			time.Sleep(constants.WatchdogInterval)
 
 			/* Check for updates */
-			if !fact.IsFactRunning() && (fact.IsQueued() || fact.IsSetRebootCW() || fact.GetDoUpdateFactorio()) {
-				if fact.GetDoUpdateFactorio() {
+			if !fact.IsFactRunning() &&
+				(fact.IsQueued() || fact.IsSetRebootCW() || fact.GetDoUpdateFactorio()) {
+				if time.Since(glob.Uptime) > time.Minute*constants.BootUpdateDelayMin && fact.GetDoUpdateFactorio() {
 					fact.FactUpdate()
 				}
-				fact.DoExit(true)
+				fact.DoExit(false)
 
 				/* We are running normally */
 			} else if fact.IsFactRunning() && fact.IsFactorioBooted() {
