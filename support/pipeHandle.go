@@ -325,8 +325,15 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") {
 		cwlog.DoLogGame(NoDS)
+
+		/* Handle softmod and vanilla */
 		if glob.SoftModVersion != constants.Unknown {
 			fact.WriteFact(glob.OnlineCommand)
+		} else {
+			if NoDSlistlen > 1 {
+				buf := strings.Join(NoDSlist[1:NoDSlistlen], " ")
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+			}
 		}
 
 		if NoDSlistlen > 1 {
@@ -353,6 +360,8 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 		/* Don't bother on whitelist servers */
 		if lineListLen > 2 && !cfg.Local.Options.Whitelist {
 			pname := lineList[1]
+			go fact.UpdateSeen(pname)
+
 			if pname != "" && glob.PlayerSus != nil {
 				p := disc.GetPlayerDataFromName(pname)
 				if p != nil && p.Name != "" && p.Level < 1 {
@@ -371,7 +380,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 						if glob.PlayerSus[pname] > 0 {
 							glob.PlayerSus[pname]--
 						}
-					} else { //Other actions like mine, deconstruct
+					} else { //Other actions like: mine, deconstruct
 						glob.PlayerSus[pname]++
 
 						if glob.PlayerSus[pname] > 15 {
