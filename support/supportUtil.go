@@ -10,18 +10,39 @@ import (
 )
 
 func ProtectIdiots(text string) bool {
-	//If there are any valid reg codes, and the text contains a dash we will take a look
+	//If there are any active register codes, check if an idiot pasted it in chat
+	idiotID := ""
+	checkme := strings.ToLower(text)
+	checkme = strings.ReplaceAll(checkme, "-", "")
+	checkme = strings.ReplaceAll(checkme, " ", "")
 
-	var idiotID string = ""
-
-	if len(glob.PassList) > 0 && strings.ContainsAny(text, "-") {
+	if len(glob.PassList) > 0 {
 		for i, o := range glob.PassList {
-			if strings.ContainsAny(text, o.Code) {
+			password := strings.ToLower(o.Code)
+			password = strings.ReplaceAll(password, "-", "")
+			password = strings.ReplaceAll(password, " ", "")
+
+			if strings.ContainsAny(checkme, strings.ToLower(password)) {
 				glob.PassList[i].Code = ""
 				glob.PassList[i].DiscID = ""
 				glob.PassList[i].Time = 0
 				idiotID = i
 				break
+			}
+
+			/* Just in case they miss part of it when copying */
+			clen := len(password)
+			if clen > 4 {
+				trimEnd := checkme[0 : clen-3]
+				trimStart := checkme[3:]
+
+				if strings.ContainsAny(trimEnd, password) {
+					idiotID = i
+					break
+				} else if strings.ContainsAny(trimStart, password) {
+					idiotID = i
+					break
+				}
 			}
 		}
 		if idiotID != "" {
