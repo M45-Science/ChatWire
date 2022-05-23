@@ -43,6 +43,8 @@ Attempt to protect players from publicly posting registration codes.<br>
 (invalidates code if typed in chat/discord)<br>
 Automatically warn/inform players about using /register on members-only servers.<br>
 Factorio /register command is now more forgiving about code formatting.<br>
+More informative shutdown/reboot messages in Factorio.<br>
+
 
 ### Requirements:
 Linux<br>
