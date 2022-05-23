@@ -355,7 +355,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 						if glob.PlayerSus[pname] > 0 {
 							glob.PlayerSus[pname]--
 						}
-					} else {
+					} else { //Other actions like mine, deconstruct
 						glob.PlayerSus[pname]++
 
 						if glob.PlayerSus[pname] > 15 {
