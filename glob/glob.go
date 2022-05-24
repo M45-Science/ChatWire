@@ -64,6 +64,7 @@ type VoteTallyData struct {
 	Count    int
 }
 
+/* From softmod /online command */
 type OnlinePlayerData struct {
 	Name       string
 	ScoreTicks int

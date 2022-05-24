@@ -141,8 +141,8 @@ func GenerateFactorioConfig() bool {
 		Max_players: 0,
 		Visibility: VisData{
 			Public: normalMode, /* DEBUG ONLY */
-			Lan:    false,      /* DEBUG ONLY */
-			Steam:  normalMode,
+			Lan:    false,
+			Steam:  normalMode, /* DEBUG ONLY */
 		},
 
 		Username:                  cfg.Global.Factorio.Username,

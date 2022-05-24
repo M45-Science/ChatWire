@@ -45,7 +45,7 @@ func DeleteOldSav() {
 
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
-	if IsFactorioBooted() {
+	if IsFactorioBooted() && IsFactRunning() {
 		if cfg.Local.Options.Whitelist {
 			if level > 0 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
@@ -188,7 +188,7 @@ func StringToLevel(input string) int {
 		level = 2
 	} else if strings.EqualFold(input, "banished") {
 		level = 0
-	} else if strings.EqualFold(input, "ADMINS") {
+	} else if strings.EqualFold(input, "admins") {
 		level = 255
 	}
 
@@ -409,7 +409,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 	num, err := strconv.Atoi(arg)
 	/* Seems to be a number */
 	if err == nil {
-		if num > 0 || num < 9999 {
+		if num >= 0 {
 			/* Check if file is valid and found */
 			autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
 			_, err := os.Stat(path + "/" + autoSaveStr)

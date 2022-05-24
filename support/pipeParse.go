@@ -121,9 +121,6 @@ func HandleChat() {
 							continue
 						}
 
-						/*if handleBan(NoDS, NoDSlist, NoDSlistlen) {
-							continue
-						}*/
 						go handleBan(NoDS, NoDSlist, NoDSlistlen)
 
 						if handleSVersion(line, lineList, lineListlen) {

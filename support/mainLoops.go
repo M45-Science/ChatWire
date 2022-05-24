@@ -606,8 +606,7 @@ func MainLoops() {
 
 			/* Only if game is running */
 			if fact.IsFactRunning() && fact.IsFactorioBooted() {
-				/* Quick reboot
-				 * This should eventually grab save name from file */
+				/* Quick reboot */
 				if _, err = os.Stat(".qrestart"); err == nil {
 					if errb = os.Remove(".qrestart"); errb == nil {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio quick restarting!")

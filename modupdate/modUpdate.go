@@ -21,7 +21,6 @@ func CheckMods(force bool, doReport bool) {
 	/* Update mods if needed */
 	modPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
 		constants.ModsFolder + "/"
-	mCount := 0
 
 	files, err := ioutil.ReadDir(modPath)
 	if err != nil {
@@ -30,13 +29,9 @@ func CheckMods(force bool, doReport bool) {
 
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".zip") {
-			mCount++
+			UpdateMods(doReport)
+			break
 		}
-	}
-
-	/* There are mods, so check for updates */
-	if mCount > 0 {
-		UpdateMods(doReport)
 	}
 }
 
@@ -67,8 +62,6 @@ func UpdateMods(doReport bool) {
 		"--update",
 	}
 
-	//temp := strings.ReplaceAll(strings.Join(cmdargs, " "), cfg.Global.FactorioData.Token, "**private**")
-	//cwlog.DoLogCW(temp)
 	cmd := exec.CommandContext(ctx, cfg.Global.Paths.Binaries.UpdaterShell, cmdargs...)
 
 	o, err := cmd.CombinedOutput()

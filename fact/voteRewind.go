@@ -156,7 +156,6 @@ func ReadRewindVotes() bool {
 			}
 
 			glob.VoteBox = temp
-			//cwlog.DoLogCW("ReadRewindVotes: Successfully read file")
 			return true
 		} else {
 			cwlog.DoLogCW("ReadRewindVotes: ReadFile failure")
