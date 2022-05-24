@@ -25,9 +25,33 @@ import (
 )
 
 func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	a := i.ApplicationCommandData()
 
-	//a := i.ApplicationCommandData()
-
+	for _, o := range a.Options {
+		arg := o.StringValue()
+		if arg == "start" {
+			StartFact(s, i)
+			return
+		} else if arg == "stop" {
+			StopFact(s, i)
+			return
+		} else if arg == "new-map-preview" {
+			NewMapPrev(s, i)
+			return
+		} else if arg == "new-map" {
+			MakeNewMap(s, i)
+			return
+		} else if arg == "update-factorio" {
+			UpdateFact(s, i)
+			return
+		} else if arg == "update-mods" {
+			UpdateMods(s, i)
+			return
+		} else if arg == "archive-map" {
+			ArchiveMap(s, i)
+			return
+		}
+	}
 }
 
 /* RandomMap locks FactorioLaunchLock */

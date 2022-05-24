@@ -11,6 +11,24 @@ import (
 )
 
 func ChatWire(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	a := i.ApplicationCommandData()
+
+	for _, o := range a.Options {
+		arg := o.StringValue()
+		if arg == "reboot" {
+			RebootCW(s, i)
+			return
+		} else if arg == "queue-reboot" {
+			QueReboot(s, i)
+			return
+		} else if arg == "force-reboot" {
+			ForceReboot(s, i)
+			return
+		} else if arg == "reload-config" {
+			ReloadConfig(s, i)
+			return
+		}
+	}
 }
 
 /* Reboots cw */

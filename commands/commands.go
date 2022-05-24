@@ -86,12 +86,24 @@ var cmds = []Command{
 						Value: "stop",
 					},
 					{
+						Name:  "new-map-preview",
+						Value: "new-map-preview",
+					},
+					{
 						Name:  "new-map",
 						Value: "new-map",
 					},
 					{
-						Name:  "update",
-						Value: "update",
+						Name:  "update-factorio",
+						Value: "update-factorio",
+					},
+					{
+						Name:  "update-mods",
+						Value: "update-mods",
+					},
+					{
+						Name:  "archive-map",
+						Value: "archive-map",
 					},
 				},
 			},
