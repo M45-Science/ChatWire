@@ -1,17 +1,18 @@
 package admin
 
 import (
+	"fmt"
+
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/support"
-	"fmt"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 /* Change server settings */
-func Config(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 	buf := ""

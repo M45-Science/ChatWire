@@ -1,14 +1,6 @@
 package admin
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/constants"
-	"ChatWire/cwlog"
-	"ChatWire/disc"
-	"ChatWire/fact"
-	"ChatWire/glob"
-	"ChatWire/modupdate"
-	"ChatWire/sclean"
 	"bytes"
 	"encoding/base64"
 	"encoding/binary"
@@ -21,7 +13,19 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/disc"
+	"ChatWire/fact"
+	"ChatWire/glob"
+	"ChatWire/modupdate"
+	"ChatWire/sclean"
 )
+
+func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+}
 
 /* RandomMap locks FactorioLaunchLock */
 func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {

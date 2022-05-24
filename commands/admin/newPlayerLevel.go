@@ -10,7 +10,7 @@ import (
 )
 
 /* Set a player's level */
-func SetPlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var aname string
 	var alevel int

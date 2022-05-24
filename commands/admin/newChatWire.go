@@ -1,13 +1,16 @@
 package admin
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/support"
-
-	"github.com/bwmarrin/discordgo"
 )
+
+func ChatWire(s *discordgo.Session, i *discordgo.InteractionCreate) {
+}
 
 /* Reboots cw */
 func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {

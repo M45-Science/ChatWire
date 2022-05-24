@@ -60,7 +60,7 @@ var cmds = []Command{
 		Description: "Server config options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.Config, ModeratorOnly: true},
+		Command: admin.ConfigServer, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-level",
@@ -106,7 +106,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.SetPlayerLevel, ModeratorOnly: true},
+		Command: admin.PlayerLevel, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rewind-map",
@@ -144,7 +144,7 @@ var cmds = []Command{
 		Description: "Shows detailed info about players currently online.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.PlayersOnline},
+		Command: user.Players},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-rewind",
