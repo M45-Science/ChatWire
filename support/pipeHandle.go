@@ -259,9 +259,6 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 *****************/
 	if strings.HasPrefix(NoDS, "[JOIN]") {
 		cwlog.DoLogGame(NoDS)
-		if glob.SoftModVersion != constants.Unknown {
-			fact.WriteFact(glob.OnlineCommand)
-		}
 
 		if NoDSlistlen > 1 {
 			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
@@ -298,9 +295,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 		cwlog.DoLogGame(NoDS)
 
 		/* Handle softmod and vanilla */
-		if glob.SoftModVersion != constants.Unknown {
-			fact.WriteFact(glob.OnlineCommand)
-		} else {
+		if glob.SoftModVersion == constants.Unknown {
 			if NoDSlistlen > 1 {
 				buf := strings.Join(NoDSlist[1:NoDSlistlen], " ")
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
@@ -444,6 +439,8 @@ func handleSlowConnect(NoTC string, line string) {
 		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
 			if strings.Contains(line, "removing peer") {
+
+				/* We do this, so we can get a corrected player count */
 				if glob.SoftModVersion != constants.Unknown {
 					fact.WriteFact(glob.OnlineCommand)
 				}
@@ -653,9 +650,6 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
-		if glob.SoftModVersion != constants.Unknown {
-			fact.WriteFact(glob.OnlineCommand)
-		}
 	}
 	return false
 }
