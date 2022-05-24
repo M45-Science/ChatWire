@@ -1,4 +1,4 @@
-package admin
+package moderator
 
 import (
 	"io/ioutil"

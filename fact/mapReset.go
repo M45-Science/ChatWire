@@ -13,14 +13,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 func GetMapTypeNum(mapt string) int {
@@ -107,12 +107,15 @@ func Map_reset(data string, doReport bool) {
 		/* Attach map, send to chat */
 		dData := &discordgo.MessageSend{Files: []*discordgo.File{
 			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
-		disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
+		_, err := disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
 		defer from.Close()
 
 		/* Make directory if it does not exist */
 		newdir := fmt.Sprintf("%v%v%v/", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix)
-		err := os.MkdirAll(newdir, os.ModePerm)
+		err = os.MkdirAll(newdir, os.ModePerm)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}

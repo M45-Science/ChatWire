@@ -10,6 +10,7 @@ import (
 
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
+	"ChatWire/commands/moderator"
 	"ChatWire/commands/user"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
@@ -54,13 +55,13 @@ var cmds = []Command{
 		Description: "automated map reset",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.MapReset, ModeratorOnly: true},
+		Command: moderator.MapReset, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-server",
 		Description: "Server config options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.ConfigServer, ModeratorOnly: true},
+		Command: moderator.ConfigServer, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-level",
@@ -106,7 +107,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.PlayerLevel, ModeratorOnly: true},
+		Command: moderator.PlayerLevel, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rewind-map",
@@ -129,7 +130,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.RewindMap, ModeratorOnly: true},
+		Command: moderator.RewindMap, ModeratorOnly: true},
 
 	/* PLAYER COMMMANDS -------------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -268,12 +269,12 @@ func filterDesc(desc string) string {
 
 func LinkConfigData(p int) {
 
-	for i, o := range admin.SettingList {
+	for i, o := range moderator.SettingList {
 		if i > 25 {
 			cwlog.DoLogCW("LinkConfigData: Max 25 settings reached!")
 			break
 		}
-		if o.Type == admin.TYPE_STRING {
+		if o.Type == moderator.TYPE_STRING {
 
 			if len(o.ValidStrings) > 0 {
 				choices := []*discordgo.ApplicationCommandOptionChoice{}
@@ -331,7 +332,7 @@ func LinkConfigData(p int) {
 				})
 			}
 
-		} else if o.Type == admin.TYPE_INT {
+		} else if o.Type == moderator.TYPE_INT {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        filterName(o.Name),
@@ -339,13 +340,13 @@ func LinkConfigData(p int) {
 				MinValue:    glob.Ptr(float64(o.MinInt)),
 				MaxValue:    float64(o.MaxInt),
 			})
-		} else if o.Type == admin.TYPE_BOOL {
+		} else if o.Type == moderator.TYPE_BOOL {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
 			})
-		} else if o.Type == admin.TYPE_F32 {
+		} else if o.Type == moderator.TYPE_F32 {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
@@ -353,7 +354,7 @@ func LinkConfigData(p int) {
 				MinValue:    glob.Ptr(float64(o.MinF32)),
 				MaxValue:    float64(o.MaxF32),
 			})
-		} else if o.Type == admin.TYPE_F64 {
+		} else if o.Type == moderator.TYPE_F64 {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),

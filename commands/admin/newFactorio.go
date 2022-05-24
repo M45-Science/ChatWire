@@ -25,6 +25,9 @@ import (
 )
 
 func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	//a := i.ApplicationCommandData()
+
 }
 
 /* RandomMap locks FactorioLaunchLock */
@@ -56,7 +59,7 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	ourseed := int(t.UnixNano() - constants.CWEpoch)
 
 	buf := new(bytes.Buffer)
-	_ = binary.Write(buf, binary.BigEndian, ourseed)
+	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
 	fact.LastMapSeed = ourseed
 	MapPreset := cfg.Local.Settings.MapPreset
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.Settings.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
@@ -137,7 +140,10 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	respData := &discordgo.InteractionResponseData{Files: []*discordgo.File{{Name: jpgpath, Reader: to}}}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	s.InteractionRespond(i.Interaction, resp)
+	err = s.InteractionRespond(i.Interaction, resp)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
 }
 
 /* Generate map */
@@ -188,7 +194,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
 
-	_ = binary.Write(buf, binary.BigEndian, ourseed)
+	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	filename := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-" + ourcode + ".zip"
 
@@ -246,11 +252,6 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unknown error."})
 	f := discordgo.WebhookParams{Embeds: elist}
 	disc.FollowupResponse(s, i, &f)
-}
-
-func MapReset(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(s, i, "Status:", "Resetting map...")
-	fact.Map_reset("", true)
 }
 
 /* Archive map */
