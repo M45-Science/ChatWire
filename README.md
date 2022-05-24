@@ -42,6 +42,7 @@ Many other small adjustments.<br>
 Attempt to protect players from publicly posting registration codes.<br>
 (invalidates code if typed in chat/discord)<br>
 Automatically warn/inform players about using /register on members-only servers.<br>
+Some commands like /register will now all be handled by the 'primary server', and will work in any discord channel.<br>
 Factorio /register command is now more forgiving about code formatting.<br>
 More informative shutdown/reboot messages in Factorio.<br>
 Slow-Connect now detects players disconnecting while trying to catch up.<br>
