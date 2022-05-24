@@ -34,8 +34,6 @@ var BugOne float64 = 1
 var cmds = []Command{
 
 	/* Admin Commands */
-
-	//Make "reboot" command with all of these contained __START__
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "chatwire",
 		Description: "reboot, queue-reboot, force-reboot and reload-config",
@@ -45,11 +43,18 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",
-		Description: "start, stop, map-reset, new-map, archive-map, update, update-mods",
+		Description: "start, stop, map-reset, new-map, archive-map, update",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.Factorio, AdminOnly: true},
 
+	/* MODERATOR COMMANDS ---------------- */
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "map-reset",
+		Description: "automated map reset",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.MapReset, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-server",
 		Description: "Server config options.",
@@ -135,7 +140,7 @@ var cmds = []Command{
 		Command: user.Info},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "players-online",
+		Name:        "players",
 		Description: "Shows detailed info about players currently online.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
