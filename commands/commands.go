@@ -21,10 +21,11 @@ import (
 
 type Command struct {
 	Command       func(s *discordgo.Session, i *discordgo.InteractionCreate)
+	AppCmd        *discordgo.ApplicationCommand
 	ModeratorOnly bool
 	AdminOnly     bool
-	AppCmd        *discordgo.ApplicationCommand
-	PrimaryOnly   bool
+
+	PrimaryOnly bool
 }
 
 var CL []Command
@@ -36,113 +37,28 @@ var cmds = []Command{
 
 	//Make "reboot" command with all of these contained __START__
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "stop-factorio",
-		Description: "Stops Factorio, if running.",
+		Name:        "chatwire",
+		Description: "reboot, queue-reboot, force-reboot and reload-config",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.StopFact, AdminOnly: true},
+		Command: admin.ChatWire, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "start-factorio",
-		Description: "Starts OR restarts Factorio, even if already running.",
+		Name:        "factorio",
+		Description: "start, stop, map-reset, new-map, archive-map, update, update-mods",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.StartFact, AdminOnly: true},
+		Command: admin.Factorio, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "reboot-chatwire",
-		Description: "Closes Factorio (if running), and restarts ChatWire.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.RebootCW, AdminOnly: true},
-
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "force-reboot-chatwire",
-		Description: "Big red button. Don't use this lightly. This does not cleanly exit Factorio or ChatWire.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.ForceReboot, AdminOnly: true},
-
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "queue-reboot",
-		Description: "Queues up a reboot. This waits until no players are online to reboot Factorio and ChatWire.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.QueReboot, AdminOnly: true},
-	//Make "reboot" command with all of these contained __END__
-
-	//Put all these in a map command
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "archive-map",
-		Description: "Archives the current map to our website, and posts the link to the chat.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.ArchiveMap, AdminOnly: true},
-
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "new-map-preview",
-		Description: "Posts a new map, with preview to discord. Use /make-new-map after to create it.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.NewMapPrev, AdminOnly: true},
-
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "make-new-map",
-		Description: "Creates a new map.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.MakeNewMap, AdminOnly: true},
-
-	//Put this in a "update" command
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "update-factorio",
-		Description: "Updates Factorio to the latest version if there is a new version available.",
-		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Name:        "cancel",
-				Description: "Cancel an ongoing upgrade, and disable auto-update.",
-				Required:    false,
-			},
-		},
-	},
-		Command: admin.UpdateFact, AdminOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "reload-config",
-		Description: "Reloads config files from disk, only used when manually editing config files.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.ReloadConfig, AdminOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "debug",
-		Description: "Only used for development and testing.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.DebugStat, AdminOnly: true},
-	//Put this in a "update" command
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "update-mods",
-		Description: "Updates Factorio mods to the latest version if there is a new version available.",
-	},
-		Command: admin.UpdateMods, AdminOnly: true},
-
-	/*  Moderator Commands ------------- */
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "config",
-		Description: "Change server configuration options.",
+		Name:        "config-server",
+		Description: "Server config options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.Config, ModeratorOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "map-reset",
-		Description: "Stops Factorio, archives current map, generates new one, and starts Factorio.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.MapReset, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "player-set",
+		Name:        "player-level",
 		Description: "Sets a player's rank.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -185,7 +101,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.SetPlayerLevel, ModeratorOnly: true, PrimaryOnly: true},
+		Command: admin.SetPlayerLevel, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rewind-map",
@@ -210,53 +126,21 @@ var cmds = []Command{
 	},
 		Command: admin.RewindMap, ModeratorOnly: true},
 
-	/* Move to config */
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "set-map-seed",
-		Description: "Sets the map seed for the next map reset. Value is cleared after use.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: admin.SetSeed, ModeratorOnly: true},
-
 	/* PLAYER COMMMANDS -------------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "whois",
-		Description: "Shows information about a player.",
+		Name:        "info",
+		Description: "Shows information about the server.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Whois, ModeratorOnly: false, PrimaryOnly: true},
+		Command: user.Info},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "players-online",
 		Description: "Shows detailed info about players currently online.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.PlayersOnline, ModeratorOnly: false},
+		Command: user.PlayersOnline},
 
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "server-info",
-		Description: "Shows detailed information on the server settings.",
-		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Name:        "verbose",
-				Description: "Show everything, instead of just relevant info.",
-				Required:    false,
-			},
-		},
-	},
-		Command: user.ServerInfo, ModeratorOnly: false},
-
-	//Cleanup, possibly handle other chat channels
-	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "register",
-		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Command: user.Register, ModeratorOnly: false, PrimaryOnly: true},
-
-	//Add params, make slicker
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-rewind",
 		Description: "Vote to rewind the map to the specified autosave (two votes needed!).",
@@ -271,7 +155,20 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: user.VoteRewind, ModeratorOnly: false},
+		Command: user.VoteRewind},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "register",
+		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.Register, PrimaryOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "whois",
+		Description: "Shows information about <player>",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.Info, PrimaryOnly: true},
 }
 
 func ClearCommands() {

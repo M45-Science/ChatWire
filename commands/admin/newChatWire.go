@@ -1,13 +1,40 @@
 package admin
 
 import (
-	"github.com/bwmarrin/discordgo"
-
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/support"
+
+	"github.com/bwmarrin/discordgo"
 )
+
+/* Reboots cw */
+func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	disc.EphemeralResponse(s, i, "Status:", "Rebooting!")
+	fact.SetRelaunchThrottle(0)
+	fact.DoExit(false)
+}
+
+/* Reboot when server is empty */
+func QueReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	if !fact.IsQueued() {
+		disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
+		fact.SetQueued(true)
+	}
+}
+
+/*  Restart saves and restarts the server */
+func RebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	disc.EphemeralResponse(s, i, "Status:", "Rebooting ChatWire...")
+
+	fact.SetCWReboot(true)
+	fact.SetRelaunchThrottle(0)
+	fact.QuitFactorio("Server rebooting...")
+}
 
 /* Reload config files */
 func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
