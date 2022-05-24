@@ -39,6 +39,33 @@ var cmds = []Command{
 		Name:        "chatwire",
 		Description: "reboot, queue-reboot, force-reboot and reload-config",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "start",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "start or restart factorio.",
+			},
+			{
+				Name:        "stop",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "stop factorio.",
+			},
+			{
+				Name:        "queue-reboot",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "queue a reboot for the next time the server is unoccupied.s",
+			},
+			{
+				Name:        "force-reboot",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Never use this, force-reboots.",
+			},
+			{
+				Name:        "reload-config",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "reload configuration file from disk, this is only helpful if manually editing configuration files.",
+			},
+		},
 	},
 		Command: admin.ChatWire, AdminOnly: true},
 
