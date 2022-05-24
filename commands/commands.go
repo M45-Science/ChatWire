@@ -37,33 +37,31 @@ var cmds = []Command{
 	/* Admin Commands */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "chatwire",
-		Description: "reboot, queue-reboot, force-reboot and reload-config",
-		Type:        discordgo.ChatApplicationCommand,
+		Description: "Actions specific to ChatWire.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "start",
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Description: "start or restart factorio.",
-			},
-			{
-				Name:        "stop",
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Description: "stop factorio.",
-			},
-			{
-				Name:        "queue-reboot",
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Description: "queue a reboot for the next time the server is unoccupied.s",
-			},
-			{
-				Name:        "force-reboot",
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Description: "Never use this, force-reboots.",
-			},
-			{
-				Name:        "reload-config",
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Description: "reload configuration file from disk, this is only helpful if manually editing configuration files.",
+				Name:        "action",
+				Description: "The action to perform.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "reboot",
+						Value: "reboot",
+					},
+					{
+						Name:  "queue-reboot",
+						Value: "queue-reboot",
+					},
+					{
+						Name:  "force-reboot",
+						Value: "force-rebot",
+					},
+					{
+						Name:  "reload-config",
+						Value: "reload-config",
+					},
+				},
 			},
 		},
 	},
@@ -71,8 +69,33 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",
-		Description: "start, stop, map-reset, new-map, archive-map, update",
-		Type:        discordgo.ChatApplicationCommand,
+		Description: "Actions specific to Factorio.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "action",
+				Description: "The action to perform.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "start",
+						Value: "start",
+					},
+					{
+						Name:  "stop",
+						Value: "stop",
+					},
+					{
+						Name:  "new-map",
+						Value: "new-map",
+					},
+					{
+						Name:  "update",
+						Value: "update",
+					},
+				},
+			},
+		},
 	},
 		Command: admin.Factorio, AdminOnly: true},
 
@@ -247,7 +270,7 @@ func RegisterCommands(s *discordgo.Session) {
 			}
 			time.Sleep(constants.ApplicationCommandSleep)
 
-			if strings.EqualFold(o.AppCmd.Name, "config") {
+			if strings.EqualFold(o.AppCmd.Name, "config-server") {
 				LinkConfigData(i)
 			}
 
