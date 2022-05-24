@@ -69,7 +69,6 @@ func DoExit(delay bool) {
 
 	/* File locks */
 	glob.PlayerListWriteLock.Lock()
-	glob.RecordPlayersWriteLock.Lock()
 
 	cwlog.DoLogCW("Closing log files.")
 	glob.GameLogDesc.Close()

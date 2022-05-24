@@ -113,10 +113,6 @@ var (
 	PassList         map[string]*PassData
 	PasswordListLock sync.RWMutex
 
-	/* Login count */
-	NumLogins     = 0
-	NumLoginsLock sync.RWMutex
-
 	/* Player database status */
 	PlayerListUpdated       = false
 	PlayerListUpdatedLock   sync.Mutex
@@ -124,11 +120,6 @@ var (
 	PlayerListDirtyLock     sync.Mutex
 	PlayerListSeenDirty     = false
 	PlayerListSeenDirtyLock sync.Mutex
-
-	/* Max players online record */
-	RecordPlayers          = 0
-	RecordPlayersWriteLock sync.Mutex
-	RecordPlayersLock      sync.RWMutex
 
 	/* Factorio server watchdog */
 	NoResponseCount     = 0

@@ -57,14 +57,6 @@ func SetDoUpdateFactorio(val bool) {
 	DoUpdateFactorioLock.Unlock()
 }
 
-func GetNumLogins() int {
-	glob.NumLoginsLock.RLock()
-	temp := glob.NumLogins
-	glob.NumLoginsLock.RUnlock()
-
-	return temp
-}
-
 func GetPausedTicks() int {
 	PausedTicksLock.RLock()
 	temp := PausedTicks

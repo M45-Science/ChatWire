@@ -121,10 +121,6 @@ func main() {
 	disc.ReadRoleList()
 	banlist.ReadBanFile()
 
-	/* Load player database and max-online records */
-	fact.LoadPlayers()
-	fact.LoadRecord()
-
 	/* Load old votes */
 	fact.ReadRewindVotes()
 

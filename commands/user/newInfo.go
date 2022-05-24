@@ -59,7 +59,7 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	if fact.GametimeString != constants.Unknown {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
-		buf = buf + fmt.Sprintf("%17v: %v (most ever %v)\n", "Players online", fact.GetNumPlayers(), glob.RecordPlayers)
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.GetNumPlayers())
 	}
 
 	/* SETTINGS */

@@ -253,25 +253,6 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 			nump, _ := strconv.Atoi(poc)
 			fact.SetNumPlayers(nump)
 
-			glob.RecordPlayersLock.Lock()
-			if nump > glob.RecordPlayers {
-				glob.RecordPlayers = nump
-
-				/* New thread, avoid deadlock */
-				go func() {
-					fact.WriteRecord()
-				}()
-
-				buf := fmt.Sprintf("**New record!** Players online: %v", glob.RecordPlayers)
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-
-				/* write to Factorio as well */
-				buf = fmt.Sprintf("New record! Players online: %v", glob.RecordPlayers)
-				fact.FactChat(buf)
-
-			}
-			glob.RecordPlayersLock.Unlock()
-
 			fact.UpdateChannelName()
 		}
 		return true
@@ -291,9 +272,6 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 		if NoDSlistlen > 1 {
 			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
-			glob.NumLoginsLock.Lock()
-			glob.NumLogins = glob.NumLogins + 1
-			glob.NumLoginsLock.Unlock()
 			plevelname := fact.AutoPromote(pname)
 
 			pname = sclean.EscapeDiscordMarkdown(pname)
