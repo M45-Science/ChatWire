@@ -101,7 +101,7 @@ func main() {
 	glob.VoteBox.LastRewindTime = then.Round(time.Second)
 
 	/* Blank game time */
-	fact.SetGameTime(constants.Unknown)
+	fact.Gametime = (constants.Unknown)
 
 	/* Read global and local configs, then write them back if they read correctly. */
 	if cfg.ReadGCfg() {
@@ -138,7 +138,7 @@ func main() {
 	go startbot()
 
 	if cfg.Local.Options.AutoStart {
-		fact.SetAutoStart(true)
+		fact.FactAutoStart = true
 	}
 
 	/* Wait here for process signals */
@@ -150,9 +150,9 @@ func main() {
 	commands.ClearCommands()
 
 	_ = os.Remove("cw.lock")
-	fact.SetAutoStart(false)
-	fact.SetCWReboot(false)
-	fact.SetQueued(false)
+	fact.FactAutoStart = false
+	glob.DoRebootCW = false
+	fact.QueueReload = false
 	fact.QuitFactorio("Server quitting...")
 	fact.WaitFactQuit()
 	fact.DoExit(false)
@@ -251,7 +251,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		/* Chat message handling
 		 *  Don't bother if Factorio isn't running... */
-		if fact.IsFactorioBooted() {
+		if fact.FactorioBooted {
 			cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")

@@ -126,8 +126,6 @@ func GenerateFactorioConfig() bool {
 	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
 	//+ "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n"
 
-	disc.RoleListLock.Lock()
-
 	normalMode := true
 	if *glob.LocalTestMode {
 		normalMode = false
@@ -158,10 +156,9 @@ func GenerateFactorioConfig() bool {
 		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
 	}
-	disc.RoleListLock.Unlock()
 
 	c := "/config set"
-	if IsFactorioBooted() {
+	if FactorioBooted {
 		/* Send over rcon, to preserve newlines */
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.Factorio.RCONPass)

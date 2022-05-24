@@ -7,6 +7,7 @@ import (
 
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
 /* Set a player's level */
@@ -39,7 +40,7 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			}
 
 			fact.AutoPromote(aname)
-			fact.SetPlayerListDirty()
+			glob.PlayerListDirty = true
 			buf := fmt.Sprintf("Player: %v level set to %v", aname, fact.LevelToString(alevel))
 			disc.EphemeralResponse(s, i, "Complete:", buf)
 			return

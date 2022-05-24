@@ -43,9 +43,6 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 	if cfg.Global.Paths.Folders.UpdateCache != "" {
 
-		UpdateFactorioLock.Lock()
-		defer UpdateFactorioLock.Unlock()
-
 		/* Give up on check/download after a while */
 		ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 		defer cancel()
@@ -120,7 +117,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 							messdisc := "**Factorio update available!**"
 							messfact := "Factorio update available!"
-							SetDoUpdateFactorio(true)
+							DoUpdateFactorio = true
 
 							/* Don't message, unless this is actually a unique new version */
 							if NewVersion != newversion {
@@ -145,9 +142,6 @@ func CheckFactUpdate(logNoUpdate bool) {
 /* Update Factorio */
 func FactUpdate() {
 
-	UpdateFactorioLock.Lock()
-	defer UpdateFactorioLock.Unlock()
-
 	/* Give up on patching eventually */
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 	defer cancel()
@@ -157,10 +151,8 @@ func FactUpdate() {
 		cwlog.DoLogCW(err.Error())
 	}
 
-	if !IsFactRunning() && IsFactorioBooted() {
+	if !FactIsRunning && FactorioBooted {
 		/* Keep us from stepping on a factorio launch or update */
-		FactorioLaunchLock.Lock()
-		defer FactorioLaunchLock.Unlock()
 
 		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary()}
 		if cfg.Local.Options.ExpUpdates {

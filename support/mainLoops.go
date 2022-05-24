@@ -38,38 +38,37 @@ func MainLoops() {
 			time.Sleep(constants.WatchdogInterval)
 
 			/* Check for updates */
-			if !fact.IsFactRunning() &&
-				(fact.IsQueued() || fact.IsSetRebootCW() || fact.GetDoUpdateFactorio()) {
-				if time.Since(glob.Uptime) > time.Minute*constants.BootUpdateDelayMin && fact.GetDoUpdateFactorio() {
+			if !fact.FactIsRunning &&
+				(fact.QueueReload || glob.DoRebootCW || fact.DoUpdateFactorio) {
+				if time.Since(glob.Uptime) > time.Minute*constants.BootUpdateDelayMin && fact.DoUpdateFactorio {
 					fact.FactUpdate()
 				}
 				fact.DoExit(false)
 
 				/* We are running normally */
-			} else if fact.IsFactRunning() && fact.IsFactorioBooted() {
+			} else if fact.FactIsRunning && fact.FactorioBooted {
 
 				nores := 0
-				if fact.GetPausedTicks() <= constants.PauseThresh {
-					glob.NoResponseCountLock.Lock()
+				if fact.PausedTicks <= constants.PauseThresh {
+
 					glob.NoResponseCount = glob.NoResponseCount + 1
 					nores = glob.NoResponseCount
-					glob.NoResponseCountLock.Unlock()
 
 					fact.WriteFact("/time")
 				}
 				if nores == 120 {
 					msg := "Factorio unresponsive for over two minutes... rebooting."
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, msg)
-					fact.SetRelaunchThrottle(0)
+					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
 
 					fact.WaitFactQuit()
-					fact.SetFactorioBooted(false)
+					fact.FactorioBooted = false
 					fact.SetFactRunning(false)
 				}
 
 				/* We aren't running, but should be! */
-			} else if !fact.IsFactRunning() && !fact.IsFactorioBooted() && fact.IsSetAutoStart() && !fact.GetDoUpdateFactorio() {
+			} else if !fact.FactIsRunning && !fact.FactorioBooted && fact.FactAutoStart && !fact.DoUpdateFactorio {
 				/* Don't relaunch if we are set to auto update */
 
 				launchFactorio()
@@ -268,12 +267,12 @@ func MainLoops() {
 
 			if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
 
-				fact.ConnectPauseLock.Lock()
+				fact.SlowConnectLock.Lock()
 
 				if fact.SlowConnectTimer > 0 {
 					if tn.Unix()-fact.SlowConnectTimer >= 30 {
 						fact.SlowConnectTimer = 0
-						fact.ConnectPauseCount = 0
+						fact.SlowConnectEvents = 0
 
 						buf := "Catch-up taking over 30 seconds, returning to normal speed."
 						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
@@ -287,7 +286,7 @@ func MainLoops() {
 					}
 				}
 
-				fact.ConnectPauseLock.Unlock()
+				fact.SlowConnectLock.Unlock()
 
 			}
 		}
@@ -383,8 +382,6 @@ func MainLoops() {
 	go func() {
 		for glob.ServerRunning {
 
-			disc.GuildLock.Lock()
-
 			/* Get guild id, if we need it */
 
 			if disc.Guild == nil && disc.DS != nil {
@@ -398,20 +395,18 @@ func MainLoops() {
 					nguild, err = disc.DS.Guild(cfg.Global.Discord.Guild)
 					if err != nil {
 						cwlog.DoLogCW("Failed to get valid guild data, giving up.")
-						disc.GuildLock.Unlock()
 						break
 					}
 				}
 
 				if err != nil {
 					cwlog.DoLogCW(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
-					disc.GuildLock.Unlock()
+
 					break
 				}
 				if nguild == nil || err != nil {
 					disc.Guildname = constants.Unknown
 					cwlog.DoLogCW("Guild data came back nil.")
-					disc.GuildLock.Unlock()
 					break
 				} else {
 
@@ -466,7 +461,6 @@ func MainLoops() {
 					cfg.WriteGCfg()
 				}
 			}
-			disc.GuildLock.Unlock()
 
 			time.Sleep(time.Minute)
 		}
@@ -478,10 +472,9 @@ func MainLoops() {
 	go func() {
 		for glob.ServerRunning {
 			time.Sleep(time.Minute * 15)
-			if fact.IsFactorioBooted() {
+			if fact.FactorioBooted {
 				disc.UpdateRoleList()
 
-				disc.RoleListLock.Lock()
 				if disc.RoleListUpdated && len(disc.RoleList.Patreons) > 0 {
 					fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
 				}
@@ -495,7 +488,6 @@ func MainLoops() {
 					go fact.GenerateFactorioConfig()
 				}
 				disc.RoleListUpdated = false
-				disc.RoleListLock.Unlock()
 			}
 		}
 	}()
@@ -508,8 +500,8 @@ func MainLoops() {
 		for glob.ServerRunning {
 			time.Sleep(2 * time.Second)
 
-			if fact.IsQueued() && fact.GetNumPlayers() == 0 && !fact.GetDoUpdateFactorio() {
-				if fact.IsFactRunning() && fact.IsFactorioBooted() {
+			if fact.QueueReload && fact.NumPlayers == 0 && !fact.DoUpdateFactorio {
+				if fact.FactIsRunning && fact.FactorioBooted {
 					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
 					fact.QuitFactorio("Server rebooting for maintenance.")
 					break //We don't need to loop anymore
@@ -527,31 +519,29 @@ func MainLoops() {
 			time.Sleep(30 * time.Second)
 
 			if cfg.Local.Options.AutoUpdate {
-				if fact.IsFactRunning() && fact.IsFactorioBooted() && fact.NewVersion != constants.Unknown {
-					if fact.GetNumPlayers() > 0 {
-
-						numwarn := fact.GetUpdateWarnCounter()
+				if fact.FactIsRunning && fact.FactorioBooted && fact.NewVersion != constants.Unknown {
+					if fact.NumPlayers > 0 {
 
 						/* Warn players */
-						if numwarn < glob.UpdateGraceMinutes {
-							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-numwarn)
+						if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
+							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.FactChat(fact.AddFactColor("orange", msg))
 						}
 						time.Sleep(2 * time.Minute)
 
 						/* Reboot anyway */
-						if numwarn > glob.UpdateGraceMinutes {
+						if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
 							msg := "(SYSTEM) Rebooting for Factorio update."
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.FactChat(fact.AddFactColor("orange", msg))
-							fact.SetUpdateWarnCounter(0)
+							glob.UpdateWarnCounter = 0
 							fact.QuitFactorio("Rebooting for Factorio update.")
 							break /* Stop looping */
 						}
-						fact.SetUpdateWarnCounter(numwarn + 1)
+						glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
 					} else {
-						fact.SetUpdateWarnCounter(0)
+						glob.UpdateWarnCounter = 0
 						fact.QuitFactorio("Rebooting for Factorio update.")
 						break /* Stop looping */
 					}
@@ -576,8 +566,8 @@ func MainLoops() {
 			/* Queued reboots, regardless of game state */
 			if _, err = os.Stat(".queue"); err == nil {
 				if errb = os.Remove(".queue"); errb == nil {
-					if !fact.IsQueued() {
-						fact.SetQueued(true)
+					if !fact.QueueReload {
+						fact.QueueReload = true
 						cwlog.DoLogCW("Reboot queued!")
 					}
 				} else if errb != nil && !failureReported {
@@ -588,9 +578,9 @@ func MainLoops() {
 			/* Halt, regardless of game state */
 			if _, err = os.Stat(".halt"); err == nil {
 				if errb = os.Remove(".halt"); errb == nil {
-					if fact.IsFactRunning() || fact.IsFactorioBooted() {
+					if fact.FactIsRunning || fact.FactorioBooted {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting, closing Factorio.")
-						fact.SetAutoStart(false)
+						fact.FactAutoStart = false
 						fact.QuitFactorio("Server halted, quitting Factorio.")
 						fact.WaitFactQuit()
 						fact.DoExit(false)
@@ -605,7 +595,7 @@ func MainLoops() {
 			}
 
 			/* Only if game is running */
-			if fact.IsFactRunning() && fact.IsFactorioBooted() {
+			if fact.FactIsRunning && fact.FactorioBooted {
 				/* Quick reboot */
 				if _, err = os.Stat(".qrestart"); err == nil {
 					if errb = os.Remove(".qrestart"); errb == nil {
@@ -620,7 +610,7 @@ func MainLoops() {
 				if _, err = os.Stat(".stop"); err == nil {
 					if errb = os.Remove(".stop"); errb == nil {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio stopping!")
-						fact.SetAutoStart(false)
+						fact.FactAutoStart = false
 						fact.QuitFactorio("Server manually stopped.")
 					} else if errb != nil && !failureReported {
 						failureReported = true
@@ -660,7 +650,7 @@ func MainLoops() {
 				/* Start game */
 				if _, err = os.Stat(".start"); err == nil {
 					if errb = os.Remove(".start"); errb == nil {
-						fact.SetAutoStart(true)
+						fact.FactAutoStart = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio starting!")
 					} else if errb != nil && !failureReported {
 						failureReported = true
@@ -727,22 +717,6 @@ func MainLoops() {
 			}
 
 			time.Sleep(time.Second * 10)
-		}
-	}()
-
-	/****************************
-	 * Capture man-minutes
-	 ****************************/
-	go func() {
-		for glob.ServerRunning {
-			time.Sleep(time.Minute)
-			nump := fact.GetNumPlayers()
-
-			fact.ManMinutesLock.Lock()
-			if nump > 0 {
-				fact.ManMinutes = (fact.ManMinutes + nump)
-			}
-			fact.ManMinutesLock.Unlock()
 		}
 	}()
 

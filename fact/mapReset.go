@@ -49,10 +49,6 @@ func GetMapTypeName(num int) string {
 /* Generate map */
 func Map_reset(data string, doReport bool) {
 
-	/* Prevent another map reset from accidentally running at the same time */
-	GameMapLock.Lock()
-	defer GameMapLock.Unlock()
-
 	/* Get Factorio version, for archive folder name */
 	version := strings.Split(FactorioVersion, ".")
 	vlen := len(version)
@@ -67,7 +63,7 @@ func Map_reset(data string, doReport bool) {
 
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
-	if IsFactorioBooted() || IsFactRunning() {
+	if FactorioBooted || FactIsRunning {
 		if data != "" {
 			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
 			FactChat(AddFactColor("orange", data))
@@ -78,7 +74,7 @@ func Map_reset(data string, doReport bool) {
 			cfg.Local.Options.SoftModOptions.SlowConnect.Speed = 1.0
 			cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed = 0.5
 			cfg.WriteLCfg()
-			SetAutoStart(false)
+			FactAutoStart = false
 			QuitFactorio("Server rebooting for map reset...")
 		}
 	}
@@ -169,8 +165,6 @@ func Map_reset(data string, doReport bool) {
 	}
 
 	CMS(cfg.Local.Channel.ChatChannel, "Generating map...")
-	/* Delete old sav-* map to save space */
-	DeleteOldSav()
 
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)

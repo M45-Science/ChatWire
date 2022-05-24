@@ -13,9 +13,9 @@ import (
 
 /* executes /online on the server, response handled in chat.go */
 func Players(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if fact.IsFactorioBooted() {
+	if fact.FactorioBooted {
 
-		if fact.GetNumPlayers() == 0 {
+		if fact.NumPlayers == 0 {
 			disc.EphemeralResponse(s, i, "Players Online:", "None")
 		} else {
 			buf := ""

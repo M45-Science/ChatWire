@@ -29,7 +29,7 @@ func FactChat(input string) {
 }
 
 func WaitFactQuit() {
-	for x := 0; x < constants.MaxFactorioCloseWait && IsFactRunning(); x++ {
+	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning; x++ {
 		time.Sleep(time.Millisecond * 100)
 	}
 
@@ -53,12 +53,6 @@ func DoExit(delay bool) {
 			time.Sleep(time.Second)
 		}
 	}
-
-	/* Show stats */
-	tnow := time.Now()
-	tnow = tnow.Round(time.Second)
-	mm := GetManMinutes()
-	cwlog.DoLogCW(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
 
 	/* This kills all loops! */
 	glob.ServerRunning = false

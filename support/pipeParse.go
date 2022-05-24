@@ -18,7 +18,7 @@ func HandleChat() {
 			reader := bufio.NewScanner(fact.GameBuffer)
 			time.Sleep(time.Millisecond * 100)
 			for reader.Scan() {
-				if !fact.IsFactRunning() {
+				if !fact.FactIsRunning {
 					break
 				}
 				line := reader.Text()
@@ -66,11 +66,9 @@ func HandleChat() {
 				lowerCaseListlen := len(lowerCaseList)
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
-				fact.PausedTicksLock.Lock()
 				if fact.PausedTicks > 0 {
 					fact.PausedTicks--
 				}
-				fact.PausedTicksLock.Unlock()
 
 				/*********************************
 				 * FILTERED AREA

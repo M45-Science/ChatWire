@@ -17,7 +17,7 @@ import (
  * This allows players to register, for discord roles and in-game perks */
 func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if !fact.IsFactRunning() {
+	if !fact.FactIsRunning {
 		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running."}
 		disc.InteractionResponse(s, i, embed)
 		return

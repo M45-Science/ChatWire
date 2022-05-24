@@ -6,6 +6,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"ChatWire/support"
 )
 
@@ -16,16 +17,16 @@ func ChatWire(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(s, i, "Status:", "Rebooting!")
-	fact.SetRelaunchThrottle(0)
+	glob.RelaunchThrottle = 0
 	fact.DoExit(false)
 }
 
 /* Reboot when server is empty */
 func QueReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if !fact.IsQueued() {
+	if !fact.QueueReload {
 		disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
-		fact.SetQueued(true)
+		fact.QueueReload = true
 	}
 }
 
@@ -34,16 +35,13 @@ func RebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(s, i, "Status:", "Rebooting ChatWire...")
 
-	fact.SetCWReboot(true)
-	fact.SetRelaunchThrottle(0)
+	glob.DoRebootCW = true
+	glob.RelaunchThrottle = 0
 	fact.QuitFactorio("Server rebooting...")
 }
 
 /* Reload config files */
 func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
-	fact.GameMapLock.Lock()
-	defer fact.GameMapLock.Unlock()
 
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {

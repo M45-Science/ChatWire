@@ -84,10 +84,6 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 				fact.TickHistoryLock.Unlock()
 			}
 
-			/* Pause detection */
-			fact.GametimeLock.Lock()
-			fact.PausedTicksLock.Lock()
-
 			if fact.LastGametime == fact.Gametime {
 				if fact.PausedTicks <= constants.PauseThresh {
 					fact.PausedTicks = fact.PausedTicks + 2
@@ -98,9 +94,6 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 			fact.LastGametime = fact.Gametime
 			fact.GametimeString = lowerCaseLine
 			fact.Gametime = newtime
-
-			fact.PausedTicksLock.Unlock()
-			fact.GametimeLock.Unlock()
 		}
 		/* This might block stuff by accident, don't do it */
 		//continue
@@ -193,7 +186,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					if codegood {
 						fact.PlayerSetID(pname, pid, plevel)
 
-						guild := fact.GetGuild()
+						guild := disc.Guild
 						if guild != nil {
 							errrole, regrole := disc.RoleExists(guild, newrole)
 
@@ -251,7 +244,7 @@ func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
 			poc = strings.ReplaceAll(poc, " ", "")
 
 			nump, _ := strconv.Atoi(poc)
-			fact.SetNumPlayers(nump)
+			fact.NumPlayers = (nump)
 
 			fact.UpdateChannelName()
 		}
@@ -276,7 +269,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 			pname = sclean.EscapeDiscordMarkdown(pname)
 
-			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.GetGameTime(), pname, plevelname)
+			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.Gametime, pname, plevelname)
 			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 			/* Give people patreon/nitro tags in-game. */
@@ -410,7 +403,7 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 				}
 			}
 
-			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` **%s**", fact.GetGameTime(), cmess))
+			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` **%s**", fact.Gametime, cmess))
 		}
 
 		if lineListlen > 1 {
@@ -475,19 +468,19 @@ func SlowConnectStart() {
 	}
 
 	tn := time.Now()
-	fact.ConnectPauseLock.Lock()
+	fact.SlowConnectLock.Lock()
 	fact.SlowConnectTimer = tn.Unix()
-	fact.ConnectPauseCount++
-	fact.ConnectPauseLock.Unlock()
+	fact.SlowConnectEvents++
+	fact.SlowConnectLock.Unlock()
 }
 
 func SlowConnectEnd() {
 
-	fact.ConnectPauseLock.Lock()
+	fact.SlowConnectLock.Lock()
 
-	fact.ConnectPauseCount--
-	if fact.ConnectPauseCount <= 0 {
-		fact.ConnectPauseCount = 0
+	fact.SlowConnectEvents--
+	if fact.SlowConnectEvents <= 0 {
+		fact.SlowConnectEvents = 0
 		fact.SlowConnectTimer = 0
 
 		if cfg.Local.Options.SoftModOptions.SlowConnect.Speed >= 0.0 {
@@ -497,7 +490,7 @@ func SlowConnectEnd() {
 		}
 	}
 
-	fact.ConnectPauseLock.Unlock()
+	fact.SlowConnectLock.Unlock()
 }
 
 func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistlen int) bool {
@@ -517,11 +510,9 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 			filename := regaa.ReplaceAllString(fullpath, "")
 
-			fact.GameMapLock.Lock()
 			fact.GameMapName = filename
 			fact.GameMapPath = fullpath
 			fact.LastSaveName = filename
-			fact.GameMapLock.Unlock()
 
 			fsize := 0.0
 			if sizei > 0 {
@@ -550,7 +541,11 @@ func handleModLoad(NoTC string) bool {
 			modName := strings.TrimPrefix(NoTC, "Loading mod ")
 			modName = strings.TrimSuffix(modName, " (data.lua)")
 			modName = strings.ReplaceAll(modName, " ", "-")
-			fact.AddModLoadString(modName)
+			if fact.ModLoadString == constants.Unknown {
+				fact.ModLoadString = modName
+			} else {
+				fact.ModLoadString = fact.ModLoadString + ", " + modName
+			}
 		}
 		return true
 	}
@@ -586,7 +581,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 				}
 			}
 
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(NoDSlist[1:], " ")))
 		}
 		return true
 	}
@@ -624,7 +619,7 @@ func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 				fact.PlayerLevelSet(trustname, 0, false)
 			}
 
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.GetGameTime(), strings.Join(NoDSlist[1:], " ")))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(NoDSlist[1:], " ")))
 		}
 		return true
 	}
@@ -639,7 +634,7 @@ func handleFactGoodbye(NoTC string) bool {
 		cwlog.DoLogGame(NoTC)
 
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
-		fact.SetFactorioBooted(false)
+		fact.FactorioBooted = false
 		fact.SetFactRunning(false)
 		fact.UpdateChannelName()
 		fact.DoUpdateChannelName(false)
@@ -654,7 +649,7 @@ func handleFactReady(NoTC string) bool {
 	 ******************/
 	if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 
-		fact.SetFactorioBooted(true)
+		fact.FactorioBooted = true
 		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
@@ -702,7 +697,7 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 			fact.LastLockerName = pName
 			fact.LockerLock.Unlock()
 
-			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.GetGameTime(), pName)
+			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.FactChat(fmsg)
 			fact.CMS(cfg.Local.Channel.ChatChannel, dmsg)
@@ -735,7 +730,7 @@ func handleSaveMsg(NoTC string) bool {
 			savmatch := savreg.FindStringSubmatch(NoTC)
 			if len(savmatch) > 1 {
 				if !cfg.Local.Options.HideAutosaves {
-					buf := fmt.Sprintf("`%v` 💾 %s", fact.GetGameTime(), savmatch[1])
+					buf := fmt.Sprintf("`%v` 💾 %s", fact.Gametime, savmatch[1])
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, buf)
 				}
 				fact.LastSaveName = savmatch[1]
@@ -760,10 +755,8 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 			filename := regaa.ReplaceAllString(fullpath, "")
 			filename = strings.Replace(filename, ":", "", -1)
 
-			fact.GameMapLock.Lock()
 			fact.GameMapName = filename
 			fact.GameMapPath = fullpath
-			fact.GameMapLock.Unlock()
 
 			cwlog.DoLogCW(fmt.Sprintf("Map saved as: " + filename))
 			fact.LastSaveName = filename
@@ -800,38 +793,38 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		/* Lock error */
 		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
-			fact.SetAutoStart(false)
-			fact.SetFactorioBooted(false)
+			fact.FactAutoStart = false
+			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
 		/* Mod Errors */
 		if strings.Contains(NoTC, "caused a non-recoverable error.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and closed.")
-			fact.SetFactorioBooted(false)
+			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
 		/* Stack traces */
 		if strings.Contains(NoTC, "Hosting multiplayer game failed") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to launch.")
-			fact.SetAutoStart(false)
-			fact.SetFactorioBooted(false)
+			fact.FactAutoStart = false
+			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
 		/* level.dat */
 		if strings.Contains(NoTC, "level.dat not found.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
-			fact.SetAutoStart(false)
-			fact.SetFactorioBooted(false)
+			fact.FactAutoStart = false
+			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
 		/* Stack traces */
 		if strings.Contains(NoTC, "Unexpected error occurred.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
-			fact.SetFactorioBooted(false)
+			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
@@ -839,15 +832,15 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
 			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error.")
-				fact.SetAutoStart(false)
-				fact.SetFactorioBooted(false)
+				fact.FactAutoStart = false
+				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
 			}
 			if strings.Contains(NoTC, "info.json not found") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
-				fact.SetAutoStart(false)
-				fact.SetFactorioBooted(false)
+				fact.FactAutoStart = false
+				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
 			}
@@ -862,7 +855,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 						err := os.Remove(words[7])
 						if err != nil {
 							cwlog.DoLogCW("Unable to remove bad zip file: " + words[7])
-							fact.SetAutoStart(false)
+							fact.FactAutoStart = false
 						} else {
 							cwlog.DoLogCW("Removed bad zip file: " + words[7])
 						}
@@ -872,9 +865,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			}
 			/* Corrupt savegame */
 			if strings.Contains(NoTC, "Closing file") {
-				fact.GameMapLock.Lock()
 				path := fact.GameMapPath
-				fact.GameMapLock.Unlock()
 
 				var tempargs []string
 				tempargs = append(tempargs, "-f")
@@ -884,14 +875,14 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 
 				if errs != nil {
 					cwlog.DoLogCW(fmt.Sprintf("Unable to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
-					fact.SetAutoStart(false)
+					fact.FactAutoStart = false
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game.")
 				} else {
 					cwlog.DoLogCW("Deleted corrupted savegame.")
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Save-game corrupted, performing automatic roll-back.")
 				}
 
-				fact.SetFactorioBooted(false)
+				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
 			}
@@ -915,9 +906,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 			if pname != "<server>" {
 
 				var nores int
-				glob.NoResponseCountLock.Lock()
 				nores = glob.NoResponseCount
-				glob.NoResponseCountLock.Unlock()
 
 				glob.ChatterLock.Lock()
 
@@ -993,9 +982,9 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				factname = sclean.StripControlAndSubSpecial(factname)
 				factname = sclean.EscapeDiscordMarkdown(factname)
 				if dname != "" {
-					fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.GetGameTime(), factname, cmess)
+					fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.Gametime, factname, cmess)
 				} else {
-					fbuf = fmt.Sprintf("`%v` %s: %s", fact.GetGameTime(), factname, cmess)
+					fbuf = fmt.Sprintf("`%v` %s: %s", fact.Gametime, factname, cmess)
 				}
 
 				/* Remove all but letters */
@@ -1085,7 +1074,7 @@ func handleOnlineMsg(line string) bool {
 				}
 			}
 			if count > 0 {
-				fact.SetNumPlayers(count)
+				fact.NumPlayers = (count)
 				fact.OnlinePlayersLock.Lock()
 				glob.OnlinePlayers = newPlayerList
 				fact.OnlinePlayersLock.Unlock()
@@ -1094,7 +1083,7 @@ func handleOnlineMsg(line string) bool {
 		}
 
 		/* Otherwise clear list */
-		fact.SetNumPlayers(0)
+		fact.NumPlayers = (0)
 		glob.OnlinePlayers = []glob.OnlinePlayerData{}
 
 		return true

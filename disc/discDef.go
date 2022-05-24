@@ -12,7 +12,6 @@ var (
 	/* Discord data */
 	Guild     *discordgo.Guild
 	Guildname = constants.Unknown
-	GuildLock sync.RWMutex
 	DS        *discordgo.Session
 
 	/*To-Discord message buffer*/

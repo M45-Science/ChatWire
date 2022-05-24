@@ -35,13 +35,13 @@ func launchFactorio() {
 
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
-		fact.SetAutoStart(false)
+		fact.FactAutoStart = false
 		fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to generate config file for Factorio server.")
 		return
 	}
 
 	/* Relaunch Throttling */
-	throt := fact.GetRelaunchThrottle()
+	throt := glob.RelaunchThrottle
 	if throt > 0 {
 
 		delay := throt * throt * 10
@@ -54,10 +54,9 @@ func launchFactorio() {
 		}
 	}
 	/* Timer gets longer each reboot */
-	fact.SetRelaunchThrottle(throt + 1)
+	glob.RelaunchThrottle = (throt + 1)
 
 	/* Lock so we don't interrupt updates or launch twice */
-	fact.FactorioLaunchLock.Lock()
 
 	var err error
 	var tempargs []string
@@ -104,7 +103,7 @@ func launchFactorio() {
 	}
 
 	//Clear mod load string
-	fact.SetModLoadString(constants.Unknown)
+	fact.ModLoadString = (constants.Unknown)
 
 	/* Run Factorio */
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
@@ -134,7 +133,6 @@ func launchFactorio() {
 	if errp != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 		/* close lock  */
-		fact.FactorioLaunchLock.Unlock()
 		fact.DoExit(true)
 		return
 	}
@@ -150,22 +148,17 @@ func launchFactorio() {
 	err = cmd.Start()
 	if err != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
-		/* close lock */
-		fact.FactorioLaunchLock.Unlock()
 		fact.DoExit(true)
 		return
 	}
 
 	/* Okay, Factorio is running now, prep */
 	fact.SetFactRunning(true)
-	fact.SetFactorioBooted(false)
+	fact.FactorioBooted = false
 
-	fact.SetGameTime(constants.Unknown)
-	fact.SetNoResponseCount(0)
+	fact.Gametime = (constants.Unknown)
+	glob.NoResponseCount = 0
 	cwlog.DoLogCW("Factorio booting...")
-
-	/* Unlock launch lock */
-	fact.FactorioLaunchLock.Unlock()
 }
 
 func ConfigSoftMod() {
@@ -203,12 +196,10 @@ func ConfigSoftMod() {
 	}
 
 	/* Patreon list */
-	disc.RoleListLock.Lock()
 	if len(disc.RoleList.Patreons) > 0 {
 		fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
 	}
 	if len(disc.RoleList.NitroBooster) > 0 {
 		fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 	}
-	disc.RoleListLock.Unlock()
 }

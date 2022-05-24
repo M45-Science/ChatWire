@@ -97,12 +97,10 @@ var (
 	CWLogDesc   *os.File
 
 	/* CW reboot */
-	DoRebootCW     = false
-	DoRebootCWLock sync.RWMutex
+	DoRebootCW = false
 
 	/* Increasing relaunch delay */
-	RelaunchThrottle     = 0
-	RelaunchThrottleLock sync.RWMutex
+	RelaunchThrottle = 0
 
 	/* Player database */
 	PlayerList          map[string]*PlayerData
@@ -122,13 +120,11 @@ var (
 	PlayerListSeenDirtyLock sync.Mutex
 
 	/* Factorio server watchdog */
-	NoResponseCount     = 0
-	NoResponseCountLock sync.RWMutex
+	NoResponseCount = 0
 
 	/* Update warning */
-	UpdateWarnCounterLock sync.Mutex
-	UpdateWarnCounter     = 0
-	UpdateGraceMinutes    = 15
+	UpdateWarnCounter  = 0
+	UpdateGraceMinutes = 15
 
 	ChatterLock      sync.Mutex
 	ChatterList      map[string]time.Time

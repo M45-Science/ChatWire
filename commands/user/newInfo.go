@@ -47,7 +47,7 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire up-time", tnow.Sub(glob.Uptime.Round(time.Second)).String())
 
-		if !fact.FactorioBootedAt.IsZero() && fact.IsFactorioBooted() {
+		if !fact.FactorioBootedAt.IsZero() && fact.FactorioBooted {
 			buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio up-time", tnow.Sub(fact.FactorioBootedAt.Round(time.Second)).String())
 		} else {
 			buf = buf + fmt.Sprintf("%17v: %v\n", "Factorio up-time", "not running")
@@ -59,7 +59,7 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	if fact.GametimeString != constants.Unknown {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
-		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.GetNumPlayers())
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
 	}
 
 	/* SETTINGS */
@@ -87,7 +87,7 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			}
 		}
 	}
-	modStr := fact.GetModLoadString()
+	modStr := fact.ModLoadString
 	if modStr != constants.Unknown {
 		buf = buf + "\nLoaded mods: " + modStr + "\n"
 	}
@@ -146,7 +146,7 @@ func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
-	if fact.GetPausedTicks() > 4 {
+	if fact.PausedTicks > 4 {
 		buf = buf + "(Server is paused)\n"
 	}
 

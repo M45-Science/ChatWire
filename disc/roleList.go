@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"sync"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
@@ -13,14 +12,11 @@ import (
 )
 
 /* Discord role member-lists */
-var RoleListLock sync.Mutex
 var RoleList RoleListData
 var RoleListUpdated bool
 
 /* Cache a list of players with specific Discord roles */
 func WriteRoleList() bool {
-	RoleListLock.Lock()
-	defer RoleListLock.Unlock()
 
 	tempPath := constants.RoleListFile + "." + cfg.Local.Callsign + ".tmp"
 	finalPath := constants.RoleListFile
@@ -67,8 +63,6 @@ func CreateRoleList() RoleListData {
 
 /* Read in cached list of Discord players with specific roles */
 func ReadRoleList() bool {
-	RoleListLock.Lock()
-	defer RoleListLock.Unlock()
 
 	_, err := os.Stat(constants.RoleListFile)
 	notfound := os.IsNotExist(err)
@@ -109,8 +103,6 @@ func ReadRoleList() bool {
 
 /* Check with Discord, get updated list of players */
 func UpdateRoleList() {
-	RoleListLock.Lock()
-	defer RoleListLock.Unlock()
 	g := Guild
 
 	if g != nil {
@@ -160,7 +152,7 @@ func UpdateRoleList() {
 		}
 		if foundChange {
 			RoleListUpdated = true
-			go WriteRoleList()
+			WriteRoleList()
 		}
 	}
 }

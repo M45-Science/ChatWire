@@ -26,15 +26,12 @@ var (
 	/* Factorio game mod data*/
 	ModLoadMessage *discordgo.Message
 	ModLoadString  = constants.Unknown
-	ModLoadLock    sync.RWMutex
 
 	/* Factorio in-game time data */
-	LastGametime    = ""
-	PausedTicks     = 0
-	PausedTicksLock sync.RWMutex
-	Gametime        = constants.Unknown
-	GametimeString  = constants.Unknown
-	GametimeLock    sync.RWMutex
+	LastGametime   = ""
+	PausedTicks    = 0
+	Gametime       = constants.Unknown
+	GametimeString = constants.Unknown
 
 	MaxTickHistory = 4000
 
@@ -42,15 +39,10 @@ var (
 	TickHistoryLock sync.Mutex
 
 	/* Factorio status */
-	FactIsRunning        = false
-	FactIsRunningLock    sync.RWMutex
-	FactorioBooted       = false
-	FactorioBootedAt     time.Time
-	FactorioBootedLock   sync.RWMutex
-	FactorioLaunchLock   sync.Mutex
-	UpdateFactorioLock   sync.Mutex
-	DoUpdateFactorio     = false
-	DoUpdateFactorioLock sync.Mutex
+	FactIsRunning    = false
+	FactorioBooted   = false
+	FactorioBootedAt time.Time
+	DoUpdateFactorio = false
 
 	/* Locker detect */
 	LockerDetectStart time.Time
@@ -59,30 +51,23 @@ var (
 	LastLockerName    string
 
 	/* Factorio autostart */
-	FactAutoStart     = false
-	FactAutoStartLock sync.RWMutex
+	FactAutoStart = false
 
 	/* Reboot-when-empty */
-	QueueReload     = false
-	QueueReloadLock sync.RWMutex
+	QueueReload = false
 
 	/*Factorio save game data */
 	GameMapName = ""
 	GameMapPath = ""
-	GameMapLock sync.Mutex
 
 	/* Players online */
 	NumPlayers        = 0
 	OnlinePlayersLock sync.RWMutex
 
 	/* Slow-connect status */
-	ConnectPauseLock  sync.Mutex
+	SlowConnectLock   sync.Mutex
 	SlowConnectTimer  int64 = 0
-	ConnectPauseCount       = 0
-
-	/* Number of man-minutes */
-	ManMinutes     = 0
-	ManMinutesLock sync.Mutex
+	SlowConnectEvents       = 0
 
 	/*  Map gen data */
 	LastMapSeed int = 0

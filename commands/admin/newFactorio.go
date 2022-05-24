@@ -32,16 +32,11 @@ func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 /* RandomMap locks FactorioLaunchLock */
 func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if fact.IsFactorioBooted() || fact.IsFactRunning() {
+	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
 		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
-
-	fact.FactorioLaunchLock.Lock()
-	defer fact.FactorioLaunchLock.Unlock()
-
-	//disc.EphemeralResponse(s, i, "Status:", "Generating map preview...")
 
 	/* Make directory if it does not exist */
 	newdir := fmt.Sprintf("%s/", cfg.Global.Paths.Folders.MapPreviews)
@@ -149,14 +144,11 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 /* Generate map */
 func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if fact.IsFactorioBooted() || fact.IsFactRunning() {
+	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
 		disc.EphemeralResponse(s, i, "Error:", buf)
 		return
 	}
-
-	fact.FactorioLaunchLock.Lock()
-	defer fact.FactorioLaunchLock.Unlock()
 
 	t := time.Now()
 	ourseed := int(t.UnixNano() - constants.CWEpoch)
@@ -187,9 +179,6 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	disc.EphemeralResponse(s, i, "Status:", "Generating map...")
-
-	/* Delete old sav-* map to save space */
-	fact.DeleteOldSav()
 
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
@@ -256,9 +245,6 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 /* Archive map */
 func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
-	fact.GameMapLock.Lock()
-	defer fact.GameMapLock.Unlock()
 
 	version := strings.Split(fact.FactorioVersion, ".")
 	vlen := len(version)
@@ -332,7 +318,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 /* Reboots Factorio only */
 func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if fact.IsFactorioBooted() {
+	if fact.FactorioBooted {
 
 		buf := "Restarting Factorio..."
 		disc.EphemeralResponse(s, i, "Status:", buf)
@@ -342,16 +328,16 @@ func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(s, i, "Status:", buf)
 	}
 
-	fact.SetAutoStart(true)
-	fact.SetRelaunchThrottle(0)
+	fact.FactAutoStart = true
+	glob.RelaunchThrottle = 0
 }
 
 /*  StopServer saves the map and closes Factorio.  */
 func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	fact.SetRelaunchThrottle(0)
-	fact.SetAutoStart(false)
+	glob.RelaunchThrottle = 0
+	fact.FactAutoStart = false
 
-	if fact.IsFactorioBooted() {
+	if fact.FactorioBooted {
 
 		buf := "Stopping Factorio."
 		disc.EphemeralResponse(s, i, "Status:", buf)
@@ -371,7 +357,7 @@ func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if cfg.Global.Paths.Binaries.FactUpdater != "" {
 		if argnum > 0 && strings.ToLower(args[0]) == "cancel" {
-			fact.SetDoUpdateFactorio(false)
+			fact.DoUpdateFactorio = false
 			cfg.Local.Options.AutoUpdate = false
 
 			buf := "Update canceled, and auto-update disabled."

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
@@ -24,28 +23,32 @@ import (
 	"ChatWire/sclean"
 )
 
-/* Delete old sav-*.zip, gen-*.zip files, to save space. */
-func DeleteOldSav() {
-	patha := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/sav-*.zip"
-	pathb := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-*.zip"
+func SetFactRunning(run bool) {
+	wasrun := FactIsRunning
 
-	var tempargs []string
-	tempargs = append(tempargs, "-f")
-	tempargs = append(tempargs, patha)
-	tempargs = append(tempargs, pathb)
+	if run && glob.NoResponseCount >= 15 && time.Since(FactorioBootedAt) > time.Minute {
+		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")
+		cwlog.DoLogCW("Server now appears to be responding again.")
+	}
+	glob.NoResponseCount = 0
 
-	out, errs := exec.Command(cfg.Global.Paths.Binaries.RmCmd, tempargs...).Output()
+	if wasrun != run {
+		UpdateChannelName()
+		return
+	}
+}
 
-	if errs != nil {
-		cwlog.DoLogCW(fmt.Sprintf("Unable to delete old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+func GetGuildName() string {
+	if disc.Guild == nil {
+		return constants.Unknown
 	} else {
-		cwlog.DoLogCW(fmt.Sprintf("Deleted old sav-*/gen-* map saves. Details:\nout: %v\nerr: %v", string(out), errs))
+		return disc.Guildname
 	}
 }
 
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
-	if IsFactorioBooted() && IsFactRunning() {
+	if FactorioBooted && FactIsRunning {
 		if cfg.Local.Options.Whitelist {
 			if level > 0 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
@@ -103,15 +106,15 @@ func QuitFactorio(message string) {
 		message = "Server quitting."
 	}
 
-	SetRelaunchThrottle(0)
-	SetNoResponseCount(0)
+	glob.RelaunchThrottle = 0
+	glob.NoResponseCount = 0
 
 	/* Running but no players, just quit */
-	if IsFactorioBooted() && GetNumPlayers() <= 0 {
+	if FactorioBooted && NumPlayers <= 0 {
 		WriteFact("/quit")
 
 		/* Running, but players connected... Give them quick feedback. */
-	} else if IsFactorioBooted() && GetNumPlayers() > 0 {
+	} else if FactorioBooted && NumPlayers > 0 {
 		FactChat("[color=red]" + message + "[/color]")
 		FactChat("[color=green]" + message + "[/color]")
 		FactChat("[color=blue]" + message + "[/color]")
@@ -238,7 +241,7 @@ func AutoPromote(pname string) string {
 				newrole = cfg.Global.Discord.Roles.Moderator
 			}
 
-			guild := GetGuild()
+			guild := disc.Guild
 
 			if guild != nil && disc.DS != nil {
 
@@ -265,7 +268,7 @@ func AutoPromote(pname string) string {
 func UpdateChannelName() {
 
 	var newchname string
-	nump := GetNumPlayers()
+	nump := NumPlayers
 	icon := "🔵"
 
 	if cfg.Local.Options.Whitelist {
@@ -275,9 +278,9 @@ func UpdateChannelName() {
 		icon = "⚫"
 	}
 
-	if IsFactorioBooted() && IsFactRunning() && GetNoResposeCount() >= 30 {
+	if FactorioBooted && FactIsRunning && glob.NoResponseCount >= 30 {
 		icon = "🟠"
-	} else if !IsFactorioBooted() {
+	} else if !FactorioBooted {
 		icon = "🔴"
 	}
 
@@ -419,7 +422,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				//rewindSyntax(m)
 				return
 			} else {
-				SetAutoStart(false)
+				FactAutoStart = false
 				QuitFactorio("Server rebooting for map rewind...")
 
 				WaitFactQuit()
@@ -453,7 +456,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				}
 
 				CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading autosave%v", num))
-				SetAutoStart(true)
+				FactAutoStart = true
 				return
 			}
 		}
