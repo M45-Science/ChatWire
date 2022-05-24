@@ -14,19 +14,7 @@ import (
 /* Load a different save-game */
 func RewindMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	a := i.ApplicationCommandData()
 	var autosaveNum int64 = -1
-
-	for _, arg := range a.Options {
-		if arg.Type == discordgo.ApplicationCommandOptionInteger {
-			autosaveNum = arg.IntValue()
-		} else if arg.Type == discordgo.ApplicationCommandOptionBoolean {
-			if arg.BoolValue() {
-				fact.ShowRewindList(s, i)
-				return
-			}
-		}
-	}
 
 	/* Correct number of arguments (1) */
 	if autosaveNum > 0 && autosaveNum <= int64(cfg.Global.Options.AutosaveMax) {
@@ -42,5 +30,4 @@ func RewindMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	fact.ShowRewindList(s, i)
-
 }

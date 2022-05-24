@@ -18,7 +18,7 @@ import (
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func ServerInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	verbose := false
 

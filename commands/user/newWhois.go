@@ -32,7 +32,7 @@ func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 
 /*  Get info on a specific player */
-func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var args []string
 	layoutUS := "01-02-06 3:04 PM"

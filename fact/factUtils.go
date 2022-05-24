@@ -360,7 +360,7 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	})
 
 	maxList := constants.MaxRewindResults
-	buf := "Last 40 autosaves:\n"
+	var availableRewinds []discordgo.SelectMenuOption
 
 	numFiles := len(tempf) - 1
 	startPos := 0
@@ -394,9 +394,20 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			/* Get mod date */
 			modDate := time.Since(f.ModTime())
 			modDate = modDate.Round(time.Second)
-			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units)
-			/* Add to list with mod date */
-			buf = buf + fmt.Sprintf("`#%-3v: %-20v`\n", fNum, modStr+" ago")
+			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units) + " ago"
+
+			saveNumer := fmt.Sprintf("%v", fNum)
+			availableRewinds = append(availableRewinds,
+				discordgo.SelectMenuOption{
+
+					Label:       "autosave " + saveNumer,
+					Description: modStr,
+					Value:       saveNumer,
+					Emoji: discordgo.ComponentEmoji{
+						Name: "💾",
+					},
+				},
+			)
 			lastNum = fNum
 		}
 	}
@@ -404,7 +415,30 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if lastNum == -1 {
 		disc.EphemeralResponse(s, i, "Error:", "No autosaves were found.")
 	} else {
-		disc.EphemeralResponse(s, i, "Available autosaves:", buf)
+
+		response := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Rewind Map:",
+				Flags:   1 << 6,
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.SelectMenu{
+								// Select menu, as other components, must have a customID, so we set it to this value.
+								CustomID:    "select",
+								Placeholder: "Choose autosave to rewind to",
+								Options:     availableRewinds,
+							},
+						},
+					},
+				},
+			},
+		}
+		err := s.InteractionRespond(i.Interaction, response)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
 	}
 }
 

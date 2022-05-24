@@ -175,22 +175,6 @@ var cmds = []Command{
 		Name:        "rewind-map",
 		Description: "Rewinds the map to specified autosave.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Name:        "rewind-to",
-				Description: "autosave to rewind to",
-				Required:    false,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    float64(cfg.Global.Options.AutosaveMax),
-			},
-			{
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Name:        "list",
-				Description: "Show list of the last 40 autosaves",
-				Required:    false,
-			},
-		},
 	},
 		Command: moderator.RewindMap, ModeratorOnly: true},
 
@@ -236,7 +220,7 @@ var cmds = []Command{
 		Description: "Shows information about <player>",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Info, PrimaryOnly: true},
+		Command: user.Whois, PrimaryOnly: true},
 }
 
 func ClearCommands() {
