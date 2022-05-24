@@ -470,8 +470,6 @@ func handleSlowConnect(NoTC string, line string) {
 	 ******************/
 	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
 
-		tn := time.Now()
-
 		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
 			if strings.Contains(line, "removing peer") {
@@ -498,6 +496,7 @@ func SlowConnectStart() {
 		fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed))
 	}
 
+	tn := time.Now()
 	fact.ConnectPauseLock.Lock()
 	fact.SlowConnectTimer = tn.Unix()
 	fact.ConnectPauseCount++
