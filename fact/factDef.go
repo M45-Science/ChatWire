@@ -77,7 +77,7 @@ var (
 
 	/* Slow-connect status */
 	ConnectPauseLock  sync.Mutex
-	ConnectPauseTimer int64 = 0
+	SlowConnectTimer  int64 = 0
 	ConnectPauseCount       = 0
 
 	/* Number of man-minutes */

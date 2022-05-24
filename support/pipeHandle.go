@@ -71,7 +71,7 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 			}
 
 			/* Don't add the time if we are slowed down for players connecting, or paused */
-			if fact.ConnectPauseTimer == 0 && fact.PausedTicks <= 2 {
+			if fact.SlowConnectTimer == 0 && fact.PausedTicks <= 2 {
 				fact.TickHistoryLock.Lock()
 				fact.TickHistory = append(fact.TickHistory,
 					fact.TickInt{Day: day, Hour: hour, Min: minute, Sec: second})
@@ -479,40 +479,48 @@ func handleSlowConnect(NoTC string, line string) {
 					fact.WriteFact(glob.OnlineCommand)
 				}
 
-				/* Fix for players leaving with no leave message */
 			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
-				if cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed <= 0.0 {
-					fact.WriteFact("/gspeed 0.5")
-				} else {
-					fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed))
-				}
-
-				fact.ConnectPauseLock.Lock()
-				fact.ConnectPauseTimer = tn.Unix()
-				fact.ConnectPauseCount++
-				fact.ConnectPauseLock.Unlock()
-
+				SlowConnectStart()
 			} else if strings.Contains(line, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
-
-				fact.ConnectPauseLock.Lock()
-
-				fact.ConnectPauseCount--
-				if fact.ConnectPauseCount <= 0 {
-					fact.ConnectPauseCount = 0
-					fact.ConnectPauseTimer = 0
-
-					if cfg.Local.Options.SoftModOptions.SlowConnect.Speed >= 0.0 {
-						fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.Speed))
-					} else {
-						fact.WriteFact("/gspeed 1.0")
-					}
-				}
-
-				fact.ConnectPauseLock.Unlock()
+				SlowConnectEnd()
+			} else if strings.Contains(line, "oldState(TryingToCatchUp) newState(DisconnectScheduled") {
+				SlowConnectEnd()
 			}
 
 		}
 	}
+}
+
+func SlowConnectStart() {
+	if cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed <= 0.0 {
+		fact.WriteFact("/gspeed 0.5")
+	} else {
+		fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed))
+	}
+
+	fact.ConnectPauseLock.Lock()
+	fact.SlowConnectTimer = tn.Unix()
+	fact.ConnectPauseCount++
+	fact.ConnectPauseLock.Unlock()
+}
+
+func SlowConnectEnd() {
+
+	fact.ConnectPauseLock.Lock()
+
+	fact.ConnectPauseCount--
+	if fact.ConnectPauseCount <= 0 {
+		fact.ConnectPauseCount = 0
+		fact.SlowConnectTimer = 0
+
+		if cfg.Local.Options.SoftModOptions.SlowConnect.Speed >= 0.0 {
+			fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.Speed))
+		} else {
+			fact.WriteFact("/gspeed 1.0")
+		}
+	}
+
+	fact.ConnectPauseLock.Unlock()
 }
 
 func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistlen int) bool {

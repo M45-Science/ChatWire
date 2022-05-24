@@ -270,9 +270,9 @@ func MainLoops() {
 
 				fact.ConnectPauseLock.Lock()
 
-				if fact.ConnectPauseTimer > 0 {
-					if tn.Unix()-fact.ConnectPauseTimer >= 30 {
-						fact.ConnectPauseTimer = 0
+				if fact.SlowConnectTimer > 0 {
+					if tn.Unix()-fact.SlowConnectTimer >= 30 {
+						fact.SlowConnectTimer = 0
 						fact.ConnectPauseCount = 0
 
 						buf := "Catch-up taking over 30 seconds, returning to normal speed."
