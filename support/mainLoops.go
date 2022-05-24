@@ -35,6 +35,7 @@ func MainLoops() {
 	 ***************/
 	go func() {
 		for glob.ServerRunning {
+
 			time.Sleep(constants.WatchdogInterval)
 
 			/* Check for updates */
@@ -44,6 +45,7 @@ func MainLoops() {
 					fact.FactUpdate()
 				}
 				fact.DoExit(false)
+				return
 
 				/* We are running normally */
 			} else if fact.FactIsRunning && fact.FactorioBooted {
@@ -70,7 +72,6 @@ func MainLoops() {
 				/* We aren't running, but should be! */
 			} else if !fact.FactIsRunning && !fact.FactorioBooted && fact.FactAutoStart && !fact.DoUpdateFactorio {
 				/* Don't relaunch if we are set to auto update */
-
 				launchFactorio()
 			}
 		}

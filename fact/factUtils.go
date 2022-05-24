@@ -25,6 +25,7 @@ import (
 
 func SetFactRunning(run bool) {
 	wasrun := FactIsRunning
+	FactIsRunning = run
 
 	if run && glob.NoResponseCount >= 15 && time.Since(FactorioBootedAt) > time.Minute {
 		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")

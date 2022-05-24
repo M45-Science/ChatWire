@@ -905,8 +905,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 			if pname != "<server>" {
 
-				var nores int
-				nores = glob.NoResponseCount
+				var nores int = glob.NoResponseCount
 
 				glob.ChatterLock.Lock()
 
