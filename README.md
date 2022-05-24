@@ -44,8 +44,7 @@ Attempt to protect players from publicly posting registration codes.<br>
 Automatically warn/inform players about using /register on members-only servers.<br>
 Factorio /register command is now more forgiving about code formatting.<br>
 More informative shutdown/reboot messages in Factorio.<br>
-
-
+<br>
 ### Requirements:
 Linux<br>
 Golang 1.17+<br>
