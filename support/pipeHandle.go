@@ -633,8 +633,12 @@ func handleFactGoodbye(NoTC string) bool {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.FactorioBooted = false
 		fact.SetFactRunning(false)
-		fact.UpdateChannelName()
-		fact.DoUpdateChannelName(false)
+
+		go func() {
+			fact.UpdateChannelName()
+			fact.DoUpdateChannelName(false)
+		}()
+
 		return true
 	}
 	return false
