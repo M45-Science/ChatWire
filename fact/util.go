@@ -29,7 +29,7 @@ func FactChat(input string) {
 }
 
 func WaitFactQuit() {
-	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning; x++ {
+	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && glob.ServerRunning; x++ {
 		time.Sleep(time.Millisecond * 100)
 	}
 
