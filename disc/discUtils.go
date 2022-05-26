@@ -28,6 +28,10 @@ func CheckAdmin(roles []string) bool {
 /*  Check if Discord moderator */
 func CheckModerator(roles []string) bool {
 
+	if CheckAdmin(roles) {
+		return true
+	}
+
 	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
 		return false
 	}
