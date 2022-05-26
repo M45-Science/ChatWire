@@ -56,7 +56,7 @@ func main() {
 
 				cwlog.DoLogCW(msg)
 				go func(msg string) {
-					for i := 0; i < constants.RestartLimitSleepMinutes*60*10; i++ {
+					for i := 0; i < constants.RestartLimitSleepMinutes*60*10 && glob.ServerRunning; i++ {
 						if disc.DS == nil {
 							time.Sleep(time.Millisecond * 100)
 						}
@@ -202,7 +202,7 @@ func startbot() {
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
-	botstatus := "m45sci.xyz"
+	botstatus := cfg.Global.Paths.URLs.Domain
 	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
