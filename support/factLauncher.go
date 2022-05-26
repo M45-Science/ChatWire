@@ -48,7 +48,7 @@ func launchFactorio() {
 
 		if delay > 0 {
 			cwlog.DoLogCW(fmt.Sprintf("Automatically rebooting Factorio in %d seconds.", delay))
-			for i := 0; i < delay*11 && throt > 0; i++ {
+			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
@@ -85,7 +85,7 @@ func launchFactorio() {
 	tempargs = append(tempargs, "--server-settings")
 	tempargs = append(tempargs, serversettings)
 
-	/*Auth Server Bans ( global bans ) */
+	/* Auth Server Bans ( global bans ) */
 	if cfg.Global.Options.UseAuthserver {
 		tempargs = append(tempargs, "--use-authserver-bans")
 	}
