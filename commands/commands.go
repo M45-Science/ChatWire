@@ -413,66 +413,87 @@ func LinkConfigData(p int) {
 }
 
 func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	/* Ignore events and appid that aren't relevant to us */
-	if i.Type != discordgo.InteractionApplicationCommand || i.AppID != cfg.Global.Discord.Application {
+
+	/* Ignore appid that aren't relevant to us */
+	if i.AppID != cfg.Global.Discord.Application {
 		return
 	}
 
-	data := i.ApplicationCommandData()
+	if i.Type == discordgo.InteractionMessageComponent {
+		data := i.MessageComponentData()
 
-	/* Handle these commands from anywhere, if we are the primary server */
-	if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
-		for _, c := range CL {
-			if strings.EqualFold(c.AppCmd.Name, data.Name) {
+		for _, c := range data.Values {
+			if data.CustomID == "RewindMap" {
+				isMod := disc.CheckModerator(i.Member.Roles)
+				if isMod {
+
+					buf := fmt.Sprintf("Rewinding to autosave %v, please wait.", c)
+					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
+					disc.InteractionResponse(s, i, &elist)
+
+					fact.DoRewindMap(s, c)
+
+					break
+				}
+			}
+		}
+	} else if i.Type == discordgo.InteractionApplicationCommand {
+		data := i.ApplicationCommandData()
+
+		/* Handle these commands from anywhere, if we are the primary server */
+		if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
+			for _, c := range CL {
+				if strings.EqualFold(c.AppCmd.Name, data.Name) {
+					if c.PrimaryOnly {
+						c.Command(s, i)
+						return
+					}
+				}
+			}
+		}
+
+		/* Don't respond to other channels for normal commands */
+		if i.ChannelID == cfg.Local.Channel.ChatChannel {
+
+			for _, c := range CL {
+
+				/* Don't process these commands here */
 				if c.PrimaryOnly {
-					c.Command(s, i)
-					return
+					continue
 				}
-			}
-		}
-	}
 
-	/* Don't respond to other channels for normal commands */
-	if i.ChannelID == cfg.Local.Channel.ChatChannel {
+				if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
-		for _, c := range CL {
-
-			/* Don't process these commands here */
-			if c.PrimaryOnly {
-				continue
-			}
-
-			if strings.EqualFold(c.AppCmd.Name, data.Name) {
-
-				if c.AdminOnly {
-					if disc.CheckAdmin(i.Member.Roles) {
-						c.Command(s, i)
-						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s", i.Member.User.Username, data.Name))
-						return
+					if c.AdminOnly {
+						if disc.CheckAdmin(i.Member.Roles) {
+							c.Command(s, i)
+							cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s", i.Member.User.Username, data.Name))
+							return
+						} else {
+							disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
+							fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+							return
+						}
+					} else if c.ModeratorOnly {
+						if disc.CheckModerator(i.Member.Roles) {
+							cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
+							c.Command(s, i)
+							return
+						} else {
+							disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
+							fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+							return
+						}
 					} else {
-						disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
-						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
-						return
-					}
-				} else if c.ModeratorOnly {
-					if disc.CheckModerator(i.Member.Roles) {
-						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
+						cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
 						c.Command(s, i)
 						return
-					} else {
-						disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
-						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
-						return
 					}
-				} else {
-					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
-					c.Command(s, i)
-					return
 				}
 			}
-		}
-		disc.EphemeralResponse(s, i, "Error", "That is not a valid command.")
-		cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
+			disc.EphemeralResponse(s, i, "Error", "That is not a valid command.")
+			cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
 
+		}
 	}
 }
