@@ -56,9 +56,9 @@ func main() {
 
 				cwlog.DoLogCW(msg)
 				go func(msg string) {
-					for i := 0; i < 30; i++ {
+					for i := 0; i < constants.RestartLimitSleepMinutes*60*10; i++ {
 						if disc.DS == nil {
-							time.Sleep(time.Millisecond * 1000)
+							time.Sleep(time.Millisecond * 100)
 						}
 					}
 					disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
