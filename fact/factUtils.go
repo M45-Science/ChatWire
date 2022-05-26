@@ -426,7 +426,7 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						Components: []discordgo.MessageComponent{
 							discordgo.SelectMenu{
 								// Select menu, as other components, must have a customID, so we set it to this value.
-								CustomID:    "select",
+								CustomID:    "RewindMap",
 								Placeholder: "Choose autosave to rewind to",
 								Options:     availableRewinds,
 							},
@@ -468,7 +468,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				}
 				defer from.Close()
 
-				newmappath := path + "/" + sclean.UnixSafeFilename(cfg.Local.Name) + "_new.zip"
+				newmappath := path + "/" + cfg.Local.Name + "_new.zip"
 				_, err := os.Stat(newmappath)
 				if !os.IsNotExist(err) {
 					err = os.Remove(newmappath)
@@ -491,6 +491,7 @@ func DoRewindMap(s *discordgo.Session, arg string) {
 				}
 
 				CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading autosave%v", num))
+				glob.RelaunchThrottle = 0
 				FactAutoStart = true
 				return
 			}
