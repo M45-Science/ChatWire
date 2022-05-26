@@ -3,11 +3,11 @@ package constants
 import "time"
 
 const (
-	Version = "2536-05.20.2022-0738"
+	Version = "2537-05.26.2022-0659"
+	CWEpoch = 1653239822390688174
 	Unknown = "Unknown"
 
 	/* ChatWire files */
-	CWEpoch             = 1653239822390688174
 	CWGlobalConfig      = "../cw-global-config.json"
 	CWLocalConfig       = "cw-local-config.json"
 	WhitelistName       = "server-whitelist.json"
@@ -20,6 +20,7 @@ const (
 	ArchiveFolderSuffix = " maps"
 	BootUpdateDelayMin  = 15
 
+	/* Spam auto-ban settings */
 	SpamScoreLimit   = 12
 	SpamScoreWarning = 9
 
@@ -69,7 +70,7 @@ const (
 	/* How often to check if Factorio server is alive */
 	WatchdogInterval = time.Second
 
-	/* Throttle chat, 1.5 seconds per message. */
+	/* Throttle Discord chat */
 	CMSRate                 = 250 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
 	CMSRestTime             = 2000 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate             = 100 * time.Millisecond  //Time between polls
