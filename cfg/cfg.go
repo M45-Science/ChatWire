@@ -141,6 +141,7 @@ type local struct {
 }
 
 type settings struct {
+	AutoMapReset bool
 	MapGenerator string
 	MapPreset    string
 	Seed         int
@@ -464,6 +465,9 @@ func ReadLCfg() bool {
 		setLocalDefaults()
 		if !Local.Settings.AutoPause {
 			Local.Settings.AutoPause = true
+		}
+		if !Local.Settings.AutoMapReset {
+			Local.Settings.AutoMapReset = true
 		}
 		WriteLCfg() /* Write the defaults */
 		return true

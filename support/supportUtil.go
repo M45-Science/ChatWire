@@ -1,13 +1,14 @@
 package support
 
 import (
+	"os"
+	"strings"
+
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-	"os"
-	"strings"
 )
 
 func ProtectIdiots(text string) bool {
