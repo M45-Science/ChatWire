@@ -315,6 +315,15 @@ var SettingList = []SettingListData{
 
 		IData: &cfg.Local.Settings.Seed,
 	},
+	{
+		Name:      "auto-map-reset",
+		ShortDesc: "automatic map resets",
+		Desc:      "If this is enabled, map resets can be triggered externally with another program.",
+		Type:      TYPE_BOOL,
+		DefBool:   true,
+
+		BData: &cfg.Local.Settings.AutoMapReset,
+	},
 }
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */

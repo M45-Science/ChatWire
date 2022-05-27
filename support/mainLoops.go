@@ -621,10 +621,12 @@ func MainLoops() {
 				/* New map */
 				if _, err = os.Stat(".newmap"); err == nil {
 					if errb = os.Remove(".newmap"); errb == nil {
-						fact.Map_reset("", false)
+						if cfg.Local.Settings.AutoMapReset {
+							fact.Map_reset("", false)
+						}
 					} else if errb != nil && !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .newmaps file, ignoring.")
 					}
 				}
 				/* Message */
