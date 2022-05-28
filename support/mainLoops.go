@@ -70,7 +70,7 @@ func MainLoops() {
 				}
 
 				/* We aren't running, but should be! */
-			} else if !fact.FactIsRunning && !fact.FactorioBooted && fact.FactAutoStart && !fact.DoUpdateFactorio {
+			} else if !fact.FactIsRunning && fact.FactAutoStart && !fact.DoUpdateFactorio {
 				/* Don't relaunch if we are set to auto update */
 				launchFactorio()
 			}
@@ -87,7 +87,7 @@ func MainLoops() {
 			fact.LockerLock.Lock()
 
 			if fact.LockerStart {
-				if time.Since(fact.LockerDetectStart) > time.Second*2 && fact.LastLockerName != "" {
+				if time.Since(fact.LockerDetectStart) > time.Second*5 && fact.LastLockerName != "" {
 					fact.LockerDetectStart = time.Now()
 					fact.LockerStart = false
 

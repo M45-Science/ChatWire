@@ -595,6 +595,7 @@ func handleSVersion(line string, lineList []string, lineListlen int) bool {
 		if lineListlen > 0 {
 			glob.SoftModVersion = lineList[1]
 			glob.OnlineCommand = constants.SoftModOnlineCMD
+			cwlog.DoLogCW("Softmod detected: " + glob.SoftModVersion)
 		}
 		ConfigSoftMod()
 		return true

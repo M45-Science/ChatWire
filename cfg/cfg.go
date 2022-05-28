@@ -2,16 +2,14 @@ package cfg
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
-	"math"
-	"math/rand"
 	"os"
 	"path/filepath"
 
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/glob"
 )
 
 var ServerPrefix = ""
@@ -66,7 +64,6 @@ type roleCache struct {
 type factData struct {
 	Username string
 	Token    string
-	RCONPass string
 }
 
 type dataPaths struct {
@@ -220,15 +217,6 @@ func WriteGCfg() bool {
 	return true
 }
 
-/* Used for map names */
-func randomBase64String(l int) string {
-	buff := make([]byte, int(math.Ceil(float64(l)/float64(1.33333333333))))
-	rand.Read(buff)
-	str := base64.RawURLEncoding.EncodeToString(buff)
-	/* strip 1 extra character we get from odd length results */
-	return str[:l]
-}
-
 func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
@@ -260,12 +248,8 @@ func setGlobalDefaults() {
 	if Global.Options.RconOffset == 0 {
 		Global.Options.RconOffset = 10000
 	}
-	if Global.Factorio.RCONPass == "" {
-		Global.Factorio.RCONPass = randomBase64String(64)
-		cwlog.DoLogCW("No RCON password specified. Random one generated.")
-	}
 	if Global.GroupName == "" {
-		Global.GroupName = randomBase64String(3)
+		Global.GroupName = glob.RandomBase64String(3)
 		cwlog.DoLogCW("No group name specified. Random one generated.")
 	}
 

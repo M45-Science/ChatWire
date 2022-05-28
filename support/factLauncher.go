@@ -56,15 +56,14 @@ func launchFactorio() {
 	/* Timer gets longer each reboot */
 	glob.RelaunchThrottle = (throt + 1)
 
-	/* Lock so we don't interrupt updates or launch twice */
-
 	var err error
 	var tempargs []string
 
 	/* Factorio launch parameters */
 	rconport := cfg.Local.Port + cfg.Global.Options.RconOffset
 	rconportStr := fmt.Sprintf("%v", rconport)
-	rconpass := cfg.Global.Factorio.RCONPass
+	rconpass := glob.RandomBase64String(256)
+	glob.RCONPass = rconpass
 	port := cfg.Local.Port
 	postStr := fmt.Sprintf("%v", port)
 	serversettings := cfg.Global.Paths.Folders.ServersRoot +
@@ -118,6 +117,14 @@ func launchFactorio() {
 		}
 	}
 
+	/* Okay, prep for factorio launch */
+	fact.SetFactRunning(true)
+	fact.FactorioBooted = false
+
+	fact.Gametime = (constants.Unknown)
+	glob.NoResponseCount = 0
+	cwlog.DoLogCW("Factorio booting...")
+
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 
@@ -151,14 +158,6 @@ func launchFactorio() {
 		fact.DoExit(true)
 		return
 	}
-
-	/* Okay, Factorio is running now, prep */
-	fact.SetFactRunning(true)
-	fact.FactorioBooted = false
-
-	fact.Gametime = (constants.Unknown)
-	glob.NoResponseCount = 0
-	cwlog.DoLogCW("Factorio booting...")
 }
 
 func ConfigSoftMod() {

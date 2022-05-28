@@ -158,10 +158,10 @@ func GenerateFactorioConfig() bool {
 	}
 
 	c := "/config set"
-	if FactorioBooted {
+	if FactorioBooted && FactIsRunning {
 		/* Send over rcon, to preserve newlines */
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
-		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, cfg.Global.Factorio.RCONPass)
+		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 		if err != nil || remoteConsole == nil {
 			cwlog.DoLogCW(fmt.Sprintf("Error: `%v`\n", err))
 		}
