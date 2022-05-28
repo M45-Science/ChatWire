@@ -24,6 +24,7 @@ func WatchDatabaseFile() {
 
 		if erra != nil {
 			cwlog.DoLogCW("WatchDatabaseFile: stat")
+			time.Sleep(time.Minute)
 			continue
 		}
 

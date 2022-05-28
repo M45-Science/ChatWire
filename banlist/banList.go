@@ -54,6 +54,7 @@ func WatchBanFile() {
 
 		if erra != nil {
 			//cwlog.DoLogCW("watchBanFile: stat")
+			time.Sleep(time.Minute)
 			continue
 		}
 
