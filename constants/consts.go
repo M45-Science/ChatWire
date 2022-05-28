@@ -58,9 +58,6 @@ const (
 	/* Maximum time before giving up on patching */
 	FactorioUpdateProcessLimit = 10 * time.Minute
 
-	/* Maximum time before giving up on checking zipfile integrity */
-	ZipIntegrityLimit = 2 * time.Minute
-
 	/* Maximum time before giving up on mod updater */
 	ModUpdateLimit = 10 * time.Minute
 	ModUpdaterPath = "scripts/mod_updater.py"

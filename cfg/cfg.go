@@ -93,7 +93,6 @@ type binaryPaths struct {
 	UpdaterShell    string
 	Shell           string
 	RmCmd           string
-	ZipCmd          string
 	SoftModInserter string
 }
 
@@ -287,9 +286,6 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.Binaries.Shell == "" {
 		Global.Paths.Binaries.Shell = "/bin/bash"
-	}
-	if Global.Paths.Binaries.ZipCmd == "" {
-		Global.Paths.Binaries.ZipCmd = "/usr/bin/unzip"
 	}
 	if Global.Paths.Binaries.FactBinary == "" {
 		Global.Paths.Binaries.FactBinary = "bin/x64/factorio"
