@@ -123,9 +123,6 @@ type prevSettings struct {
 	Arguments string
 	PNGRes    string
 	PNGScale  string
-
-	JPGQuality string
-	JPGScale   string
 }
 
 /* LOCAL CONFIG */
@@ -322,12 +319,6 @@ func setGlobalDefaults() {
 	}
 	if Global.Options.AutosaveMax == 0 {
 		Global.Options.AutosaveMax = 250
-	}
-	if Global.Options.PreviewSettings.JPGQuality == "" {
-		Global.Options.PreviewSettings.JPGQuality = "85"
-	}
-	if Global.Options.PreviewSettings.JPGScale == "" {
-		Global.Options.PreviewSettings.JPGScale = "256x256"
 	}
 	if Global.Options.PreviewSettings.PNGRes == "" {
 		Global.Options.PreviewSettings.PNGRes = "256"

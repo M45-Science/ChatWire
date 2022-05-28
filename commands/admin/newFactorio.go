@@ -87,7 +87,6 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	fact.LastMapCode = ourcode
 
 	path := fmt.Sprintf("%s%s.png", cfg.Global.Paths.Folders.MapPreviews, ourcode)
-	jpgpath := fmt.Sprintf("%s%s.jpg", cfg.Global.Paths.Folders.MapPreviews, ourcode)
 	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.Options.PreviewSettings.PNGRes, "--map-preview-scale=" + cfg.Global.Options.PreviewSettings.PNGScale, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.Options.PreviewSettings.Arguments}
 
 	/* Append map gen if set */
@@ -130,27 +129,10 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	imgargs := []string{path, "-quality", cfg.Global.Options.PreviewSettings.JPGQuality, "-scale", cfg.Global.Options.PreviewSettings.JPGScale, jpgpath}
-	cmdb := exec.Command(cfg.Global.Paths.Binaries.ImgCmd, imgargs...)
-	_, berr := cmdb.CombinedOutput()
-
-	/* Delete PNG, we don't need it now */
-	if err := os.Remove(path); err != nil {
-		cwlog.DoLogCW("png preview file not found...")
-	}
-
-	if berr != nil {
-		buf := fmt.Sprintf("An error occurred when attempting to convert the map preview: %s", berr)
-		cwlog.DoLogCW(buf)
-		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, &elist)
-		return
-	}
-
 	//Attempt to attach a map preview
-	to, errb := os.OpenFile(jpgpath, os.O_RDONLY, 0666)
+	to, errb := os.OpenFile(path, os.O_RDONLY, 0666)
 	if errb != nil {
-		buf := fmt.Sprintf("Unable to read jpg file: %v", errb)
+		buf := fmt.Sprintf("Unable to read png file: %v", errb)
 		cwlog.DoLogCW(buf)
 
 		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
@@ -159,7 +141,12 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	defer to.Close()
 
-	respData := &discordgo.InteractionResponseData{Files: []*discordgo.File{{Name: jpgpath, Reader: to}}}
+	/* Delete PNG, we don't need it now */
+	if err := os.Remove(path); err != nil {
+		cwlog.DoLogCW("png preview file not found...")
+	}
+
+	respData := &discordgo.InteractionResponseData{Files: []*discordgo.File{{Name: path, Reader: to}}}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 	err = s.InteractionRespond(i.Interaction, resp)
 	if err != nil {
