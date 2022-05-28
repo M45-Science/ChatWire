@@ -475,9 +475,10 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		/* Exception for RCON */
-		if disc.CheckModerator(i.Member.Roles) {
-			if strings.EqualFold(data.Name, "rcon") {
-				for _, c := range CL {
+
+		if strings.EqualFold(data.Name, "rcon") {
+			for _, c := range CL {
+				if c.ModeratorOnly && disc.CheckModerator(i.Member.Roles) {
 					if strings.EqualFold(c.AppCmd.Name, "rcon") {
 						c.Command(s, i)
 					}
