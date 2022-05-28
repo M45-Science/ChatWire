@@ -7,6 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands/moderator"
 	"ChatWire/constants"
@@ -151,10 +152,11 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
-	buf = buf + fmt.Sprintf("Players in db: %v\n", len(glob.PlayerList))
+	buf = buf + fmt.Sprintf("\nPlayers in database: %v\n", len(glob.PlayerList))
+	buf = buf + fmt.Sprintf("Players in blacklist: %v\n", len(banlist.BanList))
 
 	if fact.PausedTicks > 4 {
-		buf = buf + "(Server is paused)\n"
+		buf = buf + "\n(Server is paused)\n"
 	}
 
 	buf = buf + "```"
