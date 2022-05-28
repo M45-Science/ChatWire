@@ -56,7 +56,6 @@ Added /factorio->install-factorio command.<br>
 Linux<br>
 Golang 1.17+<br>
 Factorio Headless 1.1+<br>
-Zip *(optional)*<br>
 <br>
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
