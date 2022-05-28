@@ -827,6 +827,15 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			fact.SetFactRunning(false)
 			return true
 		}
+		if strings.Contains(NoTC, "CommandLineMultiplayer.cpp") {
+			if strings.Contains(NoTC, "No latest save file found in") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "No save-game found.")
+				fact.FactAutoStart = false
+				fact.FactorioBooted = false
+				fact.SetFactRunning(false)
+				return true
+			}
+		}
 		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
 			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") {
