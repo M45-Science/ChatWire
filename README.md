@@ -51,6 +51,7 @@ At Factorio boot, a 256-character random string is used for RCON password. (also
 AutoMapReset setting added, for disabling automated map resets.<br>
 Moved default Factorio install to within the ChatWire directory.<br>
 Added /factorio->install-factorio command.<br>
+Removed ImageMagick requirement.<br>
 <br>
 ### Requirements:
 Linux<br>
