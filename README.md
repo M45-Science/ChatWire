@@ -21,7 +21,7 @@ SoftMod presence/version detection.<br>
 Handle absent soft-mod, chat/online commands... etc.<br>
 Improved player-online command (caching, event based)<br>
 Fixed multiple issues with ban messages.<br>
-Cleaned up code for waiting for factorio to close (faster).<br>
+Cleaned up code for waiting for Factorio to close (faster).<br>
 HideResearch setting.<br>
 Experimental detection/warning of possible griefing.<br>
 Automatically ban players from global ban list if they are already playing.<br>
@@ -34,7 +34,7 @@ Vast majority of messages moved to ephemeral/private messages.<br>
 Many timers relaxed to reduce load.<br>
 Better handling of operations that need to detect if Factorio is running or fully booted.<br>
 Map archives now show as attachments in chat.<br>
-Map previews now directly emended in response (no web server needed).<br>
+Map previews now directly embedded in response (no web server needed).<br>
 Automatically create map preview directory.<br>
 Changed map seed generation, as well as new map names.<br>
 Fixed many typos.<br>
@@ -47,7 +47,7 @@ Factorio /register command is now more forgiving about code formatting.<br>
 More informative shutdown/reboot messages in Factorio.<br>
 Slow-Connect now detects players disconnecting while trying to catch up.<br>
 Added /rcon command, works in any channel (moderators).<br>
-At factorio boot, a 256-character random string is used for password. (also behind firewall)<br>
+At Factorio boot, a 256-character random string is used for password. (also behind firewall)<br>
 AutoMapReset setting added, for disabling automated map resets.<br>
 <br>
 ### Requirements:
