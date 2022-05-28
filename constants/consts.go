@@ -49,7 +49,7 @@ const (
 	MaxRewindResults      = 40
 
 	/* Max results to return */
-	WhoisResults = 20
+	WhoisResults = 15
 
 	/* Maximum time to wait for Factorio update download */
 	FactorioUpdateCheckLimit = 15 * time.Minute
