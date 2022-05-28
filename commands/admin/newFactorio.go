@@ -342,7 +342,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 /* Reboots Factorio only */
 func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if fact.FactorioBooted {
+	if fact.FactorioBooted || fact.FactIsRunning {
 
 		buf := "Restarting Factorio..."
 		disc.EphemeralResponse(s, i, "Status:", buf)
@@ -361,7 +361,7 @@ func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	glob.RelaunchThrottle = 0
 	fact.FactAutoStart = false
 
-	if fact.FactorioBooted {
+	if fact.FactorioBooted || fact.FactIsRunning {
 
 		buf := "Stopping Factorio."
 		disc.EphemeralResponse(s, i, "Status:", buf)

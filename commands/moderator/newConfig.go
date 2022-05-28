@@ -115,12 +115,11 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	if buf != "" {
 		if cfg.WriteLCfg() {
-			if fact.FactorioBooted {
-				if !fact.GenerateFactorioConfig() {
-					disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
-					return
-				}
+			if !fact.GenerateFactorioConfig() {
+				disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
+				return
 			}
+
 			disc.EphemeralResponse(s, i, "Status:", buf)
 			fact.UpdateChannelName() //For channel renaming, only updates if changed.
 		} else {

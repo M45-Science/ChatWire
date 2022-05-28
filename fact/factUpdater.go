@@ -151,7 +151,7 @@ func FactUpdate() {
 		cwlog.DoLogCW(err.Error())
 	}
 
-	if !FactIsRunning && FactorioBooted {
+	if !FactIsRunning && !FactorioBooted {
 		/* Keep us from stepping on a factorio launch or update */
 
 		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary()}

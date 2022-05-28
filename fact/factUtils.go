@@ -111,11 +111,11 @@ func QuitFactorio(message string) {
 	glob.NoResponseCount = 0
 
 	/* Running but no players, just quit */
-	if FactorioBooted && NumPlayers <= 0 {
+	if (FactorioBooted && FactIsRunning) && NumPlayers <= 0 {
 		WriteFact("/quit")
 
 		/* Running, but players connected... Give them quick feedback. */
-	} else if FactorioBooted && NumPlayers > 0 {
+	} else if FactorioBooted && FactIsRunning && NumPlayers > 0 {
 		FactChat("[color=red]" + message + "[/color]")
 		FactChat("[color=green]" + message + "[/color]")
 		FactChat("[color=blue]" + message + "[/color]")
@@ -396,13 +396,13 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units) + " ago"
 
-			saveNumer := fmt.Sprintf("%v", fNum)
+			saveNumber := fmt.Sprintf("%v", fNum)
 			availableRewinds = append(availableRewinds,
 				discordgo.SelectMenuOption{
 
-					Label:       "autosave " + saveNumer,
+					Label:       "autosave " + saveNumber,
 					Description: modStr,
-					Value:       saveNumer,
+					Value:       saveNumber,
 					Emoji: discordgo.ComponentEmoji{
 						Name: "💾",
 					},

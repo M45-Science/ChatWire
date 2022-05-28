@@ -100,7 +100,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	if !fact.FactorioBooted || !fact.FactIsRunning || !glob.ServerRunning {
+	if !fact.FactorioBooted || !fact.FactIsRunning {
 		disc.EphemeralResponse(s, i, "Status:", "Factorio is not running.")
 		return
 	}

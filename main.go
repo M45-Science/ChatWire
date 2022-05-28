@@ -251,7 +251,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		/* Chat message handling
 		 *  Don't bother if Factorio isn't running... */
-		if fact.FactorioBooted {
+		if fact.FactorioBooted && fact.FactIsRunning {
 			cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
