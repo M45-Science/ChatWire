@@ -8,7 +8,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -35,11 +34,12 @@ func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
 func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var args []string
+	var slist []glob.PlayerData
 	layoutUS := "01-02-06 3:04 PM"
 
+	a := i.ApplicationCommandData()
+
 	maxresults := constants.WhoisResults
-	var slist []glob.PlayerData
-	argnum := len(args)
 
 	/* Reconstruct list, to remove empty entries and to reduce lock time */
 	glob.PlayerListLock.RLock()
@@ -49,137 +49,141 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	glob.PlayerListLock.RUnlock()
 
 	buf := ""
+	for _, o := range a.Options {
+		if o.Type == discordgo.ApplicationCommandOptionString {
+			arg := o.StringValue()
 
-	if argnum < 1 {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "**Arguments:** <option>\n\n```options:\nrecent (recently online)\nnew (by time joined)\nregistered (recently registered)\n<factorio/discord name search>```")
-		return
-		/* SHOW RECENTLY SEEN PLAYERS */
-	} else if strings.ToLower(args[0]) == "recent" {
-		buf = "Recently online:\n"
+			if strings.EqualFold(arg, "recent") {
+				buf = "Recently online:\n"
 
-		sort.Sort(ByLastSeen(slist))
+				sort.Sort(ByLastSeen(slist))
 
-		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
 
-		count := 0
-		for _, p := range slist {
-			if p.LastSeen > 0 && count < maxresults {
-				lseen := ""
-				if p.LastSeen == 0 {
-					lseen = constants.Unknown
-				} else {
-					ltime := time.Unix(p.LastSeen, 0)
-					lseen = ltime.Format(layoutUS)
-				}
+				count := 0
+				for _, p := range slist {
+					if p.LastSeen > 0 && count < maxresults {
+						lseen := ""
+						if p.LastSeen == 0 {
+							lseen = constants.Unknown
+						} else {
+							ltime := time.Unix(p.LastSeen, 0)
+							lseen = ltime.Format(layoutUS)
+						}
 
-				joined := ""
-				if p.Creation == 0 {
-					joined = constants.Unknown
-				} else {
-					jtime := time.Unix(p.Creation, 0)
-					joined = jtime.Format(layoutUS)
-				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
-				count++
-			}
-		}
-		/* SHOW PLAYERS THAT JUST JOINED */
-	} else if strings.ToLower(args[0]) == "new" {
-		buf = "Recently joined:\n"
-
-		sort.Sort(ByNew(slist))
-
-		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
-
-		count := 0
-		for _, p := range slist {
-			if p.LastSeen > 0 && count < maxresults {
-				lseen := ""
-				if p.LastSeen == 0 {
-					lseen = constants.Unknown
-				} else {
-					ltime := time.Unix(p.LastSeen, 0)
-					lseen = ltime.Format(layoutUS)
-				}
-
-				joined := ""
-				if p.Creation == 0 {
-					joined = constants.Unknown
-				} else {
-					jtime := time.Unix(p.Creation, 0)
-					joined = jtime.Format(layoutUS)
-				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
-				count++
-			}
-		}
-
-		/* SHOW PLAYERS THAT REGISTERED */
-	} else if strings.ToLower(args[0]) == "registered" {
-		buf = "Recently joined and registered:\n"
-
-		sort.Sort(ByNew(slist))
-
-		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
-
-		count := 0
-		for _, p := range slist {
-			if p.ID != "" && p.Name != "" {
-				if p.LastSeen > 0 && count < maxresults {
-					lseen := ""
-					if p.LastSeen == 0 {
-						lseen = constants.Unknown
-					} else {
-						ltime := time.Unix(p.LastSeen, 0)
-						lseen = ltime.Format(layoutUS)
+						joined := ""
+						if p.Creation == 0 {
+							joined = constants.Unknown
+						} else {
+							jtime := time.Unix(p.Creation, 0)
+							joined = jtime.Format(layoutUS)
+						}
+						buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+						count++
 					}
+				}
+				/* SHOW PLAYERS THAT JUST JOINED */
+			} else if strings.EqualFold(arg, "new") {
+				buf = "Recently joined:\n"
 
-					joined := ""
-					if p.Creation == 0 {
-						joined = constants.Unknown
-					} else {
-						jtime := time.Unix(p.Creation, 0)
-						joined = jtime.Format(layoutUS)
+				sort.Sort(ByNew(slist))
+
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+
+				count := 0
+				for _, p := range slist {
+					if p.LastSeen > 0 && count < maxresults {
+						lseen := ""
+						if p.LastSeen == 0 {
+							lseen = constants.Unknown
+						} else {
+							ltime := time.Unix(p.LastSeen, 0)
+							lseen = ltime.Format(layoutUS)
+						}
+
+						joined := ""
+						if p.Creation == 0 {
+							joined = constants.Unknown
+						} else {
+							jtime := time.Unix(p.Creation, 0)
+							joined = jtime.Format(layoutUS)
+						}
+						buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateString(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+						count++
 					}
-					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
-					count++
-				}
-			}
-		}
-
-	} else {
-		/*STANDARD WHOIS SEARCH*/
-		count := 0
-		buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
-		for _, p := range slist {
-			if count > maxresults {
-				break
-			}
-			if strings.Contains(strings.ToLower(p.Name), strings.ToLower(args[0])) || strings.Contains(strings.ToLower(disc.GetNameFromID(p.ID, false)), strings.ToLower(args[0])) {
-
-				lseen := ""
-				if p.LastSeen == 0 {
-					lseen = constants.Unknown
-				} else {
-					ltime := time.Unix(p.LastSeen, 0)
-					lseen = ltime.Format(layoutUS)
 				}
 
-				joined := ""
-				if p.Creation == 0 {
-					joined = constants.Unknown
-				} else {
-					jtime := time.Unix(p.Creation, 0)
-					joined = jtime.Format(layoutUS)
+				/* SHOW PLAYERS THAT REGISTERED */
+			} else if strings.EqualFold(arg, "registered") {
+				buf = "Recently joined and registered:\n"
+
+				sort.Sort(ByNew(slist))
+
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+
+				count := 0
+				for _, p := range slist {
+					if p.ID != "" && p.Name != "" {
+						if p.LastSeen > 0 && count < maxresults {
+							lseen := ""
+							if p.LastSeen == 0 {
+								lseen = constants.Unknown
+							} else {
+								ltime := time.Unix(p.LastSeen, 0)
+								lseen = ltime.Format(layoutUS)
+							}
+
+							joined := ""
+							if p.Creation == 0 {
+								joined = constants.Unknown
+							} else {
+								jtime := time.Unix(p.Creation, 0)
+								joined = jtime.Format(layoutUS)
+							}
+							buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+							count++
+						}
+					}
 				}
-				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
-				count++
+
+			} else {
+				/*STANDARD WHOIS SEARCH*/
+				count := 0
+				buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level")
+				for _, p := range slist {
+					if count > maxresults {
+						break
+					}
+					if strings.Contains(strings.ToLower(p.Name), strings.ToLower(args[0])) || strings.Contains(strings.ToLower(disc.GetNameFromID(p.ID, false)), strings.ToLower(args[0])) {
+
+						lseen := ""
+						if p.LastSeen == 0 {
+							lseen = constants.Unknown
+						} else {
+							ltime := time.Unix(p.LastSeen, 0)
+							lseen = ltime.Format(layoutUS)
+						}
+
+						joined := ""
+						if p.Creation == 0 {
+							joined = constants.Unknown
+						} else {
+							jtime := time.Unix(p.Creation, 0)
+							joined = jtime.Format(layoutUS)
+						}
+						buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
+						count++
+					}
+				}
+				if buf == "" {
+					buf = "No results."
+				}
 			}
-		}
-		if buf == "" {
-			buf = "No results."
+
+			disc.EphemeralResponse(s, i, "Whois:", buf)
+			return
 		}
 	}
+	disc.EphemeralResponse(s, i, "Error:", "You must supply a search term.")
 
-	disc.EphemeralResponse(s, i, "WhoIs:", buf)
 }
