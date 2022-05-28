@@ -50,6 +50,8 @@ func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		} else if strings.EqualFold(arg, "archive-map") {
 			ArchiveMap(s, i)
 			return
+		} else if strings.EqualFold(arg, "install-factorio") {
+			InstallFactorio(s, i)
 		}
 	}
 }
@@ -209,7 +211,12 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
 	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-" + ourcode + ".zip"
+	filename := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves +
+		"/gen-" + ourcode + ".zip"
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 

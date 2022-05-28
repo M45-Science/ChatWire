@@ -171,7 +171,12 @@ func Map_reset(data string, doReport bool) {
 
 	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves + "/gen-" + ourcode + ".zip"
+	filename := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves +
+		"/gen-" + ourcode + ".zip"
 
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 
@@ -210,10 +215,18 @@ func Map_reset(data string, doReport bool) {
 	CMS(cfg.Global.Discord.AnnounceChannel, pingstr+" Map on server: "+cfg.Local.Callsign+"-"+cfg.Local.Name+" has been reset.")
 
 	/* Mods queue folder */
-	qPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
+	qPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsQueueFolder + "/"
-	modPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
+
+	modPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsFolder + "/"
+
 	files, err := ioutil.ReadDir(qPath)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())

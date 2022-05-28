@@ -51,7 +51,11 @@ type FactConf struct {
 func GenerateFactorioConfig() bool {
 
 	tempPath := constants.ServSettingsName + ".tmp"
-	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + constants.ServSettingsName
+	finalPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		constants.ServSettingsName
 
 	var servName string
 	if cfg.Local.Options.Whitelist {

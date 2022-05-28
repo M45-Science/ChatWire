@@ -138,7 +138,11 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 		if num > 0 || num < 9999 {
-			path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
+			path := cfg.Global.Paths.Folders.ServersRoot +
+				cfg.Global.Paths.ChatWirePrefix +
+				cfg.Local.Callsign + "/" +
+				cfg.Global.Paths.Folders.FactorioDir + "/" +
+				cfg.Global.Paths.Folders.Saves
 			/* Check if file is valid and found */
 			autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
 			_, err := os.Stat(path + "/" + autoSaveStr)

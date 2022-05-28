@@ -846,11 +846,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			/* Bad zip file */
 			if strings.Contains(NoTC, "failed: Bad zip file") {
 				if numwords > 6 {
-					if strings.HasPrefix(
-						words[7],
-						cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.FactorioPrefix+
-							cfg.Local.Callsign) &&
-						(strings.HasSuffix(words[7], ".zip") || strings.HasSuffix(words[7], ".tmp.zip")) {
+					if strings.HasSuffix(words[7], ".zip") || strings.HasSuffix(words[7], ".tmp.zip") {
 						err := os.Remove(words[7])
 						if err != nil {
 							cwlog.DoLogCW("Unable to remove bad zip file: " + words[7])

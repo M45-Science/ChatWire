@@ -70,7 +70,6 @@ type factData struct {
 }
 
 type dataPaths struct {
-	FactorioPrefix string
 	ChatWirePrefix string
 	Folders        folderPaths
 	Binaries       binaryPaths
@@ -79,6 +78,7 @@ type dataPaths struct {
 }
 
 type folderPaths struct {
+	FactorioDir   string
 	ServersRoot   string
 	Saves         string
 	MapGenerators string
@@ -265,9 +265,6 @@ func setGlobalDefaults() {
 		}
 	}
 
-	if Global.Paths.FactorioPrefix == "" {
-		Global.Paths.FactorioPrefix = "fact-"
-	}
 	if Global.Paths.ChatWirePrefix == "" {
 		Global.Paths.ChatWirePrefix = "cw-"
 	}
@@ -282,6 +279,9 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.Folders.MapArchives == "" {
 		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
+	}
+	if Global.Paths.Folders.FactorioDir == "" {
+		Global.Paths.Folders.FactorioDir = "factorio"
 	}
 	if Global.Paths.URLs.ArchiveURL == "" {
 		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"

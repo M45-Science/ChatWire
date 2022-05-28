@@ -103,7 +103,11 @@ func GetFactorioBinary() string {
 		bloc = cfg.Global.Paths.Binaries.FactBinary
 	} else {
 		/* Relative path */
-		bloc = cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Binaries.FactBinary
+		bloc = cfg.Global.Paths.Folders.ServersRoot +
+			cfg.Global.Paths.ChatWirePrefix +
+			cfg.Local.Callsign + "/" +
+			cfg.Global.Paths.Folders.FactorioDir + "/" +
+			cfg.Global.Paths.Binaries.FactBinary
 	}
 	return bloc
 }

@@ -61,8 +61,11 @@ func WhitelistPlayer(pname string, level int) {
 /* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
-	wpath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix +
-		cfg.Local.Callsign + "/" + constants.WhitelistName
+	wpath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		constants.WhitelistName
 
 	if cfg.Local.Options.Whitelist {
 		glob.PlayerListLock.RLock()
@@ -336,7 +339,11 @@ func DoUpdateChannelName(doSort bool) {
 }
 
 func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
 
 	files, err := ioutil.ReadDir(path)
 	/* We can't read saves dir */
@@ -443,7 +450,11 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func DoRewindMap(s *discordgo.Session, arg string) {
-	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" + cfg.Global.Paths.Folders.Saves
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
 	num, err := strconv.Atoi(arg)
 	/* Seems to be a number */
 	if err == nil {

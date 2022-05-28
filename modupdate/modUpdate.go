@@ -19,7 +19,10 @@ func CheckMods(force bool, doReport bool) {
 	}
 
 	/* Update mods if needed */
-	modPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.FactorioPrefix + cfg.Local.Callsign + "/" +
+	modPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Local.Callsign + "/" +
 		constants.ModsFolder + "/"
 
 	files, err := ioutil.ReadDir(modPath)
@@ -48,13 +51,15 @@ func UpdateMods(doReport bool) {
 		cfg.Global.Factorio.Token,
 		"-s",
 		cfg.Global.Paths.Folders.ServersRoot +
-			cfg.Global.Paths.FactorioPrefix +
+			cfg.Global.Paths.ChatWirePrefix +
 			cfg.Local.Callsign + "/" +
+			cfg.Global.Paths.Folders.FactorioDir + "/" +
 			constants.ServSettingsName,
 
 		"-m",
 		cfg.Global.Paths.Folders.ServersRoot +
-			cfg.Global.Paths.FactorioPrefix +
+			cfg.Global.Paths.ChatWirePrefix +
+			cfg.Global.Paths.Folders.FactorioDir + "/" +
 			cfg.Local.Callsign + "/mods/",
 
 		"--fact-path",

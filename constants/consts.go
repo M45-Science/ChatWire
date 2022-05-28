@@ -8,6 +8,7 @@ const (
 	Unknown = "Unknown"
 
 	/* ChatWire files */
+	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
 	CWGlobalConfig      = "../cw-global-config.json"
 	CWLocalConfig       = "cw-local-config.json"
 	WhitelistName       = "server-whitelist.json"

@@ -55,7 +55,7 @@ var cmds = []Command{
 					},
 					{
 						Name:  "force-reboot",
-						Value: "force-rebot",
+						Value: "force-reboot",
 					},
 					{
 						Name:  "reload-config",
@@ -104,6 +104,10 @@ var cmds = []Command{
 					{
 						Name:  "archive-map",
 						Value: "archive-map",
+					},
+					{
+						Name:  "install-factorio",
+						Value: "install-factorio",
 					},
 				},
 			},
@@ -509,7 +513,11 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					if c.AdminOnly {
 						if disc.CheckAdmin(i.Member.Roles) {
 							c.Command(s, i)
-							cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s", i.Member.User.Username, data.Name))
+							var options []string
+							for _, o := range c.AppCmd.Options {
+								options = append(options, o.Name)
+							}
+							cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", ")))
 							return
 						} else {
 							disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")

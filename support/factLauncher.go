@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -24,6 +25,20 @@ func launchFactorio() {
 	fact.OnlinePlayersLock.Lock()
 	glob.OnlinePlayers = []glob.OnlinePlayerData{}
 	fact.OnlinePlayersLock.Unlock()
+
+	/* Check for factorio install */
+	checkFactPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir
+
+	if _, err := os.Stat(checkFactPath); os.IsNotExist(err) {
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio does not appear to be installed.")
+		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
+		fact.FactAutoStart = false
+		return
+	}
+
 	/* Insert soft mod */
 	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
 		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
@@ -67,8 +82,9 @@ func launchFactorio() {
 	port := cfg.Local.Port
 	postStr := fmt.Sprintf("%v", port)
 	serversettings := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.FactorioPrefix +
+		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
 	tempargs = append(tempargs, "--start-server-load-latest")
