@@ -47,7 +47,7 @@ Factorio /register command is now more forgiving about code formatting.<br>
 More informative shutdown/reboot messages in Factorio.<br>
 Slow-Connect now detects players disconnecting while trying to catch up.<br>
 Added /rcon command, works in any channel (moderators).<br>
-At Factorio boot, a 256-character random string is used for password. (also behind firewall)<br>
+At Factorio boot, a 256-character random string is used for RCON password. (also behind firewall)<br>
 AutoMapReset setting added, for disabling automated map resets.<br>
 <br>
 ### Requirements:
