@@ -317,7 +317,7 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name:      "auto-map-reset",
-		ShortDesc: "automatic map resets",
+		ShortDesc: "Automatic Map Resets",
 		Desc:      "If this is enabled, map resets can be triggered externally with another program.",
 		Type:      TYPE_BOOL,
 		DefBool:   true,
