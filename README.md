@@ -46,6 +46,10 @@ Some commands like register will now all be handled by the 'primary server' and 
 Factorio /register command is now more forgiving about code formatting.<br>
 More informative shutdown/reboot messages in Factorio.<br>
 Slow-Connect now detects players disconnecting while trying to catch up.<br>
+Added /rcon command, works in any channel (moderators).<br>
+At factorio boot, a 256-character random string is used for password. (also behind firewall)<br>
+AutoMapReset setting added, for disabling automated map resets.<br>
+<br>
 ### Requirements:
 Linux<br>
 Golang 1.17+<br>
