@@ -92,7 +92,6 @@ type binaryPaths struct {
 	FactUpdater     string
 	UpdaterShell    string
 	Shell           string
-	ImgCmd          string
 	RmCmd           string
 	ZipCmd          string
 	SoftModInserter string
@@ -282,9 +281,6 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.URLs.ArchiveURL == "" {
 		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
-	}
-	if Global.Paths.Binaries.ImgCmd == "" {
-		Global.Paths.Binaries.ImgCmd = "/usr/bin/convert"
 	}
 	if Global.Paths.Binaries.RmCmd == "" {
 		Global.Paths.Binaries.RmCmd = "/bin/rm"
