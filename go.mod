@@ -8,6 +8,7 @@ require (
 	github.com/bwmarrin/discordgo v0.25.1-0.20220514195630-e45536276050
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/martinhoefling/goxkcdpwgen v0.1.1
+	github.com/ulikunitz/xz v0.5.10
 )
 
 require (

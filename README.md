@@ -49,6 +49,7 @@ Slow-Connect now detects players disconnecting while trying to catch up.<br>
 Added /rcon command, works in any channel (moderators).<br>
 At Factorio boot, a 256-character random string is used for RCON password. (also behind firewall)<br>
 AutoMapReset setting added, for disabling automated map resets.<br>
+Moved default Factorio install to within the ChatWire directory.
 <br>
 ### Requirements:
 Linux<br>
@@ -74,9 +75,9 @@ For ChatWire:<br>
 `./cw-a/ChatWire-binary-here`<br>
 <br>
 Factorio:<br>
-`./fact-a/`<br>
+`./cw-a/factorio/`<br>
 <br>
 Binary:<br>
-`./fact-a/bin/x64/Factorio`<br>
+`./cw-a/factorio/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 
