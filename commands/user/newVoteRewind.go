@@ -168,7 +168,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		foundVote := false
 		fact.TallyRewindVotes()
 		for vpos, v = range glob.VoteBox.Votes {
-			if v.DiscID == i.Message.Author.ID {
+			if strings.EqualFold(v.DiscID, i.Message.Author.ID) {
 				left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
 
 				if v.AutosaveNum != num && !v.Voided && v.NumChanges < constants.MaxRewindChanges {

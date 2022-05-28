@@ -126,7 +126,7 @@ func ReadBanFile() {
 		found := false
 		if aBan.UserName != "" {
 			for _, bBan := range BanList {
-				if bBan.UserName == aBan.UserName {
+				if strings.EqualFold(bBan.UserName, aBan.UserName) {
 					found = true
 					break
 				}

@@ -82,6 +82,8 @@ func PlayerSetID(pname string, id string, level int) bool {
 		return false
 	}
 
+	pname = strings.ToLower(pname)
+
 	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
 	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
@@ -121,6 +123,8 @@ func UpdateSeen(pname string) {
 		return
 	}
 
+	pname = strings.ToLower(pname)
+
 	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
 	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
@@ -143,6 +147,8 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	if pname == "" {
 		return false
 	}
+
+	pname = strings.ToLower(pname)
 
 	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
 	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
@@ -197,6 +203,8 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		return
 	}
 
+	pname = strings.ToLower(pname)
+
 	if glob.PlayerList[pname] != nil {
 		if level <= -254 {
 			glob.PlayerList[pname].Level = level
@@ -237,6 +245,8 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 	if pname == "" {
 		return 0
 	}
+
+	pname = strings.ToLower(pname)
 
 	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
 	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
@@ -291,14 +301,14 @@ func LoadPlayers() {
 		dblen := len(dblines)
 
 		/* Upgrade existing */
-		if dblines[0] == "db-v0.03" {
+		if strings.EqualFold(dblines[0], "db-v0.03") {
 
 			glob.PlayerListLock.Lock()
 			for pos, line := range dblines {
 				items := strings.Split(string(line), ",")
 				numitems := len(items)
 				if numitems == 5 {
-					pname := items[0]
+					pname := strings.ToLower(items[0])
 					playerlevel, _ := strconv.Atoi(items[1])
 					pid := items[2]
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
@@ -337,7 +347,7 @@ func WritePlayers() {
 	buffer = buffer + "db-v0.03:"
 	glob.PlayerListLock.RLock()
 	for _, player := range glob.PlayerList {
-		buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", player.Name, player.Level, player.ID, player.Creation, player.LastSeen)
+		buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", strings.ToLower(player.Name), player.Level, player.ID, player.Creation, player.LastSeen)
 	}
 	glob.PlayerListLock.RUnlock()
 

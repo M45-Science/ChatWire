@@ -41,6 +41,7 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			disc.EphemeralResponse(s, i, "Error:", err.Error())
 		}
 
+		cwlog.DoLogCW(i.Member.User.Username + ": " + server + ": " + command)
 		reqID, err := remoteConsole.Write(command)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
@@ -57,6 +58,7 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		disc.EphemeralResponse(s, i, "Result:", resp)
+		cwlog.DoLogCW("RCON RESPONSE: " + resp)
 	} else {
 		buf := "Invalid syntax."
 		disc.EphemeralResponse(s, i, "Error:", buf)

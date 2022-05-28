@@ -495,7 +495,7 @@ func ReadLCfg() bool {
 			/* Automatic local defaults */
 			found := false
 			for _, t := range constants.MapTypes {
-				if Local.Settings.MapPreset == t {
+				if strings.EqualFold(Local.Settings.MapPreset, t) {
 					found = true
 				}
 			}

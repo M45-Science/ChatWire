@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
@@ -111,10 +112,10 @@ func UpdateRoleList() {
 
 		for _, m := range g.Members {
 			for _, r := range m.Roles {
-				if r == cfg.Global.Discord.Roles.RoleCache.Nitro {
+				if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Nitro) {
 					foundN := false
 					for _, u := range RoleList.NitroBooster {
-						if u == m.User.Username {
+						if strings.EqualFold(u, m.User.Username) {
 							foundN = true
 							break
 						}
@@ -123,10 +124,10 @@ func UpdateRoleList() {
 						foundChange = true
 						RoleList.NitroBooster = append(RoleList.NitroBooster, m.User.Username)
 					}
-				} else if r == cfg.Global.Discord.Roles.RoleCache.Patreon {
+				} else if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Patreon) {
 					foundP := false
 					for _, u := range RoleList.Patreons {
-						if u == m.User.Username {
+						if strings.EqualFold(u, m.User.Username) {
 							foundP = true
 							break
 						}
@@ -135,10 +136,10 @@ func UpdateRoleList() {
 						foundChange = true
 						RoleList.Patreons = append(RoleList.Patreons, m.User.Username)
 					}
-				} else if r == cfg.Global.Discord.Roles.RoleCache.Moderator {
+				} else if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
 					foundM := false
 					for _, u := range RoleList.Moderators {
-						if u == m.User.Username {
+						if strings.EqualFold(u, m.User.Username) {
 							foundM = true
 							break
 						}

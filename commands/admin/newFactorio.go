@@ -29,25 +29,25 @@ func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	for _, o := range a.Options {
 		arg := o.StringValue()
-		if arg == "start" {
+		if strings.EqualFold(arg, "start") {
 			StartFact(s, i)
 			return
-		} else if arg == "stop" {
+		} else if strings.EqualFold(arg, "stop") {
 			StopFact(s, i)
 			return
-		} else if arg == "new-map-preview" {
+		} else if strings.EqualFold(arg, "new-map-preview") {
 			NewMapPrev(s, i)
 			return
-		} else if arg == "new-map" {
+		} else if strings.EqualFold(arg, "new-map") {
 			MakeNewMap(s, i)
 			return
-		} else if arg == "update-factorio" {
+		} else if strings.EqualFold(arg, "update-factorio") {
 			UpdateFact(s, i)
 			return
-		} else if arg == "update-mods" {
+		} else if strings.EqualFold(arg, "update-mods") {
 			UpdateMods(s, i)
 			return
-		} else if arg == "archive-map" {
+		} else if strings.EqualFold(arg, "archive-map") {
 			ArchiveMap(s, i)
 			return
 		}
@@ -195,7 +195,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	if MapPreset == "Error" {
+	if strings.EqualFold(MapPreset, "error") {
 		buf := "Invalid map preset."
 		cwlog.DoLogCW(buf)
 		disc.EphemeralResponse(s, i, "Error:", buf)
@@ -380,7 +380,7 @@ func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	argnum := len(args)
 
 	if cfg.Global.Paths.Binaries.FactUpdater != "" {
-		if argnum > 0 && strings.ToLower(args[0]) == "cancel" {
+		if argnum > 0 && strings.EqualFold(args[0], "cancel") {
 			fact.DoUpdateFactorio = false
 			cfg.Local.Options.AutoUpdate = false
 

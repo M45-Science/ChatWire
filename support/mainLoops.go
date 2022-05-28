@@ -162,9 +162,9 @@ func MainLoops() {
 
 						/* Put messages into proper lists */
 						for _, msg := range lcopy {
-							if msg.Channel == cfg.Local.Channel.ChatChannel {
+							if strings.EqualFold(msg.Channel, cfg.Local.Channel.ChatChannel) {
 								factmsg = append(factmsg, msg.Text)
-							} else if msg.Channel == cfg.Global.Discord.ReportChannel {
+							} else if strings.EqualFold(msg.Channel, cfg.Global.Discord.ReportChannel) {
 								moder = append(moder, msg.Text)
 							} else {
 								disc.SmartWriteDiscord(msg.Channel, msg.Text)

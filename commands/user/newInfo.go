@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -25,7 +26,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 	for _, arg := range a.Options {
 		if arg.Type == discordgo.ApplicationCommandOptionBoolean &&
-			arg.Name == "verbose" && arg.BoolValue() {
+			strings.EqualFold(arg.Name, "verbose") && arg.BoolValue() {
 			verbose = true
 			break
 		}
@@ -149,6 +150,8 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f\n", tenMinAvr)
 	}
 	/* End tick history */
+
+	buf = buf + fmt.Sprintf("Players in db: %v\n", len(glob.PlayerList))
 
 	if fact.PausedTicks > 4 {
 		buf = buf + "(Server is paused)\n"

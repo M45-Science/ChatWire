@@ -150,13 +150,13 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					delete(glob.PassList, i)
 
 					newrole := ""
-					if ptype == "trusted" {
+					if strings.EqualFold(ptype, "trusted") {
 						newrole = cfg.Global.Discord.Roles.Member
 						plevel = 1
-					} else if ptype == "regular" {
+					} else if strings.EqualFold(ptype, "regular") {
 						newrole = cfg.Global.Discord.Roles.Regular
 						plevel = 2
-					} else if ptype == "admin" {
+					} else if strings.EqualFold(ptype, "admin") {
 						newrole = cfg.Global.Discord.Roles.Moderator
 						plevel = 255
 					} else {
@@ -167,7 +167,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					discid := disc.GetDiscordIDFromFactorioName(pname)
 					factname := disc.GetFactorioNameFromDiscordID(pid)
 
-					if discid == pid && factname == pname {
+					if strings.EqualFold(discid, pid) && strings.EqualFold(factname, pname) {
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account, and Discord account are already connected! Setting role, if needed.", pname))
 						codegood = true
 						/* Do not break, process */

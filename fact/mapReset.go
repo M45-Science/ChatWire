@@ -157,7 +157,7 @@ func Map_reset(data string, doReport bool) {
 
 	MapPreset := cfg.Local.Settings.MapPreset
 
-	if MapPreset == "Error" {
+	if strings.EqualFold(MapPreset, "error") {
 		buf := "Invalid map preset."
 		cwlog.DoLogCW(buf)
 		CMS(cfg.Local.Channel.ChatChannel, buf)
@@ -228,7 +228,7 @@ func Map_reset(data string, doReport bool) {
 		}
 	} else {
 		for _, f := range files {
-			if f.Name() == "mod-settings.dat" {
+			if strings.EqualFold(f.Name(), "mod-settings.dat") {
 				err := os.Rename(qPath+f.Name(), modPath+f.Name())
 				if err != nil {
 					cwlog.DoLogCW(err.Error())

@@ -18,7 +18,7 @@ func CheckAdmin(roles []string) bool {
 		return false
 	}
 	for _, r := range roles {
-		if r == cfg.Global.Discord.Roles.RoleCache.Admin {
+		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Admin) {
 			return true
 		}
 	}
@@ -36,7 +36,7 @@ func CheckModerator(roles []string) bool {
 		return false
 	}
 	for _, r := range roles {
-		if r == cfg.Global.Discord.Roles.RoleCache.Moderator {
+		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
 			return true
 		}
 	}
@@ -50,7 +50,7 @@ func CheckRegular(roles []string) bool {
 		return false
 	}
 	for _, r := range roles {
-		if r == cfg.Global.Discord.Roles.RoleCache.Regular {
+		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Regular) {
 			return true
 		}
 	}
@@ -64,7 +64,7 @@ func CheckMember(roles []string) bool {
 		return false
 	}
 	for _, r := range roles {
-		if r == cfg.Global.Discord.Roles.RoleCache.Member {
+		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Member) {
 			return true
 		}
 	}
@@ -78,7 +78,7 @@ func CheckNew(roles []string) bool {
 		return false
 	}
 	for _, r := range roles {
-		if r == cfg.Global.Discord.Roles.RoleCache.New {
+		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.New) {
 			return true
 		}
 	}
@@ -147,11 +147,11 @@ func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 		name = strings.ToLower(name)
 
 		for _, role := range g.Roles {
-			if role.Name == "@everyone" {
+			if strings.EqualFold(role.Name, "@everyone") {
 				continue
 			}
 
-			if strings.ToLower(role.Name) == name {
+			if strings.EqualFold(role.Name, name) {
 				return true, role
 			}
 
@@ -193,7 +193,7 @@ func GetDiscordAvatarFromId(id string, size int) string {
 
 	if g != nil {
 		for _, m := range g.Members {
-			if m.User.ID == id {
+			if strings.EqualFold(m.User.ID, id) {
 				return m.User.AvatarURL(fmt.Sprintf("%v", size))
 			}
 		}
@@ -229,7 +229,7 @@ func GetFactorioNameFromDiscordID(id string) string {
 	defer glob.PlayerListLock.RUnlock()
 
 	for i, player := range glob.PlayerList {
-		if glob.PlayerList[i].ID == id && player.Level > 0 {
+		if strings.EqualFold(glob.PlayerList[i].ID, id) && player.Level > 0 {
 			return player.Name
 		}
 	}

@@ -237,8 +237,16 @@ var cmds = []Command{
 		Command: user.Register, PrimaryOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "whois",
-		Description: "Shows information about <player>",
+		Description: "Shows information about <search>",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "search",
+				Description: "Factorio or Discord name.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+		},
 	},
 		Command: user.Whois, PrimaryOnly: true},
 }
@@ -443,7 +451,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		data := i.MessageComponentData()
 
 		for _, c := range data.Values {
-			if data.CustomID == "RewindMap" {
+			if strings.EqualFold(data.CustomID, "RewindMap") {
 				isMod := disc.CheckModerator(i.Member.Roles)
 				if isMod {
 
@@ -487,7 +495,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		/* Don't respond to other channels for normal commands */
-		if i.ChannelID == cfg.Local.Channel.ChatChannel {
+		if strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
 
 			for _, c := range CL {
 

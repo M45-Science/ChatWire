@@ -229,7 +229,7 @@ func AutoPromote(pname string) string {
 		discid := disc.GetDiscordIDFromFactorioName(pname)
 		factname := disc.GetFactorioNameFromDiscordID(discid)
 
-		if factname == pname {
+		if strings.EqualFold(factname, pname) {
 
 			newrole := ""
 			if plevel == 0 {

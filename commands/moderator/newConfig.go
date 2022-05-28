@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -20,7 +21,7 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/* Check all values, Discord limits could be bypassed */
 	for _, o := range a.Options {
 		for _, co := range SettingList {
-			if co.Name == o.Name {
+			if strings.EqualFold(co.Name, o.Name) {
 				if o.Type == discordgo.ApplicationCommandOptionBoolean {
 					if o.BoolValue() {
 						*co.BData = true

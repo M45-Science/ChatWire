@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
@@ -15,16 +17,16 @@ func ChatWire(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	for _, o := range a.Options {
 		arg := o.StringValue()
-		if arg == "reboot" {
+		if strings.EqualFold(arg, "reboot") {
 			RebootCW(s, i)
 			return
-		} else if arg == "queue-reboot" {
+		} else if strings.EqualFold(arg, "queue-reboot") {
 			QueReboot(s, i)
 			return
-		} else if arg == "force-reboot" {
+		} else if strings.EqualFold(arg, "force-reboot") {
 			ForceReboot(s, i)
 			return
-		} else if arg == "reload-config" {
+		} else if strings.EqualFold(arg, "reload-config") {
 			ReloadConfig(s, i)
 			return
 		}

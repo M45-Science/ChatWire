@@ -131,6 +131,9 @@ func main() {
 		return
 	}
 
+	/* Read in player list */
+	fact.LoadPlayers()
+
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
 	banlist.ReadBanFile()
@@ -259,7 +262,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	/* Command handling
 	 * Factorio channel ONLY */
-	if cfg.Local.Channel.ChatChannel == m.ChannelID && cfg.Local.Channel.ChatChannel != "" {
+	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
 

@@ -63,7 +63,7 @@ func IsPatreon(id string) bool {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				for _, r := range m.Roles {
-					if r == cfg.Global.Discord.Roles.RoleCache.Patreon {
+					if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Patreon) {
 						return true
 					}
 				}
@@ -84,7 +84,7 @@ func IsNitro(id string) bool {
 		for _, m := range g.Members {
 			if m.User.ID == id {
 				for _, r := range m.Roles {
-					if r == cfg.Global.Discord.Roles.RoleCache.Nitro {
+					if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Nitro) {
 						return true
 					}
 				}
