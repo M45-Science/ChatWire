@@ -76,6 +76,7 @@ type OnlinePlayerData struct {
 }
 
 var (
+	AlphaValue    map[string]int
 	RCONPass      string
 	OnlineCommand = constants.OnlineCommand
 	OnlinePlayers []OnlinePlayerData

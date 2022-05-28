@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 
 	"ChatWire/constants"
 	"ChatWire/cwlog"
@@ -417,19 +420,36 @@ func WriteLCfg() bool {
 func setLocalDefaults() {
 	/* Automatic local defaults */
 	if Local.Name == "" {
-		Local.Name = "unnamed"
+		g := xkcdpwgen.NewGenerator()
+		g.SetNumWords(1)
+		g.SetCapitalize(false)
+		g.SetDelimiter("")
+		Local.Name = g.GeneratePasswordString()
 	}
 	if Local.Callsign == "" {
-		Local.Callsign = "a"
+		ex, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+		exPath := filepath.Dir(ex)
+		exPath = strings.TrimPrefix(exPath, "cw-")
+		if len(exPath) > 0 && len(exPath) < 4 {
+			Local.Callsign = exPath
+		} else {
+			Local.Callsign = "a"
+		}
 	}
 	if Local.Port <= 0 {
-		Local.Port = 7000
+		Local.Port = glob.AlphaValue[strings.ToLower(Local.Callsign)]
 	}
 	if Local.Settings.AFKMin <= 0 {
 		Local.Settings.AFKMin = 15
 	}
 	if Local.Settings.AutosaveMin <= 0 {
 		Local.Settings.AutosaveMin = 15
+	}
+	if !Local.Options.AutoStart {
+		Local.Options.AutoStart = true
 	}
 	if Local.Channel.ChatChannel == "" {
 		cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")

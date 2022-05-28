@@ -89,11 +89,25 @@ func main() {
 	}
 
 	/* Create our maps */
+	glob.AlphaValue = make(map[string]int)
 	glob.ChatterList = make(map[string]time.Time)
 	glob.ChatterSpamScore = make(map[string]int)
 	glob.PlayerList = make(map[string]*glob.PlayerData)
 	glob.PassList = make(map[string]*glob.PassData)
 	glob.PlayerSus = make(map[string]int)
+
+	pos := 10000
+	for i := 'a'; i <= 'z'; i++ {
+		glob.AlphaValue[string(i)] = pos
+		pos++
+	}
+
+	for i := 'a'; i <= 'z'; i++ {
+		for j := 'a'; j <= 'z'; j++ {
+			glob.AlphaValue[string(i)+string(j)] = pos
+			pos++
+		}
+	}
 
 	/* Set up rewind cooldown */
 	now := time.Now()
