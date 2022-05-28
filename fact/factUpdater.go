@@ -1,6 +1,7 @@
 package fact
 
 import (
+	"archive/zip"
 	"context"
 	"fmt"
 	"os"
@@ -14,28 +15,12 @@ import (
 
 /* Check if Factorio update zip is valid */
 func CheckZip(filename string) bool {
-
-	ctx, cancel := context.WithTimeout(context.Background(), constants.ZipIntegrityLimit)
-	defer cancel()
-
-	cmdargs := []string{"-t", filename}
-	cmd := exec.CommandContext(ctx, cfg.Global.Paths.Binaries.ZipCmd, cmdargs...)
-	o, err := cmd.CombinedOutput()
-	out := string(o)
-
-	if ctx.Err() == context.DeadlineExceeded {
-		cwlog.DoLogCW("Zip integrity check timed out.")
+	_, err := zip.OpenReader(filename)
+	if err != nil {
+		return false
+	} else {
+		return true
 	}
-
-	if err == nil {
-		if strings.Contains(out, "No errors detected in compressed data of ") {
-			cwlog.DoLogCW("Zipfile integrity good!")
-			return true
-		}
-	}
-
-	cwlog.DoLogCW("Zipfile integrity check failed!")
-	return false
 }
 
 /* Check if there is a new Factorio update */
