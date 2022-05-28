@@ -76,6 +76,7 @@ type OnlinePlayerData struct {
 }
 
 var (
+	NoAutoLaunch  *bool
 	AlphaValue    map[string]int
 	RCONPass      string
 	OnlineCommand = constants.OnlineCommand

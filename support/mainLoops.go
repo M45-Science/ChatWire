@@ -70,7 +70,7 @@ func MainLoops() {
 				}
 
 				/* We aren't running, but should be! */
-			} else if !fact.FactIsRunning && fact.FactAutoStart && !fact.DoUpdateFactorio {
+			} else if !fact.FactIsRunning && fact.FactAutoStart && !fact.DoUpdateFactorio && !*glob.NoAutoLaunch {
 				/* Don't relaunch if we are set to auto update */
 				launchFactorio()
 			}
