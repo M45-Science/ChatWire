@@ -113,6 +113,26 @@ var cmds = []Command{
 
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "rcon",
+		Description: "remote console (remotely run a factorio command)",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "server",
+				Description: "call-sign of the server.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+			{
+				Name:        "command",
+				Description: "factorio command to run",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+		},
+	},
+		Command: moderator.RCONCmd, ModeratorOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
 		Description: "automated map reset",
 		Type:        discordgo.ChatApplicationCommand,
@@ -445,8 +465,21 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			for _, c := range CL {
 				if strings.EqualFold(c.AppCmd.Name, data.Name) {
 					if c.PrimaryOnly {
+						if !c.AdminOnly && !c.ModeratorOnly {
+							c.Command(s, i)
+							return
+						}
+					}
+				}
+			}
+		}
+
+		/* Exception for RCON */
+		if disc.CheckModerator(i.Member.Roles) {
+			if strings.EqualFold(data.Name, "rcon") {
+				for _, c := range CL {
+					if strings.EqualFold(c.AppCmd.Name, "rcon") {
 						c.Command(s, i)
-						return
 					}
 				}
 			}
