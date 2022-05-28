@@ -64,10 +64,6 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
 	}
 
-	if !cfg.Local.Settings.AutoMapReset || verbose {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "AutoMapReset", cfg.Local.Settings.AutoMapReset)
-	}
-
 	/* SETTINGS */
 	buf = buf + "\nServer settings:\n"
 	for _, item := range moderator.SettingList {
