@@ -383,6 +383,7 @@ func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 		fact.CheckFactUpdate(true)
+		disc.EphemeralResponse(s, i, "Status:", "Checking for Factorio updates.")
 	} else {
 		buf := "The Factorio updater isn't configured."
 		disc.EphemeralResponse(s, i, "Error:", buf)
