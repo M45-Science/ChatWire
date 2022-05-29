@@ -33,7 +33,7 @@ func launchFactorio() {
 		cfg.Global.Paths.Folders.FactorioDir
 
 	if _, err := os.Stat(checkFactPath); os.IsNotExist(err) {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio does not appear to be installed.")
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio does not appear to be installed. Use /factorio install-factorio to install it.")
 		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
 		fact.FactAutoStart = false
 		return
@@ -194,8 +194,8 @@ func ConfigSoftMod() {
 	}
 
 	/* Config reset-interval */
-	if cfg.Local.Options.ScheduleText != "" {
-		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleText)
+	if cfg.Local.Options.ScheduleDesc != "" {
+		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleDesc)
 	}
 	if cfg.Local.Options.SoftModOptions.CleanMap {
 		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")

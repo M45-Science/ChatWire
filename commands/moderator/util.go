@@ -152,7 +152,7 @@ var SettingList = []SettingListData{
 		MinStrLen: 1,
 		MaxStrLen: 99,
 
-		SData:             &cfg.Local.Options.ScheduleText,
+		SData:             &cfg.Local.Options.ScheduleDesc,
 		FactUpdateCommand: "/resetint",
 	},
 	{

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/robfig/cron"
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
@@ -131,6 +132,10 @@ func main() {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		return
 	}
+
+	/* Setup cron */
+	fact.CronVar = cron.New()
+	fact.SetupSchedule()
 
 	/* Read in player list */
 	fact.LoadPlayers()

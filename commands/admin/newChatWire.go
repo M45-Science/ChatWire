@@ -83,8 +83,8 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(s, i, "Complete:", buf)
 
 	/* Config reset-interval */
-	if cfg.Local.Options.ScheduleText != "" {
-		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleText)
+	if cfg.Local.Options.ScheduleDesc != "" {
+		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleDesc)
 	}
 
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
