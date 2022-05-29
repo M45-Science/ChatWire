@@ -838,6 +838,13 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Multiplayer manger */
 		if strings.Contains(NoTC, "MultiplayerManager failed:") {
+			if strings.Contains(NoTC, "cannot be loaded because it is higher than the game version") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio version is too old for the save game.")
+				fact.FactAutoStart = false
+				fact.FactorioBooted = false
+				fact.SetFactRunning(false)
+				return true
+			}
 			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error.")
 				fact.FactAutoStart = false
