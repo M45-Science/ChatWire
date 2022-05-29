@@ -19,7 +19,7 @@ const (
 	VoteRewindFile      = "vote-rewind.dat"
 	MembersPrefix       = "M"
 	ArchiveFolderSuffix = " maps"
-	BootUpdateDelayMin  = 15
+	BootUpdateDelayMin  = 1
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 12
