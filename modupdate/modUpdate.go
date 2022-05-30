@@ -21,8 +21,8 @@ func CheckMods(force bool, doReport bool) {
 	/* Update mods if needed */
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsFolder + "/"
 
 	files, err := ioutil.ReadDir(modPath)
