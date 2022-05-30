@@ -47,6 +47,8 @@ func MakeSteamURL() (string, bool) {
 /* Program shutdown */
 func DoExit(delay bool) {
 
+	CronVar.Stop()
+
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 15; i++ {
 		if len(disc.CMSBuffer) > 0 {

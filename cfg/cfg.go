@@ -493,6 +493,7 @@ func ReadLCfg() bool {
 			} else {
 				ServerPrefix = ""
 			}
+
 			return true
 		} else {
 			cwlog.DoLogCW("ReadLCfg: ReadFile failure")

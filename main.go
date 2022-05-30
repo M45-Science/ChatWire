@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/robfig/cron"
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
@@ -134,7 +133,6 @@ func main() {
 	}
 
 	/* Setup cron */
-	fact.CronVar = cron.New()
 	fact.SetupSchedule()
 
 	/* Read in player list */

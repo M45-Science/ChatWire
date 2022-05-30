@@ -97,5 +97,6 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* This also uses /config to live change settings. */
 	fact.GenerateFactorioConfig()
+	fact.SetupSchedule()
 
 }

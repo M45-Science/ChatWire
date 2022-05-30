@@ -212,7 +212,7 @@ func Map_reset(data string, doReport bool) {
 	} else if cfg.Global.Options.PingString != "" {
 		pingstr = cfg.Global.Options.PingString
 	}
-	CMS(cfg.Global.Discord.AnnounceChannel, pingstr+" Map on server: "+cfg.Local.Callsign+"-"+cfg.Local.Name+" has been reset.")
+	CMS(cfg.Global.Discord.AnnounceChannel, pingstr+" Map "+cfg.Local.Callsign+"-"+cfg.Local.Name+" auto-reset.")
 
 	/* Mods queue folder */
 	qPath := cfg.Global.Paths.Folders.ServersRoot +
