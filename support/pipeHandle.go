@@ -291,7 +291,9 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	/******************
 	 * LEAVE
 	 ******************/
-	if strings.HasPrefix(NoDS, "[LEAVE]") {
+	if strings.HasPrefix(NoDS, "[LEAVE]") &&
+		/* Suppress quit messages from rewind */
+		time.Since(fact.FactorioBootedAt) > time.Second*5 {
 		cwlog.DoLogGame(NoDS)
 
 		/* Handle softmod and vanilla */
@@ -633,6 +635,7 @@ func handleFactGoodbye(NoTC string) bool {
 
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.FactorioBooted = false
+		fact.FactorioBootedAt = time.Time{}
 		fact.SetFactRunning(false)
 
 		go func() {
@@ -652,6 +655,7 @@ func handleFactReady(NoTC string) bool {
 	if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 
 		fact.FactorioBooted = true
+		fact.FactorioBootedAt = time.Now()
 		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")

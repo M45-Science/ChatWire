@@ -52,6 +52,7 @@ AutoMapReset setting added, for disabling automated map resets.<br>
 Moved default Factorio install to within the ChatWire directory.<br>
 Added /factorio->install-factorio command.<br>
 Removed ImageMagick requirement.<br>
+Suppress QUIT messages from loading previous save games.<br>
 <br>
 ### Requirements:
 Linux<br>
