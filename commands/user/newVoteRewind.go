@@ -27,7 +27,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	argnum := len(args)
 
 	/* Mod commands */
-	if disc.CheckModerator(i.Member.Roles) {
+	if disc.CheckModerator(i.Member.Roles, i) {
 		if argnum > 0 {
 			if strings.EqualFold(args[0], "erase") {
 				/* Clear votes */
@@ -106,7 +106,7 @@ func VoteRewind(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	/* Only if allowed */
-	if !disc.CheckRegular(i.Member.Roles) && !disc.CheckModerator(i.Member.Roles) {
+	if !disc.CheckRegular(i.Member.Roles) && !disc.CheckModerator(i.Member.Roles, i) {
 		buf := "You must have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role to use this command. See /register and the read-this-first channel for more info."
 		disc.EphemeralResponse(s, i, "Notice:", buf)
 		return

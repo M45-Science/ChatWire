@@ -1,6 +1,8 @@
 package fact
 
 import (
+	"fmt"
+
 	"github.com/robfig/cron"
 
 	"ChatWire/cfg"
@@ -21,5 +23,7 @@ func SetupSchedule() {
 }
 
 func doMapReset() {
-
+	buf := "Meep, reset map."
+	cwlog.DoLogCW(buf)
+	fmt.Println(buf)
 }

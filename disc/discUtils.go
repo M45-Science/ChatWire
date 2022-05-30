@@ -12,35 +12,35 @@ import (
 )
 
 /*  Check if Discord admin */
-func CheckAdmin(roles []string) bool {
+func CheckAdmin(roles []string, i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Admin == "" {
-		return false
+		return i.Member.Permissions&1<<2 != 0
 	}
 	for _, r := range roles {
 		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Admin) {
 			return true
 		}
 	}
-	return false
+	return i.Member.Permissions&1<<2 != 0
 }
 
 /*  Check if Discord moderator */
-func CheckModerator(roles []string) bool {
+func CheckModerator(roles []string, i *discordgo.InteractionCreate) bool {
 
-	if CheckAdmin(roles) {
+	if CheckAdmin(roles, i) {
 		return true
 	}
 
 	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
-		return false
+		return i.Member.Permissions&1<<28 != 0
 	}
 	for _, r := range roles {
 		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
 			return true
 		}
 	}
-	return false
+	return i.Member.Permissions&1<<28 != 0
 }
 
 /* Check if Discord regular */

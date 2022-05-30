@@ -456,7 +456,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		for _, c := range data.Values {
 			if strings.EqualFold(data.CustomID, "RewindMap") {
-				isMod := disc.CheckModerator(i.Member.Roles)
+				isMod := disc.CheckModerator(i.Member.Roles, i)
 				if isMod {
 
 					buf := fmt.Sprintf("Rewinding to autosave %v, please wait.", c)
@@ -490,7 +490,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		if strings.EqualFold(data.Name, "rcon") {
 			for _, c := range CL {
-				if c.ModeratorOnly && disc.CheckModerator(i.Member.Roles) {
+				if c.ModeratorOnly && disc.CheckModerator(i.Member.Roles, i) {
 					if strings.EqualFold(c.AppCmd.Name, "rcon") {
 						c.Command(s, i)
 					}
@@ -511,7 +511,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
 					if c.AdminOnly {
-						if disc.CheckAdmin(i.Member.Roles) {
+						if disc.CheckAdmin(i.Member.Roles, i) {
 							c.Command(s, i)
 							var options []string
 							for _, o := range c.AppCmd.Options {
@@ -525,7 +525,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 							return
 						}
 					} else if c.ModeratorOnly {
-						if disc.CheckModerator(i.Member.Roles) {
+						if disc.CheckModerator(i.Member.Roles, i) {
 							cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
 							c.Command(s, i)
 							return
