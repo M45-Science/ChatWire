@@ -18,23 +18,23 @@ func ChatWire(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	for _, o := range a.Options {
 		arg := o.StringValue()
 		if strings.EqualFold(arg, "reboot") {
-			RebootCW(s, i)
+			rebootCW(s, i)
 			return
 		} else if strings.EqualFold(arg, "queue-reboot") {
-			QueReboot(s, i)
+			queReboot(s, i)
 			return
 		} else if strings.EqualFold(arg, "force-reboot") {
-			ForceReboot(s, i)
+			forceReboot(s, i)
 			return
 		} else if strings.EqualFold(arg, "reload-config") {
-			ReloadConfig(s, i)
+			reloadConfig(s, i)
 			return
 		}
 	}
 }
 
 /* Reboots cw */
-func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func forceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(s, i, "Status:", "Rebooting!")
 	glob.RelaunchThrottle = 0
@@ -42,7 +42,7 @@ func ForceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Reboot when server is empty */
-func QueReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func queReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if !fact.QueueReload {
 		disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
@@ -51,7 +51,7 @@ func QueReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /*  Restart saves and restarts the server */
-func RebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func rebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(s, i, "Status:", "Rebooting ChatWire...")
 
@@ -61,7 +61,7 @@ func RebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Reload config files */
-func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func reloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {
@@ -82,9 +82,11 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	buf := "Config files have been reloaded."
 	disc.EphemeralResponse(s, i, "Complete:", buf)
 
+	fact.SetupSchedule()
+
 	/* Config reset-interval */
-	if cfg.Local.Options.ScheduleDesc != "" {
-		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleDesc)
+	if fact.ScheduleDescription != "" {
+		fact.WriteFact("/resetint " + fact.ScheduleDescription)
 	}
 
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
@@ -97,6 +99,5 @@ func ReloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* This also uses /config to live change settings. */
 	fact.GenerateFactorioConfig()
-	fact.SetupSchedule()
 
 }

@@ -166,7 +166,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 }
 
-func DebugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	count := 0
 	glob.PlayerSusLock.Lock()
@@ -196,4 +196,5 @@ func DebugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	} else {
 		disc.EphemeralResponse(s, i, "Debug Info:", buf)
 	}
+
 }

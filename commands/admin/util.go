@@ -18,7 +18,7 @@ import (
 	"ChatWire/disc"
 )
 
-func InstallFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(s, i, "Status:", "Downloading Factorio server...")
 	resp, err := http.Get(constants.FactHeadlessURL)
@@ -50,7 +50,7 @@ func InstallFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
 	disc.FollowupResponse(s, i, &f)
 
-	data, err := UnXZData(gzdata)
+	data, err := unXZData(gzdata)
 	if err != nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "The gzip data appears to be invalid."})
@@ -64,7 +64,7 @@ func InstallFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	dest := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix + cfg.Local.Callsign + "/"
 
-	err = Untar(dest, data)
+	err = untar(dest, data)
 	if err != nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to open tar archive."})
@@ -93,7 +93,7 @@ func InstallFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 }
 
-func UnXZData(data []byte) ([]byte, error) {
+func unXZData(data []byte) ([]byte, error) {
 	r, err := xz.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func UnXZData(data []byte) ([]byte, error) {
 	return ioutil.ReadAll(r)
 }
 
-func Untar(dst string, data []byte) error {
+func untar(dst string, data []byte) error {
 
 	tr := tar.NewReader(bytes.NewReader(data))
 

@@ -194,8 +194,8 @@ func ConfigSoftMod() {
 	}
 
 	/* Config reset-interval */
-	if cfg.Local.Options.ScheduleDesc != "" {
-		fact.WriteFact("/resetint " + cfg.Local.Options.ScheduleDesc)
+	if fact.ScheduleDescription != "" {
+		fact.WriteFact("/resetint " + fact.ScheduleDescription)
 	}
 	if cfg.Local.Options.SoftModOptions.CleanMap {
 		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")

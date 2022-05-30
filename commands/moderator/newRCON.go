@@ -1,16 +1,17 @@
 package moderator
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/cwlog"
-	"ChatWire/disc"
-	"ChatWire/glob"
 	"fmt"
 	"log"
 	"strings"
 
 	"github.com/Distortions81/rcon"
 	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/cfg"
+	"ChatWire/cwlog"
+	"ChatWire/disc"
+	"ChatWire/glob"
 )
 
 /* Set a player's level */

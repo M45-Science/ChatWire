@@ -30,34 +30,40 @@ func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	for _, o := range a.Options {
 		arg := o.StringValue()
 		if strings.EqualFold(arg, "start") {
-			StartFact(s, i)
+			startFact(s, i)
 			return
 		} else if strings.EqualFold(arg, "stop") {
-			StopFact(s, i)
+			stopFact(s, i)
 			return
 		} else if strings.EqualFold(arg, "new-map-preview") {
-			NewMapPrev(s, i)
+			newMapPrev(s, i)
 			return
 		} else if strings.EqualFold(arg, "new-map") {
-			MakeNewMap(s, i)
+			makeNewMap(s, i)
 			return
 		} else if strings.EqualFold(arg, "update-factorio") {
-			UpdateFact(s, i)
+			updateFact(s, i)
 			return
 		} else if strings.EqualFold(arg, "update-mods") {
-			UpdateMods(s, i)
+			updateMods(s, i)
 			return
 		} else if strings.EqualFold(arg, "archive-map") {
-			ArchiveMap(s, i)
+			archiveMap(s, i)
 			return
 		} else if strings.EqualFold(arg, "install-factorio") {
-			InstallFactorio(s, i)
+			installFactorio(s, i)
+		} else if strings.EqualFold(arg, "reset-schedule") {
+			resetSchedule(s, i)
 		}
 	}
 }
 
+func resetSchedule(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(s, i, "Status:", "Schedule reset.")
+}
+
 /* RandomMap locks FactorioLaunchLock */
-func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
 		disc.EphemeralResponse(s, i, "Error:", buf)
@@ -155,7 +161,7 @@ func NewMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Generate map */
-func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
@@ -262,7 +268,7 @@ func MakeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Archive map */
-func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	version := strings.Split(fact.FactorioVersion, ".")
 	vlen := len(version)
@@ -334,7 +340,7 @@ func ArchiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Reboots Factorio only */
-func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func startFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 
@@ -351,7 +357,7 @@ func StartFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /*  StopServer saves the map and closes Factorio.  */
-func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func stopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	glob.RelaunchThrottle = 0
 	fact.FactAutoStart = false
 
@@ -368,7 +374,7 @@ func StopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Update Factorio  */
-func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func updateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	argnum := len(args)
@@ -390,7 +396,7 @@ func UpdateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
-func UpdateMods(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func updateMods(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(s, i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)

@@ -151,9 +151,8 @@ type channel struct {
 }
 
 type localOptions struct {
-	ScheduleDesc string
-	Schedule     string
-	PingString   string
+	Schedule   string
+	PingString string
 
 	AutoStart     bool
 	AutoUpdate    bool

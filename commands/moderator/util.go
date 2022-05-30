@@ -144,18 +144,6 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.ExpUpdates,
 	},
 	{
-		Name:      "reset-schedule-description",
-		ShortDesc: "Reset Schedule",
-		Desc:      "Description of map reset schedule for server description and info window.",
-		Type:      TYPE_STRING,
-
-		MinStrLen: 1,
-		MaxStrLen: 99,
-
-		SData:             &cfg.Local.Options.ScheduleDesc,
-		FactUpdateCommand: "/resetint",
-	},
-	{
 		Name:      "disable-blueprints",
 		ShortDesc: "No Blueprints",
 		Desc:      "Disable blueprints",
