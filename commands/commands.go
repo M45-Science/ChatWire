@@ -41,7 +41,7 @@ var cmds = []Command{
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
-				Description: "The action to perform.",
+				Description: "do not use these unless you are certain of what you are doing",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
@@ -72,7 +72,7 @@ var cmds = []Command{
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "preset",
-				Description: "How often to reset, based on a preset.",
+				Description: "How often to reset the map, based on a preset.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
@@ -121,7 +121,7 @@ var cmds = []Command{
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
-				Description: "The action to perform.",
+				Description: "do not use these unless you are certain of what you are doing",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
@@ -170,12 +170,6 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "server",
-				Description: "call-sign of the server.",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-			},
-			{
 				Name:        "command",
 				Description: "factorio command to run",
 				Type:        discordgo.ApplicationCommandOptionString,
@@ -186,13 +180,13 @@ var cmds = []Command{
 		Command: moderator.RCONCmd, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
-		Description: "automated map reset",
+		Description: "automated map reset, will kick players out of game.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.MapReset, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-server",
-		Description: "Server config options.",
+		Description: "Server settings and options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.ConfigServer, ModeratorOnly: true},
@@ -253,14 +247,14 @@ var cmds = []Command{
 	/* PLAYER COMMMANDS -------------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "info",
-		Description: "Shows information about the server.",
+		Description: "displays status and settings of the server.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "options",
-				Description: "player level",
+				Description: "verbose shows all info, instead of just relevant info. debug is for dev use only.",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
+				Required:    false,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
 					{
 						Name:  "verbose",
@@ -285,7 +279,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-rewind",
-		Description: "Vote to rewind the map to the specified autosave (two votes needed!).",
+		Description: "Vote to rewind the map to a specific autosave. Requires TWO votes, requires `REGULARS` discord role.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -337,7 +331,7 @@ var cmds = []Command{
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "search",
-				Description: "Factorio or Discord name.",
+				Description: "Factorio/Discord name, or any partial match.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 			},
@@ -581,18 +575,6 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 							c.Command(s, i)
 							return
 						}
-					}
-				}
-			}
-		}
-
-		/* Exception for RCON */
-
-		if strings.EqualFold(data.Name, "rcon") {
-			for _, c := range CL {
-				if c.ModeratorOnly && disc.CheckModerator(i.Member.Roles, i) {
-					if strings.EqualFold(c.AppCmd.Name, "rcon") {
-						c.Command(s, i)
 					}
 				}
 			}
