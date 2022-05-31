@@ -120,11 +120,12 @@ func InterpSchedule(desc string, test bool) (err bool) {
 			NextReset = ""
 			WriteFact("/resetint")
 			WriteFact("/resetdur")
-		}
 
-		return false
+		}
+		return true
 	}
 
+	return false
 }
 
 func UpdateScheduleDesc() (err bool) {
