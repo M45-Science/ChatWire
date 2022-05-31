@@ -89,7 +89,7 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 	foundVote := false
 	TallyRewindVotes()
 	for vpos, v = range glob.VoteBox.Votes {
-		if strings.EqualFold(v.DiscID, i.Message.Author.ID) {
+		if strings.EqualFold(v.DiscID, i.Member.User.ID) && strings.EqualFold(v.Name, i.Member.User.Username) {
 			left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
 
 			if v.AutosaveNum != int(arg) && !v.Voided && v.NumChanges < constants.MaxRewindChanges {
@@ -130,7 +130,7 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 	/* Create new vote, if we didn't already change it above */
 	if !changedVote {
 
-		newVote := glob.RewindVoteData{Name: i.Message.Author.Username, DiscID: i.Message.Author.ID, TotalVotes: 0, Time: time.Now(), AutosaveNum: int(arg), NumChanges: 0, Voided: false, Expired: false}
+		newVote := glob.RewindVoteData{Name: i.Member.User.Username, DiscID: i.Member.User.ID, TotalVotes: 0, Time: time.Now(), AutosaveNum: int(arg), NumChanges: 0, Voided: false, Expired: false}
 
 		/* Re-use old vote if we found one, or old votes will block new ones */
 		if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
