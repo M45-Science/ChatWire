@@ -736,4 +736,19 @@ func MainLoops() {
 		}
 	}()
 
+	/****************************/
+	/* Update time till reset */
+	/****************************/
+	go func() {
+		for glob.ServerRunning {
+			if glob.SoftModVersion != constants.Unknown &&
+				fact.FactIsRunning &&
+				fact.FactorioBooted &&
+				fact.NumPlayers > 0 {
+				time.Sleep(time.Minute)
+				fact.WriteFact("/resetdur " + fact.TillReset)
+			}
+		}
+	}()
+
 }
