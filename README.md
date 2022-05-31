@@ -59,8 +59,8 @@ Needs permissions to create files and directories in its own directory, and **up
 Some dirs and files that can be auto-created:<br>
 cw-local-config.json, ../cw-global-config.json<br>
 cw.lock, ../playerdb.dat, recordPlayers.dat,<br>
-../map-gen-json/, ./logs/, ../update-cache/, ../public_html/archive/, ../<br>
-`Discord token, guild-id and channel-id are required, as well as Factorio username and token.`<br>
+../map-gen-json/, ./logs/, ../update-cache/, ../public_html/archive/<br>
+`Discord token, appid,  guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
 ### Default path layout:<br>
 A 'base' folder the chatwire folder resides in.<br>
