@@ -120,22 +120,27 @@ func InterpSchedule(desc string, test bool) (err bool) {
 }
 
 func UpdateScheduleDesc() (err bool) {
-	e := CronVar.Entries()
-	a := len(e)
-	if a > 3 {
 
-		units, err := durafmt.DefaultUnitsCoder.Decode("year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,millisecond:milliseconds,microsecond:microseconds")
-		if err != nil {
-			panic(err)
+	if cfg.Local.Options.Schedule != "" && CronVar != nil {
+		e := CronVar.Entries()
+		a := len(e)
+		if a > 3 {
+
+			units, err := durafmt.DefaultUnitsCoder.Decode("year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,millisecond:milliseconds,microsecond:microseconds")
+			if err != nil {
+				panic(err)
+			}
+
+			n := e[a-1].Next
+			NextReset = n.Format("Monday, January 2 15:04 MST")
+			TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units) + " from now"
+
+			return false
+		} else {
+			cwlog.DoLogCW("UpdateScheduleDesc: No schedule set, skipping.")
+			return true
 		}
-
-		n := e[a-1].Next
-		NextReset = n.Format("Monday, January 2 15:04 MST")
-		TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units) + " from now"
-
-		return false
-	} else {
-		cwlog.DoLogCW("UpdateScheduleDesc: No schedule set, skipping.")
-		return true
 	}
+
+	return false
 }
