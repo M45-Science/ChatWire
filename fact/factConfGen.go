@@ -88,7 +88,7 @@ func GenerateFactorioConfig() bool {
 	var descrLines []string
 
 	if NextReset != "" {
-		descrLines = append(descrLines, AddFactColor("orange", "MAP RESETS: "+NextReset))
+		descrLines = append(descrLines, AddFactColor("orange", "MAP RESETS: "+NextReset+" ("+cfg.Local.Options.Schedule+")"))
 	}
 	if cfg.Local.Options.Whitelist {
 		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))

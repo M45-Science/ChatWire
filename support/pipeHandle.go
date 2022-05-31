@@ -272,7 +272,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
 				fact.FactorioBooted {
-				fact.WriteFact("/resetdur " + fact.TillReset)
+				fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
 			}
 
 			/* Give people patreon/nitro tags in-game. */

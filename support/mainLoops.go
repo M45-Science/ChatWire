@@ -746,7 +746,7 @@ func MainLoops() {
 				fact.FactorioBooted &&
 				fact.NumPlayers > 0 {
 				time.Sleep(time.Minute)
-				fact.WriteFact("/resetdur " + fact.TillReset)
+				fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
 			}
 		}
 	}()
