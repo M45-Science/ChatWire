@@ -16,7 +16,6 @@ Utilize BotReady event in the new Discord API (faster).<br>
 Major config file reorganization.<br>
 Discord commands renamed, much clearer.<br>
 Always auto-configure any missing settings.<br>
-Discord channel sorting improved.<br>
 SoftMod presence/version detection.<br>
 Handle absent soft-mod, chat/online commands... etc.<br>
 Improved player-online command (caching, event based)<br>
@@ -54,6 +53,7 @@ Added /factorio->install-factorio command.<br>
 Removed ImageMagick requirement.<br>
 Suppress QUIT messages from loading previous save games.<br>
 Added custom map reset scheduler, with date/time left text.<br>
+Manual channel sorting removed, now read and use current channel position so channel order is preserved.<br>
 <br>
 ### Requirements:
 Linux<br>
