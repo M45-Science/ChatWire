@@ -27,11 +27,11 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 	for _, arg := range a.Options {
-		if arg.Type == discordgo.ApplicationCommandOptionBoolean {
-
-			if strings.EqualFold(arg.Name, "verbose") && arg.BoolValue() {
+		if arg.Type == discordgo.ApplicationCommandOptionString {
+			str := arg.StringValue()
+			if strings.EqualFold(str, "verbose") {
 				verbose = true
-			} else if strings.EqualFold(arg.Name, "debug") && arg.BoolValue() {
+			} else if strings.EqualFold(str, "debug") {
 				debug = true
 			}
 		}
