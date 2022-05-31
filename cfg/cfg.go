@@ -128,6 +128,7 @@ type local struct {
 	Callsign string
 	Name     string
 	Port     int
+	RCONPass string
 
 	Settings settings
 

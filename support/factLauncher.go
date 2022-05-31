@@ -79,6 +79,9 @@ func launchFactorio() {
 	rconportStr := fmt.Sprintf("%v", rconport)
 	rconpass := glob.RandomBase64String(256)
 	glob.RCONPass = rconpass
+	cfg.Local.RCONPass = rconpass
+	cfg.WriteLCfg()
+
 	port := cfg.Local.Port
 	postStr := fmt.Sprintf("%v", port)
 	serversettings := cfg.Global.Paths.Folders.ServersRoot +
