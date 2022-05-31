@@ -116,7 +116,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "auto-start-factorio",
 		ShortDesc: "Auto-Start",
-		Desc:      "Auto-start Factorio when ChatWire boots.",
+		Desc:      "Auto-start and Auto-Restart Factorio.",
 		Type:      TYPE_BOOL,
 
 		DefBool: true,
@@ -146,7 +146,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "disable-blueprints",
 		ShortDesc: "No Blueprints",
-		Desc:      "Disable blueprints",
+		Desc:      "Disable blueprints (softmod)",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -157,7 +157,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "enable-cheats",
 		ShortDesc: "Sandbox Mode",
-		Desc:      "Cheats enabled (sandbox mode)",
+		Desc:      "Cheats enabled (sandbox mode, softmod)",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -176,9 +176,19 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.HideAutosaves,
 	},
 	{
+		Name:      "hide-research",
+		ShortDesc: "Hide Science Research",
+		Desc:      "Don't display science research on Discord.",
+		Type:      TYPE_BOOL,
+
+		DefBool: false,
+
+		BData: &cfg.Local.Options.HideResearch,
+	},
+	{
 		Name:      "slow-connect",
 		ShortDesc: "Slow Connect",
-		Desc:      "Slow game to connect-speed when players are connecting.",
+		Desc:      "Slow game to 'connect-speed' when players are connecting, and then back to 'default-speed'",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -222,7 +232,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "restrict-new-players",
 		ShortDesc: "Restrict New",
-		Desc:      "New player permission restrictions.",
+		Desc:      "New player permission restrictions on/off (softmod).",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.Restrict,
@@ -234,7 +244,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "friendly-fire",
 		ShortDesc: "Friendly Fire",
-		Desc:      "Allow friendly fire (damage to teammates or buildings).",
+		Desc:      "Allow friendly fire: damage to teammates or buildings (softmod)",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.FriendlyFire,
@@ -279,7 +289,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "auto-mod-update",
 		ShortDesc: "Auto Mod Update",
-		Desc:      "Auto-update game mods.",
+		Desc:      "Auto-update installed game mods.",
 		Type:      TYPE_BOOL,
 		DefBool:   true,
 
@@ -297,20 +307,11 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-seed",
 		ShortDesc: "Map Seed",
-		Desc:      "Seed for map gen, clears after automatic map resets.",
+		Desc:      "Seed for map gen, clears after map resets.",
 		Type:      TYPE_INT,
 		DefInt:    0,
 
 		IData: &cfg.Local.Settings.Seed,
-	},
-	{
-		Name:      "auto-map-reset",
-		ShortDesc: "Automatic Map Resets",
-		Desc:      "If this is enabled, map resets can be triggered externally with another program.",
-		Type:      TYPE_BOOL,
-		DefBool:   true,
-
-		BData: &cfg.Local.Settings.AutoMapReset,
 	},
 }
 
