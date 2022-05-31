@@ -192,7 +192,7 @@ func startbot() {
 	bot, erra := discordgo.New("Bot " + cfg.Global.Discord.Token)
 
 	if erra != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", erra))
 		time.Sleep(time.Minute * (5 * constants.MaxDiscordAttempts))
 		DiscordConnectAttempts++
 
@@ -208,7 +208,7 @@ func startbot() {
 	errb := bot.Open()
 
 	if errb != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", errb))
 		time.Sleep(time.Minute * (5 * constants.MaxDiscordAttempts))
 		DiscordConnectAttempts++
 
