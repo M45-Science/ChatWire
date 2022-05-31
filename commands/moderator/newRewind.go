@@ -29,5 +29,5 @@ func RewindMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	fact.ShowRewindList(s, i)
+	fact.ShowRewindList(s, i, false)
 }

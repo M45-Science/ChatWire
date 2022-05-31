@@ -257,14 +257,20 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "verbose",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Description: "Show all information.",
-			},
-			{
-				Name:        "debug",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Description: "For moderators only.",
+				Name:        "options",
+				Description: "player level",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "verbose",
+						Value: "verbose",
+					},
+					{
+						Name:  "debug",
+						Value: "debug",
+					},
+				},
 			},
 		},
 	},
@@ -283,11 +289,36 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "autosave",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Description: "The number of the autosave to rewind to.",
-				MinValue:    &BugOne,
-				MaxValue:    float64(cfg.Global.Options.AutosaveMax),
+				Name:        "moderator",
+				Description: "moderator only options",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "erase-all",
+						Value: "erase-all",
+					},
+					{
+						Name:  "void-all",
+						Value: "void-all",
+					},
+					{
+						Name:  "show-all",
+						Value: "show-all",
+					},
+					{
+						Name:  "reset-cooldown",
+						Value: "reset-cooldown",
+					},
+					{
+						Name:  "no-cooldown",
+						Value: "no-cooldown",
+					},
+					{
+						Name:  "force-cooldown",
+						Value: "force-cooldown",
+					},
+				},
 			},
 		},
 	},
@@ -524,6 +555,15 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					disc.InteractionResponse(s, i, &elist)
 
 					fact.DoRewindMap(s, c)
+
+					break
+				}
+			} else if strings.EqualFold(data.CustomID, "VoteRewind") {
+				if disc.CheckRegular(i.Member.Roles) || disc.CheckModerator(i.Member.Roles, i) {
+
+					buf := fmt.Sprintf("Submitting vote for autosave #%v, please wait.", c)
+					disc.EphemeralResponse(s, i, "Notice:", buf)
+					fact.CheckRewindVote(s, i, c)
 
 					break
 				}

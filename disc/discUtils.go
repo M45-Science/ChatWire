@@ -262,14 +262,22 @@ func InteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, e
 }
 
 func FollowupResponse(s *discordgo.Session, i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
-	if f.Embeds[0] != nil {
+	if f.Embeds != nil {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
 
 		_, err := s.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
+	} else if f.Content != "" {
+		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Content)
+
+		_, err := s.FollowupMessageCreate(i.Interaction, false, f)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
 	}
+
 }
 
 func EphemeralResponse(s *discordgo.Session, i *discordgo.InteractionCreate, title, message string) {

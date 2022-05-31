@@ -343,7 +343,7 @@ func DoUpdateChannelName(doSort bool) {
 	}
 }
 
-func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode bool) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -428,24 +428,47 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(s, i, "Error:", "No autosaves were found.")
 	} else {
 
-		response := &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Rewind Map:",
-				Flags:   1 << 6,
-				Components: []discordgo.MessageComponent{
-					discordgo.ActionsRow{
-						Components: []discordgo.MessageComponent{
-							discordgo.SelectMenu{
-								// Select menu, as other components, must have a customID, so we set it to this value.
-								CustomID:    "RewindMap",
-								Placeholder: "Choose autosave to rewind to",
-								Options:     availableRewinds,
+		var response *discordgo.InteractionResponse
+		if voteMode {
+			response = &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Vote for an autosave to rewind to (two votes needed):",
+					Flags:   1 << 6,
+					Components: []discordgo.MessageComponent{
+						discordgo.ActionsRow{
+							Components: []discordgo.MessageComponent{
+								discordgo.SelectMenu{
+									// Select menu, as other components, must have a customID, so we set it to this value.
+									CustomID:    "VoteRewind",
+									Placeholder: "Choose an autosave",
+									Options:     availableRewinds,
+								},
 							},
 						},
 					},
 				},
-			},
+			}
+		} else {
+			response = &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Rewind Map:",
+					Flags:   1 << 6,
+					Components: []discordgo.MessageComponent{
+						discordgo.ActionsRow{
+							Components: []discordgo.MessageComponent{
+								discordgo.SelectMenu{
+									// Select menu, as other components, must have a customID, so we set it to this value.
+									CustomID:    "RewindMap",
+									Placeholder: "Choose a autosave",
+									Options:     availableRewinds,
+								},
+							},
+						},
+					},
+				},
+			}
 		}
 		err := s.InteractionRespond(i.Interaction, response)
 		if err != nil {
