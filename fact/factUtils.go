@@ -122,6 +122,8 @@ func QuitFactorio(message string) {
 		FactChat("[color=red]" + message + "[/color]")
 		FactChat("[color=green]" + message + "[/color]")
 		FactChat("[color=blue]" + message + "[/color]")
+		FactChat("[color=white]" + message + "[/color]")
+		FactChat("[color=black]" + message + "[/color]")
 		time.Sleep(time.Second * 3)
 		WriteFact("/quit")
 	}
@@ -153,6 +155,9 @@ func WriteFact(input string) {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input))
 			SetFactRunning(false)
 			return
+		}
+		if buf != "/time" {
+			cwlog.DoLogGame(fmt.Sprintf("CW: %v", buf))
 		}
 
 	} else {
