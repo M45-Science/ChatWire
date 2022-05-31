@@ -300,7 +300,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	if strings.HasPrefix(NoDS, "[LEAVE]") &&
 		/* Suppress quit messages from rewind */
 		!fact.FactorioBootedAt.IsZero() &&
-		time.Since(fact.FactorioBootedAt) > time.Second*10 {
+		time.Since(fact.FactorioBootedAt) > time.Second*30 {
 
 		cwlog.DoLogGame(NoDS)
 
