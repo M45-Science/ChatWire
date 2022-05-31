@@ -3,7 +3,6 @@ package support
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -649,7 +648,7 @@ func handleFactGoodbye(NoTC string) bool {
 
 		go func() {
 			fact.UpdateChannelName()
-			fact.DoUpdateChannelName(false)
+			fact.DoUpdateChannelName()
 		}()
 
 		return true
@@ -889,16 +888,10 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			}
 			/* Corrupt savegame */
 			if strings.Contains(NoTC, "Closing file") {
-				path := fact.GameMapPath
-
-				var tempargs []string
-				tempargs = append(tempargs, "-f")
-				tempargs = append(tempargs, path)
-
-				out, errs := exec.Command(cfg.Global.Paths.Binaries.RmCmd, tempargs...).Output()
+				errs := os.Remove(fact.GameMapPath)
 
 				if errs != nil {
-					cwlog.DoLogCW(fmt.Sprintf("Unable to delete corrupt savegame. Details:\nout: %v\nerr: %v", string(out), errs))
+					cwlog.DoLogCW(fmt.Sprintf("Unable to delete corrupt savegame. Details:\nfile: %v\nerr: %v", fact.GameMapPath, errs))
 					fact.FactAutoStart = false
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game.")
 				} else {

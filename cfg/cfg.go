@@ -92,7 +92,6 @@ type binaryPaths struct {
 	FactUpdater     string
 	UpdaterShell    string
 	Shell           string
-	RmCmd           string
 	SoftModInserter string
 }
 
@@ -147,7 +146,6 @@ type settings struct {
 }
 
 type channel struct {
-	Position    int
 	ChatChannel string
 }
 
@@ -268,13 +266,13 @@ func setGlobalDefaults() {
 		Global.Paths.Folders.Saves = "saves"
 	}
 	if Global.Paths.Folders.UpdateCache == "" {
-		Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "/update-cache/"
+		Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "update-cache/"
 	}
 	if Global.Paths.Folders.MapPreviews == "" {
-		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "/map-preview/"
+		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "map-preview/"
 	}
 	if Global.Paths.Folders.MapArchives == "" {
-		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "/public_html/archive/"
+		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "public_html/archive/"
 	}
 	if Global.Paths.Folders.FactorioDir == "" {
 		Global.Paths.Folders.FactorioDir = "factorio"
@@ -282,11 +280,14 @@ func setGlobalDefaults() {
 	if Global.Paths.URLs.ArchiveURL == "" {
 		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
 	}
-	if Global.Paths.Binaries.RmCmd == "" {
-		Global.Paths.Binaries.RmCmd = "/bin/rm"
+	if Global.Paths.URLs.LogURL == "" {
+		Global.Paths.URLs.LogURL = "https://" + Global.Paths.URLs.Domain + "/~username/logs/"
 	}
 	if Global.Paths.Binaries.Shell == "" {
 		Global.Paths.Binaries.Shell = "/bin/bash"
+	}
+	if Global.Paths.Binaries.Shell == "" {
+		Global.Paths.Binaries.Shell = "/"
 	}
 	if Global.Paths.Binaries.FactBinary == "" {
 		Global.Paths.Binaries.FactBinary = "bin/x64/factorio"
@@ -317,7 +318,7 @@ func setGlobalDefaults() {
 		Global.Options.PreviewSettings.PNGRes = "256"
 	}
 	if Global.Options.PreviewSettings.PNGScale == "" {
-		Global.Options.PreviewSettings.PNGRes = "1"
+		Global.Options.PreviewSettings.PNGScale = "1"
 	}
 	if Global.PrimaryServer == "" {
 		Global.PrimaryServer = "a"

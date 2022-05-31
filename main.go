@@ -238,7 +238,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 		disc.DS = s
 	}
 
-	fact.DoUpdateChannelName(true)
+	fact.DoUpdateChannelName()
 
 	cwlog.DoLogCW("Discord bot ready.")
 }

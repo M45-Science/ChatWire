@@ -717,7 +717,7 @@ func MainLoops() {
 			disc.UpdateChannelLock.Unlock()
 
 			if oldchname != chname {
-				fact.DoUpdateChannelName(false)
+				fact.DoUpdateChannelName()
 			}
 
 			time.Sleep(time.Second * 10)
