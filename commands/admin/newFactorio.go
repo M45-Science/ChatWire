@@ -28,32 +28,34 @@ func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	for _, o := range a.Options {
-		arg := o.StringValue()
-		if strings.EqualFold(arg, "start") {
-			startFact(s, i)
-			return
-		} else if strings.EqualFold(arg, "stop") {
-			stopFact(s, i)
-			return
-		} else if strings.EqualFold(arg, "new-map-preview") {
-			newMapPrev(s, i)
-			return
-		} else if strings.EqualFold(arg, "new-map") {
-			makeNewMap(s, i)
-			return
-		} else if strings.EqualFold(arg, "update-factorio") {
-			updateFact(s, i)
-			return
-		} else if strings.EqualFold(arg, "update-mods") {
-			updateMods(s, i)
-			return
-		} else if strings.EqualFold(arg, "archive-map") {
-			archiveMap(s, i)
-			return
-		} else if strings.EqualFold(arg, "install-factorio") {
-			installFactorio(s, i)
-		} else if strings.EqualFold(arg, "reset-schedule") {
-			resetSchedule(s, i)
+		if o.Type == discordgo.ApplicationCommandOptionString {
+			arg := o.StringValue()
+			if strings.EqualFold(arg, "start") {
+				startFact(s, i)
+				return
+			} else if strings.EqualFold(arg, "stop") {
+				stopFact(s, i)
+				return
+			} else if strings.EqualFold(arg, "new-map-preview") {
+				newMapPrev(s, i)
+				return
+			} else if strings.EqualFold(arg, "new-map") {
+				makeNewMap(s, i)
+				return
+			} else if strings.EqualFold(arg, "update-factorio") {
+				updateFact(s, i)
+				return
+			} else if strings.EqualFold(arg, "update-mods") {
+				updateMods(s, i)
+				return
+			} else if strings.EqualFold(arg, "archive-map") {
+				archiveMap(s, i)
+				return
+			} else if strings.EqualFold(arg, "install-factorio") {
+				installFactorio(s, i)
+			} else if strings.EqualFold(arg, "reset-schedule") {
+				resetSchedule(s, i)
+			}
 		}
 	}
 }
