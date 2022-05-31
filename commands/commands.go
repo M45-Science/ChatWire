@@ -255,6 +255,18 @@ var cmds = []Command{
 		Name:        "info",
 		Description: "Shows information about the server.",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "verbose",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Description: "Show all information.",
+			},
+			{
+				Name:        "debug",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Description: "For moderators only.",
+			},
+		},
 	},
 		Command: user.Info},
 

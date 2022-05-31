@@ -23,13 +23,17 @@ import (
 func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	verbose := false
+	debug := false
 
 	a := i.ApplicationCommandData()
 	for _, arg := range a.Options {
-		if arg.Type == discordgo.ApplicationCommandOptionBoolean &&
-			strings.EqualFold(arg.Name, "verbose") && arg.BoolValue() {
-			verbose = true
-			break
+		if arg.Type == discordgo.ApplicationCommandOptionBoolean {
+
+			if strings.EqualFold(arg.Name, "verbose") && arg.BoolValue() {
+				verbose = true
+			} else if strings.EqualFold(arg.Name, "debug") && arg.BoolValue() {
+				debug = true
+			}
 		}
 	}
 
@@ -167,14 +171,16 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	msg, isConfigured := fact.MakeSteamURL()
 	if isConfigured {
-		buf = buf + "Steam connect link: " + msg
+		buf = buf + "Steam connect link:\n" + msg
 	}
 
+	if debug && disc.CheckModerator(i.Member.Roles, i) {
+		buf = buf + debugStat(s, i)
+	}
 	disc.EphemeralResponse(s, i, "Server Info:", buf)
-
 }
 
-func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) string {
 
 	count := 0
 	glob.PlayerSusLock.Lock()
@@ -199,10 +205,6 @@ func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	glob.ChatterLock.Unlock()
 
-	if count == 0 {
-		disc.EphemeralResponse(s, i, "No debug info at this time.", "")
-	} else {
-		disc.EphemeralResponse(s, i, "Debug Info:", buf)
-	}
+	return buf
 
 }
