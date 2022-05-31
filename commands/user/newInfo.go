@@ -71,6 +71,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if cfg.Local.Options.Schedule != "" {
+		fact.UpdateScheduleDesc()
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Next map reset", fact.NextReset)
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Time till reset", fact.TillReset)
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Interval", cfg.Local.Options.Schedule)

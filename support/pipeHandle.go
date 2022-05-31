@@ -272,6 +272,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
 				fact.FactorioBooted {
+				fact.UpdateScheduleDesc()
 				fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
 			}
 
