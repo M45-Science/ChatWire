@@ -220,7 +220,7 @@ func TallyRewindVotes() (string, int) {
 	visVotes := 0
 	totalVotes := 0
 
-	buf := "Votes:\n```"
+	buf := "VOTE-REWIND: votes cast\n```"
 	for vpos, v := range glob.VoteBox.Votes {
 
 		/* Void or Cast */
@@ -269,7 +269,7 @@ func TallyRewindVotes() (string, int) {
 		glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Autosave: v.AutosaveNum, Count: 1})
 	}
 
-	buf = buf + "Syntax: `$vote-rewind <autosave number>`"
+	buf = buf + "If you have the `regulars` Discord role, use `/vote-rewind` to vote."
 	return buf, validVotes
 }
 
