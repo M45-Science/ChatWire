@@ -74,7 +74,7 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 	}
 
 	/* Cooldown */
-	if time.Since(glob.VoteBox.LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
+	if !glob.VoteBox.LastRewindTime.IsZero() && time.Since(glob.VoteBox.LastRewindTime) < constants.RewindCooldownMinutes*time.Minute {
 		left := (constants.RewindCooldownMinutes * time.Minute).Round(time.Second) - time.Since(glob.VoteBox.LastRewindTime)
 		buf := fmt.Sprintf("The map can not be rewound for another %v.", left.Round(time.Second).String())
 		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}

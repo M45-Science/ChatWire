@@ -41,7 +41,7 @@ func MainLoops() {
 			/* Check for updates */
 			if !fact.FactIsRunning &&
 				(fact.QueueReload || glob.DoRebootCW || fact.DoUpdateFactorio) {
-				if time.Since(glob.Uptime) > time.Minute*constants.BootUpdateDelayMin && fact.DoUpdateFactorio {
+				if !glob.Uptime.IsZero() && time.Since(glob.Uptime) > time.Minute*constants.BootUpdateDelayMin && fact.DoUpdateFactorio {
 					fact.FactUpdate()
 					fact.DoExit(false)
 
