@@ -172,6 +172,10 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 		}
 
 		glob.PlayerList[pname].Level = level
+		/* Delete discord id upon delete */
+		if level <= -255 {
+			glob.PlayerList[pname].ID = "0"
+		}
 		return true
 	}
 
@@ -208,6 +212,8 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	if glob.PlayerList[pname] != nil {
 		if level <= -254 {
 			glob.PlayerList[pname].Level = level
+			/*Clear discord ID on delete*/
+			glob.PlayerList[pname].ID = "0"
 		} else if level == -1 && glob.PlayerList[pname].Level != -1 {
 			glob.PlayerList[pname].Level = level
 			WriteFact(fmt.Sprintf("/ban %s banned on other M45 server", pname))
