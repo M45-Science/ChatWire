@@ -104,11 +104,10 @@ var cmds = []Command{
 						Name:  "daily",
 						Value: "daily",
 					},
-					/* Just for testing */
-					/*{
-						Name:  "hourly",
-						Value: "hourly",
-					},*/
+					{
+						Name:  "no-reset",
+						Value: "no-reset",
+					},
 				},
 			},
 		},

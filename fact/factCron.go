@@ -96,12 +96,14 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		warn5 = "0 55 * * * *"
 		warn1 = "0 59 * * * *"
 		reset = "0 0 * * * *"
+	} else if strings.EqualFold(desc, "no-reset") {
+		//
 	} else {
 		cwlog.DoLogCW("interpSchedule: Invalid schedule preset: " + desc)
 		return true
 	}
 
-	if !test {
+	if !test && reset != "" {
 		err1 := CronVar.AddFunc(warn15, func() { doWarn(15) })
 		err2 := CronVar.AddFunc(warn5, func() { doWarn(5) })
 		err3 := CronVar.AddFunc(warn1, func() { doWarn(1) })
@@ -114,6 +116,17 @@ func InterpSchedule(desc string, test bool) (err bool) {
 			return false
 		}
 	} else {
+
+		/* Disable cron if set to no-reset */
+		if CronVar != nil {
+			CronVar.Stop()
+			CronVar = nil
+			TillReset = ""
+			NextReset = ""
+			WriteFact("/resetint")
+			WriteFact("/resetdur")
+		}
+
 		return false
 	}
 
