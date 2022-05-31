@@ -21,6 +21,7 @@ import (
 
 func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argStr string) {
 
+	time.Sleep(1 * time.Second)
 	glob.VoteBoxLock.Lock()
 	defer glob.VoteBoxLock.Unlock()
 
@@ -46,8 +47,6 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 		disc.FollowupResponse(s, i, &f)
 		return
 	}
-
-	/* Correct number of arguments (1) */
 
 	if arg > 0 || arg < (cfg.Global.Options.AutosaveMax) {
 		path := cfg.Global.Paths.Folders.ServersRoot +
@@ -102,8 +101,10 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 				buf := fmt.Sprintf("You have changed your vote to autosave #%v", arg)
 				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 				disc.FollowupResponse(s, i, &f)
-				TallyRewindVotes()
 				changedVote = true
+
+				buf = fmt.Sprintf("%v has changed their vote, to rewind the map to autosave #%v", i.Member.User.Username, arg)
+				CMS(cfg.Local.Channel.ChatChannel, buf)
 				break
 			} else if v.NumChanges >= constants.MaxRewindChanges {
 				buf := "You can not change your vote anymore until it expires."
@@ -149,13 +150,20 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 		buf := fmt.Sprintf("You have voted to rewind the map to autosave #%v", arg)
 		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 		disc.FollowupResponse(s, i, &f)
+
+		buf = fmt.Sprintf("%v has voted to rewind the map to autosave #%v", i.Member.User.Username, arg)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
+
+	}
+
+	/* Count and show votes */
+	str, count := TallyRewindVotes()
+	if count > 0 {
+		CMS(cfg.Local.Channel.ChatChannel, str)
 	}
 
 	/* Mark dirty, so vote is saved after we are done here */
 	glob.VoteBox.Dirty = true
-
-	/* Tally them and see if there is a winner */
-	TallyRewindVotes() /* Updates votes */
 
 	found := false
 	asnum := 0
@@ -185,8 +193,6 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 	CMS(cfg.Local.Channel.ChatChannel, "VOTE REWIND: Rewinding the map to autosave #"+strconv.Itoa(asnum))
 	FactorioBootedAt = time.Time{}
 	DoRewindMap(s, strconv.Itoa(asnum))
-	return
-
 }
 
 func ResetTotalVotes() {

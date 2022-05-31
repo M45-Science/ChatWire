@@ -563,7 +563,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 					buf := fmt.Sprintf("Submitting vote for autosave #%v, one moment please.", c)
 					disc.EphemeralResponse(s, i, "Notice:", buf)
-					fact.CheckRewindVote(s, i, c)
+					go fact.CheckRewindVote(s, i, c)
 
 					break
 				}
