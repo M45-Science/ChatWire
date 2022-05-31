@@ -269,6 +269,12 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.Gametime, pname, plevelname)
 			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
+			if glob.SoftModVersion != constants.Unknown &&
+				fact.FactIsRunning &&
+				fact.FactorioBooted {
+				fact.WriteFact("/resetdur " + fact.TillReset)
+			}
+
 			/* Give people patreon/nitro tags in-game. */
 			did := disc.GetDiscordIDFromFactorioName(pname)
 			if did != "" {
