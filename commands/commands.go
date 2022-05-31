@@ -561,7 +561,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			} else if strings.EqualFold(data.CustomID, "VoteRewind") {
 				if disc.CheckRegular(i.Member.Roles) || disc.CheckModerator(i.Member.Roles, i) {
 
-					buf := fmt.Sprintf("Submitting vote for autosave #%v, please wait.", c)
+					buf := fmt.Sprintf("Submitting vote for autosave #%v, one moment please.", c)
 					disc.EphemeralResponse(s, i, "Notice:", buf)
 					fact.CheckRewindVote(s, i, c)
 
