@@ -23,16 +23,14 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	for _, arg := range a.Options {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
-			if strings.EqualFold(arg.Name, "server") {
-				server = arg.StringValue()
-			} else if strings.EqualFold(arg.Name, "command") {
+			if strings.EqualFold(arg.Name, "command") {
 				command = arg.StringValue()
 			}
 		}
 	}
 
-	if server != "" && command != "" &&
-		(strings.EqualFold(server, cfg.Local.Callsign)) { //|| strings.EqualFold(server, "all")) {
+	if command != "" {
+
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 
@@ -61,7 +59,7 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(s, i, "Result:", resp)
 		cwlog.DoLogCW("RCON RESPONSE: " + resp)
 	} else {
-		buf := "Invalid syntax."
+		buf := "You must supply a command to run."
 		disc.EphemeralResponse(s, i, "Error:", buf)
 	}
 
