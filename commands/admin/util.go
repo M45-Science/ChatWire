@@ -78,7 +78,7 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if err == nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
-		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		f := discordgo.WebhookParams{Embeds: elist}
 		disc.FollowupResponse(s, i, &f)
 		return
 	} else {
