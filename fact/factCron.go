@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hako/durafmt"
 	"github.com/robfig/cron"
 
 	"ChatWire/cfg"
@@ -12,21 +13,27 @@ import (
 )
 
 var CronVar *cron.Cron
-var ScheduleDescription string
+var NextReset string
+var TillReset string
 
 func SetupSchedule() {
 	if cfg.Local.Options.Schedule != "" {
+		if CronVar != nil {
+			cwlog.DoLogCW("SetupSchedule: CronVar is not nil, removing old schedule")
+			CronVar.Stop()
+		}
 		CronVar = cron.NewWithLocation(time.UTC)
 		err := interpSchedule(cfg.Local.Options.Schedule)
 
 		if err {
-			cwlog.DoLogCW("Error setting up schedule.")
+			cwlog.DoLogCW("SetupSchedule: Error setting up schedule.")
 		} else {
 			cwlog.DoLogCW("Schedule set up: " + cfg.Local.Options.Schedule)
 			CronVar.Start()
+			UpdateScheduleDesc()
 		}
 	} else {
-		cwlog.DoLogCW("No schedule set, skipping.")
+		cwlog.DoLogCW("SetupSchedule: No schedule set, skipping.")
 	}
 }
 
@@ -43,20 +50,18 @@ func doWarn(mins int) {
 	}
 }
 
-func interpSchedule(desc string) bool {
+func interpSchedule(desc string) (err bool) {
 	var warn15, warn5, warn1, reset string
 
-	if desc == "" {
-		return false
-	} else if strings.EqualFold(desc, "three months") {
-		warn15 = "0 45 15 */3 *"
-		warn5 = "0 55 15 */3 *"
-		warn1 = "0 59 15 */3 *"
-		reset = "0 0 16 */3 * *"
+	if strings.EqualFold(desc, "three months") {
+		warn15 = "0 45 15 1 */3 *"
+		warn5 = "0 55 15 1 */3 *"
+		warn1 = "0 59 15 1 */3 *"
+		reset = "0 0 16 1 */3 * *"
 	} else if strings.EqualFold(desc, "two months") {
-		warn15 = "0 45 15 */2 *"
-		warn5 = "0 55 15 */2 *"
-		warn1 = "0 59 16 */2 *"
+		warn15 = "0 45 15 1 */2 *"
+		warn5 = "0 55 15 1 */2 *"
+		warn1 = "0 59 16 1 */2 *"
 		reset = "0 0 16 1 */2 *"
 	} else if strings.EqualFold(desc, "monthly") {
 		warn15 = "0 45 15 1 * *"
@@ -83,6 +88,14 @@ func interpSchedule(desc string) bool {
 		warn5 = "0, 55, 15 * * *"
 		warn1 = "0, 59, 15 * * *"
 		reset = "0, 0, 16 * * *"
+	} else if strings.EqualFold(desc, "every hour") {
+		warn15 = "0 45 * * * *"
+		warn5 = "0 55 * * * *"
+		warn1 = "0 59 * * * *"
+		reset = "0 0 * * * *"
+	} else {
+		cwlog.DoLogCW("interpSchedule: Invalid schedule preset: " + desc)
+		return true
 	}
 
 	err1 := CronVar.AddFunc(warn15, func() { doWarn(15) })
@@ -91,22 +104,31 @@ func interpSchedule(desc string) bool {
 	err4 := CronVar.AddFunc(reset, func() { Map_reset("", false) })
 
 	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-		return false
-	} else {
-		UpdateScheduleDesc()
+		cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error())
 		return true
+	} else {
+		return false
 	}
 
 }
 
-func UpdateScheduleDesc() bool {
-	if len(CronVar.Entries()) == 3 {
-		nextReset := CronVar.Entries()[3].Next
-		ScheduleDescription = nextReset.Round(time.Hour).String()
-		GenerateFactorioConfig()
-		//support.ConfigSoftMod()
-		return true
-	} else {
+func UpdateScheduleDesc() (err bool) {
+	e := CronVar.Entries()
+	a := len(e)
+	if a > 3 {
+
+		units, err := durafmt.DefaultUnitsCoder.Decode("year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,millisecond:milliseconds,microsecond:microseconds")
+		if err != nil {
+			panic(err)
+		}
+
+		n := e[a-1].Next
+		NextReset = n.Format("Monday, January 2 15:04 MST")
+		TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(3).Format(units) + " from now"
+
 		return false
+	} else {
+		cwlog.DoLogCW("UpdateScheduleDesc: No schedule set, skipping.")
+		return true
 	}
 }

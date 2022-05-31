@@ -61,7 +61,14 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	if fact.GametimeString != constants.Unknown {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
+	}
+	if fact.NumPlayers > 0 || verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
+	}
+
+	if cfg.Local.Options.Schedule != "" {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Next map reset", fact.NextReset)
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Time till reset", fact.TillReset)
 	}
 
 	/* SETTINGS */
