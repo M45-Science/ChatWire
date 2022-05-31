@@ -66,6 +66,54 @@ var cmds = []Command{
 		},
 	},
 		Command: admin.ChatWire, AdminOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "reset-schedule",
+		Description: "Set a map reset schedule.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "preset",
+				Description: "How often to reset, based on a preset.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "three-months",
+						Value: "three months",
+					},
+					{
+						Name:  "two-months",
+						Value: "two-months",
+					},
+					{
+						Name:  "monthly",
+						Value: "monthly",
+					},
+					{
+						Name:  "twice-monthly",
+						Value: "twice-monthly",
+					},
+					{
+						Name:  "fridays",
+						Value: "fridays",
+					},
+					{
+						Name:  "odd-dates",
+						Value: "odd-dates",
+					},
+					{
+						Name:  "daily",
+						Value: "daily",
+					},
+					/* Just for testing */
+					/*{
+						Name:  "hourly",
+						Value: "hourly",
+					},*/
+				},
+			},
+		},
+	},
+		Command: admin.SetSchedule, AdminOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",

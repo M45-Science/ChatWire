@@ -16,24 +16,27 @@ var CronVar *cron.Cron
 var NextReset string
 var TillReset string
 
-func SetupSchedule() {
+func SetupSchedule() (err bool) {
 	if cfg.Local.Options.Schedule != "" {
 		if CronVar != nil {
 			cwlog.DoLogCW("SetupSchedule: CronVar is not nil, removing old schedule")
 			CronVar.Stop()
 		}
 		CronVar = cron.NewWithLocation(time.UTC)
-		err := interpSchedule(cfg.Local.Options.Schedule)
+		err := InterpSchedule(cfg.Local.Options.Schedule, false)
 
 		if err {
 			cwlog.DoLogCW("SetupSchedule: Error setting up schedule.")
+			return true
 		} else {
 			cwlog.DoLogCW("Schedule set up: " + cfg.Local.Options.Schedule)
 			CronVar.Start()
 			UpdateScheduleDesc()
+			return false
 		}
 	} else {
 		cwlog.DoLogCW("SetupSchedule: No schedule set, skipping.")
+		return true
 	}
 }
 
@@ -50,15 +53,15 @@ func doWarn(mins int) {
 	}
 }
 
-func interpSchedule(desc string) (err bool) {
+func InterpSchedule(desc string, test bool) (err bool) {
 	var warn15, warn5, warn1, reset string
 
-	if strings.EqualFold(desc, "three months") {
+	if strings.EqualFold(desc, "three-months") {
 		warn15 = "0 45 15 1 */3 *"
 		warn5 = "0 55 15 1 */3 *"
 		warn1 = "0 59 15 1 */3 *"
 		reset = "0 0 16 1 */3 * *"
-	} else if strings.EqualFold(desc, "two months") {
+	} else if strings.EqualFold(desc, "two-months") {
 		warn15 = "0 45 15 1 */2 *"
 		warn5 = "0 55 15 1 */2 *"
 		warn1 = "0 59 16 1 */2 *"
@@ -68,7 +71,7 @@ func interpSchedule(desc string) (err bool) {
 		warn5 = "0 55 15 1 * *"
 		warn1 = "0 59 15 1 * *"
 		reset = "0 0 16 1 * *"
-	} else if strings.EqualFold(desc, "1st and 15th") {
+	} else if strings.EqualFold(desc, "twice-monthly") {
 		warn15 = "0 45 15 1,15 * *"
 		warn5 = "0 55 15 1,15 * *"
 		warn1 = "0 59 15 1,15 * *"
@@ -78,17 +81,17 @@ func interpSchedule(desc string) (err bool) {
 		warn5 = "0 55 15 * * FRI"
 		warn1 = "0 59 15 * * FRI"
 		reset = "0 0 16 * * FRI"
-	} else if strings.EqualFold(desc, "every other day") {
+	} else if strings.EqualFold(desc, "odd-dates") {
 		warn15 = "0, 45, 15 */2 * *"
 		warn5 = "0, 55, 15 */2 * *"
 		warn1 = "0, 59, 15 */2 * *"
 		reset = "0, 0, 16 */2 * *"
-	} else if strings.EqualFold(desc, "every day") {
+	} else if strings.EqualFold(desc, "daily") {
 		warn15 = "0, 45, 15 * * *"
 		warn5 = "0, 55, 15 * * *"
 		warn1 = "0, 59, 15 * * *"
 		reset = "0, 0, 16 * * *"
-	} else if strings.EqualFold(desc, "every hour") {
+	} else if strings.EqualFold(desc, "hourly") {
 		warn15 = "0 45 * * * *"
 		warn5 = "0 55 * * * *"
 		warn1 = "0 59 * * * *"
@@ -98,14 +101,18 @@ func interpSchedule(desc string) (err bool) {
 		return true
 	}
 
-	err1 := CronVar.AddFunc(warn15, func() { doWarn(15) })
-	err2 := CronVar.AddFunc(warn5, func() { doWarn(5) })
-	err3 := CronVar.AddFunc(warn1, func() { doWarn(1) })
-	err4 := CronVar.AddFunc(reset, func() { Map_reset("", false) })
+	if !test {
+		err1 := CronVar.AddFunc(warn15, func() { doWarn(15) })
+		err2 := CronVar.AddFunc(warn5, func() { doWarn(5) })
+		err3 := CronVar.AddFunc(warn1, func() { doWarn(1) })
+		err4 := CronVar.AddFunc(reset, func() { Map_reset("", false) })
 
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-		cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error())
-		return true
+		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+			cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error())
+			return true
+		} else {
+			return false
+		}
 	} else {
 		return false
 	}
