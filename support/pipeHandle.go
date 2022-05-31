@@ -300,7 +300,9 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") &&
 		/* Suppress quit messages from rewind */
-		time.Since(fact.FactorioBootedAt) > time.Second*5 {
+		!fact.FactorioBootedAt.IsZero() &&
+		time.Since(fact.FactorioBootedAt) > time.Second*10 {
+
 		cwlog.DoLogGame(NoDS)
 
 		/* Handle softmod and vanilla */
@@ -360,7 +362,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 						if glob.PlayerSus[pname] > 15 {
 
-							if time.Since(glob.LastSusWarning) > time.Minute {
+							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
 								glob.LastSusWarning = time.Now()
 								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
 

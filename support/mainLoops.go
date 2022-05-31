@@ -88,7 +88,7 @@ func MainLoops() {
 			fact.LockerLock.Lock()
 
 			if fact.LockerStart {
-				if time.Since(fact.LockerDetectStart) > time.Second*5 && fact.LastLockerName != "" {
+				if !fact.LockerDetectStart.IsZero() && time.Since(fact.LockerDetectStart) > time.Second*5 && fact.LastLockerName != "" {
 					fact.LockerDetectStart = time.Now()
 					fact.LockerStart = false
 

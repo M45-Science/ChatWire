@@ -153,42 +153,39 @@ func CheckRewindVote(s *discordgo.Session, i *discordgo.InteractionCreate, argSt
 
 	/* Mark dirty, so vote is saved after we are done here */
 	glob.VoteBox.Dirty = true
-	if buf, c := TallyRewindVotes(); c < constants.VotesNeededRewind {
-		CMS(cfg.Local.Channel.ChatChannel, buf)
-		return
-	} else {
-		/* Enough votes to check, lets tally them and see if there is a winner */
-		TallyRewindVotes() /* Updates votes */
 
-		found := false
-		asnum := 0
-		for _, t := range glob.VoteBox.Tally {
-			if t.Count >= constants.VotesNeededRewind {
-				msg := fmt.Sprintf("%v-%v: Players voted to rewind the map to autosave #%v", cfg.Local.Callsign, cfg.Local.Name, t.Autosave)
-				CMS(cfg.Global.Discord.ReportChannel, msg)
-				found = true
-				asnum = t.Autosave
-			}
+	/* Tally them and see if there is a winner */
+	TallyRewindVotes() /* Updates votes */
+
+	found := false
+	asnum := 0
+	for _, t := range glob.VoteBox.Tally {
+		if t.Count >= constants.VotesNeededRewind {
+			msg := fmt.Sprintf("%v-%v: Players voted to rewind the map to autosave #%v", cfg.Local.Callsign, cfg.Local.Name, t.Autosave)
+			CMS(cfg.Global.Discord.ReportChannel, msg)
+			found = true
+			asnum = t.Autosave
 		}
-		/* Nope, not enough votes for one specific autosave */
-		if !found {
-			return
-		}
-
-		/* Set cooldown */
-		glob.VoteBox.LastRewindTime = time.Now().Round(time.Second)
-
-		/* Count number of rewinds, for future use */
-		glob.VoteBox.NumRewind++
-
-		/* Mark all votes as voided */
-		for vpos = range glob.VoteBox.Votes {
-			glob.VoteBox.Votes[vpos].Voided = true
-		}
-		CMS(cfg.Local.Channel.ChatChannel, "VOTE REWIND: Rewinding the map to autosave #"+strconv.Itoa(asnum))
-		DoRewindMap(s, strconv.Itoa(asnum))
+	}
+	/* Nope, not enough votes for one specific autosave */
+	if !found {
 		return
 	}
+
+	/* Set cooldown */
+	glob.VoteBox.LastRewindTime = time.Now().Round(time.Second)
+
+	/* Count number of rewinds, for future use */
+	glob.VoteBox.NumRewind++
+
+	/* Mark all votes as voided */
+	for vpos = range glob.VoteBox.Votes {
+		glob.VoteBox.Votes[vpos].Voided = true
+	}
+	CMS(cfg.Local.Channel.ChatChannel, "VOTE REWIND: Rewinding the map to autosave #"+strconv.Itoa(asnum))
+	FactorioBootedAt = time.Time{}
+	DoRewindMap(s, strconv.Itoa(asnum))
+	return
 
 }
 

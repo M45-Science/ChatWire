@@ -42,12 +42,12 @@ const (
 	RestartLimitSleepMinutes = 2  /* cw.lock is new, sleep this long then exit. */
 
 	/* Vote Rewind */
-	VotesNeededRewind     = 2      /* Number of votes needed to rewind */
-	RewindCooldownMinutes = 1      /* Cooldown between rewinds */
-	VoteLifetime          = 60 * 3 /* How long a vote lasts */
-	MaxRewindChanges      = 3      /* Max number of times a player can change their vote */
-	MaxVotesPerMap        = 4      /* Max number of votes per map */
-	MaxRewindResults      = 40
+	VotesNeededRewind     = 2 /* Number of votes needed to rewind */
+	RewindCooldownMinutes = 1 /* Cooldown between rewinds */
+	VoteLifetime          = 5 /* How long a vote lasts */
+	MaxRewindChanges      = 2 /* Max number of times a player can change their vote */
+	MaxVotesPerMap        = 4 /* Max number of votes per map */
+	MaxRewindResults      = 20
 
 	/* Max results to return */
 	WhoisResults = 15
