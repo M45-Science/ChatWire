@@ -91,11 +91,6 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		warn5 = "0, 55, 15 * * *"
 		warn1 = "0, 59, 15 * * *"
 		reset = "0, 0, 16 * * *"
-	} else if strings.EqualFold(desc, "hourly") {
-		warn15 = "0 45 * * * *"
-		warn5 = "0 55 * * * *"
-		warn1 = "0 59 * * * *"
-		reset = "0 0 * * * *"
 	} else if strings.EqualFold(desc, "no-reset") {
 		//
 	} else {
@@ -115,7 +110,7 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		} else {
 			return false
 		}
-	} else {
+	} else if reset == "" {
 
 		/* Disable cron if set to no-reset */
 		if CronVar != nil {
