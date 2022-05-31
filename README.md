@@ -53,6 +53,7 @@ Moved default Factorio install to within the ChatWire directory.<br>
 Added /factorio->install-factorio command.<br>
 Removed ImageMagick requirement.<br>
 Suppress QUIT messages from loading previous save games.<br>
+Added custom map reset scheduler, with date/time left text.<br>
 <br>
 ### Requirements:
 Linux<br>
