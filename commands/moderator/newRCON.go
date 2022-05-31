@@ -32,7 +32,7 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if server != "" && command != "" &&
-		(strings.EqualFold(server, cfg.Local.Callsign) || strings.EqualFold(server, "all")) {
+		(strings.EqualFold(server, cfg.Local.Callsign)) { //|| strings.EqualFold(server, "all")) {
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 
