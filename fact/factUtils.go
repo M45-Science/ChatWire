@@ -434,7 +434,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 			response = &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "Vote for 'new map' or a specific save to load. '(two votes needed):",
+					Content: "Vote for 'new map' or a specific save-game. (two votes needed):",
 					Flags:   1 << 6,
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
