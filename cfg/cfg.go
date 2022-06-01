@@ -102,9 +102,8 @@ type urlPaths struct {
 }
 
 type dataFiles struct {
-	DBFile        string
-	RecordPlayers string
-	Bans          string
+	DBFile string
+	Bans   string
 }
 
 type globalOptions struct {
@@ -221,13 +220,6 @@ func setGlobalDefaults() {
 		_, err := os.Create(Global.Paths.DataFiles.DBFile)
 		if err != nil {
 			cwlog.DoLogCW("Could not create playerdb.dat")
-		}
-	}
-	if Global.Paths.DataFiles.RecordPlayers == "" {
-		Global.Paths.DataFiles.RecordPlayers = "recordPlayers.dat"
-		_, err := os.Create(Global.Paths.DataFiles.RecordPlayers)
-		if err != nil {
-			cwlog.DoLogCW("Could not create recordPlayers.dat")
 		}
 	}
 	if Global.Paths.Folders.MapGenerators == "" {
