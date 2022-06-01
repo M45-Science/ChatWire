@@ -623,7 +623,7 @@ func MainLoops() {
 				if _, err = os.Stat(".newmap"); err == nil {
 					if errb = os.Remove(".newmap"); errb == nil {
 						if cfg.Local.Settings.AutoMapReset {
-							fact.Map_reset("", false)
+							go fact.Map_reset("", false)
 						}
 					} else if errb != nil && !failureReported {
 						failureReported = true
@@ -640,7 +640,7 @@ func MainLoops() {
 							if msglen > 5 && msglen < 250 {
 								message = strings.ReplaceAll(message, "\n", "") /* replace newline */
 								message = strings.ReplaceAll(message, "\r", "") /* replace return */
-								fact.Map_reset(message, false)
+								go fact.Map_reset(message, false)
 							} else {
 								fact.LogCMS(cfg.Local.Channel.ChatChannel, ".message text is invalid, ignoring.")
 							}

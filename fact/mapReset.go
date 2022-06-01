@@ -292,5 +292,5 @@ func Map_reset(data string, doReport bool) {
 	WriteVotes()      /* Save to file before exiting */
 	glob.VoteBoxLock.Unlock()
 	CMS(cfg.Local.Channel.ChatChannel, "Map reset complete, rebooting.")
-	DoExit(true)
+	DoExit(false)
 }

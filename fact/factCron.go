@@ -103,7 +103,7 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		err1 := CronVar.AddFunc(warn15, func() { doWarn(15) })
 		err2 := CronVar.AddFunc(warn5, func() { doWarn(5) })
 		err3 := CronVar.AddFunc(warn1, func() { doWarn(1) })
-		err4 := CronVar.AddFunc(reset, func() { Map_reset("", false) })
+		err4 := CronVar.AddFunc(reset, func() { go Map_reset("", false) })
 
 		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
 			cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error())

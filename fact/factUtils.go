@@ -481,7 +481,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 func DoChangeMap(s *discordgo.Session, arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
-		Map_reset("", false)
+		go Map_reset("", false)
 	}
 
 	path := cfg.Global.Paths.Folders.ServersRoot +
