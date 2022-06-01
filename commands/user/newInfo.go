@@ -177,7 +177,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	buf = buf + fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", fact.NextResetUnix)
 
-	if debug && disc.CheckModerator(i.Member.Roles, i) {
+	if debug && disc.CheckAdmin(i) {
 		buf = buf + debugStat(s, i)
 	}
 	disc.EphemeralResponse(s, i, "Server Info:", buf)

@@ -12,74 +12,90 @@ import (
 )
 
 /*  Check if Discord admin */
-func CheckAdmin(roles []string, i *discordgo.InteractionCreate) bool {
+func CheckAdmin(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Admin == "" {
-		return i.Member.Permissions&1<<2 != 0
+		cwlog.DoLogCW("CheckAdmin: RoleID not found for that role, check configuration files.")
+		return false
 	}
-	for _, r := range roles {
-		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Admin) {
-			return true
+
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Admin) {
+				return true
+			}
 		}
 	}
-	return i.Member.Permissions&1<<2 != 0
+	return false
 }
 
 /*  Check if Discord moderator */
-func CheckModerator(roles []string, i *discordgo.InteractionCreate) bool {
-
-	if CheckAdmin(roles, i) {
-		return true
-	}
+func CheckModerator(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
-		return i.Member.Permissions&1<<28 != 0
+		cwlog.DoLogCW("CheckModerator: RoleID not found for that role, check configuration files.")
+		return false
 	}
-	for _, r := range roles {
-		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
-			return true
+
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
+				return true
+			}
 		}
 	}
-	return i.Member.Permissions&1<<28 != 0
+	return false
 }
 
 /* Check if Discord regular */
-func CheckRegular(roles []string) bool {
+func CheckRegular(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Regular == "" {
+		cwlog.DoLogCW("CheckRegular RoleID not found for that role, check configuration files.")
 		return false
 	}
-	for _, r := range roles {
-		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Regular) {
-			return true
+
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
+				return true
+			}
 		}
 	}
 	return false
 }
 
 /* Check if Discord member */
-func CheckMember(roles []string) bool {
+func CheckMember(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Member == "" {
+		cwlog.DoLogCW("CheckMember RoleID not found for that role, check configuration files.")
 		return false
 	}
-	for _, r := range roles {
-		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Member) {
-			return true
+
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Member) {
+				return true
+			}
 		}
 	}
 	return false
 }
 
-/* Check if Discord 'new' */
-func CheckNew(roles []string) bool {
+/* Check if Discord member */
+func CheckNew(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.New == "" {
+		cwlog.DoLogCW("CheckNew: RoleID not found for that role, check configuration files.")
 		return false
 	}
-	for _, r := range roles {
-		if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.New) {
-			return true
+
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.New) {
+				return true
+			}
 		}
 	}
 	return false

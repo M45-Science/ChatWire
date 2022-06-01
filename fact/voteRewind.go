@@ -32,7 +32,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	}
 
 	/* Only if allowed */
-	if !disc.CheckRegular(i.Member.Roles) && !disc.CheckModerator(i.Member.Roles, i) {
+	if !disc.CheckRegular(i) && !disc.CheckModerator(i) && !disc.CheckAdmin(i) {
 		buf := "You must have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role to use this command. See /register and the read-this-first channel for more info."
 		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 		disc.FollowupResponse(s, i, &f)
@@ -264,7 +264,7 @@ func TallyMapVotes() (string, int) {
 		glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
 	}
 
-	buf = buf + "If you have the `regulars` Discord role, use `/vote-map` to vote."
+	buf = buf + "If you have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role, use `/vote-map` to vote."
 	return buf, validVotes
 }
 

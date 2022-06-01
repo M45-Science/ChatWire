@@ -278,7 +278,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-map",
-		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
+		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` discord role.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -523,13 +523,17 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	if i.Member == nil {
+		cwlog.DoLogCW("SlashCommand: Ignoring interaction with no member.")
+		return
+	}
+
 	if i.Type == discordgo.InteractionMessageComponent {
 		data := i.MessageComponentData()
 
 		for _, c := range data.Values {
 			if strings.EqualFold(data.CustomID, "ChangeMap") {
-				isMod := disc.CheckModerator(i.Member.Roles, i)
-				if isMod {
+				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Loading save: %v, please wait.", c)
 					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
@@ -540,7 +544,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					break
 				}
 			} else if strings.EqualFold(data.CustomID, "VoteMap") {
-				if disc.CheckRegular(i.Member.Roles) || disc.CheckModerator(i.Member.Roles, i) {
+				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
 					disc.EphemeralResponse(s, i, "Notice:", buf)
@@ -581,7 +585,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
 					if c.AdminOnly {
-						if disc.CheckAdmin(i.Member.Roles, i) {
+						if disc.CheckAdmin(i) {
 							c.Command(s, i)
 							var options []string
 							for _, o := range c.AppCmd.Options {
@@ -595,7 +599,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 							return
 						}
 					} else if c.ModeratorOnly {
-						if disc.CheckModerator(i.Member.Roles, i) {
+						if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 							cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
 							c.Command(s, i)
 							return
