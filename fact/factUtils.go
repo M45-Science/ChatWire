@@ -359,7 +359,8 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	/* Loop all files */
 	var tempf []fs.FileInfo
 	for _, f := range files {
-		if strings.HasSuffix(f.Name(), ".zip") {
+		//Hide non-zip files, temp files, and our map-change temp file.
+		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") && !strings.HasSuffix(f.Name(), cfg.Local.Name+"_new.zip") {
 			tempf = append(tempf, f)
 		}
 	}
@@ -378,6 +379,18 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	} else {
 		startPos = numFiles
 	}
+
+	availableMaps = append(availableMaps,
+		discordgo.SelectMenuOption{
+
+			Label:       "NEW-MAP",
+			Description: "Vote to archive the current map, and generate a new one.",
+			Value:       "NEW-MAP",
+			Emoji: discordgo.ComponentEmoji{
+				Name: "⭐",
+			},
+		},
+	)
 
 	for i := startPos; i > 0; i-- {
 
@@ -466,13 +479,16 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 }
 
 func DoChangeMap(s *discordgo.Session, arg string) {
+
+	if strings.EqualFold(arg, "new-map") {
+		Map_reset("", false)
+	}
+
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		cfg.Global.Paths.Folders.Saves
-
-		/* Seems to be a number */
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)

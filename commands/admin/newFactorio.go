@@ -130,7 +130,7 @@ func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if !preview_made {
-		buf := "The game did not generate a map preview. Try clearing map-gen."
+		buf := "The game did not generate a map preview."
 		cwlog.DoLogCW(buf)
 		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
 		disc.InteractionResponse(s, i, &elist)
