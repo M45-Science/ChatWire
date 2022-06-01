@@ -34,27 +34,27 @@ type PassData struct {
 	Time   int64
 }
 
-/* Rewind Votes Container */
-type RewindVoteContainerData struct {
+/* Votes Container */
+type VoteContainerData struct {
 	Version string
-	Votes   []RewindVoteData
+	Votes   []MapVoteData
 
 	/* Temporary storage for tallying votes */
-	Tally          []VoteTallyData `json:"-"`
-	LastRewindTime time.Time       `json:"-"`
-	NumRewind      int
+	Tally         []VoteTallyData `json:"-"`
+	LastMapChange time.Time       `json:"-"`
+	NumChanges    int
 
 	Dirty bool `json:"-"`
 }
 
-/* Rewind Votes */
-type RewindVoteData struct {
+/* Votes */
+type MapVoteData struct {
 	Name       string
 	DiscID     string
 	TotalVotes int
 
-	AutosaveNum int
-	NumChanges  int
+	Selection  string
+	NumChanges int
 
 	Time    time.Time
 	Voided  bool
@@ -63,8 +63,8 @@ type RewindVoteData struct {
 
 /* Temporary storage for tallying votes */
 type VoteTallyData struct {
-	Autosave int
-	Count    int
+	Selection string
+	Count     int
 }
 
 /* From softmod /online command */
@@ -87,8 +87,8 @@ var (
 	DoDeregisterCommands *bool
 	LocalTestMode        *bool
 
-	/* Vote Rewind */
-	VoteBox     RewindVoteContainerData
+	/* Vote map */
+	VoteBox     VoteContainerData
 	VoteBoxLock sync.Mutex
 
 	/* Server status */

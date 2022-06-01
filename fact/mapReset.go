@@ -286,10 +286,10 @@ func Map_reset(data string, doReport bool) {
 	}
 
 	glob.VoteBoxLock.Lock()
-	glob.VoteBox.LastRewindTime = time.Now()
-	VoidAllVotes()     /* Void all votes */
-	ResetTotalVotes()  /* New map, reset player's vote limits */
-	WriteRewindVotes() /* Save to file before exiting */
+	glob.VoteBox.LastMapChange = time.Now()
+	VoidAllVotes()    /* Void all votes */
+	ResetTotalVotes() /* New map, reset player's vote limits */
+	WriteVotes()      /* Save to file before exiting */
 	glob.VoteBoxLock.Unlock()
 	CMS(cfg.Local.Channel.ChatChannel, "Map reset complete, rebooting.")
 	DoExit(true)

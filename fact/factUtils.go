@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -341,7 +340,7 @@ func DoUpdateChannelName() {
 	}
 }
 
-func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode bool) {
+func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode bool) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -355,12 +354,11 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 		disc.EphemeralResponse(s, i, "Error:", "Unable to read saves directory.")
 	}
 
-	lastNum := -1
 	step := 1
 	/* Loop all files */
 	var tempf []fs.FileInfo
 	for _, f := range files {
-		if strings.HasPrefix(f.Name(), "_autosave") && strings.HasSuffix(f.Name(), ".zip") {
+		if strings.HasSuffix(f.Name(), ".zip") {
 			tempf = append(tempf, f)
 		}
 	}
@@ -369,8 +367,8 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 		return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
 
-	maxList := constants.MaxRewindResults
-	var availableRewinds []discordgo.SelectMenuOption
+	maxList := constants.MaxMapResults
+	var availableMaps []discordgo.SelectMenuOption
 
 	numFiles := len(tempf) - 1
 	startPos := 0
@@ -385,15 +383,8 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 		f := tempf[i]
 		fName := f.Name()
 
-		/* Check if its a properly name autosave */
-		if strings.HasPrefix(fName, "_autosave") && strings.HasSuffix(fName, ".zip") {
-			fTmp := strings.TrimPrefix(fName, "_autosave")
-			fNumStr := strings.TrimSuffix(fTmp, ".zip")
-			fNum, err := strconv.Atoi(fNumStr) /* autosave number
-			/* Nope, no valid number */
-			if err != nil {
-				continue
-			}
+		if strings.HasSuffix(fName, ".zip") {
+			saveName := strings.TrimSuffix(fName, ".zip")
 			step++
 
 			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
@@ -406,24 +397,22 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units) + " ago"
 
-			saveNumber := fmt.Sprintf("%v", fNum)
-			availableRewinds = append(availableRewinds,
+			availableMaps = append(availableMaps,
 				discordgo.SelectMenuOption{
 
-					Label:       "autosave " + saveNumber,
+					Label:       saveName,
 					Description: modStr,
-					Value:       saveNumber,
+					Value:       saveName,
 					Emoji: discordgo.ComponentEmoji{
 						Name: "💾",
 					},
 				},
 			)
-			lastNum = fNum
 		}
 	}
 
-	if lastNum == -1 {
-		disc.EphemeralResponse(s, i, "Error:", "No autosaves were found.")
+	if numFiles <= 0 {
+		disc.EphemeralResponse(s, i, "Error:", "No saves were found.")
 	} else {
 
 		var response *discordgo.InteractionResponse
@@ -431,16 +420,16 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 			response = &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "Vote for an autosave to rewind to (two votes needed):",
+					Content: "Vote for 'new map' or a specific save to load. '(two votes needed):",
 					Flags:   1 << 6,
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
 							Components: []discordgo.MessageComponent{
 								discordgo.SelectMenu{
 									// Select menu, as other components, must have a customID, so we set it to this value.
-									CustomID:    "VoteRewind",
-									Placeholder: "Choose an autosave",
-									Options:     availableRewinds,
+									CustomID:    "VoteMap",
+									Placeholder: "Select one",
+									Options:     availableMaps,
 								},
 							},
 						},
@@ -451,16 +440,16 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 			response = &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "Rewind Map:",
+					Content: "Change Map:",
 					Flags:   1 << 6,
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
 							Components: []discordgo.MessageComponent{
 								discordgo.SelectMenu{
 									// Select menu, as other components, must have a customID, so we set it to this value.
-									CustomID:    "RewindMap",
-									Placeholder: "Choose a autosave",
-									Options:     availableRewinds,
+									CustomID:    "ChangeMap",
+									Placeholder: "Choose a save",
+									Options:     availableMaps,
 								},
 							},
 						},
@@ -475,63 +464,59 @@ func ShowRewindList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMo
 	}
 }
 
-func DoRewindMap(s *discordgo.Session, arg string) {
+func DoChangeMap(s *discordgo.Session, arg string) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		cfg.Global.Paths.Folders.Saves
-	num, err := strconv.Atoi(arg)
-	/* Seems to be a number */
-	if err == nil {
-		if num >= 0 {
-			/* Check if file is valid and found */
-			autoSaveStr := fmt.Sprintf("_autosave%v.zip", num)
-			_, err := os.Stat(path + "/" + autoSaveStr)
-			notfound := os.IsNotExist(err)
 
-			if notfound {
-				//rewindSyntax(m)
-				return
-			} else {
-				FactAutoStart = false
-				QuitFactorio("Server rebooting for map rewind...")
+		/* Seems to be a number */
 
-				WaitFactQuit()
-				selSaveName := path + "/" + autoSaveStr
-				from, erra := os.Open(selSaveName)
-				if erra != nil {
-					cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the selected rewind map. Details: %s", erra))
-				}
-				defer from.Close()
+	/* Check if file is valid and found */
+	saveStr := fmt.Sprintf("%v.zip", arg)
+	_, err := os.Stat(path + "/" + saveStr)
+	notfound := os.IsNotExist(err)
 
-				newmappath := path + "/" + cfg.Local.Name + "_new.zip"
-				_, err := os.Stat(newmappath)
-				if !os.IsNotExist(err) {
-					err = os.Remove(newmappath)
-					if err != nil {
-						cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to remove the new map. Details: %s", err))
-						return
-					}
-				}
-				to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
-				if errb != nil {
-					cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the new rewind map. Details: %s", errb))
-					return
-				}
-				defer to.Close()
+	if notfound {
+		return
+	} else {
+		FactAutoStart = false
+		QuitFactorio("Server rebooting for map vote...")
+		WaitFactQuit()
+		selSaveName := path + "/" + saveStr
+		from, erra := os.Open(selSaveName)
+		if erra != nil {
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the selected save. Details: %s", erra))
+		}
+		defer from.Close()
 
-				_, errc := io.Copy(to, from)
-				if errc != nil {
-					cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the new rewind map. Details: %s", errc))
-					return
-				}
-
-				CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading autosave%v", num))
-				glob.RelaunchThrottle = 0
-				FactAutoStart = true
+		newmappath := path + "/" + cfg.Local.Name + "_new.zip"
+		_, err := os.Stat(newmappath)
+		if !os.IsNotExist(err) {
+			err = os.Remove(newmappath)
+			if err != nil {
+				cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to remove the temp save file. Details: %s", err))
 				return
 			}
 		}
+		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
+		if errb != nil {
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the save file. Details: %s", errb))
+			return
+		}
+		defer to.Close()
+
+		_, errc := io.Copy(to, from)
+		if errc != nil {
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the save file. Details: %s", errc))
+			return
+		}
+
+		CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading save: %v", arg))
+		glob.RelaunchThrottle = 0
+		FactAutoStart = true
+		return
 	}
+
 }

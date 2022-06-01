@@ -67,7 +67,7 @@ var cmds = []Command{
 	},
 		Command: admin.ChatWire, AdminOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "reset-schedule",
+		Name:        "map-schedule",
 		Description: "Set a map reset schedule.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -237,11 +237,11 @@ var cmds = []Command{
 		Command: moderator.PlayerLevel, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "rewind-map",
-		Description: "Rewinds the map to specified autosave.",
+		Name:        "change-map",
+		Description: "Load a specific saved map.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: moderator.RewindMap, ModeratorOnly: true},
+		Command: moderator.ChangeMap, ModeratorOnly: true},
 
 	/* PLAYER COMMMANDS -------------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
@@ -277,8 +277,8 @@ var cmds = []Command{
 		Command: user.Players},
 
 	{AppCmd: &discordgo.ApplicationCommand{
-		Name:        "vote-rewind",
-		Description: "Vote to rewind the map to a specific autosave. Requires TWO votes, requires `REGULARS` discord role.",
+		Name:        "vote-map",
+		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -315,7 +315,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: user.VoteRewind},
+		Command: user.VoteMap},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "register",
@@ -539,24 +539,25 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		data := i.MessageComponentData()
 
 		for _, c := range data.Values {
-			if strings.EqualFold(data.CustomID, "RewindMap") {
+			if strings.EqualFold(data.CustomID, "ChangeMap") {
 				isMod := disc.CheckModerator(i.Member.Roles, i)
 				if isMod {
 
-					buf := fmt.Sprintf("Rewinding to autosave %v, please wait.", c)
+					buf := fmt.Sprintf("Loading save: %v, please wait.", c)
 					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
 					disc.InteractionResponse(s, i, &elist)
 
-					fact.DoRewindMap(s, c)
+					fact.DoChangeMap(s, c)
 
 					break
 				}
-			} else if strings.EqualFold(data.CustomID, "VoteRewind") {
+			} else if strings.EqualFold(data.CustomID, "VoteMap") {
 				if disc.CheckRegular(i.Member.Roles) || disc.CheckModerator(i.Member.Roles, i) {
 
-					buf := fmt.Sprintf("Submitting vote for autosave #%v, one moment please.", c)
+					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
 					disc.EphemeralResponse(s, i, "Notice:", buf)
-					go fact.CheckRewindVote(s, i, c)
+
+					go fact.CheckVote(s, i, c)
 
 					break
 				}

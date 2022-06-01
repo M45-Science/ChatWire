@@ -110,10 +110,10 @@ func main() {
 		}
 	}
 
-	/* Set up rewind cooldown */
+	/* Set up vote cooldown */
 	now := time.Now()
-	then := now.Add(time.Duration(-constants.RewindCooldownMinutes+1) * time.Minute)
-	glob.VoteBox.LastRewindTime = then.Round(time.Second)
+	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
+	glob.VoteBox.LastMapChange = then.Round(time.Second)
 
 	/* Blank game time */
 	fact.Gametime = (constants.Unknown)
@@ -143,7 +143,7 @@ func main() {
 	banlist.ReadBanFile()
 
 	/* Load old votes */
-	fact.ReadRewindVotes()
+	fact.ReadVotes()
 
 	/* Start game log */
 	cwlog.StartGameLog()

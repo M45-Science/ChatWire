@@ -298,7 +298,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 * LEAVE
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") &&
-		/* Suppress quit messages from rewind */
+		/* Suppress quit messages from map load */
 		!fact.FactorioBootedAt.IsZero() &&
 		time.Since(fact.FactorioBootedAt) > time.Second*30 {
 

@@ -240,7 +240,7 @@ func MainLoops() {
 	}()
 
 	/****************************************
-	 * Save vote-rewind data async
+	 * Save vote-map data async
 	 ****************************************/
 	go func() {
 
@@ -251,7 +251,7 @@ func MainLoops() {
 
 			/* Save if dirty */
 			if glob.VoteBox.Dirty {
-				fact.WriteRewindVotes()
+				fact.WriteVotes()
 				glob.VoteBox.Dirty = false
 			}
 			glob.VoteBoxLock.Unlock()

@@ -53,7 +53,7 @@ func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				return
 			} else if strings.EqualFold(arg, "install-factorio") {
 				installFactorio(s, i)
-			} else if strings.EqualFold(arg, "reset-schedule") {
+			} else if strings.EqualFold(arg, "map-schedule") {
 				resetSchedule(s, i)
 			}
 		}
@@ -244,10 +244,10 @@ func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	glob.VoteBoxLock.Lock()
-	glob.VoteBox.LastRewindTime = time.Now()
+	glob.VoteBox.LastMapChange = time.Now()
 	fact.VoidAllVotes()    /* Void all votes */
 	fact.ResetTotalVotes() /* New map, reset player's vote limits */
-	fact.WriteRewindVotes()
+	fact.WriteVotes()
 	glob.VoteBoxLock.Unlock()
 
 	lines := strings.Split(string(out), "\n")
