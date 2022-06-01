@@ -299,18 +299,6 @@ var cmds = []Command{
 						Name:  "show-all",
 						Value: "show-all",
 					},
-					{
-						Name:  "reset-cooldown",
-						Value: "reset-cooldown",
-					},
-					{
-						Name:  "no-cooldown",
-						Value: "no-cooldown",
-					},
-					{
-						Name:  "force-cooldown",
-						Value: "force-cooldown",
-					},
 				},
 			},
 		},
