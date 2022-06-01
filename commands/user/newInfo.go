@@ -72,7 +72,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if cfg.Local.Options.Schedule != "" {
 		fact.UpdateScheduleDesc()
-		buf = buf + fmt.Sprintf("%17v: %v\n", "Next map reset", fact.NextReset)
+		buf = buf + fmt.Sprintf("\n%17v: %v\n", "Next map reset", fact.NextReset)
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Time till reset", fact.TillReset)
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Interval", cfg.Local.Options.Schedule)
 	}
@@ -161,8 +161,8 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
-	buf = buf + fmt.Sprintf("\nPlayers in database: %v\n", len(glob.PlayerList))
-	buf = buf + fmt.Sprintf("Players in blacklist: %v\n", len(banlist.BanList))
+	buf = buf + fmt.Sprintf("\nStats:\n%17v: %v players\n", "Database", len(glob.PlayerList))
+	buf = buf + fmt.Sprintf("%17v: %v\n", "Blacklist", len(banlist.BanList))
 
 	if fact.PausedTicks > 4 {
 		buf = buf + "\n(Server is paused)\n"
@@ -174,6 +174,8 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if isConfigured {
 		buf = buf + "Steam connect link:\n" + msg
 	}
+
+	buf = buf + fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", fact.NextResetUnix)
 
 	if debug && disc.CheckModerator(i.Member.Roles, i) {
 		buf = buf + debugStat(s, i)
