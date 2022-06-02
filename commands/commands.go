@@ -545,7 +545,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if i.Member == nil {
-		cwlog.DoLogCW("SlashCommand: Ignoring interaction with no member.")
+		cwlog.DoLogCW("SlashCommand: Ignoring interaction with no member (dm).")
 		return
 	}
 
@@ -582,9 +582,9 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		for _, c := range CL {
 
 			/* Hanadle PrimaryOnly commands if we are the primary, otherwise only allow commands from our channel */
-			if c.PrimaryOnly && !strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
+			if !c.PrimaryOnly && !strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
 				continue
-			} else if !strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
+			} else if c.PrimaryOnly && !strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) {
 				continue
 			}
 
@@ -621,8 +621,5 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				}
 			}
 		}
-		disc.EphemeralResponse(s, i, "Error", "That is not a valid command.")
-		cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
-
 	}
 }
