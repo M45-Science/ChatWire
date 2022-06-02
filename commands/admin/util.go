@@ -1,318 +1,162 @@
 package admin
 
 import (
+	"archive/tar"
+	"bytes"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/ulikunitz/xz"
+
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
-	"io/ioutil"
-	"strings"
+	"ChatWire/disc"
 )
 
-const (
-	TYPE_STRING = 0
-	TYPE_INT    = 1
-	TYPE_BOOL   = 2
-	TYPE_F32    = 3
-	TYPE_F64    = 4
-)
+func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-/* Used for set command */
-type SettingListData struct {
-	Name string
-	Desc string
-	Type int
+	disc.EphemeralResponse(s, i, "Status:", "Downloading Factorio server...")
+	resp, err := http.Get(constants.FactHeadlessURL)
 
-	SData   *string
-	IData   *int
-	BData   *bool
-	FData32 *float32
-	FData64 *float64
-
-	MaxInt int
-	MaxF32 float32
-	MaxF64 float64
-
-	MinInt int
-	MinF32 float32
-	MinF64 float64
-
-	DefInt  int
-	DefF32  float32
-	DefF64  float64
-	DefBool bool
-
-	ValidStrings []string
-	MaxStrLen    int
-	MinStrLen    int
-
-	CheckString       func(string) bool
-	ListString        func() []string
-	FactUpdateCommand string
-}
-
-/* List of datatypes for settings */
-var SettingType = []int{
-	TYPE_STRING,
-	TYPE_INT,
-	TYPE_BOOL,
-	TYPE_F32,
-	TYPE_F64,
-}
-
-/* List of settings */
-var SettingList = []SettingListData{
-	{
-		Name: "Name",
-		Desc: "Name",
-		Type: TYPE_STRING,
-
-		MaxStrLen: 64,
-		MinStrLen: 4,
-		SData:     &cfg.Local.Name,
-
-		FactUpdateCommand: "/cname",
-	},
-	{
-		Name: "Port",
-		Desc: "Port",
-		Type: TYPE_INT,
-
-		MaxInt: 65535 - cfg.Global.RconPortOffset,
-		MinInt: 1024,
-
-		IData: &cfg.Local.Port,
-	},
-	{
-		Name: "MapPreset",
-		Desc: "Map preset",
-		Type: TYPE_STRING,
-
-		MaxStrLen:    64,
-		MinStrLen:    4,
-		ValidStrings: constants.MapTypes,
-
-		SData: &cfg.Local.MapPreset,
-	},
-	{
-		Name: "MapGenPreset",
-		Desc: "Map generator",
-		Type: TYPE_STRING,
-
-		MinStrLen: 0,
-		MaxStrLen: 64,
-
-		CheckString: CheckMapGen,
-		ListString:  GetMapGenNames,
-
-		SData: &cfg.Local.MapGenPreset,
-	},
-	{
-		Name: "AutoStart",
-		Desc: "Start on boot",
-		Type: TYPE_BOOL,
-
-		DefBool: true,
-
-		BData: &cfg.Local.AutoStart,
-	},
-	{
-		Name: "AutoUpdate",
-		Desc: "Auto-update Factorio",
-		Type: TYPE_BOOL,
-
-		DefBool: true,
-
-		BData: &cfg.Local.AutoUpdate,
-	},
-	{
-		Name: "UpdateFactExp",
-		Desc: "Update Factorio to exp",
-		Type: TYPE_BOOL,
-
-		DefBool: false,
-
-		BData: &cfg.Local.UpdateFactExp,
-	},
-	{
-		Name: "ResetScheduleText",
-		Desc: "Map reset schedule",
-		Type: TYPE_STRING,
-
-		MinStrLen: 4,
-		MaxStrLen: 256,
-
-		SData:             &cfg.Local.ResetScheduleText,
-		FactUpdateCommand: "/resetint",
-	},
-	{
-		Name: "DisableBlueprints",
-		Desc: "Blueprints disabled",
-		Type: TYPE_BOOL,
-
-		DefBool: false,
-
-		BData:             &cfg.Local.SoftModOptions.DisableBlueprints,
-		FactUpdateCommand: "/blueprints",
-	},
-	{
-		Name: "EnableCheats",
-		Desc: "Cheats enabled",
-		Type: TYPE_BOOL,
-
-		DefBool: false,
-
-		BData:             &cfg.Local.SoftModOptions.EnableCheats,
-		FactUpdateCommand: "/cheats",
-	},
-	{
-		Name: "HideAutosaves",
-		Desc: "Hide autosaves(Discord)",
-		Type: TYPE_BOOL,
-
-		DefBool: false,
-
-		BData: &cfg.Local.HideAutosaves,
-	},
-	{
-		Name: "SlowConnect",
-		Desc: "Slow on connect",
-		Type: TYPE_BOOL,
-
-		DefBool: false,
-
-		BData: &cfg.Local.SlowConnect.SlowConnect,
-	},
-	{
-		Name: "DefaultSpeed",
-		Desc: "Speed while playing",
-		Type: TYPE_F32,
-
-		MaxF32: 10.0,
-		MinF32: 0.1,
-		DefF32: 1.0,
-
-		FData32: &cfg.Local.SlowConnect.DefaultSpeed,
-	},
-	{
-		Name: "ConnectSpeed",
-		Desc: "Speed while connecting",
-		Type: TYPE_F32,
-
-		MaxF32: 10.0,
-		MinF32: 0.1,
-		DefF32: 0.5,
-
-		FData32: &cfg.Local.SlowConnect.ConnectSpeed,
-	},
-	{
-		Name: "DoWhitelist",
-		Desc: "Members-only",
-		Type: TYPE_BOOL,
-
-		DefBool: false,
-
-		BData: &cfg.Local.DoWhitelist,
-	},
-	{
-		Name: "RestrictMode",
-		Desc: "New player restrictions",
-		Type: TYPE_BOOL,
-
-		BData: &cfg.Local.SoftModOptions.RestrictMode,
-
-		DefBool: false,
-
-		FactUpdateCommand: "/restrict",
-	},
-	{
-		Name: "FriendlyFire",
-		Desc: "Friendly fire",
-		Type: TYPE_BOOL,
-
-		BData: &cfg.Local.SoftModOptions.FriendlyFire,
-
-		DefBool: false,
-
-		FactUpdateCommand: "/friendlyfire",
-	},
-	{
-		Name: "AFKKickMinutes",
-		Desc: "AFK kick minutes",
-		Type: TYPE_INT,
-
-		MaxInt: 120,
-		MinInt: 5,
-		DefInt: 15,
-
-		IData: &cfg.Local.FactorioData.AFKKickMinutes,
-	},
-	{
-		Name: "AutoSaveMinutes",
-		Desc: "Autosave minutes",
-		Type: TYPE_INT,
-
-		MaxInt: 30,
-		MinInt: 5,
-		DefInt: 10,
-
-		IData: &cfg.Local.FactorioData.AutoSaveMinutes,
-	},
-	{
-		Name:    "AutoPause",
-		Desc:    "Pause when empty",
-		Type:    TYPE_BOOL,
-		DefBool: true,
-
-		BData: &cfg.Local.FactorioData.AutoPause,
-	},
-	{
-		Name:    "AutoModUpdate",
-		Desc:    "Auto-update game mods",
-		Type:    TYPE_BOOL,
-		DefBool: true,
-
-		BData: &cfg.Local.AutoModUpdate,
-	},
-	{
-		Name:    "CleanMapOnBoot",
-		Desc:    "Run CleanMap mod on boot",
-		Type:    TYPE_BOOL,
-		DefBool: false,
-
-		BData: &cfg.Local.SoftModOptions.CleanMapOnBoot,
-	},
-}
-
-/* Get list of map generation presets, because an invalid one will make map generation fail */
-func GetMapGenNames() []string {
-	path := cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.MapGenPath
-	files, err := ioutil.ReadDir(path)
 	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to download Factorio server."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(s, i, &f)
+
 		cwlog.DoLogCW(err.Error())
-		return nil
+		return
+	}
+	defer resp.Body.Close()
+
+	gzdata, err := io.ReadAll(resp.Body)
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to read the http response."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(s, i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
 	}
 
-	var output []string
+	var elist []*discordgo.MessageEmbed
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Status:", Description: "Downloaded, decompressing..."})
+	f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+	disc.FollowupResponse(s, i, &f)
 
-	for _, f := range files {
-		if strings.HasSuffix(f.Name(), "-gen.json") {
-			output = append(output, strings.TrimSuffix(f.Name(), "-gen.json"))
-		}
+	data, err := unXZData(gzdata)
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "The gzip data appears to be invalid."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(s, i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
 	}
-	return output
+
+	dest := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix + cfg.Local.Callsign + "/"
+
+	err = untar(dest, data)
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to open tar archive."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(s, i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
+	}
+
+	if err == nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(s, i, &f)
+		return
+	} else {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Installing Factorio failed."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(s, i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
+	}
+
 }
 
-/* See if this map gen exists */
-func CheckMapGen(text string) bool {
-
-	if text == "" {
-		return true
+func unXZData(data []byte) ([]byte, error) {
+	r, err := xz.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
 	}
-	genNames := GetMapGenNames()
-	for _, name := range genNames {
-		if strings.EqualFold(name, text) {
-			return true
+	return ioutil.ReadAll(r)
+}
+
+func untar(dst string, data []byte) error {
+
+	tr := tar.NewReader(bytes.NewReader(data))
+
+	for {
+		header, err := tr.Next()
+
+		switch {
+
+		// if no more files are found return
+		case err == io.EOF:
+			return nil
+
+		// return any other error
+		case err != nil:
+			return err
+
+		// if the header is nil, just skip it (not sure how this happens)
+		case header == nil:
+			continue
+		}
+
+		// the target location where the dir/file should be created
+		target := filepath.Join(dst, header.Name)
+
+		// the following switch could also be done using fi.Mode(), not sure if there
+		// a benefit of using one vs. the other.
+		// fi := header.FileInfo()
+
+		// check the file type
+		switch header.Typeflag {
+
+		// if its a dir and it doesn't exist create it
+		case tar.TypeDir:
+			if _, err := os.Stat(target); err != nil {
+				if err := os.MkdirAll(target, 0755); err != nil {
+					return err
+				}
+			}
+
+		// if it's a file create it
+		case tar.TypeReg:
+			_ = os.MkdirAll(filepath.Dir(target), 0770)
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+
+			// copy over contents
+			if _, err := io.Copy(f, tr); err != nil {
+				return err
+			}
+
+			// manually close here after each file operation; defering would cause each file close
+			// to wait until all operations have completed.
+			f.Close()
 		}
 	}
-	return false
 }

@@ -1,13 +1,20 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
+	"log"
+	_ "net/http/pprof"
 	"os"
+	"os/signal"
 	"regexp"
+	"runtime/pprof"
 	"strings"
+	"syscall"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
@@ -19,78 +26,33 @@ import (
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"ChatWire/support"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 func main() {
-	/* Randomize starting color */
-	var src = rand.NewSource(time.Now().UnixNano())
-	var r = rand.New(src)
-	glob.LastColor = r.Intn(constants.NumColors - 1)
+	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register discord commands")
+	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
+	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
+	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 
-	/* Set up rewind cooldown */
-	now := time.Now()
-	then := now.Add(time.Duration(-constants.RewindCooldownMinutes+1) * time.Minute)
-	glob.VoteBox.LastRewindTime = then.Round(time.Second)
+	flag.Parse()
 
-	/* Create our maps */
-	playlist := make(map[string]*glob.PlayerData)
-	passlist := make(map[string]*glob.PassData)
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+	}
 
-	glob.ChatterList = make(map[string]time.Time)
-	glob.ChatterSpamScore = make(map[string]int)
-
-	/* Assign to globals */
-	glob.PlayerList = playlist
-	glob.PassList = passlist
-
-	/* Blank game time */
-	fact.SetGameTime(constants.Unknown)
 	/* Mark uptime start */
 	glob.Uptime = time.Now().Round(time.Second)
 
-	/* Read global and local configs, then write them back if they read correctly. */
-	if cfg.ReadGCfg() {
-		cfg.WriteGCfg()
-	} else {
-		time.Sleep(constants.ErrorDelayShutdown * time.Second)
-		return
-	}
-	if cfg.ReadLCfg() {
-		cfg.WriteLCfg()
-	} else {
-		time.Sleep(constants.ErrorDelayShutdown * time.Second)
-		return
-	}
-
-	/* Start logs */
+	/* Start cw logs */
 	cwlog.StartCWLog()
-	cwlog.StartGameLog()
-	cwlog.DoLogCW("Version: " + constants.Version)
+	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
-	/* Read in cached discord role data */
-	disc.ReadRoleList()
-	banlist.ReadBanFile()
-
-	/* Set autostart mode from config */
-	if cfg.Local.AutoStart {
-		fact.SetAutoStart(true)
-	}
-
-	/* Start Discord bot, don't wait for it.
-	 * We want Factorio online even if Discord is down. */
-	go startbot()
-	/* Loop to read Factorio stdout, runs in a goroutine */
-	support.Chat()
-
-	/* Load player database and max-online records */
-	fact.LoadPlayers()
-	fact.LoadRecord()
-
-	/* Load old votes */
-	fact.ReadRewindVotes()
-
+	/* Handle lock file */
 	bstr, err := ioutil.ReadFile("cw.lock")
 	if err == nil {
 		lastTimeStr := strings.TrimSpace(string(bstr))
@@ -106,28 +68,19 @@ func main() {
 
 				cwlog.DoLogCW(msg)
 				go func(msg string) {
-					for disc.DS == nil {
-						time.Sleep(time.Millisecond * 100)
+					for i := 0; i < constants.RestartLimitSleepMinutes*60*10 && glob.ServerRunning; i++ {
+						if disc.DS == nil {
+							time.Sleep(time.Millisecond * 100)
+						}
 					}
-					disc.SmartWriteDiscord(cfg.Local.ChannelData.ChatID, msg)
+					disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
 				}(msg)
 
-				_ = os.Remove("cw.lock")
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
+				_ = os.Remove("cw.lock")
 				cwlog.DoLogCW("Sleep done, exiting.")
 				return
 			}
-		}
-	}
-
-	/* If lockfile found, we are already running or crashed */
-	if err := os.Remove("cw.lock"); err == nil {
-		//return
-		/* Proceed anyway, process is managed by systemd */
-	} else {
-		if !os.IsNotExist(err) {
-			cwlog.DoLogCW("Unable to delete old lockfile, exiting.")
-			return
 		}
 	}
 
@@ -140,155 +93,271 @@ func main() {
 	}
 	lfile.Close()
 	buf := fmt.Sprintf("%v\n", time.Now().Round(time.Second).Format(time.RFC3339Nano))
-	ioutil.WriteFile("cw.lock", []byte(buf), 0644)
+	err = ioutil.WriteFile("cw.lock", []byte(buf), 0644)
+	if err != nil {
+		cwlog.DoLogCW("Couldn't write lock file!!!")
+		return
+		/* Okay, somthing is probably wrong */
+	}
 
-	/* All threads/loops in here.
-	 * If autostart is enabled, we will boot Factorio. */
-	support.MainLoops()
+	/* Create our maps */
+	glob.AlphaValue = make(map[string]int)
+	glob.ChatterList = make(map[string]time.Time)
+	glob.ChatterSpamScore = make(map[string]int)
+	glob.PlayerList = make(map[string]*glob.PlayerData)
+	glob.PassList = make(map[string]*glob.PassData)
+	glob.PlayerSus = make(map[string]int)
+
+	pos := 10000
+	for i := 'a'; i <= 'z'; i++ {
+		glob.AlphaValue[string(i)] = pos
+		pos++
+	}
+
+	for i := 'a'; i <= 'z'; i++ {
+		for j := 'a'; j <= 'z'; j++ {
+			glob.AlphaValue[string(i)+string(j)] = pos
+			pos++
+		}
+	}
+
+	/* Set up vote cooldown */
+	now := time.Now()
+	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
+	glob.VoteBox.LastMapChange = then.Round(time.Second)
+
+	/* Blank game time */
+	fact.Gametime = (constants.Unknown)
+
+	/* Read global and local configs, then write them back if they read correctly. */
+	if cfg.ReadGCfg() {
+		cfg.WriteGCfg()
+	} else {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+		return
+	}
+	if cfg.ReadLCfg() {
+		cfg.WriteLCfg()
+	} else {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+		return
+	}
+
+	/* Setup cron */
+	fact.SetupSchedule()
+
+	/* Read in player list */
+	fact.LoadPlayers()
+
+	/* Read in cached discord role data */
+	disc.ReadRoleList()
+	banlist.ReadBanFile()
+
+	/* Load old votes */
+	fact.ReadVotes()
+
+	/* Start game log */
+	cwlog.StartGameLog()
+
+	/* Main loop */
+	go support.MainLoops()
+
+	/* Loop to read Factorio stdout, runs in a goroutine */
+	go support.HandleChat()
+
+	/* Start Discord bot, don't wait for it.
+	 * We want Factorio online even if Discord is down. */
+	go startbot()
+
+	if cfg.Local.Options.AutoStart {
+		fact.FactAutoStart = true
+	}
+
+	/* Wait here for process signals */
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
+
+	//Bypass for faster shutdown
+	commands.ClearCommands()
+
+	_ = os.Remove("cw.lock")
+	fact.FactAutoStart = false
+	glob.DoRebootCW = false
+	fact.QueueReload = false
+	fact.QuitFactorio("Server quitting...")
+	fact.WaitFactQuit()
+	pprof.StopCPUProfile()
+	fact.DoExit(false)
 }
+
+var DiscordConnectAttempts int
 
 func startbot() {
 
-	cwlog.DoLogCW("Starting bot...")
+	if cfg.Global.Discord.Token == "" {
+		cwlog.DoLogCW("Discord token not set, not starting.")
+		return
+	}
 
-	bot, erra := discordgo.New("Bot " + cfg.Global.DiscordData.Token)
+	cwlog.DoLogCW("Starting Discord bot...")
+	bot, erra := discordgo.New("Bot " + cfg.Global.Discord.Token)
 
 	if erra != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %s", erra))
-		time.Sleep(time.Minute * 2)
-		startbot()
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", erra))
+		time.Sleep(time.Minute * (5 * constants.MaxDiscordAttempts))
+		DiscordConnectAttempts++
+
+		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
+			startbot()
+		}
 		return
 	}
 
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
+	bot.AddHandler(BotReady)
 	errb := bot.Open()
 
 	if errb != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to connect to Discord. Details: %s", errb))
-		time.Sleep(time.Minute * 2)
-		startbot()
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", errb))
+		time.Sleep(time.Minute * (5 * constants.MaxDiscordAttempts))
+		DiscordConnectAttempts++
+
+		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
+			startbot()
+		}
 		return
 	}
 
-	if bot != nil && erra == nil && errb == nil {
-		/* Save Discord descriptor here */
-		disc.DS = bot
-	}
-
 	bot.LogLevel = discordgo.LogWarning
+}
 
-	commands.RegisterCommands()
-	bot.AddHandler(MessageCreate)
-	botstatus := fmt.Sprintf("%vhelp", cfg.Global.DiscordCommandPrefix)
-	errc := bot.UpdateGameStatus(0, botstatus)
+func BotReady(s *discordgo.Session, r *discordgo.Ready) {
+
+	botstatus := cfg.Global.Paths.URLs.Domain
+	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
 	}
 
-	bstring := "Loading: CW *v" + constants.Version + "*"
-	cwlog.DoLogCW(bstring)
-	//fact.CMS(cfg.Local.ChannelData.ChatID, bstring)
-	fact.UpdateChannelName()
+	go commands.RegisterCommands(s)
+	s.AddHandler(MessageCreate)
+	s.AddHandler(commands.SlashCommand)
+
+	if s != nil {
+		/* Save Discord descriptor here */
+		disc.DS = s
+	}
+
+	fact.DoUpdateChannelName()
+
+	cwlog.DoLogCW("Discord bot ready.")
+
+	if cfg.Local.Channel.ChatChannel == "" {
+		cwlog.DoLogCW("No chat channel set, attempting to creating one.")
+		chname := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
+		channelid, err := s.GuildChannelCreate(cfg.Global.Discord.Guild, chname, discordgo.ChannelTypeGuildText)
+		if err != nil {
+			cwlog.DoLogCW(fmt.Sprintf("Couldn't create chat channel: %v", err))
+			return
+		} else if channelid != nil {
+			cwlog.DoLogCW("Created chat channel.")
+			cfg.Local.Channel.ChatChannel = channelid.ID
+			cfg.WriteLCfg()
+		}
+		return
+	}
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	if m.Author.ID == s.State.User.ID || m.Author.Bot {
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	/* Protect players from dumb mistakes with registration codes, even on other maps */
+	if support.ProtectIdiots(m.Content) {
+		/* If they manage to post it into chat in Factorio on a different server,
+		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
+		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
+		_, err := disc.DS.ChannelMessageSend(m.ChannelID, buf)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
+	}
+
+	if m.Author.Bot {
 		return
 	}
 
 	/* Command handling
 	 * Factorio channel ONLY */
-	if m.ChannelID == cfg.Local.ChannelData.ChatID && m.ChannelID != "" {
+	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
-		cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
-
-		if strings.HasPrefix(ctext, cfg.Global.DiscordCommandPrefix) {
-			empty := []string{}
-
-			slen := len(ctext)
-
-			if slen > 1 {
-
-				args := strings.Split(ctext, " ")
-				arglen := len(args)
-
-				if arglen > 0 {
-					name := strings.ToLower(args[0])
-					if arglen > 1 {
-						commands.RunCommand(name[1:], s, m, args[1:arglen])
-					} else {
-						commands.RunCommand(name[1:], s, m, empty)
-					}
-				}
-			}
-			return
-		}
 
 		/* Chat message handling
 		 *  Don't bother if Factorio isn't running... */
-		if fact.IsFactorioBooted() {
-			/* block mee6 commands */
-			if !strings.HasPrefix(ctext, "!") {
+		if fact.FactorioBooted && fact.FactIsRunning {
+			cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
-				alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
+			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
-				cmess := sclean.StripControlAndSubSpecial(ctext)
-				cmess = sclean.RemoveDiscordMarkdown(cmess)
-				dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
-				nbuf := ""
+			cmess := sclean.StripControlAndSubSpecial(ctext)
+			cmess = sclean.RemoveDiscordMarkdown(cmess)
+			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
+			nbuf := ""
 
-				/* Name to lowercase */
-				dnamelower := strings.ToLower(dname)
-				fnamelower := strings.ToLower(m.Author.Username)
+			/* Name to lowercase */
+			dnamelower := strings.ToLower(dname)
+			fnamelower := strings.ToLower(m.Author.Username)
 
-				/* Reduce names to letters only */
-				dnamereduced := alphafilter.ReplaceAllString(dnamelower, "")
-				fnamereduced := alphafilter.ReplaceAllString(fnamelower, "")
+			/* Reduce names to letters only */
+			dnamereduced := alphafilter.ReplaceAllString(dnamelower, "")
+			fnamereduced := alphafilter.ReplaceAllString(fnamelower, "")
 
-				go func(factname string) {
-					fact.UpdateSeen(factname)
-				}(dname)
+			go func(factname string) {
+				fact.UpdateSeen(factname)
+			}(dname)
 
-				/* Filter names... */
-				corduser := sclean.StripControlAndSubSpecial(m.Author.Username)
-				cordnick := sclean.StripControlAndSubSpecial(m.Member.Nick)
-				factuser := sclean.StripControlAndSubSpecial(dname)
+			/* Filter names... */
+			corduser := sclean.StripControlAndSubSpecial(m.Author.Username)
+			cordnick := sclean.StripControlAndSubSpecial(m.Member.Nick)
+			factuser := sclean.StripControlAndSubSpecial(dname)
 
-				corduserlen := len(corduser)
-				cordnicklen := len(cordnick)
+			corduserlen := len(corduser)
+			cordnicklen := len(cordnick)
 
-				cordname := corduser
+			cordname := corduser
 
-				/* On short names, try nickname... if not add number, if no name... discordID */
-				if corduserlen < 5 {
-					if cordnicklen >= 4 && cordnicklen < 18 {
-						cordname = cordnick
-					}
-					cordnamelen := len(cordname)
-					if cordnamelen > 0 {
-						cordname = fmt.Sprintf("%s#%s", fnamereduced, m.Author.Discriminator)
-					} else {
-						cordname = fmt.Sprintf("ID#%s", m.Author.ID)
-					}
+			/* On short names, try nickname... if not add number, if no name... discordID */
+			if corduserlen < 5 {
+				if cordnicklen >= 4 && cordnicklen < 18 {
+					cordname = cordnick
 				}
-
-				/* Cap name length */
-				cordname = sclean.TruncateString(cordname, 64)
-				factuser = sclean.TruncateString(factuser, 64)
-
-				/* Check if Discord name contains Factorio name, if not lets show both their names */
-				if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
-
-					nbuf = fmt.Sprintf("/cchat [color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordname, factuser, cmess)
+				cordnamelen := len(cordname)
+				if cordnamelen > 0 {
+					cordname = fmt.Sprintf("%s#%s", fnamereduced, m.Author.Discriminator)
 				} else {
-					nbuf = fmt.Sprintf("/cchat [color=0,0.5,1][Discord] @%s:[/color] %s", cordname, cmess)
+					cordname = fmt.Sprintf("ID#%s", m.Author.ID)
 				}
-
-				fact.WriteFact(nbuf)
 			}
+
+			/* Cap name length */
+			cordname = sclean.TruncateString(cordname, 64)
+			factuser = sclean.TruncateString(factuser, 64)
+
+			/* Check if Discord name contains Factorio name, if not lets show both their names */
+			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
+
+				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordname, factuser, cmess)
+			} else {
+				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordname, cmess)
+			}
+
+			fact.FactChat(nbuf)
+
 		}
 	}
 }

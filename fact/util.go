@@ -14,25 +14,59 @@ import (
 	"ChatWire/sclean"
 )
 
-/* Prgram shutdown */
+func FactChat(input string) {
+
+	if glob.SoftModVersion != constants.Unknown {
+		WriteFact("/cchat " + input)
+	} else {
+		input = sclean.StripControlAndSubSpecial(input)
+		input = sclean.RemoveFactorioTags(input)
+		input = sclean.RemoveDiscordMarkdown(input)
+		input = strings.TrimLeft(input, " ")
+		input = strings.TrimLeft(input, "/")
+		WriteFact(input)
+	}
+}
+
+func WaitFactQuit() {
+	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && glob.ServerRunning; x++ {
+		time.Sleep(time.Millisecond * 100)
+	}
+
+}
+
+func MakeSteamURL() (string, bool) {
+	if cfg.Global.Paths.URLs.Domain != "localhost" {
+		buf := fmt.Sprintf("steam://run/427520//--mp-connect%%20%v:%v/", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)
+		return buf, true
+	} else {
+		return "(not configured)", false
+	}
+}
+
+/* Program shutdown */
 func DoExit(delay bool) {
 
-	/* Show stats */
-	tnow := time.Now()
-	tnow = tnow.Round(time.Second)
-	mm := GetManMinutes()
-	cwlog.DoLogCW(fmt.Sprintf("Stats: Man-hours: %.4f, Activity index: %.4f, Uptime: %v", float64(mm)/60.0, float64(mm)/tnow.Sub(glob.Uptime.Round(time.Second)).Minutes(), tnow.Sub(glob.Uptime.Round(time.Second)).String()))
+	if CronVar != nil {
+		CronVar.Stop()
+	}
+
+	//Wait a few seconds for CMS to finish
+	for i := 0; i < 15; i++ {
+		if len(disc.CMSBuffer) > 0 {
+			time.Sleep(time.Second)
+		}
+	}
 
 	/* This kills all loops! */
 	glob.ServerRunning = false
 
-	cwlog.DoLogCW("CW closing, load/save db, and waiting for locks...")
+	cwlog.DoLogCW("CW closing, load/save db.")
 	LoadPlayers()
 	WritePlayers()
 
 	/* File locks */
 	glob.PlayerListWriteLock.Lock()
-	glob.RecordPlayersWriteLock.Lock()
 
 	cwlog.DoLogCW("Closing log files.")
 	glob.GameLogDesc.Close()
@@ -41,13 +75,13 @@ func DoExit(delay bool) {
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */
 
-	if disc.DS != nil {
-		disc.DS.Close()
-	}
-
 	fmt.Println("Goodbye.")
 	if delay {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+	}
+
+	if disc.DS != nil {
+		disc.DS.Close()
 	}
 	os.Exit(1)
 }
@@ -68,12 +102,16 @@ func AddFactColor(color string, text string) string {
 /* Generate full path to Factorio binary */
 func GetFactorioBinary() string {
 	bloc := ""
-	if strings.HasPrefix(cfg.Global.PathData.FactorioBinary, "/") {
+	if strings.HasPrefix(cfg.Global.Paths.Binaries.FactBinary, "/") {
 		/* Absolute path */
-		bloc = cfg.Global.PathData.FactorioBinary
+		bloc = cfg.Global.Paths.Binaries.FactBinary
 	} else {
 		/* Relative path */
-		bloc = cfg.Global.PathData.FactorioServersRoot + cfg.Global.PathData.FactorioHomePrefix + cfg.Local.ServerCallsign + "/" + cfg.Global.PathData.FactorioBinary
+		bloc = cfg.Global.Paths.Folders.ServersRoot +
+			cfg.Global.Paths.ChatWirePrefix +
+			cfg.Local.Callsign + "/" +
+			cfg.Global.Paths.Folders.FactorioDir + "/" +
+			cfg.Global.Paths.Binaries.FactBinary
 	}
 	return bloc
 }

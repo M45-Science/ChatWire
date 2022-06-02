@@ -1,10 +1,22 @@
 package glob
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"math"
 	"os"
 	"sync"
 	"time"
+
+	"ChatWire/constants"
 )
+
+func Ptr[T any](v T) *T {
+	return &v
+}
+
+/* Most of these are here, because go is unable to handle import cycles */
+/* I wish they would address this issue, because many people avoid packages due to this */
 
 /* Player database */
 type PlayerData struct {
@@ -22,27 +34,27 @@ type PassData struct {
 	Time   int64
 }
 
-/* Rewind Votes Container */
-type RewindVoteContainerData struct {
+/* Votes Container */
+type VoteContainerData struct {
 	Version string
-	Votes   []RewindVoteData
+	Votes   []MapVoteData
 
 	/* Temporary storage for tallying votes */
-	Tally          []VoteTallyData `json:"-"`
-	LastRewindTime time.Time       `json:"-"`
-	NumRewind      int
+	Tally         []VoteTallyData `json:"-"`
+	LastMapChange time.Time       `json:"-"`
+	NumChanges    int
 
 	Dirty bool `json:"-"`
 }
 
-/* Rewind Votes */
-type RewindVoteData struct {
+/* Votes */
+type MapVoteData struct {
 	Name       string
 	DiscID     string
 	TotalVotes int
 
-	AutosaveNum int
-	NumChanges  int
+	Selection  string
+	NumChanges int
 
 	Time    time.Time
 	Voided  bool
@@ -51,18 +63,38 @@ type RewindVoteData struct {
 
 /* Temporary storage for tallying votes */
 type VoteTallyData struct {
-	Autosave int
-	Count    int
+	Selection string
+	Count     int
+}
+
+/* From softmod /online command */
+type OnlinePlayerData struct {
+	Name       string
+	ScoreTicks int
+	TimeTicks  int
+	Level      int
 }
 
 var (
-	/* Vote Rewind */
-	VoteBox     RewindVoteContainerData
+	NoAutoLaunch  *bool
+	AlphaValue    map[string]int
+	RCONPass      string
+	OnlineCommand = constants.OnlineCommand
+	OnlinePlayers []OnlinePlayerData
+
+	/* Boot flags */
+	DoRegisterCommands   *bool
+	DoDeregisterCommands *bool
+	LocalTestMode        *bool
+
+	/* Vote map */
+	VoteBox     VoteContainerData
 	VoteBoxLock sync.Mutex
 
 	/* Server status */
-	ServerRunning bool = true
-	Uptime        time.Time
+	ServerRunning  bool = true
+	Uptime         time.Time
+	SoftModVersion = constants.Unknown
 
 	/* Log data */
 	GameLogName = ""
@@ -71,12 +103,10 @@ var (
 	CWLogDesc   *os.File
 
 	/* CW reboot */
-	DoRebootCW     = false
-	DoRebootCWLock sync.RWMutex
+	DoRebootCW = false
 
 	/* Increasing relaunch delay */
-	RelaunchThrottle     = 0
-	RelaunchThrottleLock sync.RWMutex
+	RelaunchThrottle = 0
 
 	/* Player database */
 	PlayerList          map[string]*PlayerData
@@ -87,10 +117,6 @@ var (
 	PassList         map[string]*PassData
 	PasswordListLock sync.RWMutex
 
-	/* Login count */
-	NumLogins     = 0
-	NumLoginsLock sync.RWMutex
-
 	/* Player database status */
 	PlayerListUpdated       = false
 	PlayerListUpdatedLock   sync.Mutex
@@ -99,28 +125,12 @@ var (
 	PlayerListSeenDirty     = false
 	PlayerListSeenDirtyLock sync.Mutex
 
-	/* Max players online record */
-	RecordPlayers          = 0
-	RecordPlayersWriteLock sync.Mutex
-	RecordPlayersLock      sync.RWMutex
-
 	/* Factorio server watchdog */
-	NoResponseCount     = 0
-	NoResponseCountLock sync.RWMutex
-
-	/* Random color */
-	LastColor = 0
-
-	/* Member-count status */
-	LastRegularStat = ""
-	LastMemberStat  = ""
-	LastBanStat     = ""
-	LastTotalStat   = ""
+	NoResponseCount = 0
 
 	/* Update warning */
-	UpdateWarnCounterLock sync.Mutex
-	UpdateWarnCounter     = 0
-	UpdateGraceMinutes    = 10
+	UpdateWarnCounter  = 0
+	UpdateGraceMinutes = 15
 
 	ChatterLock      sync.Mutex
 	ChatterList      map[string]time.Time
@@ -130,3 +140,13 @@ var (
 	PlayerSus      map[string]int
 	LastSusWarning time.Time
 )
+
+/* Used for map names */
+func RandomBase64String(l int) string {
+	buff := make([]byte, int(math.Ceil(float64(l)/float64(1.33333333333))))
+	_, _ = rand.Read(buff)
+
+	str := base64.RawURLEncoding.EncodeToString(buff)
+	/* strip 1 extra character we get from odd length results */
+	return str[:l]
+}

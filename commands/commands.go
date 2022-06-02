@@ -2,201 +2,624 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"strings"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
 	"ChatWire/commands/admin"
+	"ChatWire/commands/moderator"
 	"ChatWire/commands/user"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
-
-	"github.com/bwmarrin/discordgo"
+	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
-/*  Commands is a struct containing a slice of Command. */
-type Commands struct {
-	CommandList []Command
-}
-
-/*  Command is a struct containing fields that hold command information. */
 type Command struct {
-	Name          string
-	Command       func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
+	Command       func(s *discordgo.Session, i *discordgo.InteractionCreate)
+	AppCmd        *discordgo.ApplicationCommand
 	ModeratorOnly bool
-	Help          string
-	XHelp         string
+	AdminOnly     bool
+
+	PrimaryOnly bool
 }
 
-var CL Commands
+var CL []Command
+var BugOne float64 = 1
+
+var cmds = []Command{
+
+	/* Admin Commands */
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "chatwire",
+		Description: "Actions specific to ChatWire.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "action",
+				Description: "do not use these unless you are certain of what you are doing",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "reboot",
+						Value: "reboot",
+					},
+					{
+						Name:  "queue-reboot",
+						Value: "queue-reboot",
+					},
+					{
+						Name:  "force-reboot",
+						Value: "force-reboot",
+					},
+					{
+						Name:  "reload-config",
+						Value: "reload-config",
+					},
+				},
+			},
+		},
+	},
+		Command: admin.ChatWire, AdminOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "map-schedule",
+		Description: "Set a map reset schedule.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "preset",
+				Description: "How often to reset the map, based on a preset.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "three-months",
+						Value: "three months",
+					},
+					{
+						Name:  "two-months",
+						Value: "two-months",
+					},
+					{
+						Name:  "monthly",
+						Value: "monthly",
+					},
+					{
+						Name:  "twice-monthly",
+						Value: "twice-monthly",
+					},
+					{
+						Name:  "fridays",
+						Value: "fridays",
+					},
+					{
+						Name:  "odd-dates",
+						Value: "odd-dates",
+					},
+					{
+						Name:  "daily",
+						Value: "daily",
+					},
+					{
+						Name:  "no-reset",
+						Value: "no-reset",
+					},
+				},
+			},
+		},
+	},
+		Command: admin.SetSchedule, AdminOnly: true},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "factorio",
+		Description: "Actions specific to Factorio.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "action",
+				Description: "do not use these unless you are certain of what you are doing",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "start",
+						Value: "start",
+					},
+					{
+						Name:  "stop",
+						Value: "stop",
+					},
+					{
+						Name:  "new-map-preview",
+						Value: "new-map-preview",
+					},
+					{
+						Name:  "new-map",
+						Value: "new-map",
+					},
+					{
+						Name:  "update-factorio",
+						Value: "update-factorio",
+					},
+					{
+						Name:  "update-mods",
+						Value: "update-mods",
+					},
+					{
+						Name:  "archive-map",
+						Value: "archive-map",
+					},
+					{
+						Name:  "install-factorio",
+						Value: "install-factorio",
+					},
+				},
+			},
+		},
+	},
+		Command: admin.Factorio, AdminOnly: true},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "config-global",
+		Description: "Global server settings and options.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
+	/* MODERATOR COMMANDS ---------------- */
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "rcon",
+		Description: "remote console (remotely run a factorio command)",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "command",
+				Description: "factorio command to run",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+		},
+	},
+		Command: moderator.RCONCmd, ModeratorOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "map-reset",
+		Description: "automated map reset, will kick players out of game.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: moderator.MapReset, ModeratorOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "config-server",
+		Description: "Server settings and options.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: moderator.ConfigServer, ModeratorOnly: true},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "player-level",
+		Description: "Sets a player's rank.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "name",
+				Description: "Factorio name of target player",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+			{
+				Name:        "level",
+				Description: "player level",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Moderator",
+						Value: 255,
+					},
+					{
+						Name:  "Regular",
+						Value: 2,
+					},
+					{
+						Name:  "Member",
+						Value: 1,
+					},
+					{
+						Name:  "New",
+						Value: 0,
+					},
+					{
+						Name:  "Banned",
+						Value: -1,
+					},
+					{
+						Name:  "Deleted",
+						Value: -255,
+					},
+				},
+			},
+		},
+	},
+		Command: moderator.PlayerLevel, ModeratorOnly: true},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "change-map",
+		Description: "Load a specific saved map.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: moderator.ChangeMap, ModeratorOnly: true},
+
+	/* PLAYER COMMMANDS -------------------- */
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "info",
+		Description: "displays status and settings of the server.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "options",
+				Description: "verbose shows all info, instead of just relevant info. debug is for dev use only.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "verbose",
+						Value: "verbose",
+					},
+					{
+						Name:  "debug",
+						Value: "debug",
+					},
+				},
+			},
+		},
+	},
+		Command: user.Info},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "players",
+		Description: "Shows detailed info about players currently online.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.Players},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "vote-map",
+		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "moderator",
+				Description: "moderator only options",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "erase-all",
+						Value: "erase-all",
+					},
+					{
+						Name:  "void-all",
+						Value: "void-all",
+					},
+					{
+						Name:  "show-all",
+						Value: "show-all",
+					},
+				},
+			},
+		},
+	},
+		Command: user.VoteMap},
+
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "register",
+		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.Register, PrimaryOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "whois",
+		Description: "Shows information about <search>",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "search",
+				Description: "Factorio/Discord name, or any partial match.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+		},
+	},
+		Command: user.Whois, PrimaryOnly: true},
+}
+
+func ClearCommands() {
+	if *glob.DoDeregisterCommands && disc.DS != nil {
+		cmds, _ := disc.DS.ApplicationCommands(cfg.Global.Discord.Application, cfg.Global.Discord.Guild)
+		for _, v := range cmds {
+			cwlog.DoLogCW(fmt.Sprintf("Deregistered command: %s", v.Name))
+			err := disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.ID)
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+
+			time.Sleep(constants.ApplicationCommandSleep)
+		}
+	}
+}
+
+//https://discord.com/developers/docs/topics/permissions
+
+var adminPerms int64 = (1 << 3)   //Administrator
+var modPerms int64 = (1 << 28)    //MANAGE_ROLES
+var playerPerms int64 = (1 << 11) //SEND_MESSAGES
 
 /*  RegisterCommands registers the commands on start up. */
-func RegisterCommands() {
-	/*  Admin Commands */
-	CL.CommandList = append(CL.CommandList, Command{Name: "Stop", Command: admin.StopServer, ModeratorOnly: true,
-		Help:  "Stop Factorio",
-		XHelp: "This saves and closes Factorio only."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Start", Command: admin.Restart, ModeratorOnly: true,
-		Help:  "Restart Factorio",
-		XHelp: "Starts or restarts Factorio only."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "RebootCW", Command: admin.Reload, ModeratorOnly: true,
-		Help:  "Reboot everything",
-		XHelp: "Save and close Factorio, and reboot ChatWire."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "ForceRebootCW", Command: admin.Reboot, ModeratorOnly: true,
-		Help:  "Don't use",
-		XHelp: "Yeah, this does not cleanly exit, don't use this.\nConsider this the `big red button` that says `do not press`."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Queue", Command: admin.Queue, ModeratorOnly: true,
-		Help:  "Queue reboot ",
-		XHelp: "Queue a reboot of Factorio and ChatWire.\nRuns once player count is 0."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Save", Command: admin.SaveServer, ModeratorOnly: true,
-		Help:  "Force map save",
-		XHelp: "This tells Factorio to save the map, thats it..."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Archive", Command: admin.ArchiveMap, ModeratorOnly: true,
-		Help:  "Archive current map",
-		XHelp: "This takes the current map (if known) and archives it to our website. It also sends the download link to Discord."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "RandomMap", Command: admin.RandomMap, ModeratorOnly: true,
-		Help:  "Previews a new random map",
-		XHelp: "If Factorio is shut down, this will generate a preview for a new random map each time. It does not generate the map, use MakeMap to generate the map seen in the last preview."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "MakeMap", Command: admin.Generate, ModeratorOnly: true,
-		Help:  "Generates a new map",
-		XHelp: "If Factorio is shut down, this generates the random map from the last preview (otherwise a new random map)."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "NewMap", Command: admin.NewMap, ModeratorOnly: true,
-		Help:  "Map reset",
-		XHelp: "Stops Factorio, archives the current map and generates a new one with the current preset."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "UpdateFact", Command: admin.Update, ModeratorOnly: true,
-		Help:  "Update Factorio/Cancel",
-		XHelp: "Checks if there is there is an update available for Factorio and update if there is. You can: update `CANCEL` to cancel an update."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "PSet", Command: admin.SetPlayerLevel, ModeratorOnly: true,
-		Help:  "pset <player> <level>",
-		XHelp: "`pset <player> <level>`\nSets the <player> (case sensitive) to <level>\nLevels: `Admin, Regular, Member and New`. Also `Banned` and `Deleted`."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "RCfg", Command: admin.ReloadConfig, ModeratorOnly: true,
-		Help:  "Reload configs",
-		XHelp: "This reloads the server config files from disk.\nDon't use this, this is only for reloading manually edited config files."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Set", Command: admin.Set, ModeratorOnly: true,
-		Help:  "Set options",
-		XHelp: "This allows most options to be set.\nTo see all options, run the command with no options.\nThen: `set <option> <value>`"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Rewind", Command: admin.Rewind, ModeratorOnly: true,
-		Help:  "Rewind map, see autosaves",
-		XHelp: "`rewind <autosave number>`\nRunning with no argument shows last 20 autosaves with date stamps. NOTE: Any autosave can be loaded."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "ModUp", Command: admin.ForceUpdateMods, ModeratorOnly: true,
-		Help:  "Update installed Factorio mods",
-		XHelp: "Forces installed Facorio mods to update, even if automatic mod updaing is disabled."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "SetSeed", Command: admin.SetSeed, ModeratorOnly: true,
-		Help:  "Set seed number.",
-		XHelp: "Set seed number for next map, 0 for random"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Debug", Command: admin.DebugStat, ModeratorOnly: true,
-		Help:  "debug",
-		XHelp: "Development and testing use only."})
+func RegisterCommands(s *discordgo.Session) {
 
-	/*  Player Commands */
-	CL.CommandList = append(CL.CommandList, Command{Name: "Whois", Command: user.Whois, ModeratorOnly: false,
-		Help:  "Show player info",
-		XHelp: "This searches for results (even partial) for the supplied name. The names searched are both `Discord` (if registered) and `Factorio` names.\nOther options: `recent`, `new` and `registered`. These show the most: `recently-online`, `just-joined` and `recently-registered` players. \n`whois <option or name>`"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Online", Command: user.PlayersOnline, ModeratorOnly: false,
-		Help:  "Show players online",
-		XHelp: "This just shows players who are currently in the game on this server."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Info", Command: user.ShowSettings, ModeratorOnly: false,
-		Help:  "Server & Map info",
-		XHelp: "Shows relevant map/server options and statistics, to see everything type: `info verbose`"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Register", Command: user.AccessServer, ModeratorOnly: false,
-		Help:  "Get an upgraded Discord role!",
-		XHelp: "Registration gives you a Discord role that matches your Factorio level. You only need to do this once.\n`Make sure your DMs are turned on in Discord`, or you will not get your registration code. The DM will contain a special code and instructions on how to complete registration.\nThe supplied code is pasted as a `COMMAND in FACTORIO` on the Factorio server with the same name as `the Discord channel` your ran it on. If the code isn't used in a few minutes it will expire. `DO NOT SHARE OR PASTE THIS CODE IN CHAT OR ON DISCORD.`\nIf you `ACCIDENTALLY` paste the code somewhere public, use the `register` command again, to `invalidate the old code` and `receive a new one`.\n"})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Vote-Rewind", Command: user.VoteRewind, ModeratorOnly: false,
-		Help:  "Vote to rewind the map",
-		XHelp: "This shows the last `20 autosaves` and `all votes`.\nMap-rewind has a one-minute cooldown, and votes expire after `30 minutes`, although you can `change your vote` a few times.\nYou must wait for your old vote to `expire` to vote `again`.\nTo vote: `vote-rewind <autosave number>`\nThis command is only accessible to `REGULARS` on `DISCORD`! (see `help register`).\n`NOTE:` Any autosave can be loaded, not just ones displayed in the command."})
-	CL.CommandList = append(CL.CommandList, Command{Name: "Help", Command: Help, ModeratorOnly: false,
-		Help:  "help <command name> for more detailed information",
-		XHelp: "This command shows help for all commands.\nTo see help for a specific command, use: `help <command name>`.\nIn this case, it is showing additional help for... the help command."})
-}
+	/* Bypasses init loop compile error. */
+	CL = cmds
 
-/*  RunCommand runs a specified command. */
-func RunCommand(name string, s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-	for _, command := range CL.CommandList {
-		if strings.EqualFold(command.Name, name) {
-			if command.ModeratorOnly && disc.CheckModerator(m) {
-				command.Command(s, m, args)
-			} else if !command.ModeratorOnly {
-				command.Command(s, m, args)
+	//Bypass register, very slow
+	//TODO: Cache info and correct for changes when needed
+
+	if *glob.DoRegisterCommands {
+
+		for i, o := range CL {
+
+			if o.AppCmd == nil {
+				continue
 			}
-			return
+			if o.AppCmd.Name == "" || o.AppCmd.Description == "" {
+				cwlog.DoLogCW("Command has no name or description, skipping")
+				continue
+			}
+			time.Sleep(constants.ApplicationCommandSleep)
+
+			if strings.EqualFold(o.AppCmd.Name, "config-server") {
+				LinkConfigData(i, false)
+			}
+			if strings.EqualFold(o.AppCmd.Name, "config-global") {
+				LinkConfigData(i, true)
+			}
+
+			if o.AdminOnly {
+				o.AppCmd.DefaultMemberPermissions = &adminPerms
+			} else if o.ModeratorOnly {
+				o.AppCmd.DefaultMemberPermissions = &modPerms
+			} else {
+				o.AppCmd.DefaultMemberPermissions = &playerPerms
+			}
+
+			o.AppCmd.Name = filterName(o.AppCmd.Name)
+			o.AppCmd.Description = filterDesc(o.AppCmd.Description)
+
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, o.AppCmd)
+			if err != nil {
+				log.Println("Failed to create command: ",
+					CL[i].AppCmd.Name, ": ", err)
+				continue
+			}
+			CL[i].AppCmd = cmd
+			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", CL[i].AppCmd.Name))
 		}
 	}
 
-	fact.CMS(m.ChannelID, "Invalid command, try "+cfg.Global.DiscordCommandPrefix+"help")
 }
 
-/* Display help, based on player level */
-func Help(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+func filterName(name string) string {
+	newName := strings.ToLower(name)
+	newName = strings.Replace(newName, " ", "-", -1)
+	newName = sclean.TruncateString(newName, 32)
 
-	buf := ""
-	arglen := len(args)
-	multiArg := strings.Join(args, " ")
-	found := false
-	isModerator := disc.CheckModerator(m)
-	count := 0
+	return newName
+}
 
-	if arglen > 0 {
-		argOne := strings.TrimPrefix(args[0], cfg.Global.DiscordCommandPrefix)
+func filterDesc(desc string) string {
+	newDesc := sclean.TruncateStringEllipsis(desc, 100)
 
-		for _, command := range CL.CommandList {
-			if !command.ModeratorOnly || (command.ModeratorOnly && isModerator) {
-				admin := ""
-				if strings.EqualFold(command.Name, argOne) {
-					if command.ModeratorOnly {
-						admin = " (MOD ONLY)"
+	if len(desc) > 0 {
+		return newDesc
+	} else {
+		buf := "No description available."
+		return buf
+	}
+}
+
+func LinkConfigData(p int, gconfig bool) {
+
+	var selection []moderator.SettingListData
+	if gconfig {
+		selection = moderator.GSettingList
+	} else {
+		selection = moderator.SettingList
+	}
+	for i, o := range selection {
+		if i > 25 {
+			cwlog.DoLogCW("LinkConfigData: Max 25 settings reached!")
+			break
+		}
+		if o.Type == moderator.TYPE_STRING {
+
+			if len(o.ValidStrings) > 0 {
+				choices := []*discordgo.ApplicationCommandOptionChoice{}
+				for _, v := range o.ValidStrings {
+					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+						Name:  filterName(v),
+						Value: filterName(v),
+					})
+				}
+
+				if len(choices) > 0 {
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: filterDesc(o.Desc),
+						Choices:     choices,
+					})
+				} else {
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: filterDesc(o.Desc),
+					})
+				}
+			} else if o.ListString != nil {
+				choices := []*discordgo.ApplicationCommandOptionChoice{}
+				list := o.ListString()
+				for _, v := range list {
+					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+						Name:  filterName(v),
+						Value: filterName(v),
+					})
+				}
+
+				if len(choices) > 0 {
+
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: filterDesc(o.Desc),
+						Choices:     choices,
+					})
+				} else {
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        filterName(o.Name),
+						Description: filterDesc(o.Desc),
+					})
+				}
+			} else {
+				CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        filterName(o.Name),
+					Description: filterDesc(o.Desc),
+				})
+			}
+
+		} else if o.Type == moderator.TYPE_INT {
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Name:        filterName(o.Name),
+				Description: filterDesc(o.Desc),
+				MinValue:    glob.Ptr(float64(o.MinInt)),
+				MaxValue:    float64(o.MaxInt),
+			})
+		} else if o.Type == moderator.TYPE_BOOL {
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Name:        filterName(o.Name),
+				Description: filterDesc(o.Desc),
+			})
+		} else if o.Type == moderator.TYPE_F32 {
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionNumber,
+				Name:        filterName(o.Name),
+				Description: filterDesc(o.Desc),
+				MinValue:    glob.Ptr(float64(o.MinF32)),
+				MaxValue:    float64(o.MaxF32),
+			})
+		} else if o.Type == moderator.TYPE_F64 {
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionNumber,
+				Name:        filterName(o.Name),
+				Description: filterDesc(o.Desc),
+				MinValue:    glob.Ptr(o.MinF64),
+				MaxValue:    o.MaxF64,
+			})
+		} else if o.Type == moderator.TYPE_CHANNEL {
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionChannel,
+				Name:        filterName(o.Name),
+				Description: filterDesc(o.Desc),
+			})
+		}
+	}
+}
+
+func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	/* Ignore appid that aren't relevant to us */
+	if i.AppID != cfg.Global.Discord.Application {
+		return
+	}
+
+	if i.Member == nil {
+		cwlog.DoLogCW("SlashCommand: Ignoring interaction with no member (dm).")
+		return
+	}
+
+	if i.Type == discordgo.InteractionMessageComponent {
+		data := i.MessageComponentData()
+
+		for _, c := range data.Values {
+			if strings.EqualFold(data.CustomID, "ChangeMap") {
+				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+
+					buf := fmt.Sprintf("Loading: %v, please wait.", c)
+					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
+					disc.InteractionResponse(s, i, &elist)
+
+					fact.DoChangeMap(s, c)
+
+					break
+				}
+			} else if strings.EqualFold(data.CustomID, "VoteMap") {
+				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+
+					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
+					disc.EphemeralResponse(s, i, "Notice:", buf)
+
+					go fact.CheckVote(s, i, c)
+
+					break
+				}
+			}
+		}
+	} else if i.Type == discordgo.InteractionApplicationCommand {
+		data := i.ApplicationCommandData()
+
+		for _, c := range CL {
+
+			/* Hanadle PrimaryOnly commands if we are the primary, otherwise only allow commands from our channel */
+			if !c.PrimaryOnly && !strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
+				continue
+			} else if c.PrimaryOnly && !strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) {
+				continue
+			}
+
+			if strings.EqualFold(c.AppCmd.Name, data.Name) {
+
+				if c.AdminOnly {
+					if disc.CheckAdmin(i) {
+						c.Command(s, i)
+						var options []string
+						for _, o := range c.AppCmd.Options {
+							options = append(options, o.Name)
+						}
+						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", ")))
+						return
+					} else {
+						disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
+						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						return
 					}
-					buf = buf + fmt.Sprintf("`%14v -- %-25v %v`\n\n%v", cfg.Global.DiscordCommandPrefix+command.Name, command.Help, admin, command.XHelp)
-					count++
-					found = true
-					fact.CMS(m.ChannelID, buf)
+				} else if c.ModeratorOnly {
+					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
+						c.Command(s, i)
+						return
+					} else {
+						disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
+						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						return
+					}
+				} else {
+					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
+					c.Command(s, i)
 					return
 				}
 			}
 		}
-		buf = "`Command not found!`\n\n"
-		if len(multiArg) > 2 {
-			lMultiArg := strings.ToLower(multiArg)
-			buf = buf + "Search results:\n"
-			if !found {
-				for _, command := range CL.CommandList {
-					if !command.ModeratorOnly || (command.ModeratorOnly && isModerator) {
-						lName := strings.ToLower(command.Name)
-						lHelp := strings.ToLower(command.Help)
-						if strings.Contains(lName, lMultiArg) || strings.Contains(lHelp, lMultiArg) {
-							buf = buf + fmt.Sprintf("`%14v -- %v`\n\n%v\n\n", cfg.Global.DiscordCommandPrefix+command.Name, command.Help, command.XHelp)
-							count++
-						}
-					}
-				}
-			}
-		} else {
-			buf = buf + "That search term is too broad."
-		}
-		if count > 0 {
-			fact.CMS(m.ChannelID, buf)
-		} else {
-			fact.CMS(m.ChannelID, "No help was found for that.")
-		}
-		return
 	}
-
-	buf = "```"
-
-	if disc.CheckModerator(m) {
-		for _, command := range CL.CommandList {
-			admin := ""
-			if command.ModeratorOnly {
-				admin = "(MOD ONLY)"
-			}
-			buf = buf + fmt.Sprintf("%14v -- %-25v %v\n", cfg.Global.DiscordCommandPrefix+command.Name, command.Help, admin)
-		}
-	} else {
-		for _, command := range CL.CommandList {
-			if !command.ModeratorOnly {
-				buf = buf + fmt.Sprintf("%14v -- %v\n", cfg.Global.DiscordCommandPrefix+command.Name, command.Help)
-			}
-		}
-
-	}
-	buf = buf + "```"
-	fact.CMS(m.ChannelID, buf)
 }
