@@ -309,6 +309,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 
+		_ = os.Remove(newmappath)
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
 			buf := fmt.Sprintf("Unable to write archive file: %v", errb)
@@ -317,7 +318,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 		respData := &discordgo.InteractionResponseData{Content: newmapurl, Files: []*discordgo.File{
-			{Name: newmapname, Reader: to, ContentType: "application/zip"}}}
+			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
 
 		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 		err = s.InteractionRespond(i.Interaction, resp)
