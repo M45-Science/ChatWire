@@ -13,11 +13,7 @@ require (
 )
 
 require (
-	github.com/chzyer/readline v1.5.0 // indirect
-	github.com/google/pprof v0.0.0-20220520215854-d04f2422c8a1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/ianlancetaylor/demangle v0.0.0-20220517205856-0058ec4f073c // indirect
-	github.com/pkg/profile v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 )

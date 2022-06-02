@@ -740,13 +740,20 @@ func MainLoops() {
 	/* Update time till reset */
 	/****************************/
 	go func() {
+		var lastDur string
 		for glob.ServerRunning {
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
 				fact.FactorioBooted &&
 				fact.NumPlayers > 0 {
 				time.Sleep(time.Minute)
-				fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
+
+				buf := "/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")"
+				/* Don't write it, if nothing has changed */
+				if !strings.EqualFold(buf, lastDur) {
+					fact.WriteFact(buf)
+				}
+				lastDur = buf
 			} else {
 				time.Sleep(time.Second * 5)
 			}
