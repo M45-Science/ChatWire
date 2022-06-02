@@ -527,6 +527,12 @@ func LinkConfigData(p int, gconfig bool) {
 				MinValue:    glob.Ptr(o.MinF64),
 				MaxValue:    o.MaxF64,
 			})
+		} else if o.Type == moderator.TYPE_CHANNEL {
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				Type:        discordgo.ApplicationCommandOptionChannel,
+				Name:        filterName(o.Name),
+				Description: filterDesc(o.Desc),
+			})
 		}
 	}
 }
@@ -573,66 +579,50 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	} else if i.Type == discordgo.InteractionApplicationCommand {
 		data := i.ApplicationCommandData()
 
-		/* Handle these commands from anywhere, if we are the primary server */
-		if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
-			for _, c := range CL {
-				if strings.EqualFold(c.AppCmd.Name, data.Name) {
-					if c.PrimaryOnly {
-						if !c.AdminOnly && !c.ModeratorOnly {
-							c.Command(s, i)
-							return
-						}
-					}
-				}
+		for _, c := range CL {
+
+			/* Hanadle PrimaryOnly commands if we are the primary, otherwise only allow commands from our channel */
+			if c.PrimaryOnly && !strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
+				continue
+			} else if !strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
+				continue
 			}
-		}
 
-		/* Don't respond to other channels for normal commands */
-		if strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
+			if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
-			for _, c := range CL {
-
-				/* Don't process these commands here */
-				if c.PrimaryOnly {
-					continue
-				}
-
-				if strings.EqualFold(c.AppCmd.Name, data.Name) {
-
-					if c.AdminOnly {
-						if disc.CheckAdmin(i) {
-							c.Command(s, i)
-							var options []string
-							for _, o := range c.AppCmd.Options {
-								options = append(options, o.Name)
-							}
-							cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", ")))
-							return
-						} else {
-							disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
-							fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
-							return
-						}
-					} else if c.ModeratorOnly {
-						if disc.CheckModerator(i) || disc.CheckAdmin(i) {
-							cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
-							c.Command(s, i)
-							return
-						} else {
-							disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
-							fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
-							return
-						}
-					} else {
-						cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
+				if c.AdminOnly {
+					if disc.CheckAdmin(i) {
 						c.Command(s, i)
+						var options []string
+						for _, o := range c.AppCmd.Options {
+							options = append(options, o.Name)
+						}
+						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", ")))
+						return
+					} else {
+						disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
+						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
 						return
 					}
+				} else if c.ModeratorOnly {
+					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
+						c.Command(s, i)
+						return
+					} else {
+						disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
+						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						return
+					}
+				} else {
+					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
+					c.Command(s, i)
+					return
 				}
 			}
-			disc.EphemeralResponse(s, i, "Error", "That is not a valid command.")
-			cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
-
 		}
+		disc.EphemeralResponse(s, i, "Error", "That is not a valid command.")
+		cwlog.DoLogCW(fmt.Sprintf("INVALID COMMAND: %s: command: %s", i.Member.User.Username, data.Name))
+
 	}
 }
