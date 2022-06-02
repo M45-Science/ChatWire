@@ -8,3 +8,4 @@ composite.json
 .gitignore
 server-banlist.json
 /factorio
+cpufile.prof
