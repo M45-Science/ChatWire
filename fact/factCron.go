@@ -144,7 +144,7 @@ func UpdateScheduleDesc() (err bool) {
 			n := e[a-1].Next
 			NextReset = n.Format("Monday, January 2 15:04 MST")
 			NextResetUnix = n.Unix()
-			TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units) + " from now"
+			TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
 
 			return false
 		} else {

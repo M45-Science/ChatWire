@@ -272,7 +272,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 				fact.FactIsRunning &&
 				fact.FactorioBooted {
 				fact.UpdateScheduleDesc()
-				fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
+				fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
 			}
 
 			/* Give people patreon/nitro tags in-game. */

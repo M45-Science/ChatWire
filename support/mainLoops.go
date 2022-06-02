@@ -748,7 +748,7 @@ func MainLoops() {
 				fact.NumPlayers > 0 {
 				time.Sleep(time.Minute)
 
-				buf := "/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")"
+				buf := "/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")"
 				/* Don't write it, if nothing has changed */
 				if !strings.EqualFold(buf, lastDur) {
 					fact.WriteFact(buf)

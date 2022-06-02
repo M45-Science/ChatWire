@@ -89,7 +89,7 @@ func reloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		fact.WriteFact("/resetint " + fact.NextReset)
 	}
 	if fact.TillReset != "" {
-		fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
+		fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
 	}
 
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {

@@ -201,7 +201,7 @@ func ConfigSoftMod() {
 		fact.WriteFact("/resetint " + fact.NextReset)
 	}
 	if fact.TillReset != "" {
-		fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
+		fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
 	}
 	if cfg.Local.Options.SoftModOptions.CleanMap {
 		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")
