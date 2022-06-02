@@ -377,7 +377,10 @@ func RegisterCommands(s *discordgo.Session) {
 			time.Sleep(constants.ApplicationCommandSleep)
 
 			if strings.EqualFold(o.AppCmd.Name, "config-server") {
-				LinkConfigData(i)
+				LinkConfigData(i, false)
+			}
+			if strings.EqualFold(o.AppCmd.Name, "config-global") {
+				LinkConfigData(i, true)
 			}
 
 			if o.AdminOnly {
@@ -423,9 +426,15 @@ func filterDesc(desc string) string {
 	}
 }
 
-func LinkConfigData(p int) {
+func LinkConfigData(p int, gconfig bool) {
 
-	for i, o := range moderator.SettingList {
+	var selection []moderator.SettingListData
+	if gconfig {
+		selection = moderator.GSettingList
+	} else {
+		selection = moderator.SettingList
+	}
+	for i, o := range selection {
 		if i > 25 {
 			cwlog.DoLogCW("LinkConfigData: Max 25 settings reached!")
 			break
