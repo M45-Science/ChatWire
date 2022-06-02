@@ -57,7 +57,7 @@ func CheckRegular(i *discordgo.InteractionCreate) bool {
 
 	if i.Member != nil {
 		for _, r := range i.Member.Roles {
-			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Regular) {
 				return true
 			}
 		}
