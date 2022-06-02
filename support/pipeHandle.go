@@ -363,10 +363,13 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
 								glob.LastSusWarning = time.Now()
-								sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
 
-								fact.FactChat("[color=red]" + sbuf + "[/color]")
-								fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+								if !cfg.Global.Options.ShutupSusWarn {
+									sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
+
+									fact.FactChat("[color=red]" + sbuf + "[/color]")
+									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+								}
 
 								glob.PlayerSus[pname] = 0
 							}
@@ -951,17 +954,20 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 					}
 
 					if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
-						bbuf = fmt.Sprintf("/whisper %v [color=red]***CHAT SPAM WARNING!***[/color]\n", pname)
-						fact.WriteFact(bbuf)
-
+						if !cfg.Global.Options.DisableSpamProtect {
+							bbuf = fmt.Sprintf("/whisper %v [color=red]***CHAT SPAM WARNING!***[/color]\n", pname)
+							fact.WriteFact(bbuf)
+						}
 					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
-						if cfg.Global.Paths.URLs.LogURL != "" {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.Paths.URLs.LogURL, "/"), cfg.Local.Callsign, strings.TrimPrefix(glob.GameLogName, "log/"))
-						} else {
-							bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
+						if !cfg.Global.Options.DisableSpamProtect {
+							if cfg.Global.Paths.URLs.LogURL != "" {
+								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.Paths.URLs.LogURL, "/"), cfg.Local.Callsign, strings.TrimPrefix(glob.GameLogName, "log/"))
+							} else {
+								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
+							}
+							fact.WriteFact(bbuf)
 						}
 						glob.ChatterSpamScore[pname] = 0
-						fact.WriteFact(bbuf)
 					}
 				} else {
 					/* Lower score if server isn't responding */

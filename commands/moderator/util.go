@@ -135,6 +135,22 @@ var GSettingList = []SettingListData{
 		MinStrLen: 2,
 		SData:     &cfg.Global.Options.PreviewSettings.PNGRes,
 	},
+	{
+		Name:      "sus-shutup",
+		ShortDesc: "Sus Shutup",
+		Desc:      "Disable new player sus warning.",
+		Type:      TYPE_BOOL,
+
+		BData: &cfg.Global.Options.ShutupSusWarn,
+	},
+	{
+		Name:      "disable-spam-protect",
+		ShortDesc: "Disable Spam Protect",
+		Desc:      "Disable spam protection",
+		Type:      TYPE_BOOL,
+
+		BData: &cfg.Global.Options.DisableSpamProtect,
+	},
 }
 
 /* Local Settings */

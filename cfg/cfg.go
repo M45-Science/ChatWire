@@ -107,12 +107,14 @@ type dataFiles struct {
 }
 
 type globalOptions struct {
-	Description     string
-	PingString      string
-	UseAuthserver   bool
-	AutosaveMax     int
-	RconOffset      int
-	PreviewSettings prevSettings
+	Description        string
+	PingString         string
+	UseAuthserver      bool
+	AutosaveMax        int
+	RconOffset         int
+	ShutupSusWarn      bool
+	DisableSpamProtect bool
+	PreviewSettings    prevSettings
 }
 
 type prevSettings struct {
