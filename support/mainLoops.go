@@ -748,6 +748,7 @@ func MainLoops() {
 				time.Sleep(time.Minute)
 				fact.WriteFact("/resetdur " + fact.TillReset + " (" + cfg.Local.Options.Schedule + ")")
 			}
+			time.Sleep(time.Second)
 		}
 	}()
 
