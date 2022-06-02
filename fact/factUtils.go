@@ -328,7 +328,11 @@ func DoUpdateChannelName() {
 		}
 
 		URL, found := MakeSteamURL()
-		newtopic := fmt.Sprintf("NEXT RESET: <t:%v:F>(LOCAL)", NextResetUnix)
+		var newtopic string
+
+		if NextResetUnix > 0 {
+			newtopic = fmt.Sprintf("NEXT RESET: <t:%v:F>(LOCAL)", NextResetUnix)
+		}
 		if found {
 			newtopic = newtopic + ", CONNECT: " + URL
 		}

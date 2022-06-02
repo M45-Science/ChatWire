@@ -175,7 +175,9 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf = buf + "Steam connect link:\n" + msg
 	}
 
-	buf = buf + fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", fact.NextResetUnix)
+	if fact.NextResetUnix > 0 {
+		buf = buf + fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", fact.NextResetUnix)
+	}
 
 	if debug && disc.CheckAdmin(i) {
 		buf = buf + debugStat(s, i)
