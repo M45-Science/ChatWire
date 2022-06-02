@@ -136,13 +136,13 @@ func UpdateScheduleDesc() (err bool) {
 		a := len(e)
 		if a > 3 {
 
-			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
+			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,week:weeks,day:days,hour:hours,minute:minutes,sec:secs,ms:ms,us:us")
 			if err != nil {
 				panic(err)
 			}
 
 			n := e[a-1].Next
-			NextReset = n.Format("Mon Jan _2 15:04 MST")
+			NextReset = n.Format("Mon Jan 02 15:04 MST")
 			NextResetUnix = n.Unix()
 			TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
 
