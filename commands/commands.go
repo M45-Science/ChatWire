@@ -162,6 +162,12 @@ var cmds = []Command{
 	},
 		Command: admin.Factorio, AdminOnly: true},
 
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "config-global",
+		Description: "Global server settings and options.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",

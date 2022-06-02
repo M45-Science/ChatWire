@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	TYPE_STRING = 0
-	TYPE_INT    = 1
-	TYPE_BOOL   = 2
-	TYPE_F32    = 3
-	TYPE_F64    = 4
+	TYPE_STRING  = 0
+	TYPE_INT     = 1
+	TYPE_BOOL    = 2
+	TYPE_F32     = 3
+	TYPE_F64     = 4
+	TYPE_CHANNEL = 5
 )
 
 /* Used for set command */
@@ -59,9 +60,84 @@ var SettingType = []int{
 	TYPE_BOOL,
 	TYPE_F32,
 	TYPE_F64,
+	TYPE_CHANNEL,
 }
 
-/* List of settings */
+/* Global settings */
+var GSettingList = []SettingListData{
+	{
+		Name:      "group-name",
+		ShortDesc: "Group Name",
+		Desc:      "The name of the server group, used for the server list",
+		Type:      TYPE_STRING,
+
+		MaxStrLen: 5,
+		MinStrLen: 2,
+		SData:     &cfg.Global.GroupName,
+	},
+	{
+		Name:      "primary-server",
+		ShortDesc: "Primary Server",
+		Desc:      "Server that handles global commands.",
+		Type:      TYPE_STRING,
+
+		MaxStrLen: 2,
+		MinStrLen: 1,
+		SData:     &cfg.Global.PrimaryServer,
+	},
+
+	/* Discord */
+	{
+		Name:      "report-channel",
+		ShortDesc: "Report Channel",
+		Desc:      "Channel for user reports.",
+		Type:      TYPE_CHANNEL,
+
+		SData: &cfg.Global.Discord.ReportChannel,
+	},
+	{
+		Name:      "announce-channel",
+		ShortDesc: "Announce Channel",
+		Desc:      "Channel for announcements.",
+		Type:      TYPE_CHANNEL,
+
+		SData: &cfg.Global.Discord.AnnounceChannel,
+	},
+
+	/* Options */
+	{
+		Name:      "description",
+		ShortDesc: "Description",
+		Desc:      "This description is used in the server browser.",
+		Type:      TYPE_STRING,
+
+		MaxStrLen: 128,
+		MinStrLen: 1,
+		SData:     &cfg.Global.Options.Description,
+	},
+	{
+		Name:      "autosave-max",
+		ShortDesc: "Autosave Max",
+		Desc:      "Maximum number of autosaves to keep.",
+		Type:      TYPE_INT,
+
+		MaxInt: 1024,
+		MinInt: 64,
+		IData:  &cfg.Global.Options.AutosaveMax,
+	},
+	{
+		Name:      "preview-size",
+		ShortDesc: "Preview Size",
+		Desc:      "Pixel size of map previews.",
+		Type:      TYPE_STRING,
+
+		MaxStrLen: 4,
+		MinStrLen: 2,
+		SData:     &cfg.Global.Options.PreviewSettings.PNGRes,
+	},
+}
+
+/* Local Settings */
 var SettingList = []SettingListData{
 	{
 		Name:      "name",
