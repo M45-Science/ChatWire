@@ -317,7 +317,7 @@ func DoUpdateChannelName() {
 	oldchname := disc.OldChanName
 	disc.UpdateChannelLock.Unlock()
 
-	if chname != oldchname && cfg.Local.Channel.ChatChannel != "" {
+	if chname != oldchname && cfg.Local.Channel.ChatChannel != "" && cfg.Local.Channel.ChatChannel != "MY DISCORD CHANNEL ID" {
 		disc.UpdateChannelLock.Lock()
 		disc.OldChanName = disc.NewChanName
 		disc.UpdateChannelLock.Unlock()
