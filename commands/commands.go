@@ -284,7 +284,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-map",
-		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` discord role.",
+		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
