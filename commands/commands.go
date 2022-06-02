@@ -535,7 +535,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			if strings.EqualFold(data.CustomID, "ChangeMap") {
 				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
-					buf := fmt.Sprintf("Loading save: %v, please wait.", c)
+					buf := fmt.Sprintf("Loading: %v, please wait.", c)
 					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
 					disc.InteractionResponse(s, i, &elist)
 
