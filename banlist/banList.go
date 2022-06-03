@@ -139,7 +139,7 @@ func ReadBanFile() {
 					buf = buf + ", "
 				}
 
-				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 {
+				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 && oldLen > 0 {
 					msg := fmt.Sprintf("**NOTICE** Ban found for player with level greater than MEMBER status, auto-ban bypassed!\nPlayer: %v\nReason: %v\n", aBan.UserName, aBan.Reason)
 					fact.CMS(cfg.Global.Discord.ReportChannel, msg)
 				}
