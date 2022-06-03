@@ -100,12 +100,23 @@ func Map_reset(data string, doReport bool) {
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
+
 		/* Attach map, send to chat */
 		dData := &discordgo.MessageSend{Files: []*discordgo.File{
 			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
 		_, err := disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
+		}
+		from.Close()
+
+		from, erra = os.Open(GameMapPath)
+		if erra != nil {
+
+			buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
+			cwlog.DoLogCW(buf)
+			CMS(cfg.Local.Channel.ChatChannel, buf)
+			return
 		}
 		defer from.Close()
 
