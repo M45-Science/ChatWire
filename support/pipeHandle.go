@@ -765,52 +765,60 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 			filename := regaa.ReplaceAllString(fullpath, "")
 			filename = strings.Replace(filename, ":", "", -1)
 
+			/* Increment backup number */
 			if cfg.Local.LastSaveBackup < constants.MaxSaveBackups {
 				cfg.Local.LastSaveBackup++
 			} else {
 				cfg.Local.LastSaveBackup = 1
 			}
 
+			/* Path for backup save */
 			newPath := cfg.Global.Paths.Folders.ServersRoot +
 				cfg.Global.Paths.ChatWirePrefix +
 				cfg.Local.Callsign + "/" +
 				cfg.Global.Paths.Folders.FactorioDir + "/" +
 				cfg.Global.Paths.Folders.Saves + "/"
 
+			/* Name for backup save */
 			newName := fmt.Sprintf("bak-%v.zip", cfg.Local.LastSaveBackup)
 
+			/* Document save name for archive command */
 			fact.GameMapName = filename
 			fact.GameMapPath = fullpath
 
+			/* Log actions */
 			cwlog.DoLogCW(fmt.Sprintf("Map saved as: %v, backup: %v", filename, newName))
 			fact.LastSaveName = filename
 
+			/* Open the quit-save */
 			from, erra := os.Open(fullpath)
 			if erra != nil {
 
-				buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
+				buf := fmt.Sprintf("An error occurred when attempting to read the save to backup: %s", erra)
 				cwlog.DoLogCW(buf)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				return true
 			}
 			defer from.Close()
 
+			/* Create the backup file */
 			to, errb := os.OpenFile(newPath+newName, os.O_RDWR|os.O_CREATE, 0666)
 			if errb != nil {
-				buf := fmt.Sprintf("An error occurred when attempting to create the map archive file: %s", errb)
+				buf := fmt.Sprintf("An error occurred when attempting to create the backup save: %s", errb)
 				cwlog.DoLogCW(buf)
 				return true
 			}
 			defer to.Close()
 
+			/* Copy data */
 			_, errc := io.Copy(to, from)
 			if errc != nil {
-				buf := fmt.Sprintf("An error occurred when attempting to write the map archive file: %s", errc)
+				buf := fmt.Sprintf("An error occurred when attempting to write the backup save: %s", errc)
 				cwlog.DoLogCW(buf)
 				return true
 			}
 
-			//Touch old save, so we don't mess with backup
+			/* Touch old save, so wo won't load the backup file next time */
 			currentTime := time.Now().Local()
 			os.Chtimes(fullpath, currentTime, currentTime)
 			cfg.WriteLCfg()
