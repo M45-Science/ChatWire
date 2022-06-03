@@ -48,6 +48,8 @@ Removed ImageMagick requirement.<br>
 Suppress QUIT messages from loading previous save games.<br>
 Added custom map reset scheduler, with next reset date/time, and time left descriptions.<br>
 Discord channel position is now preserved.<br>
+Better loaded mod detection.<br>
+Improved FCL (Factorio Community List) bans<br>
 <br>
 ### Requirements:
 Linux<br>
