@@ -139,10 +139,9 @@ func ReadBanFile() {
 					buf = buf + ", "
 				}
 
-				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 && oldLen > 0 {
+				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 {
 					buf = buf + fmt.Sprintf("Reg/Mod:Bypass:%v", aBan.UserName, aBan.Reason)
-				}
-				if aBan.Reason != "" {
+				} else if aBan.Reason != "" {
 					buf = buf + aBan.UserName + ": " + aBan.Reason
 				} else {
 					buf = buf + aBan.UserName
