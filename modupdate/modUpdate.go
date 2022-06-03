@@ -59,8 +59,9 @@ func UpdateMods(doReport bool) {
 		"-m",
 		cfg.Global.Paths.Folders.ServersRoot +
 			cfg.Global.Paths.ChatWirePrefix +
-			cfg.Global.Paths.Folders.FactorioDir + "/" +
-			cfg.Local.Callsign + "/mods/",
+			cfg.Local.Callsign + "/" +
+			cfg.Global.Paths.Folders.FactorioDir +
+			"/mods/",
 
 		"--fact-path",
 		fact.GetFactorioBinary(),
