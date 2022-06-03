@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "2539-06.1.2022-1108p"
+	Version = "2540-06.3.2022-0923"
 	CWEpoch = 1653239822390688174
 	Unknown = "Unknown"
 
