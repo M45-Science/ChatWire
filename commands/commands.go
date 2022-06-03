@@ -549,7 +549,8 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	if i.Type == discordgo.InteractionMessageComponent {
+	if i.Type == discordgo.InteractionMessageComponent &&
+		strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) {
 		data := i.MessageComponentData()
 
 		for _, c := range data.Values {
