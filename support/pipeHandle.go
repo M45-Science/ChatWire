@@ -818,7 +818,7 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 				return true
 			}
 
-			/* Touch old save, so wo won't load the backup file next time */
+			/* Touch old save, so we won't load the backup file next time */
 			currentTime := time.Now().Local()
 			os.Chtimes(fullpath, currentTime, currentTime)
 			cfg.WriteLCfg()
