@@ -216,7 +216,15 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 			glob.PlayerList[pname].ID = "0"
 		} else if level == -1 && glob.PlayerList[pname].Level != -1 {
 			glob.PlayerList[pname].Level = level
-			WriteFact(fmt.Sprintf("/ban %s banned on other M45 server", pname))
+
+			/* Use discordid as a sneaky way to pass ban reason */
+			idReason := id
+			reason := "Banned on a different server."
+			if sclean.AlphaOnly(idReason) != "" {
+				reason = idReason
+			}
+			WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
+
 		} else if level > glob.PlayerList[pname].Level {
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
