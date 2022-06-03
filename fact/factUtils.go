@@ -286,12 +286,6 @@ func UpdateChannelName() {
 		icon = "⚫"
 	}
 
-	if FactorioBooted && FactIsRunning && glob.NoResponseCount >= 30 {
-		icon = "🟠"
-	} else if !FactorioBooted {
-		icon = "🔴"
-	}
-
 	if nump == 0 {
 		newchname = fmt.Sprintf("%v%v", icon, cfg.Local.Callsign+"-"+cfg.Local.Name)
 	} else {
