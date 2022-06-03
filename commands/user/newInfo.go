@@ -102,7 +102,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			}
 		}
 	}
-	modStr := fact.ModLoadString
+	modStr := strings.Join(fact.ModList, ",")
 	if modStr != constants.Unknown {
 		buf = buf + "\nLoaded mods: " + modStr + "\n"
 	}

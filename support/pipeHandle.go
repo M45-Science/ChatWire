@@ -544,22 +544,33 @@ func handleModLoad(NoTC string) bool {
 	/******************
 	 * LOADING MOD
 	 ******************/
-	if strings.HasPrefix(NoTC, "Loading mod") && strings.HasSuffix(NoTC, "(data.lua)") {
+	if strings.HasPrefix(NoTC, "Loading mod") {
 
-		if !strings.Contains(NoTC, "base") && !strings.Contains(NoTC, "core") {
-			cwlog.DoLogGame(NoTC)
+		if !strings.Contains(NoTC, "base") &&
+			!strings.Contains(NoTC, "core") &&
+			!strings.Contains(NoTC, "settings") {
 
-			modName := strings.TrimPrefix(NoTC, "Loading mod ")
-			modName = strings.TrimSuffix(modName, " (data.lua)")
-			modName = strings.ReplaceAll(modName, " ", "-")
-			if fact.ModLoadString == constants.Unknown {
-				fact.ModLoadString = modName
-			} else {
-				fact.ModLoadString = fact.ModLoadString + ", " + modName
+			parts := strings.Split(NoTC, " ")
+			numParts := len(parts) - 1
+			if numParts >= 4 {
+
+				modName := strings.Join(parts[2:numParts-1], " ")
+				modName = sclean.AlphaOnly(modName)
+
+				found := false
+				for _, m := range fact.ModList {
+					if strings.EqualFold(m, modName) {
+						found = true
+					}
+				}
+				if !found {
+					fact.ModList = append(fact.ModList, modName)
+					cwlog.DoLogGame(NoTC)
+				}
 			}
 		}
-		return true
 	}
+	/* Dont eat, factorio version handle uses this too */
 	return false
 }
 

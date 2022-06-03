@@ -25,7 +25,7 @@ var (
 
 	/* Factorio game mod data*/
 	ModLoadMessage *discordgo.Message
-	ModLoadString  = constants.Unknown
+	ModList        []string
 
 	/* Factorio in-game time data */
 	LastGametime   = ""

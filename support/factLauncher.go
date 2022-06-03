@@ -121,7 +121,7 @@ func launchFactorio() {
 	}
 
 	//Clear mod load string
-	fact.ModLoadString = (constants.Unknown)
+	fact.ModList = []string{}
 
 	/* Run Factorio */
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
