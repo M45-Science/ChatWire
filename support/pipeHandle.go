@@ -813,6 +813,7 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 			//Touch old save, so we don't mess with backup
 			currentTime := time.Now().Local()
 			os.Chtimes(fullpath, currentTime, currentTime)
+			cfg.WriteLCfg()
 		}
 		return true
 	}
