@@ -35,7 +35,9 @@ func CheckBanList(player string) {
 
 	for _, ban := range BanList {
 		if strings.EqualFold(ban.UserName, player) {
-			fact.WriteFact("/ban " + ban.UserName + " [auto] " + ban.Reason)
+			if fact.PlayerLevelGet(ban.UserName, false) < 2 {
+				fact.WriteFact("/ban " + ban.UserName + " [auto] " + ban.Reason)
+			}
 			break
 		}
 	}
@@ -136,6 +138,11 @@ func ReadBanFile() {
 				if buf != "" {
 					buf = buf + ", "
 				}
+
+				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 {
+					msg := fmt.Sprintf("**NOTICE** Ban found for player with level greater than MEMBER status, auto-ban bypassed!\nPlayer: %v\nReason: %v\n", aBan.UserName, aBan.Reason)
+					fact.CMS(cfg.Global.Discord.ReportChannel, msg)
+				}
 				if aBan.Reason != "" {
 					buf = buf + aBan.UserName + ": " + aBan.Reason
 				} else {
@@ -146,6 +153,7 @@ func ReadBanFile() {
 
 	}
 	if oldLen > 0 && strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) && buf != "" {
+
 		fact.CMS(cfg.Global.Discord.ReportChannel, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 500))
 	}
 }
