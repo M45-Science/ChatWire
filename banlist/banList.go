@@ -140,8 +140,7 @@ func ReadBanFile() {
 				}
 
 				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 && oldLen > 0 {
-					msg := fmt.Sprintf("**NOTICE** Ban found for player with level greater than MEMBER status, auto-ban bypassed!\nPlayer: %v\nReason: %v\n", aBan.UserName, aBan.Reason)
-					fact.CMS(cfg.Global.Discord.ReportChannel, msg)
+					buf = buf + fmt.Sprintf("Reg/Mod:Bypass:%v", aBan.UserName, aBan.Reason)
 				}
 				if aBan.Reason != "" {
 					buf = buf + aBan.UserName + ": " + aBan.Reason
@@ -154,6 +153,6 @@ func ReadBanFile() {
 	}
 	if oldLen > 0 && strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) && buf != "" {
 
-		fact.CMS(cfg.Global.Discord.ReportChannel, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 500))
+		fact.CMS(cfg.Global.Discord.ReportChannel, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 1000))
 	}
 }
