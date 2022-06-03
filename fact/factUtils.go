@@ -304,6 +304,8 @@ func UpdateChannelName() {
 
 }
 
+var oldTopic string
+
 /* When appropriate, actually update the channel name */
 func DoUpdateChannelName() {
 
@@ -317,7 +319,19 @@ func DoUpdateChannelName() {
 	oldchname := disc.OldChanName
 	disc.UpdateChannelLock.Unlock()
 
-	if chname != oldchname && cfg.Local.Channel.ChatChannel != "" && cfg.Local.Channel.ChatChannel != "MY DISCORD CHANNEL ID" {
+	URL, found := MakeSteamURL()
+	var newTopic string
+
+	if NextResetUnix > 0 {
+		newTopic = fmt.Sprintf("NEXT RESET: <t:%v:F>(LOCAL)", NextResetUnix)
+	}
+	if found {
+		newTopic = newTopic + ", CONNECT: " + URL
+	}
+
+	if (chname != oldchname || oldTopic != newTopic) &&
+		cfg.Local.Channel.ChatChannel != "" &&
+		cfg.Local.Channel.ChatChannel != "MY DISCORD CHANNEL ID" {
 		disc.UpdateChannelLock.Lock()
 		disc.OldChanName = disc.NewChanName
 		disc.UpdateChannelLock.Unlock()
@@ -325,22 +339,16 @@ func DoUpdateChannelName() {
 		ch, err := disc.DS.Channel(cfg.Local.Channel.ChatChannel)
 		if err != nil {
 			cwlog.DoLogCW("Unable to get chat channel information.")
+			return
 		}
 
-		URL, found := MakeSteamURL()
-		var newtopic string
-
-		if NextResetUnix > 0 {
-			newtopic = fmt.Sprintf("NEXT RESET: <t:%v:F>(LOCAL)", NextResetUnix)
-		}
-		if found {
-			newtopic = newtopic + ", CONNECT: " + URL
-		}
-
-		_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: ch.Position, Topic: newtopic})
+		_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: ch.Position, Topic: newTopic})
 
 		if aerr != nil {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
+			return
+		} else {
+			oldTopic = newTopic
 		}
 	}
 }
