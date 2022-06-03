@@ -649,11 +649,6 @@ func handleFactGoodbye(NoTC string) bool {
 		fact.FactorioBootedAt = time.Time{}
 		fact.SetFactRunning(false)
 
-		go func() {
-			fact.UpdateChannelName()
-			fact.DoUpdateChannelName()
-		}()
-
 		return true
 	}
 	return false
