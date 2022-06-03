@@ -20,6 +20,7 @@ const (
 	MembersPrefix       = "M"
 	ArchiveFolderSuffix = " maps"
 	BootUpdateDelayMin  = 1
+	MaxSaveBackups      = 10
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 12

@@ -125,10 +125,11 @@ type prevSettings struct {
 
 /* LOCAL CONFIG */
 type local struct {
-	Callsign string
-	Name     string
-	Port     int
-	RCONPass string
+	Callsign       string
+	Name           string
+	Port           int
+	RCONPass       string
+	LastSaveBackup int
 
 	Settings settings
 

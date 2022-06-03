@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -764,12 +765,54 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 			filename := regaa.ReplaceAllString(fullpath, "")
 			filename = strings.Replace(filename, ":", "", -1)
 
+			if cfg.Local.LastSaveBackup < constants.MaxSaveBackups {
+				cfg.Local.LastSaveBackup++
+			} else {
+				cfg.Local.LastSaveBackup = 1
+			}
+
+			newPath := cfg.Global.Paths.Folders.ServersRoot +
+				cfg.Global.Paths.ChatWirePrefix +
+				cfg.Local.Callsign + "/" +
+				cfg.Global.Paths.Folders.FactorioDir + "/" +
+				cfg.Global.Paths.Folders.Saves + "/"
+
+			newName := fmt.Sprintf("bak-%v.zip", cfg.Local.LastSaveBackup)
+
 			fact.GameMapName = filename
 			fact.GameMapPath = fullpath
 
-			cwlog.DoLogCW(fmt.Sprintf("Map saved as: " + filename))
+			cwlog.DoLogCW(fmt.Sprintf("Map saved as: %v, backup: %v", filename, newName))
 			fact.LastSaveName = filename
 
+			from, erra := os.Open(fullpath)
+			if erra != nil {
+
+				buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
+				cwlog.DoLogCW(buf)
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				return true
+			}
+			defer from.Close()
+
+			to, errb := os.OpenFile(newPath+newName, os.O_RDWR|os.O_CREATE, 0666)
+			if errb != nil {
+				buf := fmt.Sprintf("An error occurred when attempting to create the map archive file: %s", errb)
+				cwlog.DoLogCW(buf)
+				return true
+			}
+			defer to.Close()
+
+			_, errc := io.Copy(to, from)
+			if errc != nil {
+				buf := fmt.Sprintf("An error occurred when attempting to write the map archive file: %s", errc)
+				cwlog.DoLogCW(buf)
+				return true
+			}
+
+			//Touch old save, so we don't mess with backup
+			currentTime := time.Now().Local()
+			os.Chtimes(fullpath, currentTime, currentTime)
 		}
 		return true
 	}
