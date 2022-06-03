@@ -100,6 +100,7 @@ func Map_reset(data string, doReport bool) {
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
+		defer from.Close()
 
 		/* Attach map, send to chat */
 		dData := &discordgo.MessageSend{Files: []*discordgo.File{
@@ -108,17 +109,11 @@ func Map_reset(data string, doReport bool) {
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
-		from.Close()
 
-		from, erra = os.Open(GameMapPath)
-		if erra != nil {
-
-			buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
-			cwlog.DoLogCW(buf)
-			CMS(cfg.Local.Channel.ChatChannel, buf)
-			return
+		_, err = from.Seek(0, io.SeekStart)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
 		}
-		defer from.Close()
 
 		/* Make directory if it does not exist */
 		newdir := fmt.Sprintf("%v%v%v/", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix)
