@@ -726,6 +726,20 @@ func MainLoops() {
 		}
 	}()
 
+	/**********************************
+	* Poll online players, for safety
+	**********************************/
+	go func() {
+		for {
+			time.Sleep(time.Minute * 5)
+			if fact.FactIsRunning && fact.FactorioBooted {
+				if fact.PausedTicks <= constants.PauseThresh {
+					fact.WriteFact(glob.OnlineCommand)
+				}
+			}
+		}
+	}()
+
 	/****************************/
 	/* Check for mod update     */
 	/****************************/
