@@ -14,7 +14,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
-	"github.com/hako/durafmt"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
@@ -94,7 +93,7 @@ func makeModPack(s *discordgo.Session, i *discordgo.InteractionCreate, modsList 
 	packName := fmt.Sprintf("%v-%v-%v.zip",
 		cfg.Local.Callsign,
 		cfg.Local.Name,
-		time.Now().UnixNano())
+		(time.Now().UTC().Unix()-constants.CWEpoch)/60)
 
 	err := makeZipFromFileList(modsList, cfg.Global.Paths.Folders.ModPack+packName)
 	if err {
@@ -110,13 +109,15 @@ func makeModPack(s *discordgo.Session, i *discordgo.InteractionCreate, modsList 
 		if i.Member != nil {
 			name = i.Member.User.Username
 		}
-		buf := fmt.Sprintf("Modpack created for %v, now available at https://%v%v%v%v\nLink will expire in %v\n",
+		xTime := time.Now().UTC()
+		xTime = xTime.Add(time.Duration(time.Minute * constants.ModPackLifeMins))
+		buf := fmt.Sprintf("Modpack requested by %v, now available at https://%v%v%v%v\n\nFile will be deleted at: <t:%v:F>(LOCAL)\n",
 			name,
 			cfg.Global.Paths.URLs.Domain,
 			cfg.Global.Paths.URLs.PathPrefix,
 			cfg.Global.Paths.URLs.ModPackPath,
 			packName,
-			durafmt.Parse(time.Minute*constants.ModPackLifeMins).LimitFirstN(3),
+			xTime.Unix(),
 		)
 
 		var elist []*discordgo.MessageEmbed

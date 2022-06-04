@@ -46,7 +46,7 @@ func main() {
 	}
 
 	/* Mark uptime start */
-	glob.Uptime = time.Now().Round(time.Second)
+	glob.Uptime = time.Now().UTC().Round(time.Second)
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
@@ -92,7 +92,7 @@ func main() {
 		/* Okay, somthing is probably wrong */
 	}
 	lfile.Close()
-	buf := fmt.Sprintf("%v\n", time.Now().Round(time.Second).Format(time.RFC3339Nano))
+	buf := fmt.Sprintf("%v\n", time.Now().UTC().Round(time.Second).Format(time.RFC3339Nano))
 	err = ioutil.WriteFile("cw.lock", []byte(buf), 0644)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write lock file!!!")

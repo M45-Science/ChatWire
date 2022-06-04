@@ -178,7 +178,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	}
 
 	/* Set cooldown */
-	glob.VoteBox.LastMapChange = time.Now().Round(time.Second)
+	glob.VoteBox.LastMapChange = time.Now().UTC().Round(time.Second)
 
 	/* Count number of changes, for future use */
 	glob.VoteBox.NumChanges++
@@ -349,7 +349,7 @@ func CreateVoteContainer() glob.VoteContainerData {
 	temp := glob.VoteContainerData{
 		Version:       "0.0.1",
 		Votes:         []glob.MapVoteData{},
-		LastMapChange: time.Now().Round(time.Second),
+		LastMapChange: time.Now().UTC().Round(time.Second),
 		NumChanges:    0,
 	}
 	return temp
