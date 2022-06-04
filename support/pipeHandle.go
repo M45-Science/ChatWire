@@ -10,6 +10,7 @@ import (
 	"time"
 
 	embed "github.com/Clinet/discordgo-embed"
+	"github.com/dustin/go-humanize"
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
@@ -525,12 +526,7 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 			fact.GameMapPath = fullpath
 			fact.LastSaveName = filename
 
-			fsize := 0.0
-			if sizei > 0 {
-				fsize = (float64(sizei) / 1024.0 / 1024.0)
-			}
-
-			buf := fmt.Sprintf("Loading map %s (%.2fmb)...", filename, fsize)
+			buf := fmt.Sprintf("Loading map %s (%v)...", filename, humanize.Bytes(uint64(sizei)))
 			cwlog.DoLogCW(buf)
 		} else { /* Just in case */
 			cwlog.DoLogCW("Loading map...")
