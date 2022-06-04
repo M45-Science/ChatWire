@@ -250,6 +250,7 @@ var cmds = []Command{
 		Command: moderator.ChangeMap, ModeratorOnly: true},
 
 	/* PLAYER COMMMANDS -------------------- */
+
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "info",
 		Description: "displays status and settings of the server.",
@@ -274,6 +275,12 @@ var cmds = []Command{
 		},
 	},
 		Command: user.Info},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "modpack",
+		Description: "Creates a zip file with the installed mods.",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.ModPack},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "players",

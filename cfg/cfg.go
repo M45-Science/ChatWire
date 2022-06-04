@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 
@@ -85,6 +87,7 @@ type folderPaths struct {
 	MapPreviews   string
 	MapArchives   string
 	UpdateCache   string
+	ModPack       string
 }
 
 type binaryPaths struct {
@@ -96,9 +99,11 @@ type binaryPaths struct {
 }
 
 type urlPaths struct {
-	Domain     string
-	LogURL     string
-	ArchiveURL string
+	Domain      string
+	PathPrefix  string
+	LogPath     string
+	ArchivePath string
+	ModPackPath string
 }
 
 type dataFiles struct {
@@ -123,6 +128,11 @@ type prevSettings struct {
 	PNGScale  string
 }
 
+type ModPackData struct {
+	Path    string
+	Created time.Time
+}
+
 /* LOCAL CONFIG */
 type local struct {
 	Callsign       string
@@ -133,12 +143,12 @@ type local struct {
 
 	Settings settings
 
-	Channel channel
-	Options localOptions
+	Channel     channel
+	Options     localOptions
+	ModPackList []ModPackData
 }
 
 type settings struct {
-	AutoMapReset bool
 	MapGenerator string
 	MapPreset    string
 	Seed         int
@@ -267,16 +277,30 @@ func setGlobalDefaults() {
 		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "map-preview/"
 	}
 	if Global.Paths.Folders.MapArchives == "" {
-		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "public_html/archive/"
+		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "www/public_html/archive/"
+	}
+	if Global.Paths.Folders.ModPack == "" {
+		Global.Paths.Folders.ModPack = Global.Paths.Folders.ServersRoot + "www/public_html/modpack/"
 	}
 	if Global.Paths.Folders.FactorioDir == "" {
 		Global.Paths.Folders.FactorioDir = "factorio"
 	}
-	if Global.Paths.URLs.ArchiveURL == "" {
-		Global.Paths.URLs.ArchiveURL = "https://" + Global.Paths.URLs.Domain + "/~username/archive/"
+	if Global.Paths.URLs.PathPrefix == "" {
+		currentUser, err := user.Current()
+		if err == nil {
+			Global.Paths.URLs.PathPrefix = "/u/" + currentUser.Name
+		} else {
+			Global.Paths.URLs.PathPrefix = "/~username"
+		}
 	}
-	if Global.Paths.URLs.LogURL == "" {
-		Global.Paths.URLs.LogURL = "https://" + Global.Paths.URLs.Domain + "/~username/logs/"
+	if Global.Paths.URLs.LogPath == "" {
+		Global.Paths.URLs.LogPath = "/logs/"
+	}
+	if Global.Paths.URLs.ArchivePath == "" {
+		Global.Paths.URLs.ArchivePath = "/archive/"
+	}
+	if Global.Paths.URLs.ModPackPath == "" {
+		Global.Paths.URLs.ModPackPath = "/modpack/"
 	}
 	if Global.Paths.Binaries.Shell == "" {
 		Global.Paths.Binaries.Shell = "/bin/bash"
@@ -428,9 +452,6 @@ func setLocalDefaults() {
 	if Local.Settings.AutosaveMin <= 0 {
 		Local.Settings.AutosaveMin = 15
 	}
-	if !Local.Options.AutoStart {
-		Local.Options.AutoStart = true
-	}
 	if Local.Channel.ChatChannel == "" {
 		cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
 		Local.Channel.ChatChannel = "MY DISCORD CHANNEL ID"
@@ -449,9 +470,6 @@ func ReadLCfg() bool {
 		setLocalDefaults()
 		if !Local.Settings.AutoPause {
 			Local.Settings.AutoPause = true
-		}
-		if !Local.Settings.AutoMapReset {
-			Local.Settings.AutoMapReset = true
 		}
 		WriteLCfg() /* Write the defaults */
 		return true

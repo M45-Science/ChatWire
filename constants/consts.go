@@ -18,9 +18,12 @@ const (
 	RoleListFile        = "../RoleList.dat"
 	VoteFile            = "votes.dat"
 	MembersPrefix       = "M"
-	ArchiveFolderSuffix = " maps"
-	BootUpdateDelayMin  = 1
+	ArchiveFolderSuffix = " maps/"
+	BootUpdateDelayMin  = 2
 	MaxSaveBackups      = 10
+	ModPackLifeMins     = 120
+	ModPackCooldownMin  = 5
+	MaxModPacks         = 4
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 12

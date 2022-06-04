@@ -621,37 +621,6 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
 					}
 				}
-				/* New map */
-				if _, err = os.Stat(".newmap"); err == nil {
-					if errb = os.Remove(".newmap"); errb == nil {
-						if cfg.Local.Settings.AutoMapReset {
-							go fact.Map_reset("", false)
-						}
-					} else if errb != nil && !failureReported {
-						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .newmaps file, ignoring.")
-					}
-				}
-				/* Message */
-				if _, err = os.Stat(".message"); err == nil {
-					data, errc := os.ReadFile(".message")
-					if errb = os.Remove(".message"); errb == nil {
-						if errc == nil && data != nil {
-							message := string(data)
-							msglen := len(message)
-							if msglen > 5 && msglen < 250 {
-								message = strings.ReplaceAll(message, "\n", "") /* replace newline */
-								message = strings.ReplaceAll(message, "\r", "") /* replace return */
-								go fact.Map_reset(message, false)
-							} else {
-								fact.LogCMS(cfg.Local.Channel.ChatChannel, ".message text is invalid, ignoring.")
-							}
-						}
-					} else if errb != nil && !failureReported {
-						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .message file, ignoring.")
-					}
-				}
 			} else { /*  Only if game is NOT running */
 				/* Start game */
 				if _, err = os.Stat(".start"); err == nil {
@@ -798,6 +767,45 @@ func MainLoops() {
 				lastDur = buf
 			} else {
 				time.Sleep(time.Second * 5)
+			}
+		}
+	}()
+
+	/****************************/
+	/* Auto delete modpack files
+	 * at the set expire time
+	/****************************/
+	go func() {
+		delme := -1
+		for glob.ServerRunning {
+
+			time.Sleep(time.Second)
+			numItems := len(cfg.Local.ModPackList)
+
+			if numItems > 0 {
+				for i, item := range cfg.Local.ModPackList {
+					if item.Path == "" {
+						delme = i
+						break
+					} else if time.Since(item.Created) > (constants.ModPackLifeMins * time.Minute) {
+						delme = i
+						break
+					}
+				}
+				if delme >= 0 {
+					err := os.Remove(cfg.Local.ModPackList[delme].Path)
+					if err != nil {
+						cwlog.DoLogCW("Unable to delete expired modpack!")
+					}
+
+					cwlog.DoLogCW("Deleted expired modpack: " + cfg.Local.ModPackList[delme].Path)
+					if numItems > 1 {
+						cfg.Local.ModPackList = append(cfg.Local.ModPackList[:delme], cfg.Local.ModPackList[delme+1:]...)
+					} else {
+						cfg.Local.ModPackList = []cfg.ModPackData{}
+					}
+				}
+				cfg.WriteLCfg()
 			}
 		}
 	}()

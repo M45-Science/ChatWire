@@ -21,7 +21,6 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
-	"ChatWire/sclean"
 )
 
 func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -286,9 +285,14 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		t := time.Now()
 		date := t.Format("2006-01-02")
 
-		newmapname := fmt.Sprintf("%v-%v-%v.zip", sclean.AlphaNumOnly(cfg.Local.Callsign), cfg.Local.Name, date)
-		newmappath := fmt.Sprintf("%v%v%v/%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, newmapname)
-		newmapurl := fmt.Sprintf("%v%v/%v", cfg.Global.Paths.URLs.ArchiveURL, url.PathEscape(shortversion+constants.ArchiveFolderSuffix), url.PathEscape(newmapname))
+		newmapname := fmt.Sprintf("%v-%v-%v.zip", cfg.Local.Callsign, cfg.Local.Name, date)
+		newmappath := fmt.Sprintf("%v%v%v%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, newmapname)
+		newmapurl := fmt.Sprintf("https://%v%v%v%v%v",
+			cfg.Global.Paths.URLs.Domain,
+			cfg.Global.Paths.URLs.PathPrefix,
+			cfg.Global.Paths.URLs.ArchivePath,
+			url.PathEscape(shortversion+constants.ArchiveFolderSuffix),
+			url.PathEscape(newmapname))
 
 		from, erra := os.Open(fact.GameMapPath)
 		if erra != nil {

@@ -1016,8 +1016,14 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						}
 					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
-							if cfg.Global.Paths.URLs.LogURL != "" {
-								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v/%v/%v", pname, strings.TrimSuffix(cfg.Global.Paths.URLs.LogURL, "/"), cfg.Local.Callsign, strings.TrimPrefix(glob.GameLogName, "log/"))
+							if cfg.Global.Paths.URLs.LogPath != "" {
+								newmapurl := fmt.Sprintf("https://%v%v%v%v",
+									cfg.Global.Paths.URLs.Domain,
+									cfg.Global.Paths.URLs.PathPrefix,
+									cfg.Global.Paths.URLs.LogPath,
+									strings.TrimPrefix(glob.GameLogName, "log/"))
+
+								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v", pname, newmapurl)
 							} else {
 								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
 							}
