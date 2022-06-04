@@ -30,7 +30,7 @@ func ModPack(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	modPackLock.Lock()
 	defer modPackLock.Unlock()
 
-	if !lastRun.IsZero() && time.Since(lastRun) > constants.ModPackCooldownMin*time.Minute {
+	if !lastRun.IsZero() && time.Since(lastRun) < constants.ModPackCooldownMin*time.Minute {
 		disc.EphemeralResponse(s, i, "Error", "A modpack was already created recently, please wait a bit.")
 		return
 	}
