@@ -93,7 +93,7 @@ func makeModPack(s *discordgo.Session, i *discordgo.InteractionCreate, modsList 
 	packName := fmt.Sprintf("%v-%v-%v.zip",
 		cfg.Local.Callsign,
 		cfg.Local.Name,
-		(time.Now().UTC().Unix()-constants.CWEpoch)/60)
+		(time.Now().UTC().UnixNano()-constants.CWEpoch)/1000000000/60)
 
 	err := makeZipFromFileList(modsList, cfg.Global.Paths.Folders.ModPack+packName)
 	if err {
