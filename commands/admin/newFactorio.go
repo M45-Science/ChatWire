@@ -331,7 +331,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 		defer to.Close()
 
-		from.Seek(0, io.SeekStart)
+		_, _ = from.Seek(0, io.SeekStart)
 
 		_, errc := io.Copy(to, from)
 		if errc != nil {

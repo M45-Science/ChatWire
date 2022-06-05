@@ -4,12 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"regexp"
-	"runtime/pprof"
 	"strings"
 	"syscall"
 	"time"
@@ -29,21 +27,12 @@ import (
 )
 
 func main() {
-	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register discord commands")
 	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 
 	flag.Parse()
-
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-	}
 
 	/* Mark uptime start */
 	glob.Uptime = time.Now().UTC().Round(time.Second)
@@ -187,7 +176,6 @@ func main() {
 	fact.QueueReload = false
 	fact.QuitFactorio("Server quitting...")
 	fact.WaitFactQuit()
-	pprof.StopCPUProfile()
 	fact.DoExit(false)
 }
 

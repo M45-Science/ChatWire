@@ -18,7 +18,7 @@ var TillReset string
 var NextResetUnix int64
 
 func SetupSchedule() (err bool) {
-	if cfg.Local.Options.Schedule != "" {
+	if cfg.Local.Options.Schedule != "" && cfg.Local.Options.Schedule != "no-reset" {
 		if CronVar != nil {
 			cwlog.DoLogCW("SetupSchedule: CronVar is not nil, removing old schedule")
 			CronVar.Stop()
@@ -121,9 +121,10 @@ func InterpSchedule(desc string, test bool) (err bool) {
 			NextReset = ""
 			WriteFact("/resetint")
 			WriteFact("/resetdur")
-
+		} else {
+			TillReset = "Manual/Vote"
+			NextReset = "Manual/Vote"
 		}
-		return true
 	}
 
 	return false
