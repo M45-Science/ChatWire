@@ -696,15 +696,34 @@ func MainLoops() {
 	}()
 
 	/**********************************
-	* Poll online players, for safety
+	* Poll online players
+	* Just in case there is no soft-mod
+	* Also detect paused servers that
+	* are frozen
 	**********************************/
+	var slowOCheck = (time.Minute * 15)
+	var fastOCheck = (time.Second * 15)
+
 	go func() {
 		for {
-			time.Sleep(time.Minute * 5)
 			if fact.FactIsRunning && fact.FactorioBooted {
-				if fact.PausedTicks <= constants.PauseThresh {
+
+				if glob.SoftModVersion != constants.Unknown {
+					time.Sleep(slowOCheck)
+				} else { /* Run often if no soft-mod */
+					if fact.PausedTicks <= constants.PauseThresh {
+						time.Sleep(fastOCheck)
+					} else {
+						time.Sleep(slowOCheck)
+					}
+				}
+
+				if fact.FactIsRunning && fact.FactorioBooted {
 					fact.WriteFact(glob.OnlineCommand)
 				}
+
+			} else {
+				time.Sleep(time.Second)
 			}
 		}
 	}()
