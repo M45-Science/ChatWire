@@ -265,10 +265,11 @@ func Map_reset(data string, doReport bool) {
 
 			if strings.HasSuffix(f.Name(), ".zip") {
 
+				lowerName := strings.ToLower(f.Name())
 				/* Delete mods queued up to be deleted */
-				if strings.HasPrefix(f.Name(), "deleteme-") {
+				if strings.HasPrefix(lowerName, "deleteme-") {
 
-					err = os.Remove(modPath + strings.TrimPrefix(f.Name(), "deleteme-"))
+					err = os.Remove(modPath + strings.TrimPrefix(lowerName, "deleteme-"))
 					if err != nil {
 						cwlog.DoLogCW(err.Error())
 					}
@@ -276,7 +277,7 @@ func Map_reset(data string, doReport bool) {
 					if err != nil {
 						cwlog.DoLogCW(err.Error())
 					} else {
-						buf := fmt.Sprintf("Removed mod: %v", strings.TrimPrefix(f.Name(), "deleteme-"))
+						buf := fmt.Sprintf("Removed mod: %v", strings.TrimPrefix(lowerName, "deleteme-"))
 						cwlog.DoLogCW(buf)
 						CMS(cfg.Local.Channel.ChatChannel, buf)
 					}
