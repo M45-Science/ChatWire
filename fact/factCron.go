@@ -122,6 +122,7 @@ func InterpSchedule(desc string, test bool) (err bool) {
 			WriteFact("/resetint")
 			WriteFact("/resetdur")
 		} else {
+			NextResetUnix = -1
 			TillReset = "Manual/Vote"
 			NextReset = "Manual/Vote"
 		}
