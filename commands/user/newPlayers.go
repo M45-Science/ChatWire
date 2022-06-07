@@ -22,7 +22,7 @@ func Players(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			fact.OnlinePlayersLock.Lock()
 			for _, p := range glob.OnlinePlayers {
 				timeStr := time.Duration(p.TimeTicks * 16666666).Round(time.Second).String()
-				buf = buf + fmt.Sprintf("%15v: Score: %5.2v, Time: %6v, Level: %v%v)\n", p.Name, p.ScoreTicks/60.0/60.0, timeStr, fact.LevelToString(p.Level), p.AFK)
+				buf = buf + fmt.Sprintf("%15v: Score: %5.2v, Time: %6v, Level: %v%v\n", p.Name, p.ScoreTicks/60.0/60.0, timeStr, fact.LevelToString(p.Level), p.AFK)
 
 			}
 			fact.OnlinePlayersLock.Unlock()
