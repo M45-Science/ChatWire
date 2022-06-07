@@ -73,7 +73,7 @@ type OnlinePlayerData struct {
 	ScoreTicks int
 	TimeTicks  int
 	Level      int
-	AFK        bool
+	AFK        string
 }
 
 var (

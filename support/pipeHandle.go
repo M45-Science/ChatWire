@@ -1146,11 +1146,7 @@ func handleOnlineMsg(line string) bool {
 					pscore := fields[1]
 					ptime := fields[2]
 					ptype := fields[3]
-					aafk := fields[4]
-					var pafk bool = false
-					if aafk == "true" {
-						pafk = true
-					}
+					pafk := fields[4]
 
 					plevel := fact.StringToLevel(ptype)
 
