@@ -1139,13 +1139,18 @@ func handleOnlineMsg(line string) bool {
 		if len(players) > 0 {
 			for _, p := range players {
 				fields := strings.Split(p, ",")
-				if len(fields) > 2 {
+				if len(fields) > 3 {
 
 					//name,score,time,type;
 					pname := fields[0]
 					pscore := fields[1]
 					ptime := fields[2]
 					ptype := fields[3]
+					aafk := fields[4]
+					var pafk bool = false
+					if aafk == "true" {
+						pafk = true
+					}
 
 					plevel := fact.StringToLevel(ptype)
 
@@ -1155,7 +1160,7 @@ func handleOnlineMsg(line string) bool {
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)
-						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, ScoreTicks: scoreInt, TimeTicks: timeInt, Level: plevel})
+						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, ScoreTicks: scoreInt, TimeTicks: timeInt, Level: plevel, AFK: pafk})
 						count++
 					}
 
