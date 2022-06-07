@@ -361,7 +361,11 @@ func WritePlayers() {
 	buffer = buffer + "db-v0.03:"
 	glob.PlayerListLock.RLock()
 	for _, player := range glob.PlayerList {
-		buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", strings.ToLower(player.Name), player.Level, player.ID, player.Creation, player.LastSeen)
+
+		/* Don't bother saving new players that are not registered */
+		if player.Level != 0 || player.ID != "" {
+			buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", strings.ToLower(player.Name), player.Level, player.ID, player.Creation, player.LastSeen)
+		}
 	}
 	glob.PlayerListLock.RUnlock()
 
