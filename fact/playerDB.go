@@ -86,6 +86,8 @@ func PlayerSetID(pname string, id string, level int) bool {
 
 	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
 	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
+	id = strings.ReplaceAll(id, ",", "")       /* remove comma */
+	id = strings.ReplaceAll(id, ":", "")       /* replace colon */
 	pname = sclean.StripControlAndSubSpecial(pname)
 
 	glob.PlayerListLock.Lock()
