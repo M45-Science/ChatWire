@@ -329,7 +329,10 @@ func LoadPlayers() {
 					pid := items[2]
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
 					seen, _ := strconv.ParseInt(items[4], 10, 64)
-					AddPlayer(pname, playerlevel, pid, creation, seen)
+
+					if playerlevel != 0 || len(pid) > 1 {
+						AddPlayer(pname, playerlevel, pid, creation, seen)
+					}
 				} else if pos != 0 && pos != dblen-1 {
 					cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
 				}
