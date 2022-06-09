@@ -365,7 +365,7 @@ func WritePlayers() {
 	for _, player := range glob.PlayerList {
 
 		/* Don't bother saving new players that are not registered */
-		if player.Level != 0 || player.ID != "" {
+		if player.Level != 0 || len(player.ID) > 1 {
 			buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", strings.ToLower(player.Name), player.Level, player.ID, player.Creation, player.LastSeen)
 		}
 	}
