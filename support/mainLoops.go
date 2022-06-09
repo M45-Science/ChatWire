@@ -30,6 +30,8 @@ func LinuxSetProcessGroup(cmd *exec.Cmd) {
 
 func MainLoops() {
 
+	time.Sleep(time.Second * 10)
+
 	/***************
 	 * Game watchdog
 	 ***************/
