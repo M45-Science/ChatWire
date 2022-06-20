@@ -292,7 +292,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			cfg.Global.Paths.URLs.PathPrefix,
 			cfg.Global.Paths.URLs.ArchivePath,
 			url.PathEscape(shortversion+constants.ArchiveFolderSuffix),
-			",",
+			"/",
 			url.PathEscape(newmapname))
 
 		from, erra := os.Open(fact.GameMapPath)

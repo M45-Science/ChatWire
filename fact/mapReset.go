@@ -95,7 +95,7 @@ func Map_reset(data string, doReport bool) {
 			cfg.Global.Paths.URLs.PathPrefix,
 			cfg.Global.Paths.URLs.ArchivePath,
 			url.PathEscape(shortversion+constants.ArchiveFolderSuffix),
-			",",
+			"/",
 			url.PathEscape(newmapname))
 
 		from, erra := os.Open(GameMapPath)
