@@ -18,7 +18,7 @@ const (
 	RoleListFile        = "../RoleList.dat"
 	VoteFile            = "votes.dat"
 	MembersPrefix       = "M"
-	ArchiveFolderSuffix = " maps/"
+	ArchiveFolderSuffix = " maps"
 	BootUpdateDelayMin  = 2
 	MaxSaveBackups      = 10
 	ModPackLifeMins     = 120
