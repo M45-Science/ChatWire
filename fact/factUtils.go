@@ -255,7 +255,9 @@ func AutoPromote(pname string) string {
 
 				errrole, regrole := disc.RoleExists(guild, newrole)
 
-				if errrole {
+				if !errrole {
+					cwlog.DoLogCW(fmt.Sprintf("Couldn't find role %v.", newrole))
+				} else {
 					errset := disc.SmartRoleAdd(cfg.Global.Discord.Guild, discid, regrole.ID)
 					if errset != nil {
 						cwlog.DoLogCW(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))

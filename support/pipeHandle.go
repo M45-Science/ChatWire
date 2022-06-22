@@ -188,7 +188,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 						fact.PlayerSetID(pname, pid, plevel)
 
 						guild := disc.Guild
-						if guild != nil {
+						if guild != nil && disc.DS != nil {
 							errrole, regrole := disc.RoleExists(guild, newrole)
 
 							if !errrole {
