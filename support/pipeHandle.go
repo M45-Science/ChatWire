@@ -680,11 +680,17 @@ func handleFactReady(NoTC string) bool {
 }
 
 func handleFixLockers(NoTC string) bool {
+
 	/**********************
 	 * FIX LOCKERS
 	 *********************/
 	if strings.Contains(NoTC, "ServerMultiplayerManager") {
+
 		if strings.HasSuffix(NoTC, "changing state from(InGameSavingMap) to(InGame)") {
+			//Fixed after this version
+			if fact.CheckIfNewer(1, 1, 59) {
+				return false
+			}
 
 			fact.LockerLock.Lock()
 			fact.LockerDetectStart = time.Now()
@@ -694,6 +700,11 @@ func handleFixLockers(NoTC string) bool {
 
 		} else if strings.HasSuffix(NoTC, "oldState(ConnectedWaitingForMap) newState(ConnectedDownloadingMap)") ||
 			strings.Contains(NoTC, "Disconnect notification for peer") {
+
+			//Fixed after this version
+			if fact.CheckIfNewer(1, 1, 59) {
+				return false
+			}
 
 			fact.LockerLock.Lock()
 			fact.LockerDetectStart = time.Now()

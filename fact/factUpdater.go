@@ -6,12 +6,37 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 )
+
+func CheckIfNewer(ca, cb, cc int) bool {
+
+	if FactorioVersion == constants.Unknown {
+		return false
+	}
+
+	fv := strings.Split(FactorioVersion, ".")
+	fvl := len(fv)
+
+	var a, b, c int
+
+	if fvl == 3 {
+		a, _ = strconv.Atoi(fv[0])
+		b, _ = strconv.Atoi(fv[1])
+		c, _ = strconv.Atoi(fv[2])
+	}
+
+	if a > ca && b > cb && c > cc {
+		return true
+	}
+	return false
+
+}
 
 /* Check if Factorio update zip is valid */
 func CheckZip(filename string) bool {

@@ -87,6 +87,12 @@ func MainLoops() {
 	 ********************************/
 	go func() {
 		for glob.ServerRunning {
+
+			//Fixed after this version
+			if fact.CheckIfNewer(1, 1, 59) {
+				return
+			}
+
 			time.Sleep(time.Millisecond * 100)
 
 			fact.LockerLock.Lock()
