@@ -18,10 +18,14 @@ var (
 	GameBuffer *bytes.Buffer
 
 	/* Factorio patch info */
-	FactorioVersion = constants.Unknown
-	NewVersion      = constants.Unknown
-	NewPatchName    = constants.Unknown
-	LastSaveName    = constants.Unknown
+	FactorioVersion  = constants.Unknown
+	FactorioVersionA = 0
+	FactorioVersionB = 0
+	FactorioVersionC = 0
+
+	NewVersion   = constants.Unknown
+	NewPatchName = constants.Unknown
+	LastSaveName = constants.Unknown
 
 	/* Factorio game mod data*/
 	ModLoadMessage *discordgo.Message

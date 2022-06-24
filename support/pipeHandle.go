@@ -745,6 +745,21 @@ func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen 
 		cwlog.DoLogGame(NoTC)
 		if NoTClistlen > 3 {
 			fact.FactorioVersion = NoTClist[3]
+
+			fv := strings.Split(fact.FactorioVersion, ".")
+			fvl := len(fv)
+
+			var a, b, c int
+
+			if fvl == 3 {
+				a, _ = strconv.Atoi(fv[0])
+				b, _ = strconv.Atoi(fv[1])
+				c, _ = strconv.Atoi(fv[2])
+			}
+
+			fact.FactorioVersionA = a
+			fact.FactorioVersionB = b
+			fact.FactorioVersionC = c
 		}
 	}
 
