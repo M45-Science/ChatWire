@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "2548-06.24.2022-0756"
+	Version = "2549-06.26.2022-0621"
 	CWEpoch = 1653239822390688174
 	Unknown = "Unknown"
 
@@ -46,12 +46,12 @@ const (
 	RestartLimitSleepMinutes = 2  /* cw.lock is new, sleep this long then exit. */
 
 	/* Vote Map */
-	VotesNeeded     = 2 /* Number of votes needed */
-	MapCooldownMins = 1 /* Cooldown */
-	VoteLifetime    = 5 /* How long a vote lasts */
-	MaxVoteChanges  = 2 /* Max number of times a player can change their vote */
-	MaxVotesPerMap  = 4 /* Max number of votes per map */
-	MaxMapResults   = 20
+	VotesNeeded     = 2  /* Number of votes needed */
+	MapCooldownMins = 1  /* Cooldown */
+	VoteLifetime    = 5  /* How long a vote lasts */
+	MaxVoteChanges  = 2  /* Max number of times a player can change their vote */
+	MaxVotesPerMap  = 4  /* Max number of votes per map */
+	MaxMapResults   = 24 /* 25 is Discord max 6/2022, we add one to list for 'new' */
 
 	/* Max results to return */
 	WhoisResults = 15

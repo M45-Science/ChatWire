@@ -350,6 +350,7 @@ func DoUpdateChannelName() {
 }
 
 func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode bool) {
+
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -377,22 +378,18 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 		return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
 
-	maxList := constants.MaxMapResults
 	var availableMaps []discordgo.SelectMenuOption
 
-	numFiles := len(tempf) - 1
-	startPos := 0
-	if numFiles > maxList {
-		startPos = maxList
-	} else {
-		startPos = numFiles
+	numFiles := len(tempf)
+	if numFiles > constants.MaxMapResults {
+		numFiles = constants.MaxMapResults
 	}
 
 	availableMaps = append(availableMaps,
 		discordgo.SelectMenuOption{
 
 			Label:       "NEW-MAP",
-			Description: "Vote to archive the current map, and generate a new one.",
+			Description: "Archive the current map, and generate a new one.",
 			Value:       "NEW-MAP",
 			Emoji: discordgo.ComponentEmoji{
 				Name: "⭐",
@@ -400,13 +397,14 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 		},
 	)
 
-	for i := startPos; i > 0; i-- {
+	for i := 0; i < numFiles; i++ {
 
 		f := tempf[i]
 		fName := f.Name()
 
 		if strings.HasSuffix(fName, ".zip") {
 			saveName := strings.TrimSuffix(fName, ".zip")
+			//saveName = strings.TrimPrefix(saveName, "autosave")
 			step++
 
 			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
@@ -417,7 +415,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 			/* Get mod date */
 			modDate := time.Since(f.ModTime())
 			modDate = modDate.Round(time.Second)
-			modStr := durafmt.Parse(modDate).LimitFirstN(3).Format(units) + " ago"
+			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
 
 			availableMaps = append(availableMaps,
 				discordgo.SelectMenuOption{
