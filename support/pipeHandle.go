@@ -679,42 +679,6 @@ func handleFactReady(NoTC string) bool {
 	return false
 }
 
-func handleFixLockers(NoTC string) bool {
-
-	/**********************
-	 * FIX LOCKERS
-	 *********************/
-	if strings.Contains(NoTC, "ServerMultiplayerManager") {
-
-		if strings.HasSuffix(NoTC, "changing state from(InGameSavingMap) to(InGame)") {
-			//Fixed after this version
-			if fact.CheckIfNewer(1, 1, 59) {
-				return false
-			}
-
-			fact.LockerLock.Lock()
-			fact.LockerDetectStart = time.Now()
-			fact.LockerStart = true
-			fact.LockerLock.Unlock()
-			return true
-
-		} else if strings.HasSuffix(NoTC, "oldState(ConnectedWaitingForMap) newState(ConnectedDownloadingMap)") ||
-			strings.Contains(NoTC, "Disconnect notification for peer") {
-
-			//Fixed after this version
-			if fact.CheckIfNewer(1, 1, 59) {
-				return false
-			}
-
-			fact.LockerLock.Lock()
-			fact.LockerDetectStart = time.Now()
-			fact.LockerStart = false
-			fact.LockerLock.Unlock()
-			return true
-		}
-	}
-	return false
-}
 
 func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 	/********************************
@@ -723,10 +687,7 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 	if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
 		if numwords > 1 {
 			pName := words[numwords-1]
-			fact.LockerLock.Lock()
-			fact.LastLockerName = pName
-			fact.LockerLock.Unlock()
-
+			
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.FactChat(fmsg)

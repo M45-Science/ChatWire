@@ -108,7 +108,6 @@ func HandleChat() {
 							continue
 						}
 
-						/* Don't eat event, used for fixLockers */
 						go handleSlowConnect(NoTC, line)
 
 						if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
@@ -134,10 +133,6 @@ func HandleChat() {
 						}
 
 						if handleFactReady(NoTC) {
-							continue
-						}
-
-						if handleFixLockers(NoTC) {
 							continue
 						}
 

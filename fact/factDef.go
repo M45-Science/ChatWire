@@ -48,12 +48,6 @@ var (
 	FactorioBootedAt time.Time
 	DoUpdateFactorio = false
 
-	/* Locker detect */
-	LockerDetectStart time.Time
-	LockerStart       bool
-	LockerLock        sync.Mutex
-	LastLockerName    string
-
 	/* Factorio autostart */
 	FactAutoStart = false
 

@@ -83,38 +83,6 @@ func MainLoops() {
 	}()
 
 	/********************************
-	 * Look for lockers
-	 ********************************/
-	go func() {
-		for glob.ServerRunning {
-
-			//Fixed after this version
-			if fact.CheckIfNewer(1, 1, 59) {
-				return
-			}
-
-			time.Sleep(time.Millisecond * 100)
-
-			fact.LockerLock.Lock()
-
-			if fact.LockerStart {
-				if !fact.LockerDetectStart.IsZero() && time.Since(fact.LockerDetectStart) > time.Second*5 && fact.LastLockerName != "" {
-					fact.LockerDetectStart = time.Now()
-					fact.LockerStart = false
-
-					msg := "Locker bug detected (" + fact.LastLockerName + "), kicking."
-					cwlog.DoLogCW(msg)
-					fact.WriteFact("/chat " + msg)
-					fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-					fact.WriteFact("/kick " + fact.LastLockerName)
-				}
-			}
-
-			fact.LockerLock.Unlock()
-		}
-	}()
-
-	/********************************
 	 * Decrement player suspicion
 	 ********************************/
 	go func() {
