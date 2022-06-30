@@ -254,7 +254,9 @@ func GetFactorioNameFromDiscordID(id string) string {
 	return ""
 }
 
-func GetPlayerDataFromName(pname string) *glob.PlayerData {
+func GetPlayerDataFromName(input string) *glob.PlayerData {
+	pname := strings.ToLower(input)
+
 	if pname == "" {
 		return nil
 	}
