@@ -219,7 +219,9 @@ func GetDiscordAvatarFromId(id string, size int) string {
 }
 
 /* Look up DiscordID, from Factorio name. Only works for players that have registered */
-func GetDiscordIDFromFactorioName(pname string) string {
+func GetDiscordIDFromFactorioName(input string) string {
+
+	pname := strings.ToLower(input)
 
 	if pname == "" {
 		return ""
