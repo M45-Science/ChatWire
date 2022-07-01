@@ -404,7 +404,6 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 
 		if strings.HasSuffix(fName, ".zip") {
 			saveName := strings.TrimSuffix(fName, ".zip")
-			//saveName = strings.TrimPrefix(saveName, "autosave")
 			step++
 
 			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
@@ -480,6 +479,94 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 		err := s.InteractionRespond(i.Interaction, response)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
+		}
+	}
+}
+
+func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
+
+	files, err := ioutil.ReadDir(path)
+	/* We can't read saves dir */
+	if err != nil {
+		log.Fatal(err)
+		disc.EphemeralResponse(s, i, "Error:", "Unable to read saves directory.")
+	}
+
+	step := 1
+	/* Loop all files */
+	var tempf []fs.FileInfo
+	for _, f := range files {
+		//Hide non-zip files, temp files, and our map-change temp file.
+		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") && !strings.HasSuffix(f.Name(), cfg.Local.Name+"_new.zip") {
+			tempf = append(tempf, f)
+		}
+	}
+
+	sort.Slice(tempf, func(i, j int) bool {
+		return tempf[i].ModTime().After(tempf[j].ModTime())
+	})
+
+	mapList := ""
+	numFiles := len(tempf)
+	if numFiles > constants.MaxFullMapResults {
+		numFiles = constants.MaxFullMapResults
+	}
+
+	for i := 0; i < numFiles; i++ {
+
+		f := tempf[i]
+		fName := f.Name()
+
+		if strings.HasSuffix(fName, ".zip") {
+			saveName := strings.TrimSuffix(fName, ".zip")
+			saveName = strings.TrimPrefix(saveName, "_autosave")
+			step++
+
+			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
+			if err != nil {
+				panic(err)
+			}
+
+			/* Get mod date */
+			modDate := time.Since(f.ModTime())
+			modDate = modDate.Round(time.Second)
+			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units)
+
+			sepStr := ", "
+			if i%2 == 0 {
+				sepStr = "\n"
+			}
+			tempStr := fmt.Sprintf("%v: %v%v", saveName, modStr, sepStr)
+			mapListLen := len(mapList)
+			tempStrLen := len(tempStr)
+
+			if mapListLen+tempStrLen > 4080 {
+				mapList = mapList + "...(cut, max)"
+				break
+			} else {
+				mapList = mapList + tempStr
+			}
+		}
+	}
+
+	if numFiles <= 0 {
+		disc.EphemeralResponse(s, i, "Error:", "No saves were found.")
+	} else {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Full map list", Description: mapList})
+
+		//1 << 6 is ephemeral/private, don't use disc.EphemeralResponse (logged)
+		respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
+		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
+		err := s.InteractionRespond(i.Interaction, resp)
+		if err != nil {
+			return
 		}
 	}
 }

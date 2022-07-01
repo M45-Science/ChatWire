@@ -244,8 +244,22 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "change-map",
-		Description: "Load a specific saved map.",
+		Description: "Load a specific save, shows drop down of last 25.",
 		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "list",
+				Description: "show full list of saves",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Required:    false,
+			},
+			{
+				Name:        "load",
+				Description: "manually specifiy a save name to load",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+		},
 	},
 		Command: moderator.ChangeMap, ModeratorOnly: true},
 
