@@ -30,7 +30,7 @@ func LinuxSetProcessGroup(cmd *exec.Cmd) {
 
 func MainLoops() {
 
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 1)
 
 	/***************
 	 * Game watchdog
@@ -275,6 +275,8 @@ func MainLoops() {
 	 * Save database, if marked dirty
 	 ********************************/
 	go func() {
+		time.Sleep(time.Minute)
+
 		for glob.ServerRunning {
 			time.Sleep(5 * time.Second)
 
@@ -304,6 +306,8 @@ func MainLoops() {
 	 * Save database (less often), if last seen is marked dirty
 	 ***********************************************************/
 	go func() {
+		time.Sleep(time.Minute)
+
 		for glob.ServerRunning {
 			time.Sleep(5 * time.Minute)
 			glob.PlayerListSeenDirtyLock.Lock()
@@ -329,6 +333,8 @@ func MainLoops() {
 	/* Read database, if the file was modifed */
 	go func() {
 		updated := false
+
+		time.Sleep(time.Second * 30)
 
 		for glob.ServerRunning {
 
@@ -450,8 +456,9 @@ func MainLoops() {
 	 * Update patreon/nitro players
 	 *******************************/
 	go func() {
+		time.Sleep(time.Minute)
 		for glob.ServerRunning {
-			time.Sleep(time.Minute * 15)
+
 			if fact.FactorioBooted {
 				disc.UpdateRoleList()
 
@@ -469,6 +476,7 @@ func MainLoops() {
 				}
 				disc.RoleListUpdated = false
 			}
+			time.Sleep(time.Minute * 15)
 		}
 	}()
 
@@ -642,6 +650,8 @@ func MainLoops() {
 	* Check for Factorio updates
 	****************************/
 	go func() {
+		time.Sleep(time.Minute)
+
 		for glob.ServerRunning {
 			time.Sleep(time.Hour * 3)
 			fact.CheckFactUpdate(false)
@@ -681,6 +691,8 @@ func MainLoops() {
 	var fastOCheck = (time.Second * 15)
 
 	go func() {
+		time.Sleep(time.Second * 30)
+
 		for {
 			if fact.FactIsRunning && fact.FactorioBooted {
 
@@ -708,7 +720,8 @@ func MainLoops() {
 	/* Check for mod update     */
 	/****************************/
 	go func() {
-		time.Sleep(time.Minute)
+		time.Sleep(time.Minute * 5)
+
 		for glob.ServerRunning {
 			modupdate.CheckMods(false, false)
 
@@ -721,6 +734,7 @@ func MainLoops() {
 	/****************************/
 	go func() {
 		var lastDur string
+		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
@@ -746,9 +760,11 @@ func MainLoops() {
 	/****************************/
 	go func() {
 		delme := -1
+
+		time.Sleep(time.Minute)
 		for glob.ServerRunning {
 
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 15)
 			numItems := len(cfg.Local.ModPackList)
 
 			if numItems > 0 {
