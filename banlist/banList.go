@@ -112,7 +112,7 @@ func ReadBanFile() {
 
 	for _, name := range names {
 		if name != "" {
-			bData = append(bData, banDataType{UserName: name})
+			bData = append(bData, banDataType{UserName: strings.ToLower(name)})
 		}
 	}
 
