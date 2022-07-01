@@ -286,7 +286,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		date := t.Format("2006-01-02")
 
 		newmapname := fmt.Sprintf("%v-%v-%v.zip", cfg.Local.Callsign, cfg.Local.Name, date)
-		newmappath := fmt.Sprintf("%v%v%v%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, newmapname)
+		newmappath := fmt.Sprintf("%v%v%v%v%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, "/", newmapname)
 		newmapurl := fmt.Sprintf("https://%v%v%v%v%v%v",
 			cfg.Global.Paths.URLs.Domain,
 			cfg.Global.Paths.URLs.PathPrefix,
