@@ -45,7 +45,7 @@ func CheckBanList(player string) {
 
 func WatchBanFile() {
 	for glob.ServerRunning {
-		time.Sleep(time.Second * 15)
+		time.Sleep(time.Second * 60)
 
 		if cfg.Global.Paths.DataFiles.Bans == "" {
 			break
