@@ -75,6 +75,8 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	os.Mkdir("factorio/saves", 0755)
+
 	if err == nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
