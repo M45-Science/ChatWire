@@ -80,7 +80,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	TallyMapVotes()
 	for vpos, v = range glob.VoteBox.Votes {
 		if strings.EqualFold(v.DiscID, i.Member.User.ID) && strings.EqualFold(v.Name, i.Member.User.Username) {
-			left := (constants.VoteLifetime * time.Minute).Round(time.Second) - time.Since(v.Time)
+			left := (constants.VoteCooldown * time.Minute).Round(time.Second) - time.Since(v.Time)
 
 			if v.Selection != arg && !v.Voided && v.NumChanges < constants.MaxVoteChanges {
 				glob.VoteBox.Votes[vpos].Selection = arg
@@ -226,17 +226,19 @@ func TallyMapVotes() (string, int) {
 
 		/* Void or Cast */
 		if v.Voided {
-			buf = buf + PrintVote(v)
-			buf = buf + " (void/cast)\n"
+			//buf = buf + PrintVote(v)
+			//buf = buf + " (void/cast)\n"
 			glob.VoteBox.Votes[vpos].NumChanges = 0
-			visVotes++
+			//visVotes++
 			totalVotes++
 
 			/* Expired */
-		} else if (time.Since(v.Time) > (constants.VoteLifetime*time.Minute) || v.Expired) && !v.Voided {
+		} else if (time.Since(v.Time) > (constants.VoteExpire*time.Hour) || v.Expired) && !v.Voided {
 			glob.VoteBox.Votes[vpos].Expired = true
 			glob.VoteBox.Votes[vpos].NumChanges = 0
-
+			buf = buf + PrintVote(v)
+			buf = buf + " (EXPIRED)\n"
+			visVotes++
 			totalVotes++
 
 			/* Valid */
@@ -263,7 +265,6 @@ func TallyMapVotes() (string, int) {
 			if v.Selection == a.Selection {
 				/* Same autosave, tally */
 				glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
-				continue
 			}
 		}
 		/* Different autosave, add to list */
