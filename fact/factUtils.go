@@ -494,7 +494,7 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	files, err := ioutil.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
-		log.Fatal(err)
+		cwlog.DoLogCW(err.Error())
 		disc.EphemeralResponse(s, i, "Error:", "Unable to read saves directory.")
 	}
 
