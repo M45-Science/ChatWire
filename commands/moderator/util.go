@@ -431,7 +431,7 @@ func GetMapGenNames() []string {
 func CheckMapGen(text string) bool {
 
 	/* Allow no generator */
-	if text == "" {
+	if text == "" || text == "none" {
 		return true
 	}
 	genNames := GetMapGenNames()
