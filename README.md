@@ -77,4 +77,15 @@ Factorio:<br>
 Binary:<br>
 `./cw-a/factorio/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
-
+<br>
+Launch params:<br>
+Usage of ./ChatWire:<br>
+  -deregCommands<br>
+        Deregister discord commands<br>
+  -localTest<br>
+        Turn off public/auth mode for testing<br>
+  -noAutoLaunch<br>
+        Turn off auto-launch<br>
+  -regCommands<br>
+        Register discord commands<br>
+        
