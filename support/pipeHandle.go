@@ -157,7 +157,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					} else if strings.EqualFold(ptype, "regular") {
 						newrole = cfg.Global.Discord.Roles.Regular
 						plevel = 2
-					} else if strings.EqualFold(ptype, "admin") {
+					} else if strings.EqualFold(ptype, "moderator") {
 						newrole = cfg.Global.Discord.Roles.Moderator
 						plevel = 255
 					} else {
@@ -429,7 +429,7 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 					fact.PlayerLevelSet(trustname, 2, false)
 					fact.AutoPromote(trustname)
 					return true
-				} else if strings.Contains(line, " moved to Admins group.") {
+				} else if strings.Contains(line, " moved to moderators group") {
 					fact.PlayerLevelSet(trustname, 255, false)
 					fact.AutoPromote(trustname)
 					return true
@@ -679,7 +679,6 @@ func handleFactReady(NoTC string) bool {
 	return false
 }
 
-
 func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 	/********************************
 	 * Announce incoming connections
@@ -687,7 +686,7 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 	if strings.Contains(NoTC, "Queuing ban recommendation check for user ") {
 		if numwords > 1 {
 			pName := words[numwords-1]
-			
+
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.FactChat(fmsg)

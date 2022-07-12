@@ -181,7 +181,7 @@ func LevelToString(level int) string {
 	} else if level == 2 {
 		name = "Regular"
 	} else if level >= 255 {
-		name = "Admin"
+		name = "Moderator"
 	}
 
 	return name
@@ -199,7 +199,7 @@ func StringToLevel(input string) int {
 		level = 2
 	} else if strings.EqualFold(input, "banished") {
 		level = 0
-	} else if strings.EqualFold(input, "admins") {
+	} else if strings.EqualFold(input, "moderator") {
 		level = 255
 	}
 
