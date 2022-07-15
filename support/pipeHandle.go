@@ -345,12 +345,9 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 				return true
 			}
 
-			//Messing with tags increases spam and sus score.
+			//Messing with tags increases spam score.
 			if strings.Contains(action, "tag") {
 				glob.ChatterSpamScore[pname] += 2
-				if glob.PlayerSus != nil {
-					glob.PlayerSus[pname] += 2
-				}
 			}
 
 			if !cfg.Local.Options.Whitelist {
