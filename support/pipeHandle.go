@@ -1002,7 +1002,9 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						glob.ChatterSpamScore[pname] += 2
 						glob.ChatterList[pname] = time.Now()
 					} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
-						glob.ChatterSpamScore[pname] -= 1
+						if glob.ChatterSpamScore[pname] > 0 {
+							glob.ChatterSpamScore[pname] -= 1
+						}
 						glob.ChatterList[pname] = time.Now()
 					} else if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
 						glob.ChatterSpamScore[pname] = 0
