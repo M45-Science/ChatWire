@@ -869,7 +869,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 		}
 		/* Mod Errors */
 		if strings.Contains(NoTC, "caused a non-recoverable error.") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and closed.")
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and will reboot.")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
@@ -921,7 +921,8 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			}
 			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") ||
 				strings.Contains(NoTC, "expected") || strings.Contains(NoTC, ".lua:") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error and closed.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error and will stop.")
+				fact.FactAutoStart = false
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
