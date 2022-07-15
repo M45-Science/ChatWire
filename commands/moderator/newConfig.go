@@ -115,6 +115,7 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
+		support.ConfigSoftMod()
 		if cfg.WriteLCfg() {
 			if !fact.GenerateFactorioConfig() {
 				disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")

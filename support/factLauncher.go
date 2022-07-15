@@ -204,16 +204,13 @@ func ConfigSoftMod() {
 		fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
 	}
 	if cfg.Local.Options.SoftModOptions.CleanMap {
-		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cleaning map.")
 		fact.WriteFact("/cleanmap")
 	}
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 		fact.WriteFact("/blueprints off")
-		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Blueprints disabled.")
 	}
 	if cfg.Local.Options.SoftModOptions.Cheats {
 		fact.WriteFact("/enablecheats on")
-		//fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cheats enabled.")
 	}
 
 	/* Patreon list */

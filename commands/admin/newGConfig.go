@@ -116,6 +116,7 @@ func GConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
+		support.ConfigSoftMod()
 		if cfg.WriteGCfg() {
 			disc.EphemeralResponse(s, i, "Status:", buf)
 		} else {

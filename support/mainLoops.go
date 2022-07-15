@@ -462,12 +462,7 @@ func MainLoops() {
 			if fact.FactorioBooted {
 				disc.UpdateRoleList()
 
-				if disc.RoleListUpdated && len(disc.RoleList.Patreons) > 0 {
-					fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
-				}
-				if disc.RoleListUpdated && len(disc.RoleList.NitroBooster) > 0 {
-					fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
-				}
+				ConfigSoftMod()
 
 				/* Live update server description */
 				if disc.RoleListUpdated {

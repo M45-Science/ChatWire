@@ -84,22 +84,8 @@ func reloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	fact.SetupSchedule()
 
-	/* Config reset-interval */
-	if fact.NextReset != "" {
-		fact.WriteFact("/resetint " + fact.NextReset)
-	}
-	if fact.TillReset != "" {
-		fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
-	}
+	support.ConfigSoftMod()
 
-	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
-		fact.WriteFact("/blueprints " + support.BoolToString(!cfg.Local.Options.SoftModOptions.DisableBlueprints))
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Blueprints disabled.")
-	}
-	if cfg.Local.Options.SoftModOptions.Cheats {
-		fact.WriteFact("/enablecheats " + support.BoolToString(cfg.Local.Options.SoftModOptions.Cheats))
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Cheats enabled.")
-	}
 	/* This also uses /config to live change settings. */
 	fact.GenerateFactorioConfig()
 
