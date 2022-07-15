@@ -921,7 +921,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 			}
 			if strings.Contains(NoTC, "syntax error") || strings.Contains(NoTC, "unexpected symbol") ||
 				strings.Contains(NoTC, "expected") || strings.Contains(NoTC, ".lua:") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error and closed.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
