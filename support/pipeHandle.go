@@ -336,49 +336,65 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 		cwlog.DoLogGame(line)
 
 		/* Don't bother on whitelist servers */
-		if lineListLen > 2 && !cfg.Local.Options.Whitelist {
+		if lineListLen > 2 {
+
 			pname := lineList[1]
-			go fact.UpdateSeen(pname)
+			action := lineList[2]
 
-			if pname != "" && glob.PlayerSus != nil {
-				p := disc.GetPlayerDataFromName(pname)
-				if p != nil && p.Name != "" && p.Level < 1 {
-					action := lineList[2]
+			if pname == "" {
+				return true
+			}
 
-					glob.PlayerSusLock.Lock()
+			//Messing with tags increases spam and sus score.
+			if strings.Contains(action, "tag") {
+				glob.ChatterSpamScore[pname] += 2
+				if glob.PlayerSus != nil {
+					glob.PlayerSus[pname] += 2
+				}
+			}
 
-					if strings.Contains(action, "tag") ||
-						strings.Contains(action, "rotated") ||
-						strings.Contains(action, "ghost") {
-						glob.PlayerSus[pname] += 2
-					} else if strings.Contains(action, "placed") {
-						if glob.PlayerSus[pname] > 0 {
-							glob.PlayerSus[pname]--
-						}
-						if glob.PlayerSus[pname] > 0 {
-							glob.PlayerSus[pname]--
-						}
-					} else { //Other actions like: mine, deconstruct
-						glob.PlayerSus[pname]++
+			if !cfg.Local.Options.Whitelist {
+				go fact.UpdateSeen(pname)
 
-						if glob.PlayerSus[pname] > 15 {
+				if pname != "" && glob.PlayerSus != nil {
+					p := disc.GetPlayerDataFromName(pname)
+					if p != nil && p.Name != "" && p.Level < 2 {
 
-							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
-								glob.LastSusWarning = time.Now()
+						glob.PlayerSusLock.Lock()
 
-								if !cfg.Global.Options.ShutupSusWarn {
-									sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
+						if strings.Contains(action, "tag") ||
+							strings.Contains(action, "rotated") ||
+							strings.Contains(action, "ghost") {
+							glob.PlayerSus[pname] += 2
+						} else if strings.Contains(action, "placed") {
+							if glob.PlayerSus[pname] > 0 {
+								glob.PlayerSus[pname]--
+							}
+							if glob.PlayerSus[pname] > 0 {
+								glob.PlayerSus[pname]--
+							}
+						} else { //Other actions like: mine, deconstruct
+							glob.PlayerSus[pname]++
 
-									fact.FactChat("[color=red]" + sbuf + "[/color]")
-									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+							if glob.PlayerSus[pname] > 10 {
+
+								if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
+									glob.LastSusWarning = time.Now()
+
+									if !cfg.Global.Options.ShutupSusWarn {
+										sbuf := fmt.Sprintf("*WARNING*: New player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
+
+										fact.FactChat("[color=red]" + sbuf + "[/color]")
+										fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+									}
+
+									glob.PlayerSus[pname] = 0
 								}
-
-								glob.PlayerSus[pname] = 0
 							}
 						}
-					}
 
-					glob.PlayerSusLock.Unlock()
+						glob.PlayerSusLock.Unlock()
+					}
 				}
 			}
 		}
@@ -921,7 +937,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 				return true
 			}
 			/* Bad zip file */
-			if strings.Contains(NoTC, "failed: Bad zip file") {
+			if strings.Contains(NoTC, "(Bad zip file)") {
 				if numwords > 6 {
 					if strings.HasSuffix(words[7], ".zip") || strings.HasSuffix(words[7], ".tmp.zip") {
 						err := os.Remove(words[7])
