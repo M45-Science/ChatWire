@@ -345,11 +345,6 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 				return true
 			}
 
-			//Messing with tags increases spam score.
-			if strings.Contains(action, "add-tag") || strings.Contains(action, "del-tag") || strings.Contains(action, "mod-tag") {
-				glob.ChatterSpamScore[pname] += 2
-			}
-
 			if !cfg.Local.Options.Whitelist {
 				go fact.UpdateSeen(pname)
 
@@ -1015,9 +1010,6 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						if !cfg.Global.Options.DisableSpamProtect {
 							bbuf = fmt.Sprintf("/whisper %v [color=red]*** SPAMMING / FLOODING WARNING! (slow down) ***[/color]\n", pname)
 							fact.WriteFact(bbuf)
-							if glob.ChatterSpamScore[pname] > 0 {
-								glob.ChatterSpamScore[pname]--
-							}
 						}
 					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
