@@ -346,7 +346,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 			}
 
 			//Messing with tags increases spam score.
-			if strings.Contains(action, "tag") {
+			if strings.Contains(action, "add-tag") || strings.Contains(action, "del-tag") || strings.Contains(action, "mod-tag") {
 				glob.ChatterSpamScore[pname] += 2
 			}
 
@@ -373,7 +373,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 						} else { //Other actions like: mine, deconstruct
 							glob.PlayerSus[pname]++
 
-							if glob.PlayerSus[pname] > 10 {
+							if glob.PlayerSus[pname] > constants.SusWarningThresh {
 
 								if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
 									glob.LastSusWarning = time.Now()
@@ -1003,7 +1003,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 						glob.ChatterList[pname] = time.Now()
 					} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
 						if glob.ChatterSpamScore[pname] > 0 {
-							glob.ChatterSpamScore[pname] -= 1
+							glob.ChatterSpamScore[pname]--
 						}
 						glob.ChatterList[pname] = time.Now()
 					} else if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
@@ -1013,8 +1013,11 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 
 					if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
 						if !cfg.Global.Options.DisableSpamProtect {
-							bbuf = fmt.Sprintf("/whisper %v [color=red]***CHAT SPAM WARNING!***[/color]\n", pname)
+							bbuf = fmt.Sprintf("/whisper %v [color=red]*** SPAMMING / FLOODING WARNING! (slow down) ***[/color]\n", pname)
 							fact.WriteFact(bbuf)
+							if glob.ChatterSpamScore[pname] > 0 {
+								glob.ChatterSpamScore[pname]--
+							}
 						}
 					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
@@ -1025,9 +1028,9 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 									cfg.Global.Paths.URLs.LogPath,
 									strings.TrimPrefix(glob.GameLogName, "log/"))
 
-								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban) %v", pname, newmapurl)
+								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban) %v", pname, newmapurl)
 							} else {
-								bbuf = fmt.Sprintf("/ban %v Spamming chat (auto-ban)", pname)
+								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban)", pname)
 							}
 
 							fact.WriteFact(bbuf)

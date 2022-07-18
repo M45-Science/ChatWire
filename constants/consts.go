@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version = "2557-07.15.2022-1038"
+	Version = "2558-07.18.2022-1043"
 	CWEpoch = 1653239822390688174
 	Unknown = "Unknown"
 
@@ -34,6 +34,9 @@ const (
 
 	SpamCoolThres  = time.Second * 6
 	SpamResetThres = time.Second * 10
+
+	/* Player suspectr settings */
+	SusWarningThresh = 10
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"
