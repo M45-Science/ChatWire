@@ -219,18 +219,16 @@ func PrintVote(v glob.MapVoteData) string {
 func TallyMapVotes() (string, int) {
 	validVotes := 0
 	visVotes := 0
-	totalVotes := 0
 
 	buf := "VOTE-MAP: votes cast\n```"
 	for vpos, v := range glob.VoteBox.Votes {
 
 		/* Void or Cast */
 		if v.Voided {
-			//buf = buf + PrintVote(v)
-			//buf = buf + " (void/cast)\n"
+			buf = buf + PrintVote(v)
+			buf = buf + " (void/cast)\n"
 			glob.VoteBox.Votes[vpos].NumChanges = 0
-			//visVotes++
-			totalVotes++
+			visVotes++
 
 			/* Expired */
 		} else if (time.Since(v.Time) > (constants.VoteExpire*time.Hour) || v.Expired) && !v.Voided {
@@ -239,7 +237,6 @@ func TallyMapVotes() (string, int) {
 			buf = buf + PrintVote(v)
 			buf = buf + " (EXPIRED)\n"
 			visVotes++
-			totalVotes++
 
 			/* Valid */
 		} else if !v.Voided && !v.Expired {
@@ -247,7 +244,6 @@ func TallyMapVotes() (string, int) {
 			buf = buf + " (VALID)\n"
 			visVotes++
 			validVotes++
-			totalVotes++
 		}
 	}
 	buf = buf + " ```\n"
@@ -262,7 +258,8 @@ func TallyMapVotes() (string, int) {
 	glob.VoteBox.Tally = []glob.VoteTallyData{}
 	for _, v := range glob.VoteBox.Votes {
 		for apos, a := range glob.VoteBox.Tally {
-			if v.Selection == a.Selection {
+			if v.Selection == a.Selection &&
+				!v.Voided && !v.Expired {
 				/* Same autosave, tally */
 				glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
 			}
