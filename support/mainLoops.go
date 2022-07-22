@@ -352,7 +352,7 @@ func MainLoops() {
 				updated = false
 
 				//cwlog.DoLogCW("Database file modified, loading.")
-				fact.LoadPlayers()
+				fact.LoadPlayers(false)
 
 				/* Sleep after reading */
 				time.Sleep(5 * time.Second)

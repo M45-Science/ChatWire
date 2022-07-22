@@ -136,7 +136,7 @@ func main() {
 	fact.SetupSchedule()
 
 	/* Read in player list */
-	fact.LoadPlayers()
+	fact.LoadPlayers(true)
 
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
