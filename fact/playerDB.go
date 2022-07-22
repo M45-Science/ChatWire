@@ -204,7 +204,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
+func AddPlayer(pname string, level int, id string, creation int64, seen int64, firstLoad bool) {
 	if pname == "" {
 		return
 	}
@@ -219,7 +219,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 		} else if level == -1 && glob.PlayerList[pname].Level >= 0 {
 			glob.PlayerList[pname].Level = level
 
-			if time.Since(glob.Uptime) > (time.Minute * 5) {
+			if !firstLoad {
 
 				/* Use discordid as a sneaky way to pass ban reason */
 				idReason := id
@@ -258,6 +258,19 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64) {
 	}
 	glob.PlayerList[pname] = &newplayer
 	WhitelistPlayer(pname, level)
+
+	if level == -1 && !firstLoad {
+
+		/* Use discordid as a sneaky way to pass ban reason */
+		idReason := id
+		reason := "Banned on a different server."
+		if sclean.AlphaOnly(idReason) != "" {
+			reason = idReason
+		}
+
+		WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
+	}
+
 }
 
 /* Get player level, add to db if not found */
@@ -306,7 +319,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 }
 
 /* Load database */
-func LoadPlayers() {
+func LoadPlayers(firstLoad bool) {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
@@ -335,7 +348,7 @@ func LoadPlayers() {
 					seen, _ := strconv.ParseInt(items[4], 10, 64)
 
 					if playerlevel != 0 || len(pid) > 1 {
-						AddPlayer(pname, playerlevel, pid, creation, seen)
+						AddPlayer(pname, playerlevel, pid, creation, seen, firstLoad)
 					}
 				} else if pos != 0 && pos != dblen-1 {
 					cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
