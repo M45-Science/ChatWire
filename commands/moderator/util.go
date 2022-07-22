@@ -405,6 +405,15 @@ var SettingList = []SettingListData{
 
 		IData: &cfg.Local.Settings.Seed,
 	},
+	{
+		Name:      "soft-mod-inject",
+		ShortDesc: "soft mod injection",
+		Desc:      "Inject soft mod scripts from saves/softmod",
+		Type:      TYPE_BOOL,
+		DefBool:   false,
+
+		BData: &cfg.Local.Options.SoftModOptions.InjectSoftMod,
+	},
 }
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */

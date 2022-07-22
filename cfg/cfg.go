@@ -91,11 +91,10 @@ type folderPaths struct {
 }
 
 type binaryPaths struct {
-	FactBinary      string
-	FactUpdater     string
-	UpdaterShell    string
-	Shell           string
-	SoftModInserter string
+	FactBinary   string
+	FactUpdater  string
+	UpdaterShell string
+	Shell        string
 }
 
 type urlPaths struct {
@@ -182,6 +181,7 @@ type softmodOptions struct {
 	CleanMap          bool
 	DisableBlueprints bool
 	Cheats            bool
+	InjectSoftMod     bool
 	SlowConnect       slowConnect
 }
 type slowConnect struct {

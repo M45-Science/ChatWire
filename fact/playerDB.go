@@ -357,6 +357,10 @@ func LoadPlayers(firstLoad bool) {
 			glob.PlayerListLock.Unlock()
 
 		}
+		if firstLoad {
+			cwlog.DoLogCW("Player database loaded.")
+		}
+
 	}
 }
 
