@@ -155,14 +155,14 @@ func launchFactorio() {
 				cwlog.DoLogCW("sm-inject: found " + f.Name)
 				file, err := f.Open()
 				if err != nil {
-					cwlog.DoLogCW("sm-inject: unable to open " + f.Name)
+					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
 				} else {
 					defer file.Close()
 
 					data := make([]byte, f.UncompressedSize64)
-					dread, derr := file.Read(data)
-					if dread != len(data) || derr != nil {
-						cwlog.DoLogCW("sm-inject: unable to read " + f.Name)
+					_, derr := file.Read(data)
+					if derr != nil {
+						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name)
 					} else {
 						//Put in new zip file here
 					}
