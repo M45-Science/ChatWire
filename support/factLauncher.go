@@ -159,12 +159,22 @@ func launchFactorio() {
 				} else {
 					defer file.Close()
 
-					data := make([]byte, f.UncompressedSize64)
-					_, derr := file.Read(data)
+					read, derr := f.Open()
+
 					if derr != nil {
-						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name)
+						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name + ", " + derr.Error())
 					} else {
-						//Put in new zip file here!
+						data, rerr := ioutil.ReadAll(read)
+						dlen := uint64(len(data))
+						if rerr != nil && rerr != io.EOF {
+							cwlog.DoLogCW("Unable to read file: " + f.Name + ", " + rerr.Error())
+						} else if dlen != f.UncompressedSize64 {
+							sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
+							cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
+						} else {
+							defer read.Close()
+							//Put in new zip file here!
+						}
 					}
 
 				}
