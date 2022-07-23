@@ -134,7 +134,7 @@ func launchFactorio() {
 	} */
 
 	/* Find, test and load newest save game available */
-	found, fileName, fileDir := GetSaveGame(true)
+	found, fileName, _ := GetSaveGame(true)
 	if !found {
 		cwlog.DoLogCW("Unable to load any saves.")
 		fact.FactAutoStart = false
@@ -152,7 +152,22 @@ func launchFactorio() {
 				strings.HasSuffix(f.Name, ".dat") ||
 				strings.EqualFold(f.Name, "level-init.dat") ||
 				strings.EqualFold(f.Name, "level.datmetadata") {
+				cwlog.DoLogCW("sm-inject: found " + f.Name)
+				file, err := f.Open()
+				if err != nil {
+					cwlog.DoLogCW("sm-inject: unable to open " + f.Name)
+				} else {
+					defer file.Close()
 
+					data := make([]byte, f.UncompressedSize64)
+					dread, derr := file.Read(data)
+					if dread != len(data) || derr != nil {
+						cwlog.DoLogCW("sm-inject: unable to read " + f.Name)
+					} else {
+						//Put in new zip file here
+					}
+
+				}
 			}
 		}
 	}
