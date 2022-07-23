@@ -182,6 +182,7 @@ type softmodOptions struct {
 	DisableBlueprints bool
 	Cheats            bool
 	InjectSoftMod     bool
+	SoftModPath       string
 	SlowConnect       slowConnect
 }
 type slowConnect struct {
@@ -455,6 +456,15 @@ func setLocalDefaults() {
 	if Local.Channel.ChatChannel == "" {
 		cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
 		Local.Channel.ChatChannel = "MY DISCORD CHANNEL ID"
+	}
+	if Local.Options.SoftModOptions.SoftModPath == "" {
+		path := Global.Paths.Folders.ServersRoot +
+			Global.Paths.ChatWirePrefix +
+			Local.Callsign + "/" +
+			Global.Paths.Folders.FactorioDir + "/" +
+			Global.Paths.Folders.Saves + "/" +
+			"SoftMod/"
+		Local.Options.SoftModOptions.SoftModPath = path
 	}
 }
 
