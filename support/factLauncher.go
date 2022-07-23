@@ -20,6 +20,8 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+
+	"github.com/dustin/go-humanize"
 )
 
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
@@ -101,6 +103,13 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 	return false, "", ""
 }
 
+type zipFilesData struct {
+	Name string
+	Data []byte
+}
+
+var zipFiles []zipFilesData
+
 func launchFactorio() {
 
 	/* Clear this so we know if the the loaded map has our soft mod or not */
@@ -134,7 +143,7 @@ func launchFactorio() {
 	} */
 
 	/* Find, test and load newest save game available */
-	found, fileName, _ := GetSaveGame(true)
+	found, fileName, folderName := GetSaveGame(true)
 	if !found {
 		cwlog.DoLogCW("Unable to load any saves.")
 		fact.FactAutoStart = false
@@ -147,12 +156,13 @@ func launchFactorio() {
 		cwlog.DoLogCW("sm-inject: unable to open save game.")
 	} else {
 		for _, f := range archive.File {
-			if strings.HasPrefix(f.Name, "level.dat") ||
-				strings.HasSuffix(f.Name, ".json") ||
-				strings.HasSuffix(f.Name, ".dat") ||
-				strings.EqualFold(f.Name, "level-init.dat") ||
-				strings.EqualFold(f.Name, "level.datmetadata") {
-				cwlog.DoLogCW("sm-inject: found " + f.Name)
+			if strings.HasPrefix(f.Name, folderName+"/") &&
+				(strings.HasPrefix(f.Name, folderName+"/level.dat") ||
+					strings.HasSuffix(f.Name, ".json") ||
+					strings.HasSuffix(f.Name, ".dat") ||
+					strings.EqualFold(f.Name, folderName+"/level-init.dat") ||
+					strings.EqualFold(f.Name, folderName+"/level.datmetadata")) {
+				//cwlog.DoLogCW("sm-inject: found " + f.Name)
 				file, err := f.Open()
 				if err != nil {
 					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
@@ -174,11 +184,20 @@ func launchFactorio() {
 						} else {
 							defer read.Close()
 							//Put in new zip file here!
+							tmp := zipFilesData{Name: f.Name, Data: data}
+							zipFiles = append(zipFiles, tmp)
 						}
 					}
 
 				}
 			}
+		}
+
+		/* Add softmod files */
+
+		for _, z := range zipFiles {
+			buf := fmt.Sprintf("Name: %v, Size: %v", filepath.Base(z.Name), humanize.Bytes(uint64(len(z.Data))))
+			fmt.Println(buf)
 		}
 	}
 
