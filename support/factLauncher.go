@@ -124,7 +124,6 @@ func launchFactorio() {
 	}
 
 	/* Insert soft mod */
-
 	/* OLD SCRIPT VERSION
 	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
 		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
@@ -135,11 +134,27 @@ func launchFactorio() {
 	} */
 
 	/* Find, test and load newest save game available */
-	found, fileName, _ := GetSaveGame(true)
+	found, fileName, fileDir := GetSaveGame(true)
 	if !found {
 		cwlog.DoLogCW("Unable to load any saves.")
 		fact.FactAutoStart = false
 		return
+	}
+
+	/* Unzip save game */
+	archive, errz := zip.OpenReader(fileName)
+	if errz != nil {
+		cwlog.DoLogCW("sm-inject: unable to open save game.")
+	} else {
+		for _, f := range archive.File {
+			if strings.HasPrefix(f.Name, "level.dat") ||
+				strings.HasSuffix(f.Name, ".json") ||
+				strings.HasSuffix(f.Name, ".dat") ||
+				strings.EqualFold(f.Name, "level-init.dat") ||
+				strings.EqualFold(f.Name, "level.datmetadata") {
+
+			}
+		}
 	}
 
 	/* Generate config file for Factorio server, if it fails stop everything.*/
