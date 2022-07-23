@@ -164,7 +164,7 @@ func launchFactorio() {
 					if derr != nil {
 						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name)
 					} else {
-						//Put in new zip file here
+						//Put in new zip file here!
 					}
 
 				}
