@@ -193,6 +193,10 @@ func launchFactorio() {
 		}
 	} */
 
+	/* TODO: this should just return the most recent possible save,
+	   zip/level checking should be done in a seperate function...
+	   so it can be used for vote/change map */
+
 	/* Find, test and load newest save game available */
 	found, fileName, folderName := GetSaveGame(true)
 	if !found {
