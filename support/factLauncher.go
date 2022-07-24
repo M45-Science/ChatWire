@@ -110,7 +110,6 @@ type zipFilesData struct {
 
 func injectSoftMod(fileName, folderName string) {
 	var zipFiles []zipFilesData
-	return
 
 	archive, errz := zip.OpenReader(fileName)
 	if errz != nil {
@@ -202,8 +201,10 @@ func launchFactorio() {
 		return
 	}
 
-	/* Unzip save game */
-	injectSoftMod(fileName, folderName)
+	/* Inject softmod */
+	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
+		injectSoftMod(fileName, folderName)
+	}
 
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
