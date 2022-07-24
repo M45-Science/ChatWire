@@ -108,49 +108,10 @@ type zipFilesData struct {
 	Data []byte
 }
 
-var zipFiles []zipFilesData
+func injectSoftMod(fileName, folderName string) {
+	var zipFiles []zipFilesData
+	return
 
-func launchFactorio() {
-
-	/* Clear this so we know if the the loaded map has our soft mod or not */
-	glob.SoftModVersion = constants.Unknown
-	glob.OnlineCommand = constants.OnlineCommand
-	fact.OnlinePlayersLock.Lock()
-	glob.OnlinePlayers = []glob.OnlinePlayerData{}
-	fact.OnlinePlayersLock.Unlock()
-
-	/* Check for factorio install */
-	checkFactPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir
-
-	if _, err := os.Stat(checkFactPath); os.IsNotExist(err) {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio does not appear to be installed. Use /factorio install-factorio to install it.")
-		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
-		fact.FactAutoStart = false
-		return
-	}
-
-	/* Insert soft mod */
-	/* OLD SCRIPT VERSION
-	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
-		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
-		out, errs := exec.Command(command, cfg.Local.Callsign).Output()
-		if errs != nil {
-			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
-		}
-	} */
-
-	/* Find, test and load newest save game available */
-	found, fileName, folderName := GetSaveGame(true)
-	if !found {
-		cwlog.DoLogCW("Unable to load any saves.")
-		fact.FactAutoStart = false
-		return
-	}
-
-	/* Unzip save game */
 	archive, errz := zip.OpenReader(fileName)
 	if errz != nil {
 		cwlog.DoLogCW("sm-inject: unable to open save game.")
@@ -194,12 +155,55 @@ func launchFactorio() {
 		}
 
 		/* Add softmod files */
-
 		for _, z := range zipFiles {
 			buf := fmt.Sprintf("Name: %v, Size: %v", filepath.Base(z.Name), humanize.Bytes(uint64(len(z.Data))))
 			fmt.Println(buf)
 		}
 	}
+}
+
+func launchFactorio() {
+
+	/* Clear this so we know if the the loaded map has our soft mod or not */
+	glob.SoftModVersion = constants.Unknown
+	glob.OnlineCommand = constants.OnlineCommand
+	fact.OnlinePlayersLock.Lock()
+	glob.OnlinePlayers = []glob.OnlinePlayerData{}
+	fact.OnlinePlayersLock.Unlock()
+
+	/* Check for factorio install */
+	checkFactPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir
+
+	if _, err := os.Stat(checkFactPath); os.IsNotExist(err) {
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio does not appear to be installed. Use /factorio install-factorio to install it.")
+		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
+		fact.FactAutoStart = false
+		return
+	}
+
+	/* Insert soft mod */
+	/* OLD SCRIPT VERSION
+	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
+		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
+		out, errs := exec.Command(command, cfg.Local.Callsign).Output()
+		if errs != nil {
+			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
+		}
+	} */
+
+	/* Find, test and load newest save game available */
+	found, fileName, folderName := GetSaveGame(true)
+	if !found {
+		cwlog.DoLogCW("Unable to load any saves.")
+		fact.FactAutoStart = false
+		return
+	}
+
+	/* Unzip save game */
+	injectSoftMod(fileName, folderName)
 
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
