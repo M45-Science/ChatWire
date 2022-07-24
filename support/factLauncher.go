@@ -1,11 +1,16 @@
 package support
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -15,7 +20,95 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+
+	"github.com/dustin/go-humanize"
 )
+
+func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
+
+	files, err := ioutil.ReadDir(path)
+
+	/* We can't read saves dir */
+	if err != nil {
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read saves folder, stopping.")
+		return false, "", ""
+	}
+
+	/* Loop all files */
+	var tempf []fs.FileInfo
+	for _, f := range files {
+		//Hide non-zip files and temp files
+		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") {
+			tempf = append(tempf, f)
+		}
+	}
+
+	sort.Slice(tempf, func(i, j int) bool {
+		return tempf[i].ModTime().After(tempf[j].ModTime())
+	})
+
+	numSaves := len(tempf)
+	if numSaves <= 0 {
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "No saves found, stopping.")
+		return false, "", ""
+	}
+
+	for pos := 0; pos < numSaves; pos++ {
+		name := tempf[pos].Name()
+
+		if name == "" {
+			continue
+		}
+
+		zip, err := zip.OpenReader(path + "/" + name)
+		if err != nil || zip == nil {
+			buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())
+			if pos == 0 {
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+			}
+			cwlog.DoLogCW(buf)
+		} else {
+
+			for _, file := range zip.File {
+				_, err := file.Open()
+
+				if err != nil {
+					buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
+					if pos == 0 {
+						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+					}
+					cwlog.DoLogCW(buf)
+					break
+				} else {
+					if strings.HasSuffix(file.Name, "level.dat0") {
+						//Save appears valid
+						cwlog.DoLogCW("Found " + file.Name + ", loading.")
+						return true, path + "/" + name, filepath.Dir(file.Name)
+					}
+				}
+			}
+			buf := fmt.Sprintf("Save '%v' did not contain a level.dat0 file.", name)
+			if pos == 0 {
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+			}
+			cwlog.DoLogCW(buf)
+		}
+	}
+
+	return false, "", ""
+}
+
+type zipFilesData struct {
+	Name string
+	Data []byte
+}
+
+var zipFiles []zipFilesData
 
 func launchFactorio() {
 
@@ -40,11 +133,71 @@ func launchFactorio() {
 	}
 
 	/* Insert soft mod */
+	/* OLD SCRIPT VERSION
 	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
 		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
 		out, errs := exec.Command(command, cfg.Local.Callsign).Output()
 		if errs != nil {
 			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
+		}
+	} */
+
+	/* Find, test and load newest save game available */
+	found, fileName, folderName := GetSaveGame(true)
+	if !found {
+		cwlog.DoLogCW("Unable to load any saves.")
+		fact.FactAutoStart = false
+		return
+	}
+
+	/* Unzip save game */
+	archive, errz := zip.OpenReader(fileName)
+	if errz != nil {
+		cwlog.DoLogCW("sm-inject: unable to open save game.")
+	} else {
+		for _, f := range archive.File {
+			if strings.HasPrefix(f.Name, folderName+"/") &&
+				(strings.HasPrefix(f.Name, folderName+"/level.dat") ||
+					strings.HasSuffix(f.Name, ".json") ||
+					strings.HasSuffix(f.Name, ".dat") ||
+					strings.EqualFold(f.Name, folderName+"/level-init.dat") ||
+					strings.EqualFold(f.Name, folderName+"/level.datmetadata")) {
+				//cwlog.DoLogCW("sm-inject: found " + f.Name)
+				file, err := f.Open()
+				if err != nil {
+					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
+				} else {
+					defer file.Close()
+
+					read, derr := f.Open()
+
+					if derr != nil {
+						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name + ", " + derr.Error())
+					} else {
+						data, rerr := ioutil.ReadAll(read)
+						dlen := uint64(len(data))
+						if rerr != nil && rerr != io.EOF {
+							cwlog.DoLogCW("Unable to read file: " + f.Name + ", " + rerr.Error())
+						} else if dlen != f.UncompressedSize64 {
+							sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
+							cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
+						} else {
+							defer read.Close()
+							//Put in new zip file here!
+							tmp := zipFilesData{Name: f.Name, Data: data}
+							zipFiles = append(zipFiles, tmp)
+						}
+					}
+
+				}
+			}
+		}
+
+		/* Add softmod files */
+
+		for _, z := range zipFiles {
+			buf := fmt.Sprintf("Name: %v, Size: %v", filepath.Base(z.Name), humanize.Bytes(uint64(len(z.Data))))
+			fmt.Println(buf)
 		}
 	}
 
@@ -90,7 +243,8 @@ func launchFactorio() {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
-	tempargs = append(tempargs, "--start-server-load-latest")
+	tempargs = append(tempargs, "--start-server")
+	tempargs = append(tempargs, fileName)
 	tempargs = append(tempargs, "--rcon-port")
 	tempargs = append(tempargs, rconportStr)
 

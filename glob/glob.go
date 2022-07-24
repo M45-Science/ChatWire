@@ -20,11 +20,12 @@ func Ptr[T any](v T) *T {
 
 /* Player database */
 type PlayerData struct {
-	Name     string
-	Level    int
-	ID       string
-	Creation int64
-	LastSeen int64
+	Name          string
+	Level         int
+	ID            string
+	Creation      int64
+	LastSeen      int64
+	AlreadyBanned bool `json:"-"`
 }
 
 /* Registrarion codes */

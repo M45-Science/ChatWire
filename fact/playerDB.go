@@ -219,7 +219,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 		} else if level == -1 && glob.PlayerList[pname].Level >= 0 {
 			glob.PlayerList[pname].Level = level
 
-			if !firstLoad {
+			if !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
 
 				/* Use discordid as a sneaky way to pass ban reason */
 				idReason := id
@@ -229,6 +229,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 				}
 
 				WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
+				glob.PlayerList[pname].AlreadyBanned = true
 			}
 
 		} else if level > glob.PlayerList[pname].Level {
@@ -259,7 +260,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 	glob.PlayerList[pname] = &newplayer
 	WhitelistPlayer(pname, level)
 
-	if level == -1 && !firstLoad {
+	if level == -1 && !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
 
 		/* Use discordid as a sneaky way to pass ban reason */
 		idReason := id
@@ -269,6 +270,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 		}
 
 		WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
+		glob.PlayerList[pname].AlreadyBanned = true
 	}
 
 }
@@ -357,6 +359,10 @@ func LoadPlayers(firstLoad bool) {
 			glob.PlayerListLock.Unlock()
 
 		}
+		if firstLoad {
+			cwlog.DoLogCW("Player database loaded.")
+		}
+
 	}
 }
 
