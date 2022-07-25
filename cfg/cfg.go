@@ -230,10 +230,10 @@ func WriteGCfg() bool {
 func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
-		Global.Paths.DataFiles.DBFile = "playerdb.dat"
+		Global.Paths.DataFiles.DBFile = "playerdb.json"
 		_, err := os.Create(Global.Paths.DataFiles.DBFile)
 		if err != nil {
-			cwlog.DoLogCW("Could not create playerdb.dat")
+			cwlog.DoLogCW("setGlobalDefaults: Could not create " + Global.Paths.DataFiles.DBFile)
 		}
 	}
 	if Global.Paths.Folders.MapGenerators == "" {
