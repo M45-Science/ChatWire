@@ -47,7 +47,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 			} else {
 				if strings.HasSuffix(file.Name, "level.dat0") {
 					//Save appears valid
-					cwlog.DoLogCW("Found " + file.Name + ", loading.")
+					//cwlog.DoLogCW("Found " + file.Name + ", loading.")
 					return true, filepath.Dir(file.Name)
 				}
 			}
@@ -625,7 +625,7 @@ func DoChangeMap(s *discordgo.Session, arg string) {
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)
-	good, _ := CheckSave(saveStr, path, false)
+	good, _ := CheckSave(path, saveStr, false)
 	if !good {
 		cwlog.DoLogCW("DoChangeMap: Attempted to load an invalid save.")
 		return
