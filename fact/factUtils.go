@@ -20,6 +20,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/support"
 )
 
 func SetFactRunning(run bool) {
@@ -585,48 +586,46 @@ func DoChangeMap(s *discordgo.Session, arg string) {
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)
-	_, err := os.Stat(path + "/" + saveStr)
-	notfound := os.IsNotExist(err)
-
-	if notfound {
-		return
-	} else {
-		FactAutoStart = false
-		QuitFactorio("Server rebooting for map vote...")
-		WaitFactQuit()
-		selSaveName := path + "/" + saveStr
-		from, erra := os.Open(selSaveName)
-		if erra != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the selected save. Details: %s", erra))
-		}
-		defer from.Close()
-
-		newmappath := path + "/" + cfg.Local.Name + "_new.zip"
-		_, err := os.Stat(newmappath)
-		if !os.IsNotExist(err) {
-			err = os.Remove(newmappath)
-			if err != nil {
-				cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to remove the temp save file. Details: %s", err))
-				return
-			}
-		}
-		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
-		if errb != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the save file. Details: %s", errb))
-			return
-		}
-		defer to.Close()
-
-		_, errc := io.Copy(to, from)
-		if errc != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the save file. Details: %s", errc))
-			return
-		}
-
-		CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading save: %v", arg))
-		glob.RelaunchThrottle = 0
-		FactAutoStart = true
+	if !support.CheckSave(saveStr, path, false) {
+		cwlog.DoLogCW("DoChangeMap: Attempted to load an invalid save.")
 		return
 	}
+
+	FactAutoStart = false
+	QuitFactorio("Server rebooting for map vote...")
+	WaitFactQuit()
+	selSaveName := path + "/" + saveStr
+	from, erra := os.Open(selSaveName)
+	if erra != nil {
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the selected save. Details: %s", erra))
+	}
+	defer from.Close()
+
+	newmappath := path + "/" + cfg.Local.Name + "_new.zip"
+	_, err := os.Stat(newmappath)
+	if !os.IsNotExist(err) {
+		err = os.Remove(newmappath)
+		if err != nil {
+			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to remove the temp save file. Details: %s", err))
+			return
+		}
+	}
+	to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
+	if errb != nil {
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the save file. Details: %s", errb))
+		return
+	}
+	defer to.Close()
+
+	_, errc := io.Copy(to, from)
+	if errc != nil {
+		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the save file. Details: %s", errc))
+		return
+	}
+
+	CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading save: %v", arg))
+	glob.RelaunchThrottle = 0
+	FactAutoStart = true
+	return
 
 }
