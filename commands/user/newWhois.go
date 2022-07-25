@@ -3,7 +3,6 @@ package user
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -73,7 +72,7 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					if p.Creation == 0 {
 						joined = constants.Unknown
 					} else {
-						jtime := time.Unix((p.Creation+constants.CWEpoch)*60, 0)
+						jtime := fact.ExpandTime(p.Creation)
 						joined = jtime.Format(layoutUS)
 					}
 					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level))
