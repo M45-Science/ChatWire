@@ -1,6 +1,8 @@
 package fact
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,10 +11,26 @@ import (
 	"time"
 
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"ChatWire/sclean"
 )
+
+func compactNow() int64 {
+	t := time.Now()
+	return (t.Unix() - constants.SeenEpoch) / constants.SeenDivisor
+}
+
+func ExpandTime(input int64) time.Time {
+	newTime := (input * constants.SeenDivisor) + constants.SeenEpoch
+	out := time.Unix(newTime, 0)
+	return out
+}
+
+func CompactTime(input int64) int64 {
+	return (input - constants.SeenEpoch) / constants.SeenDivisor
+}
 
 /* Screw fsnotify */
 func WatchDatabaseFile() {
@@ -84,21 +102,13 @@ func PlayerSetID(pname string, id string, level int) bool {
 
 	pname = strings.ToLower(pname)
 
-	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
-	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
-	id = strings.ReplaceAll(id, ",", "")       /* remove comma */
-	id = strings.ReplaceAll(id, ":", "")       /* replace colon */
-	pname = sclean.StripControlAndSubSpecial(pname)
-
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
-
-	t := time.Now()
 
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].ID = id
 		glob.PlayerList[pname].Level = level
-		glob.PlayerList[pname].LastSeen = t.Unix()
+		glob.PlayerList[pname].LastSeen = compactNow()
 
 		SetPlayerListDirty()
 		return true
@@ -110,8 +120,8 @@ func PlayerSetID(pname string, id string, level int) bool {
 		Name:     pname,
 		Level:    level,
 		ID:       id,
-		LastSeen: t.Unix(),
-		Creation: t.Unix(),
+		LastSeen: compactNow(),
+		Creation: compactNow(),
 	}
 	glob.PlayerList[pname] = &newplayer
 
@@ -126,18 +136,11 @@ func UpdateSeen(pname string) {
 	}
 
 	pname = strings.ToLower(pname)
-
-	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
-	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
-	pname = sclean.StripControlAndSubSpecial(pname)
-
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
-	t := time.Now()
-
 	if glob.PlayerList[pname] != nil {
-		glob.PlayerList[pname].LastSeen = t.Unix()
+		glob.PlayerList[pname].LastSeen = compactNow()
 
 		SetPlayerListSeenDirty()
 		return
@@ -151,13 +154,6 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	}
 
 	pname = strings.ToLower(pname)
-
-	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
-	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
-	pname = sclean.StripControlAndSubSpecial(pname)
-
-	t := time.Now()
-
 	WhitelistPlayer(pname, level)
 
 	glob.PlayerListLock.Lock()
@@ -165,7 +161,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 
 	if glob.PlayerList[pname] != nil {
 
-		glob.PlayerList[pname].LastSeen = t.Unix()
+		glob.PlayerList[pname].LastSeen = compactNow()
 
 		if glob.PlayerList[pname].Level != level {
 			SetPlayerListDirty()
@@ -191,8 +187,8 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 		Name:     pname,
 		Level:    level,
 		ID:       "",
-		LastSeen: t.Unix(),
-		Creation: t.Unix(),
+		LastSeen: compactNow(),
+		Creation: compactNow(),
 	}
 	glob.PlayerList[pname] = &newplayer
 
@@ -282,20 +278,13 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 	}
 
 	pname = strings.ToLower(pname)
-
-	pname = strings.ReplaceAll(pname, ",", "") /* remove comma */
-	pname = strings.ReplaceAll(pname, ":", "") /* replace colon */
-	pname = sclean.StripControlAndSubSpecial(pname)
-
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
-
-	t := time.Now()
 
 	if glob.PlayerList[pname] != nil {
 
 		/* Found in list */
-		glob.PlayerList[pname].LastSeen = t.Unix()
+		glob.PlayerList[pname].LastSeen = compactNow()
 		level := glob.PlayerList[pname].Level
 		SetPlayerListSeenDirty()
 		return level
@@ -311,8 +300,8 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 		Name:     pname,
 		Level:    0,
 		ID:       "",
-		LastSeen: t.Unix(),
-		Creation: t.Unix(),
+		LastSeen: compactNow(),
+		Creation: compactNow(),
 	}
 	glob.PlayerList[pname] = &newplayer
 
@@ -347,7 +336,9 @@ func LoadPlayers(firstLoad bool) {
 					playerlevel, _ := strconv.Atoi(items[1])
 					pid := items[2]
 					creation, _ := strconv.ParseInt(items[3], 10, 64)
+					creation = CompactTime(creation)
 					seen, _ := strconv.ParseInt(items[4], 10, 64)
+					seen = CompactTime(seen)
 
 					if playerlevel != 0 || len(pid) > 1 {
 						AddPlayer(pname, playerlevel, pid, creation, seen, firstLoad)
@@ -356,8 +347,24 @@ func LoadPlayers(firstLoad bool) {
 					cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
 				}
 			}
+			cfg.Global.Paths.DataFiles.DBFile = "playerdb.json"
+			cfg.WriteGCfg()
 			glob.PlayerListLock.Unlock()
 
+		} else {
+			var tempData = make(map[string]*glob.PlayerData)
+			err = json.Unmarshal(filedata, &tempData)
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+
+			//Add name back in, makes db file smaller
+			glob.PlayerListLock.Lock()
+			for pname, _ := range tempData {
+				tempData[pname].Name = pname
+				AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, firstLoad)
+			}
+			glob.PlayerListLock.Unlock()
 		}
 		if firstLoad {
 			cwlog.DoLogCW("Player database loaded.")
@@ -372,8 +379,6 @@ func WritePlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	buffer := ""
-
 	fo, err := os.Create(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't open db file, skipping...")
@@ -386,19 +391,18 @@ func WritePlayers() {
 		}
 	}()
 
-	buffer = buffer + "db-v0.03:"
 	glob.PlayerListLock.RLock()
-	for _, player := range glob.PlayerList {
 
-		/* Don't bother saving new players that are not registered */
-		if player.Level != 0 || len(player.ID) > 1 {
-			buffer = buffer + fmt.Sprintf("%s,%d,%s,%v,%v:", strings.ToLower(player.Name), player.Level, player.ID, player.Creation, player.LastSeen)
-		}
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	if err := enc.Encode(glob.PlayerList); err != nil {
+		cwlog.DoLogCW("WritePlayers: enc.Encode failure")
+		return
 	}
 	glob.PlayerListLock.RUnlock()
 
 	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
-	err = ioutil.WriteFile(nfilename, []byte(buffer), 0644)
+	err = ioutil.WriteFile(nfilename, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write db temp file.")
