@@ -3,9 +3,11 @@ package constants
 import "time"
 
 const (
-	Version = "2559-07.18.2022-1033p"
-	CWEpoch = 1653239822390688174
-	Unknown = "Unknown"
+	Version     = "2560-07.25.2022-0127"
+	CWEpoch     = 1653239822390688174
+	SeenDivisor = 60
+	SeenEpoch   = 1546326000
+	Unknown     = "Unknown"
 
 	/* ChatWire files */
 	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
