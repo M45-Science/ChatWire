@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -90,15 +91,18 @@ func injectSoftMod(fileName, folderName string) {
 	archive, errz := zip.OpenReader(fileName)
 	if errz != nil {
 		cwlog.DoLogCW("sm-inject: unable to open save game.")
+		return
 	} else {
 		for _, f := range archive.File {
-			if strings.HasPrefix(f.Name, folderName+"/") &&
-				(strings.HasPrefix(f.Name, folderName+"/level.dat") ||
-					strings.HasSuffix(f.Name, ".json") ||
+			fileName := path.Base(f.Name)
+			/* Make sure these files are in the correct directory in the zip */
+			if path.Dir(f.Name) == folderName &&
+				/* Only copy relevant files */
+				(strings.HasPrefix(fileName, "level.dat") ||
+					strings.HasSuffix(fileName, ".json") ||
 					strings.HasSuffix(f.Name, ".dat") ||
-					strings.EqualFold(f.Name, folderName+"/level-init.dat") ||
-					strings.EqualFold(f.Name, folderName+"/level.datmetadata")) {
-				//cwlog.DoLogCW("sm-inject: found " + f.Name)
+					strings.EqualFold(fileName, "level-init.dat") ||
+					strings.EqualFold(fileName, "level.datmetadata")) {
 				file, err := f.Open()
 				if err != nil {
 					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
