@@ -462,9 +462,10 @@ func setLocalDefaults() {
 			Global.Paths.ChatWirePrefix +
 			Local.Callsign + "/" +
 			Global.Paths.Folders.FactorioDir + "/" +
-			Global.Paths.Folders.Saves + "/" +
-			"SoftMod/"
+			"softmod/"
 		Local.Options.SoftModOptions.SoftModPath = path
+
+		os.Mkdir(path, os.ModePerm)
 	}
 }
 
