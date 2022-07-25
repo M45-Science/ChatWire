@@ -124,6 +124,7 @@ func injectSoftMod(fileName, folderName string) {
 		cwlog.DoLogCW("sm-inject: unable to open save game.")
 		return
 	} else {
+		defer archive.Close()
 		for _, f := range archive.File {
 			fileName := path.Base(f.Name)
 			/* Make sure these files are in the correct directory in the zip */
@@ -139,33 +140,26 @@ func injectSoftMod(fileName, folderName string) {
 					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
 				} else {
 
-					read, derr := f.Open()
+					defer file.Close()
+					data, rerr := ioutil.ReadAll(file)
 
-					if derr != nil {
-						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name + ", " + derr.Error())
+					dlen := uint64(len(data))
+					if rerr != nil && rerr != io.EOF {
+						cwlog.DoLogCW("Unable to read file: " + f.Name + ", " + rerr.Error())
+						continue
+					} else if dlen != f.UncompressedSize64 {
+						sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
+						cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
 					} else {
-						data, rerr := ioutil.ReadAll(read)
-
-						dlen := uint64(len(data))
-						if rerr != nil && rerr != io.EOF {
-							cwlog.DoLogCW("Unable to read file: " + f.Name + ", " + rerr.Error())
-							continue
-						} else if dlen != f.UncompressedSize64 {
-							sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
-							cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
-						} else {
-							tmp := zipFilesData{Name: f.Name, Data: data}
-							zipFiles = append(zipFiles, tmp)
-							//cwlog.DoLogCW("Added from save: " + f.Name)
-						}
-						read.Close()
-						file.Close()
+						tmp := zipFilesData{Name: f.Name, Data: data}
+						zipFiles = append(zipFiles, tmp)
+						//cwlog.DoLogCW("Added from save: " + f.Name)
 					}
-
 				}
 			}
 		}
 
+		/* Read files in from softmod */
 		tfiles := readFolder(cfg.Local.Options.SoftModOptions.SoftModPath, folderName)
 		zipFiles = append(zipFiles, tfiles...)
 
