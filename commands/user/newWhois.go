@@ -7,7 +7,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/constants"
-	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -88,7 +87,7 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 			err := s.InteractionRespond(i.Interaction, resp)
 			if err != nil {
-				cwlog.DoLogCW(err.Error())
+				return
 			}
 			return
 		}
