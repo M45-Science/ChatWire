@@ -143,7 +143,6 @@ func injectSoftMod(fileName, folderName string) {
 							cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
 						} else {
 							defer read.Close()
-							//Put in new zip file here!
 							tmp := zipFilesData{Name: f.Name, Data: data}
 							zipFiles = append(zipFiles, tmp)
 						}
@@ -158,6 +157,8 @@ func injectSoftMod(fileName, folderName string) {
 			buf := fmt.Sprintf("Name: %v, Size: %v", filepath.Base(z.Name), humanize.Bytes(uint64(len(z.Data))))
 			fmt.Println(buf)
 		}
+
+		/* Put into new zip file here, use temp and rename */
 	}
 }
 
