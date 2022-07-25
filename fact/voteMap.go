@@ -16,6 +16,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/support"
 )
 
 func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
@@ -60,6 +61,13 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 
 	/* Just in case people bypass Discord */
 	if !strings.HasSuffix(autoSaveStr, ".zip") && strings.HasSuffix(autoSaveStr, "tmp.zip") && strings.HasSuffix(autoSaveStr, cfg.Local.Name+"_new.zip") {
+		return
+	}
+
+	if !support.CheckSave(autoSaveStr, path, false) {
+		buf := fmt.Sprintf("The save game '%v' does not appear to be valid.", autoSaveStr)
+		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
+		disc.FollowupResponse(s, i, &f)
 		return
 	}
 
