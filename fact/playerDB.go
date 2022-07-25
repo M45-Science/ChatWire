@@ -321,37 +321,41 @@ func LoadPlayers(firstLoad bool) {
 	}
 
 	if filedata != nil {
-		dblines := strings.Split(string(filedata), ":")
-		dblen := len(dblines)
 
-		/* Upgrade existing */
-		if strings.EqualFold(dblines[0], "db-v0.03") {
+		if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".dat") {
+			dblines := strings.Split(string(filedata), ":")
+			dblen := len(dblines)
 
-			glob.PlayerListLock.Lock()
-			for pos, line := range dblines {
-				items := strings.Split(string(line), ",")
-				numitems := len(items)
-				if numitems == 5 {
-					pname := strings.ToLower(items[0])
-					playerlevel, _ := strconv.Atoi(items[1])
-					pid := items[2]
-					creation, _ := strconv.ParseInt(items[3], 10, 64)
-					creation = CompactTime(creation)
-					seen, _ := strconv.ParseInt(items[4], 10, 64)
-					seen = CompactTime(seen)
+			/* Upgrade existing */
+			if strings.EqualFold(dblines[0], "db-v0.03") {
 
-					if playerlevel != 0 || len(pid) > 1 {
-						AddPlayer(pname, playerlevel, pid, creation, seen, firstLoad)
+				glob.PlayerListLock.Lock()
+				for pos, line := range dblines {
+					items := strings.Split(string(line), ",")
+					numitems := len(items)
+					if numitems == 5 {
+						pname := strings.ToLower(items[0])
+						playerlevel, _ := strconv.Atoi(items[1])
+						pid := items[2]
+						creation, _ := strconv.ParseInt(items[3], 10, 64)
+						creation = CompactTime(creation)
+						seen, _ := strconv.ParseInt(items[4], 10, 64)
+						seen = CompactTime(seen)
+
+						if playerlevel != 0 || len(pid) > 1 {
+							AddPlayer(pname, playerlevel, pid, creation, seen, firstLoad)
+						}
+					} else if pos != 0 && pos != dblen-1 {
+						cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
 					}
-				} else if pos != 0 && pos != dblen-1 {
-					cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
 				}
-			}
-			cfg.Global.Paths.DataFiles.DBFile = "playerdb.json"
-			cfg.WriteGCfg()
-			glob.PlayerListLock.Unlock()
+				cfg.Global.Paths.DataFiles.DBFile = "playerdb.json"
+				cfg.WriteGCfg()
+				glob.PlayerListLock.Unlock()
 
-		} else {
+			}
+		} else if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
+
 			var tempData = make(map[string]*glob.PlayerData)
 			err = json.Unmarshal(filedata, &tempData)
 			if err != nil {
@@ -366,6 +370,7 @@ func LoadPlayers(firstLoad bool) {
 			}
 			glob.PlayerListLock.Unlock()
 		}
+
 		if firstLoad {
 			cwlog.DoLogCW("Player database loaded.")
 		}
