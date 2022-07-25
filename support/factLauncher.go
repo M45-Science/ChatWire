@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -21,8 +20,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-
-	"github.com/dustin/go-humanize"
 )
 
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
@@ -43,9 +40,11 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 	/* Loop all files */
 	var tempf []fs.FileInfo
 	for _, f := range files {
-		//Hide non-zip files and temp files
-		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") {
-			tempf = append(tempf, f)
+		//Hide non-zip files, temp files and directories
+		if !f.IsDir() {
+			if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") {
+				tempf = append(tempf, f)
+			}
 		}
 	}
 
@@ -71,8 +70,9 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 		if pos == 0 {
 			showError = true
 		}
-		if fact.CheckSave(path, name, showError) {
-			return true, path + "/" + name, filepath.Dir(name)
+		good, folder := fact.CheckSave(path, name, showError)
+		if good {
+			return true, path + "/" + name, folder
 		}
 
 	}
@@ -85,9 +85,40 @@ type zipFilesData struct {
 	Data []byte
 }
 
+func readFolder(path string, sdir string) []zipFilesData {
+
+	var zipFiles []zipFilesData
+
+	/* Get all softmod files */
+	sFiles, err := ioutil.ReadDir(path)
+	if err != nil {
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read softmod folder: "+err.Error())
+		return nil
+	}
+
+	for _, file := range sFiles {
+		if !file.IsDir() {
+			dat, err := os.ReadFile(path + "/" + file.Name())
+			if err != nil {
+				cwlog.DoLogCW("injectSoftMod: Unable to read softmod file: " + file.Name())
+				continue
+			}
+
+			zipFiles = append(zipFiles, zipFilesData{Name: sdir + "/" + file.Name(), Data: dat})
+			//cwlog.DoLogCW("Added from softmod: " + sdir + "/" + file.Name())
+		} else {
+			tfiles := readFolder(path+"/"+file.Name(), sdir+"/"+file.Name())
+			zipFiles = append(zipFiles, tfiles...)
+		}
+	}
+
+	return zipFiles
+}
+
 func injectSoftMod(fileName, folderName string) {
 	var zipFiles []zipFilesData
 
+	/* Read needed files from existing save */
 	archive, errz := zip.OpenReader(fileName)
 	if errz != nil {
 		cwlog.DoLogCW("sm-inject: unable to open save game.")
@@ -96,18 +127,17 @@ func injectSoftMod(fileName, folderName string) {
 		for _, f := range archive.File {
 			fileName := path.Base(f.Name)
 			/* Make sure these files are in the correct directory in the zip */
-			if path.Dir(f.Name) == folderName &&
+			if strings.Compare(path.Dir(f.Name), folderName) == 0 &&
 				/* Only copy relevant files */
-				(strings.HasPrefix(fileName, "level.dat") ||
-					strings.HasSuffix(fileName, ".json") ||
-					strings.HasSuffix(f.Name, ".dat") ||
-					strings.EqualFold(fileName, "level-init.dat") ||
-					strings.EqualFold(fileName, "level.datmetadata")) {
+				strings.HasPrefix(fileName, "level.dat") ||
+				strings.HasSuffix(fileName, ".json") ||
+				strings.HasSuffix(fileName, ".dat") ||
+				strings.EqualFold(fileName, "level-init.dat") ||
+				strings.EqualFold(fileName, "level.datmetadata") {
 				file, err := f.Open()
 				if err != nil {
 					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
 				} else {
-					defer file.Close()
 
 					read, derr := f.Open()
 
@@ -115,30 +145,78 @@ func injectSoftMod(fileName, folderName string) {
 						cwlog.DoLogCW("sm-inject: unable to read: " + f.Name + ", " + derr.Error())
 					} else {
 						data, rerr := ioutil.ReadAll(read)
+
 						dlen := uint64(len(data))
 						if rerr != nil && rerr != io.EOF {
 							cwlog.DoLogCW("Unable to read file: " + f.Name + ", " + rerr.Error())
+							continue
 						} else if dlen != f.UncompressedSize64 {
 							sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
 							cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
 						} else {
-							defer read.Close()
 							tmp := zipFilesData{Name: f.Name, Data: data}
 							zipFiles = append(zipFiles, tmp)
+							//cwlog.DoLogCW("Added from save: " + f.Name)
 						}
+						read.Close()
+						file.Close()
 					}
 
 				}
 			}
 		}
 
-		/* Add softmod files */
-		for _, z := range zipFiles {
-			buf := fmt.Sprintf("Name: %v, Size: %v", filepath.Base(z.Name), humanize.Bytes(uint64(len(z.Data))))
-			fmt.Println(buf)
+		tfiles := readFolder(cfg.Local.Options.SoftModOptions.SoftModPath, folderName)
+		zipFiles = append(zipFiles, tfiles...)
+
+		numFiles := len(zipFiles)
+		if numFiles <= 0 {
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "No softmod files found, stopping.")
+			return
 		}
 
-		/* Put into new zip file here, use temp and rename */
+		/* Add old save files into zip */
+		path := cfg.Global.Paths.Folders.ServersRoot +
+			cfg.Global.Paths.ChatWirePrefix +
+			cfg.Local.Callsign + "/" +
+			cfg.Global.Paths.Folders.FactorioDir + "/" +
+			cfg.Global.Paths.Folders.Saves
+
+		newZipFile, err := os.Create(path + constants.TempSaveName)
+		if err != nil {
+			cwlog.DoLogCW("injectSoftMod: Unable to create temp save.")
+			return
+		}
+		defer newZipFile.Close()
+
+		zipWriter := zip.NewWriter(newZipFile)
+		defer zipWriter.Close()
+
+		for _, file := range zipFiles {
+			fh := new(zip.FileHeader)
+			fh.Name = file.Name
+			fh.UncompressedSize = uint32(len(file.Data))
+
+			writer, err := zipWriter.CreateHeader(fh)
+			if err != nil {
+				cwlog.DoLogCW("injectSoftMod: Unable to create blank file in zip.")
+				continue
+			}
+
+			_, err = writer.Write(file.Data)
+			if err != nil {
+				cwlog.DoLogCW("injectSoftMod: Unable to copy file data into zip.")
+				continue
+			}
+		}
+
+		err = os.Rename(path+constants.TempSaveName, fileName)
+		if err != nil {
+			cwlog.DoLogCW("Couldn't rename softmod temp save.")
+			return
+		}
+		cwlog.DoLogCW("SoftMod injected.")
+
 	}
 }
 
