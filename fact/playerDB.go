@@ -364,7 +364,7 @@ func LoadPlayers(firstLoad bool) {
 
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
-			for pname, _ := range tempData {
+			for pname := range tempData {
 				tempData[pname].Name = pname
 				AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, firstLoad)
 			}
