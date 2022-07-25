@@ -24,6 +24,44 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
+func CheckSave(path, name string, showError bool) bool {
+	zip, err := zip.OpenReader(path + "/" + name)
+	if err != nil || zip == nil {
+		buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())
+		if showError {
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+		}
+		cwlog.DoLogCW(buf)
+	} else {
+
+		for _, file := range zip.File {
+			_, err := file.Open()
+
+			if err != nil {
+				buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
+				if showError {
+					fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				}
+				cwlog.DoLogCW(buf)
+				break
+			} else {
+				if strings.HasSuffix(file.Name, "level.dat0") {
+					//Save appears valid
+					cwlog.DoLogCW("Found " + file.Name + ", loading.")
+					return true
+				}
+			}
+		}
+		buf := fmt.Sprintf("Save '%v' did not contain a level.dat0 file.", name)
+		if showError {
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+		}
+		cwlog.DoLogCW(buf)
+	}
+
+	return false
+}
+
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -48,6 +86,7 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 		}
 	}
 
+	//Newest first
 	sort.Slice(tempf, func(i, j int) bool {
 		return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
@@ -65,39 +104,14 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 			continue
 		}
 
-		zip, err := zip.OpenReader(path + "/" + name)
-		if err != nil || zip == nil {
-			buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())
-			if pos == 0 {
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-			}
-			cwlog.DoLogCW(buf)
-		} else {
-
-			for _, file := range zip.File {
-				_, err := file.Open()
-
-				if err != nil {
-					buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
-					if pos == 0 {
-						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-					}
-					cwlog.DoLogCW(buf)
-					break
-				} else {
-					if strings.HasSuffix(file.Name, "level.dat0") {
-						//Save appears valid
-						cwlog.DoLogCW("Found " + file.Name + ", loading.")
-						return true, path + "/" + name, filepath.Dir(file.Name)
-					}
-				}
-			}
-			buf := fmt.Sprintf("Save '%v' did not contain a level.dat0 file.", name)
-			if pos == 0 {
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-			}
-			cwlog.DoLogCW(buf)
+		showError := false
+		if pos == 0 {
+			showError = true
 		}
+		if CheckSave(path, name, showError) {
+			return true, path + "/" + name, filepath.Dir(name)
+		}
+
 	}
 
 	return false, "", ""
