@@ -462,11 +462,11 @@ func MainLoops() {
 			if fact.FactorioBooted {
 				disc.UpdateRoleList()
 
-				ConfigSoftMod()
-
 				/* Live update server description */
 				if disc.RoleListUpdated {
 					/* goroutine, avoid deadlock */
+
+					ConfigSoftMod()
 					go fact.GenerateFactorioConfig()
 				}
 				disc.RoleListUpdated = false
