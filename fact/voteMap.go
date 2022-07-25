@@ -63,7 +63,8 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 		return
 	}
 
-	if !CheckSave(autoSaveStr, path, false) {
+	good, _ := CheckSave(autoSaveStr, path, false)
+	if !good {
 		buf := fmt.Sprintf("The save game '%v' does not appear to be valid.", autoSaveStr)
 		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 		disc.FollowupResponse(s, i, &f)

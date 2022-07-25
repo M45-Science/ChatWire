@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -23,7 +24,7 @@ import (
 	"ChatWire/sclean"
 )
 
-func CheckSave(path, name string, showError bool) bool {
+func CheckSave(path, name string, showError bool) (good bool, folder string) {
 	zip, err := zip.OpenReader(path + "/" + name)
 	if err != nil || zip == nil {
 		buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())
@@ -47,7 +48,7 @@ func CheckSave(path, name string, showError bool) bool {
 				if strings.HasSuffix(file.Name, "level.dat0") {
 					//Save appears valid
 					cwlog.DoLogCW("Found " + file.Name + ", loading.")
-					return true
+					return true, filepath.Dir(file.Name)
 				}
 			}
 		}
@@ -58,7 +59,7 @@ func CheckSave(path, name string, showError bool) bool {
 		cwlog.DoLogCW(buf)
 	}
 
-	return false
+	return false, ""
 }
 
 func SetFactRunning(run bool) {
@@ -624,7 +625,8 @@ func DoChangeMap(s *discordgo.Session, arg string) {
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)
-	if !CheckSave(saveStr, path, false) {
+	good, _ := CheckSave(saveStr, path, false)
+	if !good {
 		cwlog.DoLogCW("DoChangeMap: Attempted to load an invalid save.")
 		return
 	}
