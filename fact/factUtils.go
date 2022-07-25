@@ -1,6 +1,7 @@
 package fact
 
 import (
+	"archive/zip"
 	"fmt"
 	"io"
 	"io/fs"
@@ -20,8 +21,45 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-	"ChatWire/support"
 )
+
+func CheckSave(path, name string, showError bool) bool {
+	zip, err := zip.OpenReader(path + "/" + name)
+	if err != nil || zip == nil {
+		buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())
+		if showError {
+			CMS(cfg.Local.Channel.ChatChannel, buf)
+		}
+		cwlog.DoLogCW(buf)
+	} else {
+
+		for _, file := range zip.File {
+			_, err := file.Open()
+
+			if err != nil {
+				buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
+				if showError {
+					CMS(cfg.Local.Channel.ChatChannel, buf)
+				}
+				cwlog.DoLogCW(buf)
+				break
+			} else {
+				if strings.HasSuffix(file.Name, "level.dat0") {
+					//Save appears valid
+					cwlog.DoLogCW("Found " + file.Name + ", loading.")
+					return true
+				}
+			}
+		}
+		buf := fmt.Sprintf("Save '%v' did not contain a level.dat0 file.", name)
+		if showError {
+			CMS(cfg.Local.Channel.ChatChannel, buf)
+		}
+		cwlog.DoLogCW(buf)
+	}
+
+	return false
+}
 
 func SetFactRunning(run bool) {
 	wasrun := FactIsRunning
@@ -586,7 +624,7 @@ func DoChangeMap(s *discordgo.Session, arg string) {
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)
-	if !support.CheckSave(saveStr, path, false) {
+	if !CheckSave(saveStr, path, false) {
 		cwlog.DoLogCW("DoChangeMap: Attempted to load an invalid save.")
 		return
 	}

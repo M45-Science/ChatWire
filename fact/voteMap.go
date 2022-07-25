@@ -16,7 +16,6 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/support"
 )
 
 func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
@@ -64,7 +63,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 		return
 	}
 
-	if !support.CheckSave(autoSaveStr, path, false) {
+	if !CheckSave(autoSaveStr, path, false) {
 		buf := fmt.Sprintf("The save game '%v' does not appear to be valid.", autoSaveStr)
 		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 		disc.FollowupResponse(s, i, &f)
