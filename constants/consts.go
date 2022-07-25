@@ -21,6 +21,7 @@ const (
 	VoteFile            = "votes.dat"
 	MembersPrefix       = "M"
 	ArchiveFolderSuffix = " maps"
+	TempSaveName        = "softmod.tmp"
 	BootUpdateDelayMin  = 2
 	MaxSaveBackups      = 10
 	ModPackLifeMins     = 120
