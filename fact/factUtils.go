@@ -664,6 +664,5 @@ func DoChangeMap(s *discordgo.Session, arg string) {
 	CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading save: %v", arg))
 	glob.RelaunchThrottle = 0
 	FactAutoStart = true
-	return
 
 }
