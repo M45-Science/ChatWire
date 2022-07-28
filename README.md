@@ -51,6 +51,13 @@ Discord channel position is now preserved.<br>
 Better loaded mod detection.<br>
 Improved FCL (Factorio Community List) bans<br>
 <br>
+<br>
+### Recent changes:<br>
+player db is now compact json.<br>
+ban reasons are stored.<br>
+savegame checks: valid zip, contains level.dat<br>
+intergrated softmod injection<br>
+<br>
 ### Requirements:
 Linux<br>
 Golang 1.17+<br>
