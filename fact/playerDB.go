@@ -237,6 +237,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 		}
 		if seen > glob.PlayerList[pname].LastSeen {
 			glob.PlayerList[pname].LastSeen = seen
+			WhitelistPlayer(pname, level)
 		}
 		if id != "" {
 			glob.PlayerList[pname].ID = id
