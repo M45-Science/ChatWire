@@ -198,9 +198,20 @@ func UpdateScheduleDesc() (err bool) {
 			}
 
 			n := e[a-1].Next
-			NextReset = n.Format("Mon Jan 02 15:04 MST")
+			if cfg.Local.Options.SkipReset {
+				NextReset = "(SKIP) "
+			} else {
+				NextReset = ""
+			}
+			NextReset = NextReset + n.Format("Mon Jan 02 15:04 MST")
 			NextResetUnix = n.Unix()
-			TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
+
+			if cfg.Local.Options.SkipReset {
+				TillReset = "(SKIP) "
+			} else {
+				TillReset = ""
+			}
+			TillReset = TillReset + durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
 
 			return false
 		} else {

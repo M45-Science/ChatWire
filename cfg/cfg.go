@@ -174,6 +174,7 @@ type localOptions struct {
 	HideResearch  bool
 	Whitelist     bool
 	ModUpdate     bool
+	SkipReset     bool
 
 	SoftModOptions softmodOptions
 }

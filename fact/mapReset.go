@@ -61,6 +61,12 @@ func Map_reset(data string, doReport bool) {
 		return
 	}
 
+	if !doReport {
+		if cfg.Local.Options.SkipReset {
+			return
+		}
+	}
+
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
@@ -73,6 +79,7 @@ func Map_reset(data string, doReport bool) {
 
 			cfg.Local.Options.SoftModOptions.SlowConnect.Speed = 1.0
 			cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed = 0.5
+			cfg.Local.Options.SkipReset = false
 			cfg.WriteLCfg()
 			FactAutoStart = false
 			QuitFactorio("Server rebooting for map reset...")
