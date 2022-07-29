@@ -126,6 +126,10 @@ func GenerateFactorioConfig() bool {
 
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
+	if cfg.Local.Options.Whitelist {
+		tags = append(tags, "MEMBERS-ONLY")
+	}
+	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 
 	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Patreons: " + strings.Join(disc.RoleList.Patreons, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
 	//+ "[/color]\n[color=red]Moderators: " + strings.Join(disc.RoleList.Moderators, ", ") + "[/color]\n"
