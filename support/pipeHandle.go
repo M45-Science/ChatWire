@@ -583,9 +583,9 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	 * BAN
 	 ******************/
 	if strings.HasPrefix(NoDS, "[BAN]") {
-		//Prevent double-ban
+
 		glob.PlayerListWriteLock.Lock()
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 1)
 		defer glob.PlayerListWriteLock.Unlock()
 
 		cwlog.DoLogGame(NoDS)
@@ -599,6 +599,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 					if strings.Contains(NoDS, "Reason") {
 						reasonList := strings.Split(NoDS, "Reason: ")
 						buf := fmt.Sprintf("M45 ban: %v, Reason: %v", trustname, reasonList[1])
+						glob.PlayerList[trustname].AlreadyBanned = true
 						fact.PlayerSetBanReason(trustname, reasonList[1])
 						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					} else {
@@ -606,6 +607,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					}
 				} else {
+					glob.PlayerList[trustname].AlreadyBanned = true
 					fact.PlayerLevelSet(trustname, -1, false)
 				}
 			}

@@ -101,7 +101,11 @@ func PlayerSetBanReason(pname string, reason string) bool {
 
 	pname = strings.ToLower(pname)
 
-	WriteFact("/ban " + pname + " " + reason)
+	if !glob.PlayerList[pname].AlreadyBanned {
+		glob.PlayerList[pname].AlreadyBanned = true
+		WriteFact("/ban " + pname + " " + reason)
+
+	}
 
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
