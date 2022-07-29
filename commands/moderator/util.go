@@ -407,7 +407,7 @@ var SettingList = []SettingListData{
 	},
 	{
 		Name:      "soft-mod-inject",
-		ShortDesc: "soft mod injection",
+		ShortDesc: "SoftMod Inject",
 		Desc:      "Inject soft mod scripts from saves/softmod",
 		Type:      TYPE_BOOL,
 		DefBool:   false,
