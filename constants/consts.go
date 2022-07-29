@@ -3,11 +3,13 @@ package constants
 import "time"
 
 const (
-	Version     = "2560-07.25.2022-0407"
-	CWEpoch     = 1653239822390688174
-	SeenDivisor = 60
-	SeenEpoch   = 1546326000
-	Unknown     = "Unknown"
+	Version                         = "2561-07.29.2022-1203p"
+	CWEpoch                         = 1653239822390688174
+	SeenDivisor                     = 60
+	SeenEpoch                       = 1546326000
+	Unknown                         = "Unknown"
+	WhitelistExcludeHoursAgoMember  = 2190 //3 months
+	WhitelistExcludeHoursAgoRegular = 4380 //6 months
 
 	/* ChatWire files */
 	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
@@ -39,7 +41,7 @@ const (
 	SpamResetThres = time.Second * 10
 
 	/* Player suspectr settings */
-	SusWarningThresh = 10
+	SusWarningThresh = 8
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"

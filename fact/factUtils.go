@@ -111,7 +111,14 @@ func WriteWhitelist() int {
 		var count = 0
 		var buf = "[\n"
 		for _, player := range glob.PlayerList {
-			if player.Level > 0 {
+			//If member and have been online in (x), or are a regular or higher
+			if (player.Level == 1 &&
+				time.Since(ExpandTime(player.LastSeen)) < (time.Hour*constants.WhitelistExcludeHoursAgoMember)) ||
+
+				(player.Level == 2 &&
+					time.Since(ExpandTime(player.LastSeen)) < (time.Hour*constants.WhitelistExcludeHoursAgoRegular)) ||
+
+				player.Level > 2 {
 				buf = buf + "\"" + player.Name + "\",\n"
 				count = count + 1
 			}
