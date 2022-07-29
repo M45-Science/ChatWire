@@ -23,6 +23,7 @@ type PlayerData struct {
 	Name          string `json:"-"`
 	Level         int    `json:"l"`
 	ID            string `json:"i,omitempty"`
+	BanReason     string `json:"b,omitempty"`
 	Creation      int64  `json:"c"`
 	LastSeen      int64  `json:"s"`
 	AlreadyBanned bool   `json:"-"`
