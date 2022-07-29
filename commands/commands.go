@@ -30,7 +30,9 @@ type Command struct {
 }
 
 var CL []Command
-var BugOne float64 = 1
+
+//var valOne float64 = 1.0
+var valZero float64 = 0.0
 
 var cmds = []Command{
 
@@ -93,8 +95,8 @@ var cmds = []Command{
 						Value: "twice-monthly",
 					},
 					{
-						Name:  "fridays",
-						Value: "fridays",
+						Name:  "day-of-week",
+						Value: "day-of-week",
 					},
 					{
 						Name:  "odd-dates",
@@ -109,6 +111,62 @@ var cmds = []Command{
 						Value: "no-reset",
 					},
 				},
+			},
+			{
+				Name:        "day",
+				Description: "FOR DAY-OF-WEEK PRESET ONLY",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "monday",
+						Value: "MON",
+					},
+					{
+						Name:  "tuesday",
+						Value: "TUE",
+					},
+					{
+						Name:  "wednesday",
+						Value: "WED",
+					},
+					{
+						Name:  "thursday",
+						Value: "THU",
+					},
+					{
+						Name:  "friday",
+						Value: "FRI",
+					},
+					{
+						Name:  "saturday",
+						Value: "SAT",
+					},
+					{
+						Name:  "sunday",
+						Value: "SUN",
+					},
+					{
+						Name:  "default",
+						Value: "",
+					},
+				},
+			},
+			{
+				Name:        "date",
+				Description: "FOR 3,2 OR 1 MONTH, TWICE-MONHTLY PRESETS ONLY! 0 = default",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				MinValue:    &valZero,
+				MaxValue:    27,
+				Required:    false,
+			},
+			{
+				Name:        "hour",
+				Description: "RESET HOUR, 24-HOUR, UTC! 0 = default",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				MinValue:    &valZero,
+				MaxValue:    23,
+				Required:    false,
 			},
 		},
 	},
