@@ -93,6 +93,48 @@ func SetPlayerListSeenDirty() {
 	glob.PlayerListSeenDirtyLock.Unlock()
 }
 
+func PlayerSetBanReason(pname string, reason string) bool {
+
+	if pname == "" {
+		return false
+	}
+
+	pname = strings.ToLower(pname)
+
+	WriteFact("/ban " + pname + " " + reason)
+
+	glob.PlayerListLock.Lock()
+	defer glob.PlayerListLock.Unlock()
+
+	if glob.PlayerList[pname] != nil {
+		glob.PlayerList[pname].ID = ""
+		glob.PlayerList[pname].Level = -1
+		glob.PlayerList[pname].BanReason = reason
+		glob.PlayerList[pname].LastSeen = 0
+		glob.PlayerList[pname].Creation = 0
+		glob.PlayerList[pname].AlreadyBanned = true
+
+		SetPlayerListDirty()
+		return true
+	}
+
+	/* Not in list, add them */
+	newplayer := glob.PlayerData{
+
+		Name:          pname,
+		Level:         -1,
+		ID:            "",
+		BanReason:     reason,
+		AlreadyBanned: true,
+		LastSeen:      compactNow(),
+		Creation:      compactNow(),
+	}
+	glob.PlayerList[pname] = &newplayer
+
+	SetPlayerListDirty()
+	return false
+}
+
 /* Get playerID (Discord), add to db if not found */
 func PlayerSetID(pname string, id string, level int) bool {
 
@@ -200,8 +242,13 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(pname string, level int, id string, creation int64, seen int64, firstLoad bool) {
+func AddPlayer(pname string, level int, id string, creation int64, seen int64, reason string, firstLoad bool) {
 	if pname == "" {
+		return
+	}
+
+	/* Don't keep old bans */
+	if firstLoad && level < 0 {
 		return
 	}
 
@@ -218,10 +265,10 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 			if !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
 
 				/* Use discordid as a sneaky way to pass ban reason */
-				idReason := id
+				banReason := glob.PlayerList[pname].BanReason
 				reason := "Banned on a different server."
-				if sclean.AlphaOnly(idReason) != "" {
-					reason = idReason
+				if sclean.AlphaOnly(banReason) != "" {
+					reason = banReason
 				}
 
 				WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
@@ -249,27 +296,30 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 		/* Not in list, add them */
 		newplayer := glob.PlayerData{
 
-			Name:     pname,
-			Level:    level,
-			ID:       id,
-			LastSeen: seen,
-			Creation: creation,
+			Name:      pname,
+			Level:     level,
+			ID:        id,
+			BanReason: reason,
+			LastSeen:  seen,
+			Creation:  creation,
 		}
+
 		glob.PlayerList[pname] = &newplayer
 		WhitelistPlayer(pname, level)
 
 		if level == -1 && !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
 
 			/* Use discordid as a sneaky way to pass ban reason */
-			idReason := id
+			banReason := glob.PlayerList[pname].BanReason
 			reason := "Banned on a different server."
-			if sclean.AlphaOnly(idReason) != "" {
-				reason = idReason
+			if sclean.AlphaOnly(banReason) != "" {
+				reason = banReason
 			}
 
 			WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
 			glob.PlayerList[pname].AlreadyBanned = true
 		}
+
 	}
 
 }
@@ -346,7 +396,7 @@ func LoadPlayers(firstLoad bool) {
 						seen = CompactTime(seen)
 
 						if playerlevel != 0 || len(pid) > 1 {
-							AddPlayer(pname, playerlevel, pid, creation, seen, firstLoad)
+							AddPlayer(pname, playerlevel, pid, creation, seen, "", firstLoad)
 						}
 					} else if pos != 0 && pos != dblen-1 {
 						cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
@@ -370,7 +420,7 @@ func LoadPlayers(firstLoad bool) {
 			for pname := range tempData {
 				tempData[pname].Name = pname
 				if tempData[pname].Level != 0 || tempData[pname].ID != "" {
-					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, firstLoad)
+					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, firstLoad)
 				}
 			}
 			glob.PlayerListLock.Unlock()
