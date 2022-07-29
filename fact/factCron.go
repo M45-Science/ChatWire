@@ -190,7 +190,7 @@ func UpdateScheduleDesc() (err bool) {
 	if cfg.Local.Options.Schedule != "" && CronVar != nil {
 		e := CronVar.Entries()
 		a := len(e)
-		if a > 3 {
+		if a > 5 {
 
 			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,week:weeks,day:days,hour:hours,minute:minutes,sec:secs,ms:ms,us:us")
 			if err != nil {
