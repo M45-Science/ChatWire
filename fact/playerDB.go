@@ -245,29 +245,31 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 		return
 	}
 
-	/* Not in list, add them */
-	newplayer := glob.PlayerData{
+	if level != 0 {
+		/* Not in list, add them */
+		newplayer := glob.PlayerData{
 
-		Name:     pname,
-		Level:    level,
-		ID:       id,
-		LastSeen: seen,
-		Creation: creation,
-	}
-	glob.PlayerList[pname] = &newplayer
-	WhitelistPlayer(pname, level)
-
-	if level == -1 && !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
-
-		/* Use discordid as a sneaky way to pass ban reason */
-		idReason := id
-		reason := "Banned on a different server."
-		if sclean.AlphaOnly(idReason) != "" {
-			reason = idReason
+			Name:     pname,
+			Level:    level,
+			ID:       id,
+			LastSeen: seen,
+			Creation: creation,
 		}
+		glob.PlayerList[pname] = &newplayer
+		WhitelistPlayer(pname, level)
 
-		WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
-		glob.PlayerList[pname].AlreadyBanned = true
+		if level == -1 && !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
+
+			/* Use discordid as a sneaky way to pass ban reason */
+			idReason := id
+			reason := "Banned on a different server."
+			if sclean.AlphaOnly(idReason) != "" {
+				reason = idReason
+			}
+
+			WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
+			glob.PlayerList[pname].AlreadyBanned = true
+		}
 	}
 
 }
@@ -367,7 +369,9 @@ func LoadPlayers(firstLoad bool) {
 			glob.PlayerListLock.Lock()
 			for pname := range tempData {
 				tempData[pname].Name = pname
-				AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, firstLoad)
+				if tempData[pname].Level != 0 {
+					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, firstLoad)
+				}
 			}
 			glob.PlayerListLock.Unlock()
 		}

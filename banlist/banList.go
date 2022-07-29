@@ -35,7 +35,7 @@ func CheckBanList(player string) {
 
 	for _, ban := range BanList {
 		if strings.EqualFold(ban.UserName, player) {
-			if fact.PlayerLevelGet(ban.UserName, false) < 2 {
+			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
 				fact.PlayerLevelSet(ban.UserName, -1, false)
 				fact.PlayerSetID(ban.UserName, "[FCL] "+ban.Reason, -1)
 				fact.WriteFact("/ban " + ban.UserName + " [FCL] " + ban.Reason)
@@ -141,7 +141,7 @@ func ReadBanFile() {
 					buf = buf + ", "
 				}
 
-				if fact.PlayerLevelGet(aBan.UserName, false) >= 2 {
+				if fact.PlayerLevelGet(aBan.UserName, true) >= 2 {
 					buf = buf + fmt.Sprintf("Reg/Mod:Bypass:%v, %v", aBan.UserName, aBan.Reason)
 				} else if aBan.Reason != "" {
 					buf = buf + aBan.UserName + ": " + aBan.Reason
