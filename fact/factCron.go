@@ -2,6 +2,7 @@ package fact
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -55,43 +56,94 @@ func doWarn(mins int) {
 }
 
 func InterpSchedule(desc string, test bool) (err bool) {
-	var warn15, warn5, warn1, reset string
+	var warn60, warn30, warn15, warn5, warn1, reset string
+
+	date := 1
+	dateb := 15
+	day := "FRI"
+
+	hour := 16
+	minute := 0
+
+	if cfg.Local.Options.ResetHour > 0 {
+		hour = cfg.Local.Options.ResetHour
+	}
+
+	if cfg.Local.Options.ResetDate > 0 {
+		date = cfg.Local.Options.ResetDate
+		dateb = dateb + cfg.Local.Options.ResetDate
+
+		//Wrap date around for two-week
+		if dateb > 28 {
+			dateb = (28 - dateb)
+		}
+		if dateb <= 0 {
+			dateb = int(math.Abs(float64(dateb)))
+		}
+		if dateb > 28 {
+			dateb = 28
+		}
+
+		if date <= 0 {
+			date = 1
+		}
+		if date > 28 {
+			date = 28
+		}
+	}
+	if cfg.Local.Options.ResetDay != "" {
+		day = cfg.Local.Options.ResetDay
+	}
 
 	if strings.EqualFold(desc, "three-months") {
-		warn15 = "0 45 15 1 */3 *"
-		warn5 = "0 55 15 1 */3 *"
-		warn1 = "0 59 15 1 */3 *"
-		reset = "0 0 16 1 */3 * *"
+		warn60 = fmt.Sprintf("0 %v %v %v */3 *", minute, hour-1, date)
+		warn30 = fmt.Sprintf("0 %v %v %v */3 *", minute+30, hour-1, date)
+		warn15 = fmt.Sprintf("0 %v %v %v */3 *", minute+45, hour-1, date)
+		warn5 = fmt.Sprintf("0 %v %v %v */3 *", minute+55, hour-1, date)
+		warn1 = fmt.Sprintf("0 %v %v %v */3 *", minute+59, hour-1, date)
+		reset = fmt.Sprintf("0 %v %v %v */3 *", minute, hour, date)
 	} else if strings.EqualFold(desc, "two-months") {
-		warn15 = "0 45 15 1 */2 *"
-		warn5 = "0 55 15 1 */2 *"
-		warn1 = "0 59 16 1 */2 *"
-		reset = "0 0 16 1 */2 *"
+		warn60 = fmt.Sprintf("0 %v %v %v */2 *", minute+0, hour-1, date)
+		warn30 = fmt.Sprintf("0 %v %v %v */2 *", minute+30, hour-1, date)
+		warn15 = fmt.Sprintf("0 %v %v %v */2 *", minute+45, hour-1, date)
+		warn5 = fmt.Sprintf("0 %v %v %v */2 *", minute+55, hour-1, date)
+		warn1 = fmt.Sprintf("0 %v %v %v */2 *", minute+59, hour-1, date)
+		reset = fmt.Sprintf("0 %v %v %v */2 *", minute, hour, date)
 	} else if strings.EqualFold(desc, "monthly") {
-		warn15 = "0 45 15 1 * *"
-		warn5 = "0 55 15 1 * *"
-		warn1 = "0 59 15 1 * *"
-		reset = "0 0 16 1 * *"
+		warn60 = fmt.Sprintf("0 %v %v %v * *", minute, hour-1, date)
+		warn30 = fmt.Sprintf("0 %v %v %v * *", minute+30, hour-1, date)
+		warn15 = fmt.Sprintf("0 %v %v %v * *", minute+45, hour-1, date)
+		warn5 = fmt.Sprintf("0 %v %v %v * *", minute+55, hour-1, date)
+		warn1 = fmt.Sprintf("0 %v %v %v * *", minute+59, hour-1, date)
+		reset = fmt.Sprintf("0 %v %v %v * *", minute, hour, date)
 	} else if strings.EqualFold(desc, "twice-monthly") {
-		warn15 = "0 45 15 1,15 * *"
-		warn5 = "0 55 15 1,15 * *"
-		warn1 = "0 59 15 1,15 * *"
-		reset = "0 0 16 1,15 * *"
-	} else if strings.EqualFold(desc, "fridays") {
-		warn15 = "0 45 15 * * FRI"
-		warn5 = "0 55 15 * * FRI"
-		warn1 = "0 59 15 * * FRI"
-		reset = "0 0 16 * * FRI"
+		warn60 = fmt.Sprintf("0 %v %v %v,%v * *", minute, hour-1, date, dateb)
+		warn30 = fmt.Sprintf("0 %v %v %v,%v * *", minute+30, hour-1, date, dateb)
+		warn15 = fmt.Sprintf("0 %v %v %v,%v * *", minute+45, hour-1, date, dateb)
+		warn5 = fmt.Sprintf("0 %v %v %v,%v * *", minute+55, hour-1, date, dateb)
+		warn1 = fmt.Sprintf("0 %v %v %v,%v * *", minute+59, hour-1, date, dateb)
+		reset = fmt.Sprintf("0 %v %v %v,%v * *", minute, hour, date, dateb)
+	} else if strings.EqualFold(desc, "fridays") || strings.EqualFold(desc, "day-of-week") {
+		warn60 = fmt.Sprintf("0 %v %v * * %v", minute, hour-1, day)
+		warn30 = fmt.Sprintf("0 %v %v * * %v", minute+30, hour-1, day)
+		warn15 = fmt.Sprintf("0 %v %v * * %v", minute+45, hour-1, day)
+		warn5 = fmt.Sprintf("0 %v %v * * %v", minute+55, hour-1, day)
+		warn1 = fmt.Sprintf("0 %v %v * * %v", minute+59, hour-1, day)
+		reset = fmt.Sprintf("0 %v %v * * %v", minute, hour, day)
 	} else if strings.EqualFold(desc, "odd-dates") {
-		warn15 = "0, 45, 15 */2 * *"
-		warn5 = "0, 55, 15 */2 * *"
-		warn1 = "0, 59, 15 */2 * *"
-		reset = "0, 0, 16 */2 * *"
+		warn60 = fmt.Sprintf("0 %v %v */2 * *", minute, hour-1)
+		warn30 = fmt.Sprintf("0 %v %v */2 * *", minute+30, hour-1)
+		warn15 = fmt.Sprintf("0 %v %v */2 * *", minute+45, hour-1)
+		warn5 = fmt.Sprintf("0 %v %v */2 * *", minute+55, hour-1)
+		warn1 = fmt.Sprintf("0 %v %v */2 * *", minute+59, hour-1)
+		reset = fmt.Sprintf("0 %v %v */2 * *", minute, hour)
 	} else if strings.EqualFold(desc, "daily") {
-		warn15 = "0, 45, 15 * * *"
-		warn5 = "0, 55, 15 * * *"
-		warn1 = "0, 59, 15 * * *"
-		reset = "0, 0, 16 * * *"
+		warn60 = fmt.Sprintf("0 %v %v * * *", minute, hour-1)
+		warn30 = fmt.Sprintf("0 %v %v * * *", minute+30, hour-1)
+		warn15 = fmt.Sprintf("0 %v %v * * *", minute+45, hour-1)
+		warn5 = fmt.Sprintf("0 %v %v * * *", minute+55, hour-1)
+		warn1 = fmt.Sprintf("0 %v %v * * *", minute+59, hour-1)
+		reset = fmt.Sprintf("0 %v %v * * *", minute, hour)
 	} else if strings.EqualFold(desc, "no-reset") {
 		//
 	} else {
@@ -100,13 +152,15 @@ func InterpSchedule(desc string, test bool) (err bool) {
 	}
 
 	if !test && reset != "" {
-		err1 := CronVar.AddFunc(warn15, func() { doWarn(15) })
-		err2 := CronVar.AddFunc(warn5, func() { doWarn(5) })
-		err3 := CronVar.AddFunc(warn1, func() { doWarn(1) })
-		err4 := CronVar.AddFunc(reset, func() { go Map_reset("", false) })
+		err6 := CronVar.AddFunc(warn60, func() { doWarn(60) })
+		err5 := CronVar.AddFunc(warn30, func() { doWarn(30) })
+		err4 := CronVar.AddFunc(warn15, func() { doWarn(15) })
+		err3 := CronVar.AddFunc(warn5, func() { doWarn(5) })
+		err2 := CronVar.AddFunc(warn1, func() { doWarn(1) })
+		err1 := CronVar.AddFunc(reset, func() { go Map_reset("", false) })
 
-		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-			cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error())
+		if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil || err6 != nil {
+			cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error() + err5.Error() + err6.Error())
 			return true
 		} else {
 			return false
