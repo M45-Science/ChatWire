@@ -162,6 +162,9 @@ type channel struct {
 
 type localOptions struct {
 	Schedule   string
+	ResetDay   string
+	ResetDate  int
+	ResetHour  int
 	PingString string
 
 	AutoStart     bool
