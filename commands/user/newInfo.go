@@ -103,7 +103,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	modStr := strings.Join(fact.ModList, ",")
-	if modStr != constants.Unknown {
+	if modStr != constants.Unknown && modStr != "" {
 		buf = buf + "\nLoaded mods: " + modStr + "\n"
 	}
 
@@ -161,8 +161,8 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
-	buf = buf + fmt.Sprintf("\nStats:\n%17v: %v players\n", "Database", len(glob.PlayerList))
-	buf = buf + fmt.Sprintf("%17v: %v\n", "Blacklist", len(banlist.BanList))
+	buf = buf + fmt.Sprintf("\nStats:\n%17v: %v players\n", "Members", len(glob.PlayerList))
+	buf = buf + fmt.Sprintf("%17v: %v\n", "Banned", len(banlist.BanList))
 
 	if fact.PausedTicks > 4 {
 		buf = buf + "\n(Server is paused)\n"
