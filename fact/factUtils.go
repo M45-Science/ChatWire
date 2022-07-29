@@ -442,6 +442,15 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 				Name: "⭐",
 			},
 		},
+		discordgo.SelectMenuOption{
+
+			Label:       "SKIP-RESET",
+			Description: "Skip the next map reset.",
+			Value:       "SKIP-RESET",
+			Emoji: discordgo.ComponentEmoji{
+				Name: "🚫",
+			},
+		},
 	)
 
 	for i := 0; i < numFiles; i++ {
@@ -622,6 +631,15 @@ func DoChangeMap(s *discordgo.Session, arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
 		go Map_reset("", false)
+		return
+	} else if strings.EqualFold(arg, "skip-reset") {
+		cfg.Local.Options.SkipReset = true
+		cfg.WriteLCfg()
+
+		buf := "VOTE: The next map reset will be skipped."
+		FactChat(buf)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
+		return
 	}
 
 	path := cfg.Global.Paths.Folders.ServersRoot +
