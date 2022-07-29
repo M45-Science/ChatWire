@@ -245,7 +245,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, f
 		return
 	}
 
-	if level != 0 {
+	if level != 0 || id != "" {
 		/* Not in list, add them */
 		newplayer := glob.PlayerData{
 
@@ -369,7 +369,7 @@ func LoadPlayers(firstLoad bool) {
 			glob.PlayerListLock.Lock()
 			for pname := range tempData {
 				tempData[pname].Name = pname
-				if tempData[pname].Level != 0 {
+				if tempData[pname].Level != 0 || tempData[pname].ID != "" {
 					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, firstLoad)
 				}
 			}
