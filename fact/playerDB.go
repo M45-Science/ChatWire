@@ -14,7 +14,6 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
-	"ChatWire/sclean"
 )
 
 func compactNow() int64 {
@@ -112,7 +111,9 @@ func PlayerSetBanReason(pname string, reason string) bool {
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].ID = ""
 		glob.PlayerList[pname].Level = -1
-		glob.PlayerList[pname].BanReason = reason
+		if reason != "" {
+			glob.PlayerList[pname].BanReason = reason
+		}
 		glob.PlayerList[pname].LastSeen = 0
 		glob.PlayerList[pname].Creation = 0
 		glob.PlayerList[pname].AlreadyBanned = true
@@ -245,51 +246,36 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(pname string, level int, id string, creation int64, seen int64, reason string, firstLoad bool) {
+func AddPlayer(pname string, level int, id string, creation int64, seen int64, reason string) {
 	if pname == "" {
-		return
-	}
-
-	/* Don't keep old bans */
-	if firstLoad && level < 0 {
-		glob.PlayerList[pname].AlreadyBanned = true
 		return
 	}
 
 	pname = strings.ToLower(pname)
 
 	if glob.PlayerList[pname] != nil {
-		if level <= -254 {
+		if level <= -254 { //Delete
 			glob.PlayerList[pname].Level = level
 			/*Clear discord ID on delete*/
 			glob.PlayerList[pname].ID = "0"
-		} else if level == -1 && glob.PlayerList[pname].Level >= 0 {
+		} else if level == -1 && glob.PlayerList[pname].Level >= 0 { //Banned
 			glob.PlayerList[pname].Level = level
-
-			if !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
-
-				banReason := glob.PlayerList[pname].BanReason
-				reason := "Banned on a different server."
-				if sclean.AlphaOnly(banReason) != "" {
-					reason = banReason
-				}
-
-				WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
-				glob.PlayerList[pname].AlreadyBanned = true
+			if reason != "" {
+				glob.PlayerList[pname].BanReason = reason
 			}
-
-		} else if level > glob.PlayerList[pname].Level {
+		} else if level > glob.PlayerList[pname].Level { //Promoted
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
 		}
-		if creation > 0 {
+
+		if creation > 0 { //Add creation date
 			glob.PlayerList[pname].Creation = creation
 		}
-		if seen > glob.PlayerList[pname].LastSeen {
+		if seen > glob.PlayerList[pname].LastSeen { //Update last seen
 			glob.PlayerList[pname].LastSeen = seen
 			WhitelistPlayer(pname, level)
 		}
-		if id != "" {
+		if id != "" { //Registered
 			glob.PlayerList[pname].ID = id
 		}
 		return
@@ -309,19 +295,6 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 
 		glob.PlayerList[pname] = &newplayer
 		WhitelistPlayer(pname, level)
-
-		if level == -1 && !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
-
-			banReason := glob.PlayerList[pname].BanReason
-			reason := "Banned on a different server."
-			if sclean.AlphaOnly(banReason) != "" {
-				reason = banReason
-			}
-
-			WriteFact(fmt.Sprintf("/ban %v %v", pname, reason))
-			glob.PlayerList[pname].AlreadyBanned = true
-		}
-
 	}
 
 }
@@ -398,7 +371,7 @@ func LoadPlayers(firstLoad bool) {
 						seen = CompactTime(seen)
 
 						if playerlevel != 0 || len(pid) > 1 {
-							AddPlayer(pname, playerlevel, pid, creation, seen, "", firstLoad)
+							AddPlayer(pname, playerlevel, pid, creation, seen, "")
 						}
 					} else if pos != 0 && pos != dblen-1 {
 						cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
@@ -422,7 +395,7 @@ func LoadPlayers(firstLoad bool) {
 			for pname := range tempData {
 				tempData[pname].Name = pname
 				if tempData[pname].Level != 0 || tempData[pname].ID != "" {
-					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, firstLoad)
+					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason)
 				}
 			}
 			glob.PlayerListLock.Unlock()

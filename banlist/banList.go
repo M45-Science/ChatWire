@@ -41,6 +41,10 @@ func CheckBanList(player string) {
 			break
 		}
 	}
+
+	if fact.PlayerLevelGet(player, false) == -1 {
+		fact.WriteFact("/ban " + player + " " + glob.PlayerList[player].BanReason)
+	}
 }
 
 func WatchBanFile() {

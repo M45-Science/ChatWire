@@ -263,6 +263,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 		if NoDSlistlen > 1 {
 			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
+			banlist.CheckBanList(pname)
 			plevelname := fact.AutoPromote(pname)
 
 			pname = sclean.EscapeDiscordMarkdown(pname)
@@ -1028,9 +1029,9 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 							}
 
 							if !glob.PlayerList[pname].AlreadyBanned {
+								glob.PlayerList[pname].AlreadyBanned = true
 								fact.WriteFact(bbuf)
 								fact.WriteFact("/purge " + pname)
-								glob.PlayerList[pname].AlreadyBanned = true
 							}
 						}
 						glob.ChatterSpamScore[pname] = 0
@@ -1156,6 +1157,7 @@ func handleOnlineMsg(line string) bool {
 
 					if pname != "" {
 						fact.UpdateSeen(pname)
+
 						banlist.CheckBanList(pname)
 
 						timeInt, _ := strconv.Atoi(ptime)
@@ -1170,6 +1172,7 @@ func handleOnlineMsg(line string) bool {
 				fact.NumPlayers = (count)
 				fact.OnlinePlayersLock.Lock()
 				glob.OnlinePlayers = newPlayerList
+
 				fact.OnlinePlayersLock.Unlock()
 				return true
 			}

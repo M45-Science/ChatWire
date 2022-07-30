@@ -259,12 +259,12 @@ func AutoPromote(pname string) string {
 
 	if pname != "" {
 		plevel := PlayerLevelGet(pname, false)
+
 		if plevel <= -254 {
 			playerName = " **(Deleted Player)** "
 
 		} else if plevel == -1 {
 			playerName = " **(Banned)**"
-			WriteFact(fmt.Sprintf("/ban %s (previously banned)", pname))
 
 		} else if plevel == 1 {
 			playerName = " *(Member)*"
