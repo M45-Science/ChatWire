@@ -199,7 +199,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 		glob.VoteBox.Votes[vpos].Voided = true
 	}
 
-	CMS(cfg.Local.Channel.ChatChannel, "VOTE MAP: Loading: "+chosenMap)
+	CMS(cfg.Local.Channel.ChatChannel, "VOTE MAP: "+chosenMap)
 	FactorioBootedAt = time.Time{}
 	DoChangeMap(s, chosenMap)
 }

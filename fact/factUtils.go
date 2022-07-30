@@ -630,6 +630,11 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func DoChangeMap(s *discordgo.Session, arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
+
+		/* Turn off skip reset flag */
+		cfg.Local.Options.SkipReset = false
+		cfg.WriteLCfg()
+
 		go Map_reset("", false)
 		return
 	} else if strings.EqualFold(arg, "skip-reset") {
