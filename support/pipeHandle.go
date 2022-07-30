@@ -585,7 +585,6 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	if strings.HasPrefix(NoDS, "[BAN]") {
 
 		glob.PlayerListWriteLock.Lock()
-		time.Sleep(time.Second * 1)
 		defer glob.PlayerListWriteLock.Unlock()
 
 		cwlog.DoLogGame(NoDS)
