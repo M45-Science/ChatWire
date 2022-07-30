@@ -104,7 +104,6 @@ func PlayerSetBanReason(pname string, reason string) bool {
 	if !glob.PlayerList[pname].AlreadyBanned {
 		glob.PlayerList[pname].AlreadyBanned = true
 		WriteFact("/ban " + pname + " " + reason)
-
 	}
 
 	glob.PlayerListLock.Lock()
@@ -253,6 +252,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 
 	/* Don't keep old bans */
 	if firstLoad && level < 0 {
+		glob.PlayerList[pname].AlreadyBanned = true
 		return
 	}
 
@@ -268,7 +268,6 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 
 			if !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
 
-				/* Use discordid as a sneaky way to pass ban reason */
 				banReason := glob.PlayerList[pname].BanReason
 				reason := "Banned on a different server."
 				if sclean.AlphaOnly(banReason) != "" {
@@ -313,7 +312,6 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 
 		if level == -1 && !firstLoad && !glob.PlayerList[pname].AlreadyBanned {
 
-			/* Use discordid as a sneaky way to pass ban reason */
 			banReason := glob.PlayerList[pname].BanReason
 			reason := "Banned on a different server."
 			if sclean.AlphaOnly(banReason) != "" {
