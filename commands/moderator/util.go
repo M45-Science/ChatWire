@@ -408,7 +408,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "soft-mod-inject",
 		ShortDesc: "SoftMod Inject",
-		Desc:      "Inject soft mod scripts from saves/softmod",
+		Desc:      "Inject soft mod scripts from factorio/softmod",
 		Type:      TYPE_BOOL,
 		DefBool:   false,
 
@@ -417,7 +417,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-reset-skip",
 		ShortDesc: "Map reset skip",
-		Desc:      "Skip the next map reset",
+		Desc:      "Skip the next map reset, clears after.",
 		Type:      TYPE_BOOL,
 		DefBool:   false,
 
