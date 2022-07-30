@@ -42,7 +42,7 @@ func CheckBanList(player string) {
 		}
 	}
 
-	if fact.PlayerLevelGet(player, false) == -1 {
+	if fact.PlayerLevelGet(player, true) == -1 {
 		fact.WriteFact("/ban " + player + " " + glob.PlayerList[player].BanReason)
 	}
 }

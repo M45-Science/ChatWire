@@ -281,6 +281,7 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 		return
 	}
 
+	/* Don't load level 0 players that are not registered */
 	if level != 0 || id != "" {
 		/* Not in list, add them */
 		newplayer := glob.PlayerData{
@@ -338,7 +339,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 }
 
 /* Load database */
-func LoadPlayers(firstLoad bool) {
+func LoadPlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
@@ -400,11 +401,6 @@ func LoadPlayers(firstLoad bool) {
 			}
 			glob.PlayerListLock.Unlock()
 		}
-
-		if firstLoad {
-			cwlog.DoLogCW("Player database loaded.")
-		}
-
 	}
 }
 
