@@ -50,25 +50,28 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	_, err := os.Stat(path + "/" + autoSaveStr)
 	notfound := os.IsNotExist(err)
 
-	if notfound && !strings.EqualFold(arg, "new-map") {
-
-		buf := "That save doesn't exist."
-		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
-		return
-	}
-
 	/* Just in case people bypass Discord */
 	if !strings.HasSuffix(autoSaveStr, ".zip") && strings.HasSuffix(autoSaveStr, "tmp.zip") && strings.HasSuffix(autoSaveStr, cfg.Local.Name+"_new.zip") {
-		return
+		notfound = true
 	}
 
-	good, _ := CheckSave(autoSaveStr, path, false)
-	if !good {
-		buf := fmt.Sprintf("The save game '%v' does not appear to be valid.", autoSaveStr)
-		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
-		return
+	if !strings.EqualFold(arg, "new-map") &&
+		!strings.EqualFold(arg, "skip-reset") {
+		if notfound {
+
+			buf := "That save doesn't exist."
+			f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
+			disc.FollowupResponse(s, i, &f)
+			return
+		}
+
+		good, _ := CheckSave(autoSaveStr, path, false)
+		if !good {
+			buf := fmt.Sprintf("The save game '%v' does not appear to be valid.", autoSaveStr)
+			f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
+			disc.FollowupResponse(s, i, &f)
+			return
+		}
 	}
 
 	/* Cooldown */
