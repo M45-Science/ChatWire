@@ -61,20 +61,32 @@ func Map_reset(data string, doReport bool) {
 		return
 	}
 
-	if !doReport {
-		if cfg.Local.Options.SkipReset {
-			return
-		}
-	}
-
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
 		if data != "" {
+			if !doReport {
+
+				//Silence messages if we are skipping
+				if cfg.Local.Options.SkipReset {
+					return
+				}
+			}
 			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
 			FactChat(AddFactColor("orange", data))
 			return
 		} else {
+
+			/* Turn off skip reset flag regardless of reset reason */
+			if cfg.Local.Options.SkipReset {
+				cfg.Local.Options.SkipReset = false
+				cfg.WriteLCfg()
+
+				/*Don't reset if this is an automatic reset, otherwise proceed. */
+				if !doReport {
+					return
+				}
+			}
 			CMS(cfg.Local.Channel.ChatChannel, "Stopping server, for map reset.")
 
 			cfg.Local.Options.SoftModOptions.SlowConnect.Speed = 1.0
