@@ -594,20 +594,23 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			trustname := NoDSlist[1]
 
 			if strings.Contains(NoDS, "was banned by") {
-				if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
 
-					if strings.Contains(NoDS, "Reason") {
-						reasonList := strings.Split(NoDS, "Reason: ")
+				if strings.Contains(NoDS, "Reason") {
+
+					reasonList := strings.Split(NoDS, "Reason: ")
+
+					//Report bans
+					if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
 						buf := fmt.Sprintf("M45 ban: %v, Reason: %v", trustname, reasonList[1])
-						glob.PlayerList[trustname].AlreadyBanned = true
-						fact.PlayerSetBanReason(trustname, reasonList[1])
 						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
-					} else {
+					}
+
+					fact.PlayerSetBanReason(trustname, reasonList[1], false)
+				} else {
+					if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
 						buf := fmt.Sprintf("M45 ban: %v", trustname)
 						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					}
-				} else {
-					glob.PlayerList[trustname].AlreadyBanned = true
 					fact.PlayerLevelSet(trustname, -1, false)
 				}
 			}

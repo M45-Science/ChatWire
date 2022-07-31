@@ -92,7 +92,7 @@ func SetPlayerListSeenDirty() {
 	glob.PlayerListSeenDirtyLock.Unlock()
 }
 
-func PlayerSetBanReason(pname string, reason string) bool {
+func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 
 	if pname == "" {
 		return false
@@ -100,16 +100,15 @@ func PlayerSetBanReason(pname string, reason string) bool {
 
 	pname = strings.ToLower(pname)
 
-	if !glob.PlayerList[pname].AlreadyBanned {
-		glob.PlayerList[pname].AlreadyBanned = true
-		WriteFact("/ban " + pname + " " + reason)
-	}
-
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
 
 	if glob.PlayerList[pname] != nil {
-		glob.PlayerList[pname].ID = ""
+
+		if doban && !glob.PlayerList[pname].AlreadyBanned {
+			WriteFact("/ban " + pname + " " + reason)
+		}
+
 		glob.PlayerList[pname].Level = -1
 		if reason != "" {
 			glob.PlayerList[pname].BanReason = reason
@@ -134,6 +133,10 @@ func PlayerSetBanReason(pname string, reason string) bool {
 		Creation:      compactNow(),
 	}
 	glob.PlayerList[pname] = &newplayer
+
+	if doban {
+		WriteFact("/ban " + pname + " " + reason)
+	}
 
 	SetPlayerListDirty()
 	return false

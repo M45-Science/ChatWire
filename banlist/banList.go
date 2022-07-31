@@ -36,13 +36,13 @@ func CheckBanList(player string) {
 	for _, ban := range BanList {
 		if strings.EqualFold(ban.UserName, player) {
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
-				fact.PlayerSetBanReason(ban.UserName, "[FCL] "+ban.Reason)
+				fact.PlayerSetBanReason(ban.UserName, "[FCL] "+ban.Reason, true)
 			}
 			break
 		}
 	}
 
-	if fact.PlayerLevelGet(player, true) == -1 {
+	if fact.PlayerLevelGet(player, false) == -1 {
 		fact.WriteFact("/ban " + player + " " + glob.PlayerList[player].BanReason)
 	}
 }
