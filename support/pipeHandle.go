@@ -1031,11 +1031,15 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban)", pname)
 							}
 
-							if !glob.PlayerList[pname].AlreadyBanned {
+							glob.PlayerListLock.Lock()
+							if glob.PlayerList[pname] != nil &&
+								!glob.PlayerList[pname].AlreadyBanned {
 								glob.PlayerList[pname].AlreadyBanned = true
 								fact.WriteFact(bbuf)
-								fact.WriteFact("/purge " + pname)
 							}
+							fact.WriteFact("/purge " + pname)
+							glob.PlayerListLock.Unlock()
+
 						}
 						glob.ChatterSpamScore[pname] = 0
 					}
