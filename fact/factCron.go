@@ -43,7 +43,7 @@ func SetupSchedule() (err bool) {
 }
 
 func doWarn(mins int) {
-	if FactorioBooted && FactIsRunning {
+	if FactorioBooted && FactIsRunning && !cfg.Local.Options.SkipReset {
 		buf := fmt.Sprintf("WARNING: MAP WILL RESET IN %v MINUTES!", mins)
 		FactChat(AddFactColor("red", buf))
 		FactChat(AddFactColor("green", buf))
