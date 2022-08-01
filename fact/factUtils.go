@@ -366,7 +366,11 @@ func DoUpdateChannelName() {
 	var newTopic string
 
 	if NextResetUnix > 0 {
-		newTopic = fmt.Sprintf("NEXT RESET: <t:%v:F>(LOCAL)", NextResetUnix)
+		mpre := "MAP RESET"
+		if cfg.Local.Options.SkipReset {
+			mpre = "(SKIP)"
+		}
+		newTopic = fmt.Sprintf("%v: <t:%v:F>(LOCAL)", mpre, NextResetUnix)
 	}
 	if found {
 		newTopic = newTopic + ", CONNECT: " + URL
