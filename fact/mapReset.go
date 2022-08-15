@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
@@ -258,7 +257,7 @@ func Map_reset(data string, doReport bool) {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsFolder + "/"
 
-	files, err := ioutil.ReadDir(qPath)
+	files, err := os.ReadDir(qPath)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}

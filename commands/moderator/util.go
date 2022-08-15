@@ -1,7 +1,7 @@
 package moderator
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"ChatWire/cfg"
@@ -428,7 +428,7 @@ var SettingList = []SettingListData{
 /* Get list of map generation presets, because an invalid one will make map generation fail */
 func GetMapGenNames() []string {
 	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.MapGenerators
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 		return nil

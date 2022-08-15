@@ -3,7 +3,7 @@ package modupdate
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -25,7 +25,7 @@ func CheckMods(force bool, doReport bool) {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsFolder + "/"
 
-	files, err := ioutil.ReadDir(modPath)
+	files, err := os.ReadDir(modPath)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -135,7 +134,7 @@ func WriteWhitelist() int {
 			return -1
 		}
 
-		err = ioutil.WriteFile(wpath, []byte(buf), 0644)
+		err = os.WriteFile(wpath, []byte(buf), 0644)
 
 		if err != nil {
 			cwlog.DoLogCW("WriteWhitelist: WriteFile failure")
@@ -408,7 +407,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		cfg.Global.Paths.Folders.Saves
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
 		log.Fatal(err)
@@ -417,7 +416,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 
 	step := 1
 	/* Loop all files */
-	var tempf []fs.FileInfo
+	var tempf []fs.DirEntry
 	for _, f := range files {
 		//Hide non-zip files, temp files, and our map-change temp file.
 		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") && !strings.HasSuffix(f.Name(), cfg.Local.Name+"_new.zip") {
@@ -426,7 +425,11 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	}
 
 	sort.Slice(tempf, func(i, j int) bool {
-		return tempf[i].ModTime().After(tempf[j].ModTime())
+		iInfo, _ := tempf[i].Info()
+		jInfo, _ := tempf[j].Info()
+		return iInfo.ModTime().After(jInfo.ModTime())
+
+		//return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
 
 	var availableMaps []discordgo.SelectMenuOption
@@ -473,7 +476,8 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 			}
 
 			/* Get mod date */
-			modDate := time.Since(f.ModTime())
+			info, _ := f.Info()
+			modDate := time.Since(info.ModTime())
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
 
@@ -552,7 +556,7 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		cfg.Global.Paths.Folders.Saves
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
@@ -561,7 +565,7 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	step := 1
 	/* Loop all files */
-	var tempf []fs.FileInfo
+	var tempf []fs.DirEntry
 	for _, f := range files {
 		//Hide non-zip files, temp files, and our map-change temp file.
 		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") && !strings.HasSuffix(f.Name(), cfg.Local.Name+"_new.zip") {
@@ -570,7 +574,10 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	sort.Slice(tempf, func(i, j int) bool {
-		return tempf[i].ModTime().After(tempf[j].ModTime())
+		iInfo, _ := tempf[i].Info()
+		jInfo, _ := tempf[j].Info()
+		return iInfo.ModTime().After(jInfo.ModTime())
+		//return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
 
 	mapList := ""
@@ -595,7 +602,8 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			}
 
 			/* Get mod date */
-			modDate := time.Since(f.ModTime())
+			info, _ := f.Info()
+			modDate := time.Since(info.ModTime())
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units)
 

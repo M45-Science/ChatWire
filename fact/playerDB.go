@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -346,7 +345,7 @@ func LoadPlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	filedata, err := ioutil.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
+	filedata, err := os.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't read db file, skipping...")
 		return
@@ -436,7 +435,7 @@ func WritePlayers() {
 	glob.PlayerListLock.RUnlock()
 
 	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
-	err = ioutil.WriteFile(nfilename, outbuf.Bytes(), 0644)
+	err = os.WriteFile(nfilename, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write db temp file.")

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -29,7 +28,7 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		cfg.Global.Paths.Folders.Saves
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 
 	/* We can't read saves dir */
 	if err != nil {
@@ -38,7 +37,7 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 	}
 
 	/* Loop all files */
-	var tempf []fs.FileInfo
+	var tempf []fs.DirEntry
 	for _, f := range files {
 		//Hide non-zip files, temp files and directories
 		if !f.IsDir() {
@@ -50,7 +49,10 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 
 	//Newest first
 	sort.Slice(tempf, func(i, j int) bool {
-		return tempf[i].ModTime().After(tempf[j].ModTime())
+		iInfo, _ := tempf[i].Info()
+		jInfo, _ := tempf[j].Info()
+		return iInfo.ModTime().After(jInfo.ModTime())
+		//return tempf[i].ModTime().After(tempf[j].ModTime())
 	})
 
 	numSaves := len(tempf)
@@ -90,7 +92,7 @@ func readFolder(path string, sdir string) []zipFilesData {
 	var zipFiles []zipFilesData
 
 	/* Get all softmod files */
-	sFiles, err := ioutil.ReadDir(path)
+	sFiles, err := os.ReadDir(path)
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read softmod folder: "+err.Error())
 		return nil
@@ -141,7 +143,7 @@ func injectSoftMod(fileName, folderName string) {
 				} else {
 
 					defer file.Close()
-					data, rerr := ioutil.ReadAll(file)
+					data, rerr := io.ReadAll(file)
 
 					dlen := uint64(len(data))
 					if rerr != nil && rerr != io.EOF {

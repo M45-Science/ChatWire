@@ -3,7 +3,7 @@ package banlist
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -101,7 +101,7 @@ func ReadBanFile() {
 
 	var bData []banDataType
 
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 
 	if err != nil {
 		//log.Println(err)

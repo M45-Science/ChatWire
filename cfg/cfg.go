@@ -3,7 +3,6 @@ package cfg
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -215,7 +214,7 @@ func WriteGCfg() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteGCfg: WriteFile failure")
@@ -362,7 +361,7 @@ func ReadGCfg() bool {
 		setGlobalDefaults()
 		return true
 	} else { /* Otherwise just read in the config */
-		file, err := ioutil.ReadFile(constants.CWGlobalConfig)
+		file, err := os.ReadFile(constants.CWGlobalConfig)
 
 		if file != nil && err == nil {
 			newcfg := CreateGCfg()
@@ -410,7 +409,7 @@ func WriteLCfg() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteLCfg: WriteFile failure")
@@ -490,7 +489,7 @@ func ReadLCfg() bool {
 		return true
 	} else { /* Just read the config */
 
-		file, err := ioutil.ReadFile(constants.CWLocalConfig)
+		file, err := os.ReadFile(constants.CWLocalConfig)
 
 		if file != nil && err == nil {
 			newcfg := CreateLCfg()
