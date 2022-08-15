@@ -31,7 +31,7 @@ type Command struct {
 
 var CL []Command
 
-//var valOne float64 = 1.0
+// var valOne float64 = 1.0
 var valZero float64 = 0.0
 
 var cmds = []Command{

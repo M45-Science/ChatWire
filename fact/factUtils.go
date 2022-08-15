@@ -432,8 +432,9 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	var availableMaps []discordgo.SelectMenuOption
 
 	numFiles := len(tempf)
-	if numFiles > constants.MaxMapResults {
-		numFiles = constants.MaxMapResults
+	//Subtract num of static objects
+	if numFiles > constants.MaxMapResults-2 {
+		numFiles = constants.MaxMapResults - 2
 	}
 
 	availableMaps = append(availableMaps,
