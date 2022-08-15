@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -221,7 +220,7 @@ func GenerateFactorioConfig() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("GenerateFactorioConfig: WriteFile failure")

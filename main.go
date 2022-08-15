@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -42,7 +41,7 @@ func main() {
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
 	/* Handle lock file */
-	bstr, err := ioutil.ReadFile("cw.lock")
+	bstr, err := os.ReadFile("cw.lock")
 	if err == nil {
 		lastTimeStr := strings.TrimSpace(string(bstr))
 		lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
@@ -82,7 +81,7 @@ func main() {
 	}
 	lfile.Close()
 	buf := fmt.Sprintf("%v\n", time.Now().UTC().Round(time.Second).Format(time.RFC3339Nano))
-	err = ioutil.WriteFile("cw.lock", []byte(buf), 0644)
+	err = os.WriteFile("cw.lock", []byte(buf), 0644)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write lock file!!!")
 		return

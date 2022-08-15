@@ -3,7 +3,6 @@ package disc
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -40,7 +39,7 @@ func WriteRoleList() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("Writecfg.RoleList: WriteFile failure")
@@ -80,7 +79,7 @@ func ReadRoleList() bool {
 		}
 		return true
 	} else { /* Otherwise just read in the config */
-		file, err := ioutil.ReadFile(constants.RoleListFile)
+		file, err := os.ReadFile(constants.RoleListFile)
 
 		if file != nil && err == nil {
 			newcfg := CreateRoleList()

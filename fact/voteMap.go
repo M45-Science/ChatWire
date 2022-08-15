@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -306,7 +305,7 @@ func WriteVotes() bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteVotes: WriteFile failure")
@@ -331,7 +330,7 @@ func ReadVotes() bool {
 		return true
 	} else { /* Just read the config */
 
-		file, err := ioutil.ReadFile(constants.VoteFile)
+		file, err := os.ReadFile(constants.VoteFile)
 
 		if file != nil && err == nil {
 			temp := CreateVoteContainer()

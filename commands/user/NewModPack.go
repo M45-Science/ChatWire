@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -47,7 +46,7 @@ func ModPack(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsFolder + "/"
 
-	files, err := ioutil.ReadDir(modPath)
+	files, err := os.ReadDir(modPath)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 		disc.EphemeralResponse(s, i, "Error", "Error reading mods folder, please inform mods.")
@@ -64,17 +63,20 @@ func ModPack(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			modFiles++
 			totalFiles++
 
-			fbytes += f.Size()
+			i, _ := f.Info()
+			fbytes += i.Size()
 		} else if strings.EqualFold(f.Name(), "mod-list.json") {
 			modsList = append(modsList, modPath+f.Name())
 			totalFiles++
 
-			fbytes += f.Size()
+			i, _ := f.Info()
+			fbytes += i.Size()
 		} else if strings.EqualFold(f.Name(), "mod-settings.dat") {
 			modsList = append(modsList, modPath+f.Name())
 			totalFiles++
 
-			fbytes += f.Size()
+			i, _ := f.Info()
+			fbytes += i.Size()
 		}
 	}
 
