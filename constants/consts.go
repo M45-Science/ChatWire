@@ -41,7 +41,7 @@ const (
 	SpamResetThres = time.Second * 10
 
 	/* Player suspectr settings */
-	SusWarningThresh = 8
+	SusWarningThresh = 15
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"

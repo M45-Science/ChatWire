@@ -96,6 +96,8 @@ func main() {
 	glob.PassList = make(map[string]*glob.PassData)
 	glob.PlayerSus = make(map[string]int)
 
+	glob.LastSusWarning = time.Now()
+
 	pos := 10000
 	for i := 'a'; i <= 'z'; i++ {
 		glob.AlphaValue[string(i)] = pos

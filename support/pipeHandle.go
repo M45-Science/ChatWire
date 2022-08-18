@@ -351,38 +351,42 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 				if pname != "" && glob.PlayerSus != nil {
 					p := disc.GetPlayerDataFromName(pname)
-					if p != nil && p.Name != "" && p.Level < 2 {
+					if p != nil && p.Name != "" && p.Level < 1 {
 
 						glob.PlayerSusLock.Lock()
 
-						if strings.Contains(action, "tag") ||
-							strings.Contains(action, "rotated") ||
+						if strings.Contains(action, "rotated") ||
 							strings.Contains(action, "ghost") {
-							glob.PlayerSus[pname] += 2
+							glob.PlayerSus[pname] += 4
+						} else if strings.Contains(action, "placed a speaker") ||
+							strings.Contains(action, "tag") ||
+							strings.Contains(action, "deconstructing") {
+							glob.PlayerSus[pname] += 4
 						} else if strings.Contains(action, "placed") {
 							if glob.PlayerSus[pname] > 0 {
-								glob.PlayerSus[pname]--
+								glob.PlayerSus[pname] += 2
 							}
+						} else { //Mined, other
 							if glob.PlayerSus[pname] > 0 {
-								glob.PlayerSus[pname]--
+								glob.PlayerSus[pname] += 3
 							}
-						} else { //Other actions like: mine, deconstruct
-							glob.PlayerSus[pname]++
+						}
 
-							if glob.PlayerSus[pname] > constants.SusWarningThresh {
+						if glob.PlayerSus[pname] > constants.SusWarningThresh {
 
-								if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
-									glob.LastSusWarning = time.Now()
+							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
+								glob.LastSusWarning = time.Now()
 
-									if !cfg.Global.Options.ShutupSusWarn {
-										sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
+								if !cfg.Global.Options.ShutupSusWarn {
+									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
 
-										fact.FactChat("[color=red]" + sbuf + "[/color]")
-										fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
-									}
+									fact.FactChat("[color=red]" + sbuf + "[/color]")
+									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
 
-									glob.PlayerSus[pname] = 0
+									fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
 								}
+
+								glob.PlayerSus[pname] = 0
 							}
 						}
 

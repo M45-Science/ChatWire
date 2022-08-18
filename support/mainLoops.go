@@ -87,7 +87,7 @@ func MainLoops() {
 	 ********************************/
 	go func() {
 		for glob.ServerRunning {
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 1)
 
 			glob.PlayerSusLock.Lock()
 
