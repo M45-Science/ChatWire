@@ -44,12 +44,12 @@ func CheckFactUpdate(logNoUpdate bool) {
 		defer cancel()
 
 		/* Create cache directory */
-		err := os.MkdirAll(cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.UpdateCache, 0777)
+		err := os.MkdirAll(cfg.Global.Paths.Folders.UpdateCache, 0777)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
 
-		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary(), "-d"}
+		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary(), "-d"}
 		if cfg.Local.Options.ExpUpdates {
 			cmdargs = append(cmdargs, "-x")
 		}
@@ -98,7 +98,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 									cwlog.DoLogCW(mess)
 								} else {
-									os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
+									os.RemoveAll(cfg.Global.Paths.Folders.UpdateCache)
 									/* Purge patch name so we attempt check again */
 									NewPatchName = constants.Unknown
 									cwlog.DoLogCW("fact update check: Factorio update zip invalid... purging cache.")
@@ -142,7 +142,7 @@ func FactUpdate() {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.FactorioUpdateCheckLimit)
 	defer cancel()
 
-	err := os.MkdirAll(cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.UpdateCache, 0777)
+	err := os.MkdirAll(cfg.Global.Paths.Folders.UpdateCache, 0777)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
@@ -150,7 +150,7 @@ func FactUpdate() {
 	if !FactIsRunning && !FactorioBooted {
 		/* Keep us from stepping on a factorio launch or update */
 
-		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary()}
+		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary()}
 		if cfg.Local.Options.ExpUpdates {
 			cmdargs = append(cmdargs, "-x")
 		}
@@ -162,7 +162,7 @@ func FactUpdate() {
 		if ctx.Err() == context.DeadlineExceeded {
 			cwlog.DoLogCW("fact update: (error) Factorio update patching timed out, deleting possible corrupted patch file.")
 
-			os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
+			os.RemoveAll(cfg.Global.Paths.Folders.UpdateCache)
 			return
 		}
 
@@ -181,7 +181,7 @@ func FactUpdate() {
 				}
 			}
 		} else {
-			os.RemoveAll(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.UpdateCache)
+			os.RemoveAll(cfg.Global.Paths.Folders.UpdateCache)
 			cwlog.DoLogCW("fact update: (error) Non-zero exit code... purging update cache.")
 			cwlog.DoLogCW(fmt.Sprintf("fact update: (error) update_fact.py:\n%v", out))
 			return
