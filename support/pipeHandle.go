@@ -356,9 +356,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 						glob.PlayerSusLock.Lock()
 
 						if strings.Contains(action, "rotated") ||
-							strings.Contains(action, "ghost") {
-							glob.PlayerSus[pname] += 4
-						} else if strings.Contains(action, "placed a speaker") ||
+							strings.Contains(action, "placed a speaker") ||
 							strings.Contains(action, "tag") ||
 							strings.Contains(action, "deconstructing") {
 							glob.PlayerSus[pname] += 4
