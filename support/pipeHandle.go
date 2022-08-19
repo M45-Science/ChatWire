@@ -379,10 +379,9 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 								if !cfg.Global.Options.ShutupSusWarn {
 									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
-
 									fact.FactChat("[color=red]" + sbuf + "[/color]")
 									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
-
+									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
 									fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
 								}
 
