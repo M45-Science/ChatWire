@@ -705,9 +705,9 @@ func MainLoops() {
 					fact.WriteFact(glob.OnlineCommand)
 				}
 
-			} else {
-				time.Sleep(time.Second)
 			}
+			time.Sleep(time.Second)
+
 		}
 	}()
 
@@ -744,9 +744,10 @@ func MainLoops() {
 					fact.WriteFact(buf)
 				}
 				lastDur = buf
-			} else {
-				time.Sleep(time.Second * 5)
 			}
+
+			time.Sleep(time.Second * 5)
+
 		}
 	}()
 

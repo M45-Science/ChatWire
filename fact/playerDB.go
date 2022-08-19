@@ -45,6 +45,8 @@ func WatchDatabaseFile() {
 		}
 
 		for glob.ServerRunning && initialStat != nil {
+			time.Sleep(5 * time.Second)
+
 			stat, errb := os.Stat(filePath)
 			if errb != nil {
 				cwlog.DoLogCW("WatchDatabaseFile: restat")
@@ -55,8 +57,6 @@ func WatchDatabaseFile() {
 				SetPlayerListUpdated()
 				break
 			}
-
-			time.Sleep(5 * time.Second)
 		}
 	}
 }

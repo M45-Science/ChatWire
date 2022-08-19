@@ -67,6 +67,8 @@ func WatchBanFile() {
 		}
 
 		for glob.ServerRunning && initialStat != nil {
+			time.Sleep(30 * time.Second)
+
 			stat, errb := os.Stat(filePath)
 			if errb != nil {
 				//cwlog.DoLogCW("watchBanFile: restat")
@@ -77,8 +79,6 @@ func WatchBanFile() {
 				ReadBanFile()
 				break
 			}
-
-			time.Sleep(30 * time.Second)
 		}
 	}
 }
