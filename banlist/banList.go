@@ -38,7 +38,7 @@ func CheckBanList(player string) {
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
 				fact.PlayerSetBanReason(ban.UserName, "[FCL] "+ban.Reason, true)
 			}
-			break
+			return
 		}
 	}
 
