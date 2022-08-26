@@ -194,7 +194,7 @@ func startbot() {
 
 	if erra != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", erra))
-		time.Sleep(time.Minute * (5 * constants.MaxDiscordAttempts))
+		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
 		DiscordConnectAttempts++
 
 		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
@@ -210,7 +210,7 @@ func startbot() {
 
 	if errb != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", errb))
-		time.Sleep(time.Minute * (5 * constants.MaxDiscordAttempts))
+		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
 		DiscordConnectAttempts++
 
 		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
@@ -258,6 +258,9 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 		}
 		return
 	}
+
+	//Reset attempts, we are connected.
+	DiscordConnectAttempts = 0
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
