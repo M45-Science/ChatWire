@@ -342,6 +342,8 @@ func ReadVotes() bool {
 			}
 
 			glob.VoteBox = temp
+			VoidAllVotes()
+			ResetTotalVotes()
 			return true
 		} else {
 			cwlog.DoLogCW("ReadVotes: ReadFile failure")
