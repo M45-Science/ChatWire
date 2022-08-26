@@ -180,6 +180,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 			CMS(cfg.Global.Discord.ReportChannel, msg)
 			found = true
 			chosenMap = t.Selection
+			break
 		}
 	}
 	/* Nope, not enough votes for one specific autosave */
@@ -193,10 +194,8 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	/* Count number of changes, for future use */
 	glob.VoteBox.NumChanges++
 
-	/* Mark all votes as voided */
-	for vpos = range glob.VoteBox.Votes {
-		glob.VoteBox.Votes[vpos].Voided = true
-	}
+	VoidAllVotes()
+	ResetTotalVotes()
 
 	CMS(cfg.Local.Channel.ChatChannel, "VOTE MAP: "+chosenMap)
 	FactorioBootedAt = time.Time{}
