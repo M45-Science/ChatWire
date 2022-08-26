@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version                         = "2569-08.22.2022-0904p"
+	Version                         = "2570-08.26.2022-0610"
 	CWEpoch                         = 1653239822390688174
 	SeenDivisor                     = 60
 	SeenEpoch                       = 1546326000
@@ -26,7 +26,7 @@ const (
 	TempSaveName        = "softmod.tmp"
 	BootUpdateDelayMin  = 2
 	MaxSaveBackups      = 10
-	ModPackLifeMins     = 120
+	ModPackLifeMins     = 180
 	ModPackCooldownMin  = 5
 	MaxModPacks         = 4
 
