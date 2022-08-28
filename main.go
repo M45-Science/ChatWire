@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -30,6 +31,9 @@ func main() {
 	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
+
+	debug.SetMemoryLimit(1024 * 1024 * 250) //250mb
+	debug.SetMaxThreads(1000)
 
 	flag.Parse()
 
