@@ -367,15 +367,15 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "show-options",
-				Description: "Show list of maps and options.",
-				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "vote-now",
+				Description: "Just press ENTER or RETURN to open the voting dialog box.",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
 			{
 
 				Name:        "moderator",
-				Description: "moderator only options",
+				Description: "moderator-only options",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
