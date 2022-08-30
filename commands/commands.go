@@ -367,6 +367,13 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
+				Name:        "show-options",
+				Description: "Show list of maps and options.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+
 				Name:        "moderator",
 				Description: "moderator only options",
 				Type:        discordgo.ApplicationCommandOptionString,
