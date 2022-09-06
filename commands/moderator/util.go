@@ -385,7 +385,7 @@ var SettingList = []SettingListData{
 		Type:      TYPE_BOOL,
 		DefBool:   true,
 
-		BData: &cfg.Local.Options.AutoUpdate,
+		BData: &cfg.Local.Options.ModUpdate,
 	},
 	{
 		Name:      "auto-clean-map",
