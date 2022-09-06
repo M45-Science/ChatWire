@@ -73,6 +73,8 @@ func Map_reset(data string, doReport bool) {
 			}
 			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
 			FactChat(AddFactColor("orange", data))
+			QueueReload = false      //Skip queued reboot
+			DoUpdateFactorio = false //Skip queued updates
 			return
 		} else {
 
