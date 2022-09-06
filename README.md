@@ -40,7 +40,7 @@ Usage of ./ChatWire:<br>
   -localTest<br>
         Turn off public/auth mode for testing<br>
   -noAutoLaunch<br>
-        Turn off auto-launch<br>
+        Turn off Factorio auto-launch<br>
   -regCommands<br>
         Register discord commands<br>
         
