@@ -1,0 +1,412 @@
+{
+    "extension": "linecounter",
+    "version": "0.2.7",
+    "workspace": "/home/carl/Documents/github/cw-a",
+    "linecount": [
+        {
+            "version": "0.2.7",
+            "counttime": "2022-09-18 21:54:10",
+            "filesum": 59,
+            "codesum": 8507,
+            "commentsum": 802,
+            "blanksum": 2251,
+            "statistics": {
+                ".mod": {
+                    "code": 17,
+                    "comment": 3,
+                    "blank": 3
+                },
+                ".go": {
+                    "code": 8080,
+                    "comment": 746,
+                    "blank": 2188
+                },
+                ".json": {
+                    "code": 48,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".md": {
+                    "code": 44,
+                    "comment": 5,
+                    "blank": 2
+                },
+                "": {
+                    "code": 189,
+                    "comment": 14,
+                    "blank": 43
+                },
+                ".sum": {
+                    "code": 37,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".yml": {
+                    "code": 92,
+                    "comment": 34,
+                    "blank": 15
+                }
+            },
+            "filelist": [
+                {
+                    "blank": 1,
+                    "code": 12,
+                    "comment": 0,
+                    "filename": ".github/FUNDING.yml"
+                },
+                {
+                    "blank": 2,
+                    "code": 16,
+                    "comment": 0,
+                    "filename": ".github/workflows/build-linux64.yml"
+                },
+                {
+                    "blank": 3,
+                    "code": 34,
+                    "comment": 34,
+                    "filename": ".github/workflows/codeql-analysis.yml"
+                },
+                {
+                    "blank": 6,
+                    "code": 19,
+                    "comment": 0,
+                    "filename": ".github/workflows/go.yml"
+                },
+                {
+                    "blank": 3,
+                    "code": 11,
+                    "comment": 0,
+                    "filename": ".github/workflows/report.yml"
+                },
+                {
+                    "blank": 0,
+                    "code": 11,
+                    "comment": 0,
+                    "filename": ".gitignore"
+                },
+                {
+                    "blank": 42,
+                    "code": 115,
+                    "comment": 6,
+                    "filename": "banlist/banList.go"
+                },
+                {
+                    "blank": 90,
+                    "code": 441,
+                    "comment": 6,
+                    "filename": "cfg/cfg.go"
+                },
+                {
+                    "blank": 26,
+                    "code": 59,
+                    "comment": 7,
+                    "filename": "commands/admin/newChatWire.go"
+                },
+                {
+                    "blank": 88,
+                    "code": 311,
+                    "comment": 14,
+                    "filename": "commands/admin/newFactorio.go"
+                },
+                {
+                    "blank": 17,
+                    "code": 107,
+                    "comment": 2,
+                    "filename": "commands/admin/newGConfig.go"
+                },
+                {
+                    "blank": 11,
+                    "code": 46,
+                    "comment": 0,
+                    "filename": "commands/admin/newSetSchedule.go"
+                },
+                {
+                    "blank": 46,
+                    "code": 104,
+                    "comment": 13,
+                    "filename": "commands/admin/util.go"
+                },
+                {
+                    "blank": 75,
+                    "code": 626,
+                    "comment": 14,
+                    "filename": "commands/commands.go"
+                },
+                {
+                    "blank": 17,
+                    "code": 112,
+                    "comment": 3,
+                    "filename": "commands/moderator/newConfig.go"
+                },
+                {
+                    "blank": 16,
+                    "code": 32,
+                    "comment": 3,
+                    "filename": "commands/moderator/newMapChange.go"
+                },
+                {
+                    "blank": 9,
+                    "code": 9,
+                    "comment": 1,
+                    "filename": "commands/moderator/newMapReset.go"
+                },
+                {
+                    "blank": 17,
+                    "code": 32,
+                    "comment": 5,
+                    "filename": "commands/moderator/newPlayerLevel.go"
+                },
+                {
+                    "blank": 24,
+                    "code": 41,
+                    "comment": 1,
+                    "filename": "commands/moderator/newRCON.go"
+                },
+                {
+                    "blank": 83,
+                    "code": 381,
+                    "comment": 9,
+                    "filename": "commands/moderator/util.go"
+                },
+                {
+                    "blank": 48,
+                    "code": 192,
+                    "comment": 11,
+                    "filename": "commands/user/newInfo.go"
+                },
+                {
+                    "blank": 45,
+                    "code": 142,
+                    "comment": 2,
+                    "filename": "commands/user/NewModPack.go"
+                },
+                {
+                    "blank": 12,
+                    "code": 21,
+                    "comment": 1,
+                    "filename": "commands/user/newPlayers.go"
+                },
+                {
+                    "blank": 22,
+                    "code": 54,
+                    "comment": 5,
+                    "filename": "commands/user/newRegister.go"
+                },
+                {
+                    "blank": 17,
+                    "code": 52,
+                    "comment": 5,
+                    "filename": "commands/user/newVoteMap.go"
+                },
+                {
+                    "blank": 26,
+                    "code": 64,
+                    "comment": 7,
+                    "filename": "commands/user/newWhois.go"
+                },
+                {
+                    "blank": 18,
+                    "code": 62,
+                    "comment": 20,
+                    "filename": "constants/consts.go"
+                },
+                {
+                    "blank": 0,
+                    "code": 48,
+                    "comment": 0,
+                    "filename": "cw-local-config.json"
+                },
+                {
+                    "blank": 25,
+                    "code": 58,
+                    "comment": 14,
+                    "filename": "cwlog/cwLog.go"
+                },
+                {
+                    "blank": 11,
+                    "code": 23,
+                    "comment": 5,
+                    "filename": "disc/discDef.go"
+                },
+                {
+                    "blank": 77,
+                    "code": 225,
+                    "comment": 14,
+                    "filename": "disc/discUtils.go"
+                },
+                {
+                    "blank": 35,
+                    "code": 117,
+                    "comment": 6,
+                    "filename": "disc/roleList.go"
+                },
+                {
+                    "blank": 45,
+                    "code": 172,
+                    "comment": 21,
+                    "filename": "fact/factConfGen.go"
+                },
+                {
+                    "blank": 35,
+                    "code": 186,
+                    "comment": 3,
+                    "filename": "fact/factCron.go"
+                },
+                {
+                    "blank": 24,
+                    "code": 45,
+                    "comment": 11,
+                    "filename": "fact/factDef.go"
+                },
+                {
+                    "blank": 48,
+                    "code": 136,
+                    "comment": 13,
+                    "filename": "fact/factUpdater.go"
+                },
+                {
+                    "blank": 141,
+                    "code": 542,
+                    "comment": 30,
+                    "filename": "fact/factUtils.go"
+                },
+                {
+                    "blank": 66,
+                    "code": 248,
+                    "comment": 22,
+                    "filename": "fact/mapReset.go"
+                },
+                {
+                    "blank": 99,
+                    "code": 328,
+                    "comment": 33,
+                    "filename": "fact/playerDB.go"
+                },
+                {
+                    "blank": 39,
+                    "code": 97,
+                    "comment": 11,
+                    "filename": "fact/util.go"
+                },
+                {
+                    "blank": 78,
+                    "code": 262,
+                    "comment": 25,
+                    "filename": "fact/voteMap.go"
+                },
+                {
+                    "blank": 37,
+                    "code": 96,
+                    "comment": 22,
+                    "filename": "glob/glob.go"
+                },
+                {
+                    "blank": 3,
+                    "code": 17,
+                    "comment": 3,
+                    "filename": "go.mod"
+                },
+                {
+                    "blank": 0,
+                    "code": 37,
+                    "comment": 0,
+                    "filename": "go.sum"
+                },
+                {
+                    "filename": "img-source/chatwire-v2.png",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "img-source/chatwire3c.png",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "img-source/chatwire3c.psd",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "img-source/chatwire4c.png",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "blank": 43,
+                    "code": 178,
+                    "comment": 14,
+                    "filename": "LICENSE"
+                },
+                {
+                    "blank": 91,
+                    "code": 232,
+                    "comment": 38,
+                    "filename": "main.go"
+                },
+                {
+                    "blank": 25,
+                    "code": 70,
+                    "comment": 1,
+                    "filename": "modupdate/modUpdate.go"
+                },
+                {
+                    "blank": 2,
+                    "code": 44,
+                    "comment": 5,
+                    "filename": "README.md"
+                },
+                {
+                    "blank": 22,
+                    "code": 146,
+                    "comment": 15,
+                    "filename": "sclean/stringClean.go"
+                },
+                {
+                    "blank": 40,
+                    "code": 146,
+                    "comment": 1,
+                    "filename": "sclean/stringClean_test.go"
+                },
+                {
+                    "blank": 88,
+                    "code": 301,
+                    "comment": 52,
+                    "filename": "support/factLauncher.go"
+                },
+                {
+                    "blank": 149,
+                    "code": 534,
+                    "comment": 113,
+                    "filename": "support/mainLoops.go"
+                },
+                {
+                    "blank": 196,
+                    "code": 870,
+                    "comment": 131,
+                    "filename": "support/pipeHandle.go"
+                },
+                {
+                    "blank": 45,
+                    "code": 123,
+                    "comment": 22,
+                    "filename": "support/pipeParse.go"
+                },
+                {
+                    "blank": 23,
+                    "code": 120,
+                    "comment": 8,
+                    "filename": "support/supportUtil.go"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,82 @@
+===============================================================================
+EXTENSION NAME : linecounter
+EXTENSION VERSION : 0.2.7
+-------------------------------------------------------------------------------
+count time : 2022-09-18 21:54:10
+count workspace : /home/carl/Documents/github/cw-a
+total files : 59
+total code lines : 8507
+total comment lines : 802
+total blank lines : 2251
+
+    statistics
+   |      extension|     total code|  total comment|    total blank|percent|
+   -------------------------------------------------------------------------
+   |           .mod|             17|              3|              3|   0.20|
+   |            .go|           8080|            746|           2188|     95|
+   |          .json|             48|              0|              0|   0.56|
+   |            .md|             44|              5|              2|   0.52|
+   |               |            189|             14|             43|    2.2|
+   |           .sum|             37|              0|              0|   0.43|
+   |           .yml|             92|             34|             15|    1.1|
+   -------------------------------------------------------------------------
+.github/FUNDING.yml, code is 12, comment is 0, blank is 1.
+.github/workflows/build-linux64.yml, code is 16, comment is 0, blank is 2.
+.github/workflows/codeql-analysis.yml, code is 34, comment is 34, blank is 3.
+.github/workflows/go.yml, code is 19, comment is 0, blank is 6.
+.github/workflows/report.yml, code is 11, comment is 0, blank is 3.
+.gitignore, code is 11, comment is 0, blank is 0.
+banlist/banList.go, code is 115, comment is 6, blank is 42.
+cfg/cfg.go, code is 441, comment is 6, blank is 90.
+commands/admin/newChatWire.go, code is 59, comment is 7, blank is 26.
+commands/admin/newFactorio.go, code is 311, comment is 14, blank is 88.
+commands/admin/newGConfig.go, code is 107, comment is 2, blank is 17.
+commands/admin/newSetSchedule.go, code is 46, comment is 0, blank is 11.
+commands/admin/util.go, code is 104, comment is 13, blank is 46.
+commands/commands.go, code is 626, comment is 14, blank is 75.
+commands/moderator/newConfig.go, code is 112, comment is 3, blank is 17.
+commands/moderator/newMapChange.go, code is 32, comment is 3, blank is 16.
+commands/moderator/newMapReset.go, code is 9, comment is 1, blank is 9.
+commands/moderator/newPlayerLevel.go, code is 32, comment is 5, blank is 17.
+commands/moderator/newRCON.go, code is 41, comment is 1, blank is 24.
+commands/moderator/util.go, code is 381, comment is 9, blank is 83.
+commands/user/newInfo.go, code is 192, comment is 11, blank is 48.
+commands/user/NewModPack.go, code is 142, comment is 2, blank is 45.
+commands/user/newPlayers.go, code is 21, comment is 1, blank is 12.
+commands/user/newRegister.go, code is 54, comment is 5, blank is 22.
+commands/user/newVoteMap.go, code is 52, comment is 5, blank is 17.
+commands/user/newWhois.go, code is 64, comment is 7, blank is 26.
+constants/consts.go, code is 62, comment is 20, blank is 18.
+cw-local-config.json, code is 48, comment is 0, blank is 0.
+cwlog/cwLog.go, code is 58, comment is 14, blank is 25.
+disc/discDef.go, code is 23, comment is 5, blank is 11.
+disc/discUtils.go, code is 225, comment is 14, blank is 77.
+disc/roleList.go, code is 117, comment is 6, blank is 35.
+fact/factConfGen.go, code is 172, comment is 21, blank is 45.
+fact/factCron.go, code is 186, comment is 3, blank is 35.
+fact/factDef.go, code is 45, comment is 11, blank is 24.
+fact/factUpdater.go, code is 136, comment is 13, blank is 48.
+fact/factUtils.go, code is 542, comment is 30, blank is 141.
+fact/mapReset.go, code is 248, comment is 22, blank is 66.
+fact/playerDB.go, code is 328, comment is 33, blank is 99.
+fact/util.go, code is 97, comment is 11, blank is 39.
+fact/voteMap.go, code is 262, comment is 25, blank is 78.
+glob/glob.go, code is 96, comment is 22, blank is 37.
+go.mod, code is 17, comment is 3, blank is 3.
+go.sum, code is 37, comment is 0, blank is 0.
+img-source/chatwire-v2.png, it is a binary file.
+img-source/chatwire3c.png, it is a binary file.
+img-source/chatwire3c.psd, it is a binary file.
+img-source/chatwire4c.png, it is a binary file.
+LICENSE, code is 178, comment is 14, blank is 43.
+main.go, code is 232, comment is 38, blank is 91.
+modupdate/modUpdate.go, code is 70, comment is 1, blank is 25.
+README.md, code is 44, comment is 5, blank is 2.
+sclean/stringClean.go, code is 146, comment is 15, blank is 22.
+sclean/stringClean_test.go, code is 146, comment is 1, blank is 40.
+support/factLauncher.go, code is 301, comment is 52, blank is 88.
+support/mainLoops.go, code is 534, comment is 113, blank is 149.
+support/pipeHandle.go, code is 870, comment is 131, blank is 196.
+support/pipeParse.go, code is 123, comment is 22, blank is 45.
+support/supportUtil.go, code is 120, comment is 8, blank is 23.
+===============================================================================
