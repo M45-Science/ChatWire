@@ -54,7 +54,10 @@ func PropBans() {
 	defer BanListLock.Unlock()
 
 	for _, ban := range BanList {
-		fact.PlayerSetBanReason(ban.UserName, ban.Reason, false)
+		//Don't auto-ban regulars
+		if fact.PlayerLevelGet(ban.UserName, true) < 2 {
+			fact.PlayerSetBanReason(ban.UserName, ban.Reason, false)
+		}
 	}
 }
 
