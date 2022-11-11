@@ -10,6 +10,7 @@ const (
 	Unknown                         = "Unknown"
 	WhitelistExcludeHoursAgoMember  = 2190 //3 months
 	WhitelistExcludeHoursAgoRegular = 4380 //6 months
+	MaxWhitelist                    = 1500 //Max whitelist items
 
 	/* ChatWire files */
 	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
