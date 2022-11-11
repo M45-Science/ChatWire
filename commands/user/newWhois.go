@@ -13,21 +13,6 @@ import (
 	"ChatWire/sclean"
 )
 
-/* SORT FUNCTIONS */
-/* Last Seen */
-type ByLastSeen []glob.PlayerData
-
-func (a ByLastSeen) Len() int           { return len(a) }
-func (a ByLastSeen) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByLastSeen) Less(i, j int) bool { return a[i].LastSeen > a[j].LastSeen }
-
-/* Created time */
-type ByNew []glob.PlayerData
-
-func (a ByNew) Len() int           { return len(a) }
-func (a ByNew) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByNew) Less(i, j int) bool { return a[i].Creation > a[j].Creation }
-
 /*  Get info on a specific player */
 func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
