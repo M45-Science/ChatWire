@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -107,21 +108,34 @@ func WriteWhitelist() int {
 
 	if cfg.Local.Options.Whitelist {
 		glob.PlayerListLock.RLock()
+
 		var count = 0
 		var buf = "[\n"
+		var localPlayerList []*glob.PlayerData
+		localPlayerList = make([]*glob.PlayerData, len(localPlayerList))
+
 		for _, player := range glob.PlayerList {
-			//If member and have been online in (x), or are a regular or higher
-			if (player.Level == 1 &&
-				time.Since(ExpandTime(player.LastSeen)) < (time.Hour*constants.WhitelistExcludeHoursAgoMember)) ||
-
-				(player.Level == 2 &&
-					time.Since(ExpandTime(player.LastSeen)) < (time.Hour*constants.WhitelistExcludeHoursAgoRegular)) ||
-
-				player.Level > 2 {
-				buf = buf + "\"" + player.Name + "\",\n"
-				count = count + 1
+			if player.Level > 0 {
+				localPlayerList = append(localPlayerList, player)
 			}
 		}
+
+		//Sort by last seen
+		sort.Slice(localPlayerList, func(i, j int) bool {
+			return localPlayerList[i].LastSeen < localPlayerList[j].LastSeen
+		})
+
+		l := len(localPlayerList) - 1
+		for x := l; x > 0; x-- {
+			if count >= constants.MaxWhitelist {
+				break
+			}
+			var player = localPlayerList[x]
+
+			buf = buf + "\"" + player.Name + "." + strconv.FormatInt(player.LastSeen, 10) + "\",\n"
+			count = count + 1
+		}
+
 		lchar := len(buf)
 		buf = buf[0 : lchar-2]
 		buf = buf + "\n]\n"
