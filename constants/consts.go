@@ -3,14 +3,12 @@ package constants
 import "time"
 
 const (
-	Version                         = "2574-11.11.2022-1128"
-	CWEpoch                         = 1653239822390688174
-	SeenDivisor                     = 60
-	SeenEpoch                       = 1546326000
-	Unknown                         = "Unknown"
-	WhitelistExcludeHoursAgoMember  = 2190 //3 months
-	WhitelistExcludeHoursAgoRegular = 4380 //6 months
-	MaxWhitelist                    = 1500 //Max whitelist items
+	Version      = "2574-11.11.2022-1128"
+	CWEpoch      = 1653239822390688174
+	SeenDivisor  = 60
+	SeenEpoch    = 1546326000
+	Unknown      = "Unknown"
+	MaxWhitelist = 1500 //Max whitelist items
 
 	/* ChatWire files */
 	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
