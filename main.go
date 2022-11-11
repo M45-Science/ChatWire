@@ -44,34 +44,36 @@ func main() {
 	cwlog.StartCWLog()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
-	/* Handle lock file */
-	bstr, err := os.ReadFile("cw.lock")
-	if err == nil {
-		lastTimeStr := strings.TrimSpace(string(bstr))
-		lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
-		if err != nil {
-			cwlog.DoLogCW("Unable to parse cw.lock: " + err.Error())
-		} else {
-			cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
+	if !*glob.LocalTestMode {
+		/* Handle lock file */
+		bstr, err := os.ReadFile("cw.lock")
+		if err == nil {
+			lastTimeStr := strings.TrimSpace(string(bstr))
+			lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
+			if err != nil {
+				cwlog.DoLogCW("Unable to parse cw.lock: " + err.Error())
+			} else {
+				cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
 
-			/* Recent lockfile, probable crash loop */
-			if lastTime.Sub(glob.Uptime) < (constants.RestartLimitMinutes * time.Minute) {
-				msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
+				/* Recent lockfile, probable crash loop */
+				if lastTime.Sub(glob.Uptime) < (constants.RestartLimitMinutes * time.Minute) {
+					msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
 
-				cwlog.DoLogCW(msg)
-				go func(msg string) {
-					for i := 0; i < constants.RestartLimitSleepMinutes*60*10 && glob.ServerRunning; i++ {
-						if disc.DS == nil {
-							time.Sleep(time.Millisecond * 100)
+					cwlog.DoLogCW(msg)
+					go func(msg string) {
+						for i := 0; i < constants.RestartLimitSleepMinutes*60*10 && glob.ServerRunning; i++ {
+							if disc.DS == nil {
+								time.Sleep(time.Millisecond * 100)
+							}
 						}
-					}
-					disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
-				}(msg)
+						disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
+					}(msg)
 
-				time.Sleep(constants.RestartLimitMinutes * time.Minute)
-				_ = os.Remove("cw.lock")
-				cwlog.DoLogCW("Sleep done, exiting.")
-				return
+					time.Sleep(constants.RestartLimitMinutes * time.Minute)
+					_ = os.Remove("cw.lock")
+					cwlog.DoLogCW("Sleep done, exiting.")
+					return
+				}
 			}
 		}
 	}
@@ -146,6 +148,7 @@ func main() {
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
 	banlist.ReadBanFile()
+	banlist.PropBans()
 
 	/* Load old votes */
 	fact.ReadVotes()
