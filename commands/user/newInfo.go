@@ -197,7 +197,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
-	buf = buf + fmt.Sprintf("\nStats:\n%17v: %v players\n", "Members", len(glob.PlayerList))
+	buf = buf + fmt.Sprintf("\nStats:\n%17v: %v players\n", "Total", len(glob.PlayerList))
 	buf = buf + fmt.Sprintf("%17v: %v\n", "Banned", len(banlist.BanList))
 
 	if fact.PausedTicks > 4 {
