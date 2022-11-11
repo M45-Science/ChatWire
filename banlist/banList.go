@@ -55,7 +55,7 @@ func PropBans() {
 
 	for _, ban := range BanList {
 		//Don't auto-ban regulars
-		if fact.PlayerLevelGet(ban.UserName, true) < 2 {
+		if fact.PlayerLevelGet(ban.UserName, false) < 2 {
 			fact.PlayerSetBanReason(ban.UserName, ban.Reason, false)
 		}
 	}
