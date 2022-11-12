@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -125,6 +124,15 @@ func WriteWhitelist() int {
 			return localPlayerList[i].LastSeen < localPlayerList[j].LastSeen
 		})
 
+		//Add admins
+		for _, player := range glob.PlayerList {
+			if player.Level >= 254 {
+				buf = buf + "\"" + player.Name + "\",\n"
+				count = count + 1
+			}
+		}
+
+		//Print sorted list
 		l := len(localPlayerList) - 1
 		for x := l; x > 0; x-- {
 			if count >= constants.MaxWhitelist {
@@ -132,7 +140,7 @@ func WriteWhitelist() int {
 			}
 			var player = localPlayerList[x]
 
-			buf = buf + "\"" + player.Name + "." + strconv.FormatInt(player.LastSeen, 10) + "\",\n"
+			buf = buf + "\"" + player.Name + "\",\n"
 			count = count + 1
 		}
 
