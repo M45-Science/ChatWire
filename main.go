@@ -148,7 +148,7 @@ func main() {
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
 	banlist.ReadBanFile()
-	banlist.PropBans()
+	//banlist.PropBans()
 
 	/* Load old votes */
 	fact.ReadVotes()

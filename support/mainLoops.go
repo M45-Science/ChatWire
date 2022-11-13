@@ -353,7 +353,7 @@ func MainLoops() {
 
 				//cwlog.DoLogCW("Database file modified, loading.")
 				fact.LoadPlayers()
-				banlist.PropBans()
+				//banlist.PropBans()
 
 				/* Sleep after reading */
 				time.Sleep(5 * time.Second)

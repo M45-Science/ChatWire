@@ -264,7 +264,13 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 			glob.PlayerList[pname].Level = level
 			if reason != "" {
 				glob.PlayerList[pname].BanReason = reason
+				WriteFact("/ban " + pname + " " + reason)
+			} else {
+				WriteFact("/ban " + pname)
 			}
+		} else if level >= 0 && glob.PlayerList[pname].Level == -1 { //Unbanned
+			glob.PlayerList[pname].Level = level
+			WriteFact("/unban " + pname)
 		} else if level > glob.PlayerList[pname].Level { //Promoted
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
