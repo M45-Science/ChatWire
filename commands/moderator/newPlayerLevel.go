@@ -45,6 +45,10 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if alevel >= 0 && oldLevel == -1 {
 					fact.WriteFact("/unban " + aname)
 				}
+				/* Ban automatically */
+				if alevel == -1 && oldLevel != -1 {
+					fact.WriteFact("/ban " + aname)
+				}
 
 				fact.AutoPromote(aname)
 				fact.PlayerLevelSet(nplayer.Name, alevel, true)
