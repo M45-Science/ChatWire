@@ -143,12 +143,12 @@ func main() {
 	fact.SetupSchedule()
 
 	/* Read in player list */
-	fact.LoadPlayers()
+	/* Skip banned and level 0 (new) players on first load */
+	fact.LoadPlayers(true)
 
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
 	banlist.ReadBanFile()
-	//banlist.PropBans()
 
 	/* Load old votes */
 	fact.ReadVotes()
