@@ -630,6 +630,10 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	if i.GuildID != cfg.Global.Discord.Guild {
+		return
+	}
+
 	if i.Member == nil {
 		cwlog.DoLogCW("SlashCommand: Ignoring interaction with no member (dm).")
 		return
