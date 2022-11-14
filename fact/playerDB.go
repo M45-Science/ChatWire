@@ -202,7 +202,6 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	}
 
 	pname = strings.ToLower(pname)
-	WhitelistPlayer(pname, level)
 
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
@@ -213,6 +212,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 
 		if glob.PlayerList[pname].Level != level {
 			SetPlayerListDirty()
+			WhitelistPlayer(pname, level)
 		} else {
 			SetPlayerListSeenDirty()
 		}
@@ -241,6 +241,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	glob.PlayerList[pname] = &newplayer
 
 	SetPlayerListDirty()
+	WhitelistPlayer(pname, level)
 
 	return false
 }
@@ -248,20 +249,18 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(pname string, level int, id string, creation int64, seen int64, reason string) {
-	if pname == "" {
+func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string) {
+	if iname == "" {
 		return
 	}
 
-	pname = strings.ToLower(pname)
+	pname := strings.ToLower(iname)
 
 	if glob.PlayerList[pname] != nil {
 		if level <= -254 { //Delete
-			glob.PlayerList[pname].Level = level
 			/*Clear discord ID on delete*/
 			glob.PlayerList[pname].ID = "0"
 		} else if level == -1 && glob.PlayerList[pname].Level >= 0 { //Banned
-			glob.PlayerList[pname].Level = level
 			if reason != "" {
 				glob.PlayerList[pname].BanReason = reason
 				WriteFact("/ban " + pname + " " + reason)
@@ -269,13 +268,13 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 				WriteFact("/ban " + pname)
 			}
 		} else if level >= 0 && glob.PlayerList[pname].Level == -1 { //Unbanned
-			glob.PlayerList[pname].Level = level
 			WriteFact("/unban " + pname)
-		} else if level > glob.PlayerList[pname].Level { //Promoted
+		}
+
+		if level != glob.PlayerList[pname].Level {
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
 		}
-
 		if creation > 0 { //Add creation date
 			glob.PlayerList[pname].Creation = creation
 		}
@@ -289,22 +288,19 @@ func AddPlayer(pname string, level int, id string, creation int64, seen int64, r
 		return
 	}
 
-	/* Don't load level 0 players that are not registered */
-	if level != 0 || id != "" {
-		/* Not in list, add them */
-		newplayer := glob.PlayerData{
+	/* Not in list, add them */
+	newplayer := glob.PlayerData{
 
-			Name:      pname,
-			Level:     level,
-			ID:        id,
-			BanReason: reason,
-			LastSeen:  seen,
-			Creation:  creation,
-		}
-
-		glob.PlayerList[pname] = &newplayer
-		WhitelistPlayer(pname, level)
+		Name:      pname,
+		Level:     level,
+		ID:        id,
+		BanReason: reason,
+		LastSeen:  seen,
+		Creation:  creation,
 	}
+
+	glob.PlayerList[pname] = &newplayer
+	WhitelistPlayer(pname, level)
 
 }
 
@@ -402,7 +398,6 @@ func LoadPlayers() {
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
 			for pname := range tempData {
-				tempData[pname].Name = pname
 				if tempData[pname].Level != 0 || tempData[pname].ID != "" {
 					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason)
 				}
