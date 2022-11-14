@@ -300,6 +300,9 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 	}
 
 	glob.PlayerList[pname] = &newplayer
+	if level == -1 {
+		WriteFact("/ban " + pname + " " + reason)
+	}
 	WhitelistPlayer(pname, level)
 
 }
