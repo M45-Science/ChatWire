@@ -298,7 +298,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.PlayerLevel, ModeratorOnly: true},
+		Command: moderator.PlayerLevel, ModeratorOnly: true, PrimaryOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "change-map",
