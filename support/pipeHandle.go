@@ -652,7 +652,9 @@ func handleUnBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			trustname := NoDSlist[1]
 
 			if strings.Contains(NoDS, "was unbanned by") {
-				fact.PlayerLevelSet(trustname, 0, false)
+				if fact.PlayerLevelGet(trustname, true) < 0 {
+					fact.PlayerLevelSet(trustname, 0, false)
+				}
 			}
 
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(NoDSlist[1:], " ")))
