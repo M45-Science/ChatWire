@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -21,7 +22,7 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	//Get args
 	for _, arg := range a.Options {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
-			aname = arg.StringValue()
+			aname = strings.ToLower(arg.StringValue())
 		} else if arg.Type == discordgo.ApplicationCommandOptionInteger {
 			alevel = int(arg.IntValue())
 		}
@@ -31,21 +32,29 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if aname != "" {
 
 		oldLevel := fact.PlayerLevelGet(aname, true)
+		nplayer := glob.PlayerList[aname]
 
-		/* TRUE, modify only */
-		if fact.PlayerLevelSet(aname, alevel, true) {
-			/* Unban automatically */
-			if alevel >= 0 && oldLevel == -1 {
-				fact.WriteFact("/unban " + aname)
+		if nplayer != nil {
+
+			/* TRUE, modify only */
+			if oldLevel == alevel {
+				buf := fmt.Sprintf("Player: %v: level is already the same as requested: %v, no action taken.", nplayer.Name, fact.LevelToString(nplayer.Level))
+				disc.EphemeralResponse(s, i, "Error:", buf)
+			} else {
+				/* Unban automatically */
+				if alevel >= 0 && oldLevel == -1 {
+					fact.WriteFact("/unban " + aname)
+				}
+
+				fact.AutoPromote(aname)
+				fact.PlayerLevelSet(nplayer.Name, alevel, true)
+				fact.SetPlayerListDirty()
+				buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
+				disc.EphemeralResponse(s, i, "Complete:", buf)
+				return
 			}
-
-			fact.AutoPromote(aname)
-			glob.PlayerListDirty = true
-			buf := fmt.Sprintf("Player: %v level set to %v", aname, fact.LevelToString(alevel))
-			disc.EphemeralResponse(s, i, "Complete:", buf)
-			return
 		} else {
-			buf := fmt.Sprintf("Player not found: %s", aname)
+			buf := fmt.Sprintf("Player not found: %v", aname)
 			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
