@@ -3,6 +3,7 @@ package moderator
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -16,13 +17,26 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	var aname string
 	var alevel int
+	reason := "No reason given"
+	banBy := "Unknown"
+	banTimeFormat := "01-02-2006"
+
+	if i.Member != nil {
+		banBy = i.Member.User.Username
+		banBy = banBy + "#" + i.Member.User.Discriminator
+	}
+	tNow := time.Now()
 
 	a := i.ApplicationCommandData()
 
 	//Get args
 	for _, arg := range a.Options {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
-			aname = strings.ToLower(arg.StringValue())
+			if arg.Name == "name" {
+				aname = strings.ToLower(arg.StringValue())
+			} else if arg.Name == "ban-reason" {
+				reason = arg.StringValue()
+			}
 		} else if arg.Type == discordgo.ApplicationCommandOptionInteger {
 			alevel = int(arg.IntValue())
 		}
@@ -31,35 +45,33 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	//Only if we have a name
 	if aname != "" {
 
-		oldLevel := fact.PlayerLevelGet(aname, true)
+		oldLevel := fact.PlayerLevelGet(aname, false)
 		nplayer := glob.PlayerList[aname]
+
+		if oldLevel == alevel {
+			buf := fmt.Sprintf("Player: %v level was already %v. No action taken.", nplayer.Name, fact.LevelToString(nplayer.Level))
+			disc.EphemeralResponse(s, i, "ERROR:", buf)
+			return
+		}
 
 		if nplayer != nil {
 
-			/* TRUE, modify only */
-			if oldLevel == alevel {
-				buf := fmt.Sprintf("Player: %v: level is already the same as requested: %v, no action taken.", nplayer.Name, fact.LevelToString(nplayer.Level))
-				disc.EphemeralResponse(s, i, "Error:", buf)
-			} else {
-				/* Unban automatically */
-				if alevel >= 0 && oldLevel == -1 {
-					fact.WriteFact("/unban " + aname)
-				}
-				/* Ban automatically */
-				if alevel == -1 && oldLevel != -1 {
-					fact.WriteFact("/ban " + aname)
-				}
-
-				fact.AutoPromote(aname)
-				fact.PlayerLevelSet(nplayer.Name, alevel, true)
-				fact.SetPlayerListDirty()
-				buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
-				disc.EphemeralResponse(s, i, "Complete:", buf)
-				return
+			/* Unban automatically */
+			if alevel >= 0 && oldLevel == -1 {
+				fact.WriteFact("/unban " + aname)
 			}
-		} else {
-			buf := fmt.Sprintf("Player not found: %v", aname)
-			disc.EphemeralResponse(s, i, "Error:", buf)
+			/* Ban automatically */
+			if alevel == -1 && oldLevel != -1 {
+				reasonString := fmt.Sprintf("%v -- %v %v", reason, banBy, tNow.Format(banTimeFormat))
+				fact.WriteFact("/ban " + aname + " " + reasonString)
+				nplayer.BanReason = reasonString
+			}
+
+			fact.AutoPromote(aname)
+			fact.PlayerLevelSet(nplayer.Name, alevel, true)
+			fact.SetPlayerListDirty()
+			buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
+			disc.EphemeralResponse(s, i, "Complete:", buf)
 			return
 		}
 	}

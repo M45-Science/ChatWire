@@ -296,6 +296,12 @@ var cmds = []Command{
 					},
 				},
 			},
+			{
+				Name:        "ban-reason",
+				Description: "reason for ban",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
 		},
 	},
 		Command: moderator.PlayerLevel, ModeratorOnly: true, PrimaryOnly: true},
