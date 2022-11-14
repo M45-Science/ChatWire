@@ -49,18 +49,6 @@ func CheckBanList(player string) {
 	}
 }
 
-func PropBans() {
-	BanListLock.Lock()
-	defer BanListLock.Unlock()
-
-	for _, ban := range BanList {
-		//Don't auto-ban regulars
-		if fact.PlayerLevelGet(ban.UserName, false) < 2 {
-			fact.PlayerSetBanReason(ban.UserName, ban.Reason, false)
-		}
-	}
-}
-
 func WatchBanFile() {
 	for glob.ServerRunning {
 		time.Sleep(time.Second * 60)
