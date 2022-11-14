@@ -205,7 +205,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 								continue
 							}
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
-							fact.LogCMS(cfg.Local.Channel.ChatChannel, pname+": Registration complete!")
+							fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Registered player: %v", pname))
 							continue
 						} else {
 							cwlog.DoLogCW("No guild info.")
