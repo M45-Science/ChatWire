@@ -228,7 +228,7 @@ func WriteFact(input string) {
 		}
 
 	} else {
-		cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
+		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
 		SetFactRunning(false)
 		return
 	}
