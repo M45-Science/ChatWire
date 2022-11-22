@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -649,8 +650,8 @@ func MainLoops() {
 
 		for glob.ServerRunning {
 			time.Sleep(time.Hour * 3)
+			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
 			fact.CheckFactUpdate(false)
-
 		}
 	}()
 

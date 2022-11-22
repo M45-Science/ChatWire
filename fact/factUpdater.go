@@ -7,10 +7,12 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/glob"
 )
 
 func CheckIfNewer(ca, cb, cc int) bool {
@@ -98,6 +100,14 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 									cwlog.DoLogCW(mess)
 								} else {
+									if glob.UpdateZipAttempts < constants.MaxUpdateZipAttempts {
+										glob.UpdateZipAttempts++
+										time.Sleep(constants.UpdateZipInterval) //Wait a bit
+										return
+									}
+									//Reset counter
+									glob.UpdateZipAttempts = 0
+
 									os.RemoveAll(cfg.Global.Paths.Folders.UpdateCache)
 									/* Purge patch name so we attempt check again */
 									NewPatchName = constants.Unknown

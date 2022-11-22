@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version      = "2580-11.13.2022-1154p"
+	Version      = "2581-11.22.2022-1222"
 	CWEpoch      = 1653239822390688174
 	SeenDivisor  = 60
 	SeenEpoch    = 1546326000
@@ -39,8 +39,8 @@ const (
 	SpamCoolThres  = time.Second * 6
 	SpamResetThres = time.Second * 10
 
-	/* Player suspectr settings */
-	SusWarningThresh = 15
+	/* Player suspect settings */
+	SusWarningThresh = 30
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"
@@ -67,6 +67,13 @@ const (
 
 	/* Maximum time to wait for Factorio update download */
 	FactorioUpdateCheckLimit = 15 * time.Minute
+	/*
+	 * Number of times to check a invalid zip file
+	 * before purging the cache folder
+	 * the zip can appear invalid if another server is still downloading it
+	 */
+	MaxUpdateZipAttempts = 30
+	UpdateZipInterval    = time.Second * 30
 
 	/* Maximum time before giving up on patching */
 	FactorioUpdateProcessLimit = 10 * time.Minute
