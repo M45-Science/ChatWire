@@ -57,6 +57,7 @@ func StartGameLog() {
 
 	/* Open log files */
 	gdesc, erra := os.OpenFile(glob.GameLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	os.Symlink(glob.GameLogName, "newest.log")
 
 	/* Handle file errors */
 	if erra != nil {

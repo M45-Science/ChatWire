@@ -116,5 +116,8 @@
         "wpath",
         "Writecfg",
         "xkcdpwgen"
+    ],
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "master"
     ]
 }
