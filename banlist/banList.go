@@ -53,7 +53,7 @@ func CheckBanList(player string) {
 
 func WatchBanFile() {
 	for glob.ServerRunning {
-		time.Sleep(time.Second * 60)
+		time.Sleep(time.Minute)
 
 		if cfg.Global.Paths.DataFiles.Bans == "" {
 			break
@@ -63,7 +63,6 @@ func WatchBanFile() {
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
-			//cwlog.DoLogCW("watchBanFile: stat")
 			time.Sleep(time.Minute)
 			continue
 		}
@@ -73,7 +72,6 @@ func WatchBanFile() {
 
 			stat, errb := os.Stat(filePath)
 			if errb != nil {
-				//cwlog.DoLogCW("watchBanFile: restat")
 				break
 			}
 
