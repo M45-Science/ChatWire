@@ -355,28 +355,19 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 						glob.PlayerSusLock.Lock()
 
-						if strings.Contains(action, "rotated") ||
-							strings.Contains(action, "placed a speaker") ||
-							strings.Contains(action, "tag") ||
-							strings.Contains(action, "deconstructing") {
-							glob.PlayerSus[pname] += 4
-						} else if strings.Contains(action, "placed") {
-							if glob.PlayerSus[pname] > 0 {
-								glob.PlayerSus[pname] += 2
-							}
-						} else { //Mined, other
-							if glob.PlayerSus[pname] > 0 {
-								glob.PlayerSus[pname] += 3
-							}
+						if strings.Contains(action, "placed") {
+							glob.PlayerSus[pname]--
+						} else if strings.Contains(action, "mined") {
+							glob.PlayerSus[pname]++
 						}
 
 						if glob.PlayerSus[pname] > constants.SusWarningThresh {
 
-							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute {
+							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute*15 {
 								glob.LastSusWarning = time.Now()
 
 								if !cfg.Global.Options.ShutupSusWarn {
-									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity. (%v)", pname, glob.PlayerSus[pname])
+									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)", pname)
 									fact.FactChat("[color=red]" + sbuf + "[/color]")
 									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
 									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
