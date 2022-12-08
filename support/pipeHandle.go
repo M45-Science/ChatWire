@@ -356,7 +356,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 						glob.PlayerSusLock.Lock()
 
 						if strings.Contains(action, "placed") {
-							glob.PlayerSus[pname]--
+							glob.PlayerSus[pname] -= 2
 						} else if strings.Contains(action, "mined") {
 							glob.PlayerSus[pname]++
 						}
