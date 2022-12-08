@@ -363,7 +363,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 						if glob.PlayerSus[pname] > constants.SusWarningThresh {
 
-							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute*15 {
+							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute*10 {
 								glob.LastSusWarning = time.Now()
 
 								if !cfg.Global.Options.ShutupSusWarn {
