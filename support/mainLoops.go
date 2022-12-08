@@ -84,27 +84,6 @@ func MainLoops() {
 	}()
 
 	/********************************
-	 * Decrement player suspicion
-	 ********************************/
-	go func() {
-		for glob.ServerRunning {
-			time.Sleep(time.Second * 1)
-
-			glob.PlayerSusLock.Lock()
-
-			if len(glob.PlayerSus) > 0 {
-				for pname := range glob.PlayerSus {
-					if glob.PlayerSus[pname] > 0 {
-						glob.PlayerSus[pname]--
-					}
-				}
-			}
-
-			glob.PlayerSusLock.Unlock()
-		}
-	}()
-
-	/********************************
 	 * Watch ban file
 	 ********************************/
 	go banlist.WatchBanFile()
