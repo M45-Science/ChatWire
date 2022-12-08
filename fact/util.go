@@ -60,7 +60,7 @@ func DoExit(delay bool) {
 
 	/* This kills all loops! */
 	glob.ServerRunning = false
-
+	time.Sleep(time.Second)
 	cwlog.DoLogCW("CW closing, load/save db.")
 	LoadPlayers(false)
 	WritePlayers()
@@ -75,12 +75,14 @@ func DoExit(delay bool) {
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */
 
+	os.Remove("log/newest.log")
 	fmt.Println("Goodbye.")
 	if delay {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 	}
 
 	if disc.DS != nil {
+		time.Sleep(time.Second)
 		disc.DS.Close()
 	}
 	os.Exit(1)
