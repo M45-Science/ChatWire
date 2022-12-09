@@ -103,7 +103,7 @@ func HandleChat() {
 							continue
 						}
 
-						if handlePlayerLeave(NoDS, line, NoDSlist, lowerCaseListlen) {
+						if handlePlayerLeave(NoDS, line, NoDSlist, NoDSlistlen) {
 							continue
 						}
 
