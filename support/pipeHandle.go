@@ -335,51 +335,64 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 	if strings.HasPrefix(line, "[ACT]") {
 
 		cwlog.DoLogGame(line)
-
-		/* Don't bother on whitelist servers */
 		if lineListLen > 2 {
 
 			pname := lineList[1]
 			action := lineList[2]
 
+			words := lineList[3:]
+			numWords := len(words) - 1
+
 			if pname == "" {
 				return true
 			}
 
-			if !cfg.Local.Options.Whitelist {
-				go fact.UpdateSeen(pname)
+			go fact.UpdateSeen(pname)
+			if pname != "" && glob.PlayerSus != nil {
+				p := disc.GetPlayerDataFromName(pname)
+				if p != nil && p.Name != "" && p.Level < 2 {
 
-				if pname != "" && glob.PlayerSus != nil {
-					p := disc.GetPlayerDataFromName(pname)
-					if p != nil && p.Name != "" && p.Level < 1 {
+					glob.PlayerSusLock.Lock()
 
-						glob.PlayerSusLock.Lock()
-
-						if strings.Contains(action, "placed") {
-							glob.PlayerSus[pname] -= 2
-						} else if strings.Contains(action, "mined") {
-							glob.PlayerSus[pname]++
+					if strings.Contains(action, "placed-ghost") {
+						glob.PlayerSus[pname] -= 2
+					} else if strings.Contains(action, "mined-ghost") {
+						glob.PlayerSus[pname] -= 1
+					} else if strings.Contains(action, "placed") {
+						glob.PlayerSus[pname]++
+					} else if strings.Contains(action, "mined") {
+						glob.PlayerSus[pname]++
+					} else if strings.Contains(action, "deconstructing") {
+						if numWords > 3 {
+							areaString := words[4]
+							areaClean := strings.ReplaceAll(areaString, "sq", "")
+							area, _ := strconv.Atoi(areaClean)
+							glob.PlayerSus[pname] += (area / 200)
 						}
-
-						if glob.PlayerSus[pname] > constants.SusWarningThresh {
-
-							if !glob.LastSusWarning.IsZero() && time.Since(glob.LastSusWarning) > time.Minute*10 {
-								glob.LastSusWarning = time.Now()
-
-								if !cfg.Global.Options.ShutupSusWarn {
-									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)", pname)
-									fact.FactChat("[color=red]" + sbuf + "[/color]")
-									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
-									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
-									fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
-								}
-
-								glob.PlayerSus[pname] = 0
-							}
-						}
-
-						glob.PlayerSusLock.Unlock()
 					}
+
+					thresh := constants.SusWarningThresh
+					if p.Level > 0 {
+						thresh -= 1000
+					}
+					if glob.PlayerSus[pname] > thresh {
+
+						if time.Since(glob.LastSusWarning) > time.Minute*2 {
+							glob.LastSusWarning = time.Now()
+
+							if !cfg.Global.Options.ShutupSusWarn {
+								sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)", pname)
+								fact.FactChat("[color=red]" + sbuf + "[/color]")
+								fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+								sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
+								fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
+							}
+
+							glob.PlayerSus[pname] = 0
+						}
+					}
+
+					glob.PlayerSusLock.Unlock()
 				}
 			}
 		}
