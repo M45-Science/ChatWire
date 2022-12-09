@@ -227,10 +227,8 @@ func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) string {
 	glob.PlayerSusLock.Lock()
 	var buf string = "Debug:\nSusList:"
 	for pname, score := range glob.PlayerSus {
-		if glob.PlayerSus[pname] > 0 {
-			count++
-			buf = buf + fmt.Sprintf("%v: %v\n", pname, score)
-		}
+		count++
+		buf = buf + fmt.Sprintf("%v: %v\n", pname, score)
 	}
 
 	glob.PlayerSusLock.Unlock()
