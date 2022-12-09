@@ -359,7 +359,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 					} else if strings.Contains(action, "mined-ghost") {
 						glob.PlayerSus[pname] -= 1
 					} else if strings.Contains(action, "placed") {
-						glob.PlayerSus[pname]++
+						glob.PlayerSus[pname]--
 					} else if strings.Contains(action, "mined") {
 						glob.PlayerSus[pname]++
 					} else if strings.Contains(action, "deconstructing") {
