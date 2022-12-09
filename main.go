@@ -103,6 +103,7 @@ func main() {
 	glob.PlayerSus = make(map[string]int)
 
 	glob.LastSusWarning = time.Now()
+	glob.LastSusWarning.Add(time.Minute * 2)
 
 	pos := 10000
 	for i := 'a'; i <= 'z'; i++ {
