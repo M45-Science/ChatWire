@@ -373,7 +373,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 
 					thresh := constants.SusWarningThresh
 					if p.Level > 0 {
-						thresh -= 1000
+						thresh += 1000
 					}
 					if glob.PlayerSus[pname] > thresh {
 
