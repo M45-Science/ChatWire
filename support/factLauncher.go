@@ -418,7 +418,7 @@ func ConfigSoftMod() {
 	if fact.NextReset != "" {
 		fact.WriteFact("/resetint " + fact.NextReset)
 	}
-	if fact.TillReset != "" {
+	if fact.TillReset != "" && cfg.Local.Options.Schedule != "" {
 		fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
 	}
 	if cfg.Local.Options.SoftModOptions.CleanMap {

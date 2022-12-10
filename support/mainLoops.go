@@ -718,12 +718,15 @@ func MainLoops() {
 				time.Sleep(time.Minute)
 
 				fact.UpdateScheduleDesc()
-				buf := "/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")"
-				/* Don't write it, if nothing has changed */
-				if !strings.EqualFold(buf, lastDur) {
-					fact.WriteFact(buf)
+				if fact.TillReset != "" && cfg.Local.Options.Schedule != "" {
+					buf := "/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")"
+					/* Don't write it, if nothing has changed */
+					if !strings.EqualFold(buf, lastDur) {
+						fact.WriteFact(buf)
+					}
+
+					lastDur = buf
 				}
-				lastDur = buf
 			}
 
 			time.Sleep(time.Second * 5)
