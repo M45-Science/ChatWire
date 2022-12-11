@@ -1149,12 +1149,18 @@ func handleOnlineMsg(line string) bool {
 	/* ****************
 	 * "/online"
 	 ******************/
-	if strings.HasPrefix(line, "[ONLINE]") {
+	newMode := false
+	if strings.HasPrefix(line, "[ONLINE]") || strings.HasPrefix(line, "[ONLINE2]") {
+		tag := "[ONLINE] "
+		if strings.HasPrefix(line, "[ONLINE2]") {
+			tag = "[ONLINE2] "
+			newMode = true
+		}
 		newPlayerList := []glob.OnlinePlayerData{}
 		count := 0
 
 		cwlog.DoLogGame(line)
-		line = strings.TrimPrefix(line, "[ONLINE] ")
+		line = strings.TrimPrefix(line, tag)
 
 		players := strings.Split(line, ";")
 		if len(players) > 0 {
@@ -1178,6 +1184,11 @@ func handleOnlineMsg(line string) bool {
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)
+						/* Handle new compacted format */
+						if newMode {
+							timeInt = (timeInt * 60 * 60)
+							scoreInt = (scoreInt * 60 * 60)
+						}
 						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, ScoreTicks: scoreInt, TimeTicks: timeInt, Level: plevel, AFK: pafk})
 						count++
 					}
