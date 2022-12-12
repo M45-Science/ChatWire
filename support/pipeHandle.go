@@ -277,6 +277,8 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 				fact.UpdateScheduleDesc()
 				if fact.TillReset != "" && cfg.Local.Options.Schedule != "" {
 					fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
+				} else {
+					fact.WriteFact("/resetdur")
 				}
 			}
 

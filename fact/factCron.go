@@ -177,8 +177,8 @@ func InterpSchedule(desc string, test bool) (err bool) {
 			WriteFact("/resetdur")
 		} else {
 			NextResetUnix = -1
-			TillReset = "off"
-			NextReset = "off"
+			TillReset = ""
+			NextReset = ""
 			WriteFact("/resetint")
 			WriteFact("/resetdur")
 		}
