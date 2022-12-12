@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -249,24 +248,26 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string) {
+func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string, doBan bool) bool {
 	if iname == "" {
-		return
+		return false
 	}
 
+	didBan := false
 	pname := strings.ToLower(iname)
 
 	if glob.PlayerList[pname] != nil {
 		if level <= -254 { //Delete
 			/*Clear discord ID on delete*/
 			glob.PlayerList[pname].ID = "0"
-		} else if level == -1 && glob.PlayerList[pname].Level >= 0 { //Banned
+		} else if level == -1 && glob.PlayerList[pname].Level >= 0 && doBan { //Banned
 			if reason != "" {
 				glob.PlayerList[pname].BanReason = reason
 				WriteFact("/ban " + pname + " " + reason)
 			} else {
 				WriteFact("/ban " + pname)
 			}
+			didBan = true
 		} else if level >= 0 && glob.PlayerList[pname].Level == -1 { //Unbanned
 			WriteFact("/unban " + pname)
 		}
@@ -285,7 +286,7 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 		if id != "" { //Registered
 			glob.PlayerList[pname].ID = id
 		}
-		return
+		return didBan
 	}
 
 	/* Not in list, add them */
@@ -300,15 +301,17 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 	}
 
 	glob.PlayerList[pname] = &newplayer
-	if level == -1 {
+	if level == -1 && doBan {
 		if reason != "" {
 			WriteFact("/ban " + pname + " " + reason)
 		} else {
 			WriteFact("/ban " + pname)
 		}
+		didBan = true
 	}
 	WhitelistPlayer(pname, level)
 
+	return didBan
 }
 
 /* Get player level, add to db if not found */
@@ -354,6 +357,8 @@ func LoadPlayers(bootMode bool) {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
+	didBan := false
+
 	filedata, err := os.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't read db file, skipping...")
@@ -362,39 +367,7 @@ func LoadPlayers(bootMode bool) {
 
 	if filedata != nil {
 
-		if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".dat") {
-			dblines := strings.Split(string(filedata), ":")
-			dblen := len(dblines)
-
-			/* Upgrade existing */
-			if strings.EqualFold(dblines[0], "db-v0.03") {
-
-				glob.PlayerListLock.Lock()
-				for pos, line := range dblines {
-					items := strings.Split(string(line), ",")
-					numitems := len(items)
-					if numitems == 5 {
-						pname := strings.ToLower(items[0])
-						playerlevel, _ := strconv.Atoi(items[1])
-						pid := items[2]
-						creation, _ := strconv.ParseInt(items[3], 10, 64)
-						creation = CompactTime(creation)
-						seen, _ := strconv.ParseInt(items[4], 10, 64)
-						seen = CompactTime(seen)
-
-						if playerlevel != 0 || len(pid) > 1 {
-							AddPlayer(pname, playerlevel, pid, creation, seen, "")
-						}
-					} else if pos != 0 && pos != dblen-1 {
-						cwlog.DoLogCW(fmt.Sprintf("Invalid db line %v:, skipping...", pos))
-					}
-				}
-				cfg.Global.Paths.DataFiles.DBFile = "playerdb.json"
-				cfg.WriteGCfg()
-				glob.PlayerListLock.Unlock()
-
-			}
-		} else if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
+		if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
 
 			var tempData = make(map[string]*glob.PlayerData)
 			err = json.Unmarshal(filedata, &tempData)
@@ -402,13 +375,23 @@ func LoadPlayers(bootMode bool) {
 				cwlog.DoLogCW(err.Error())
 			}
 
+			banCount := 0
+			doBan := true
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
 			for pname := range tempData {
+				if banCount > 5 {
+					doBan = false
+				}
+				didBan = false
 				if bootMode && (tempData[pname].Level > 0 || tempData[pname].ID != "") {
-					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason)
+					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, doBan)
 				} else {
-					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason)
+
+					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, doBan)
+				}
+				if didBan {
+					banCount++
 				}
 			}
 			glob.PlayerListLock.Unlock()
