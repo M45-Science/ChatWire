@@ -445,6 +445,10 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 					fact.PlayerLevelSet(trustname, 2, false)
 					fact.AutoPromote(trustname)
 					return true
+				} else if strings.Contains(line, " is now reset!") {
+					fact.PlayerLevelSet(trustname, 0, false)
+					fact.AutoPromote(trustname)
+					return true
 				} else if strings.Contains(line, " moved to moderators group") {
 					fact.PlayerLevelSet(trustname, 255, false)
 					fact.AutoPromote(trustname)
