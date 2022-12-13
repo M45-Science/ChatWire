@@ -16,6 +16,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/sclean"
 	"ChatWire/support"
 )
 
@@ -197,7 +198,9 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
+	glob.PlayerListLock.RLock()
 	buf = buf + fmt.Sprintf("\nStats:\n%17v: %v players\n", "Total", len(glob.PlayerList))
+	glob.PlayerListLock.RUnlock()
 	buf = buf + fmt.Sprintf("%17v: %v\n", "Banned", len(banlist.BanList))
 
 	if fact.PausedTicks > 4 {
@@ -223,27 +226,15 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) string {
 
-	count := 0
-	glob.PlayerSusLock.Lock()
-	var buf string = "Debug:\nSusList:"
-	for pname, score := range glob.PlayerSus {
-		count++
-		buf = buf + fmt.Sprintf("%v: %v\n", pname, score)
-	}
+	glob.PlayerListLock.RLock()
+	defer glob.PlayerListLock.RUnlock()
 
-	glob.PlayerSusLock.Unlock()
-
-	glob.ChatterLock.Lock()
-	buf = buf + "\nChatterList:"
-	for pname, score := range glob.ChatterSpamScore {
-		if glob.PlayerSus[pname] > 0 {
-			count++
-			buf = buf + fmt.Sprintf("%v: %v\n", pname, score)
+	buf := "Suspects:\n"
+	for _, p := range glob.PlayerList {
+		if p.SusScore != 0 || p.SpamScore != 0 {
+			buf = buf + fmt.Sprintf("%v: sus: %v spam: %v\n", p.Name, p.SusScore, p.SpamScore)
 		}
 	}
-
-	glob.ChatterLock.Unlock()
-
-	return buf
+	return sclean.TruncateStringEllipsis(buf, 4000)
 
 }
