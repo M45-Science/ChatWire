@@ -248,7 +248,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string, doBan bool) bool {
+func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string, susScore int64, mins int64, doBan bool) bool {
 	if iname == "" {
 		return false
 	}
@@ -286,18 +286,25 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 		if id != "" { //Registered
 			glob.PlayerList[pname].ID = id
 		}
+		if susScore != 0 {
+			glob.PlayerList[pname].SusScore = susScore
+		}
+		if mins > 0 && mins > glob.PlayerList[pname].Minutes {
+			glob.PlayerList[pname].Minutes = mins
+		}
 		return didBan
 	}
 
 	/* Not in list, add them */
 	newplayer := glob.PlayerData{
-
 		Name:      pname,
 		Level:     level,
 		ID:        id,
 		BanReason: reason,
 		LastSeen:  seen,
 		Creation:  creation,
+		Minutes:   mins,
+		SusScore:  susScore,
 	}
 
 	glob.PlayerList[pname] = &newplayer
@@ -385,10 +392,10 @@ func LoadPlayers(bootMode bool) {
 				}
 				didBan = false
 				if bootMode && (tempData[pname].Level > 0 || tempData[pname].ID != "") {
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, doBan)
+					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
 				} else {
 
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, doBan)
+					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
 				}
 				if didBan {
 					banCount++
