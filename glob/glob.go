@@ -20,13 +20,18 @@ func Ptr[T any](v T) *T {
 
 /* Player database */
 type PlayerData struct {
-	Name          string `json:"-"`
-	Level         int    `json:"l"`
-	ID            string `json:"i,omitempty"`
-	BanReason     string `json:"b,omitempty"`
-	Creation      int64  `json:"c"`
-	LastSeen      int64  `json:"s"`
-	AlreadyBanned bool   `json:"-"`
+	Name      string `json:"-"`
+	Level     int    `json:"l,omitempty"`
+	ID        string `json:"i,omitempty"`
+	BanReason string `json:"b,omitempty"`
+	Creation  int64  `json:"c,omitempty"`
+	LastSeen  int64  `json:"s,omitempty"`
+	Minutes   int64  `json:"m,omitempty"`
+	SusScore  int64  `json:"u,omitempty"`
+
+	/* Not on disk */
+	AlreadyBanned bool  `json:"-"`
+	SpamScore     int64 `json:"-"`
 }
 
 /* Registrarion codes */
@@ -140,8 +145,6 @@ var (
 	ChatterList      map[string]time.Time
 	ChatterSpamScore map[string]int
 
-	PlayerSusLock  sync.Mutex
-	PlayerSus      map[string]int
 	LastSusWarning time.Time
 )
 

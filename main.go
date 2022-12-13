@@ -100,7 +100,6 @@ func main() {
 	glob.ChatterSpamScore = make(map[string]int)
 	glob.PlayerList = make(map[string]*glob.PlayerData)
 	glob.PassList = make(map[string]*glob.PassData)
-	glob.PlayerSus = make(map[string]int)
 
 	glob.LastSusWarning = time.Now().Add(time.Duration(-10) * time.Minute)
 
