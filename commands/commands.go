@@ -423,6 +423,12 @@ var cmds = []Command{
 		},
 	},
 		Command: user.Whois, PrimaryOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "scoreboard",
+		Description: "Shows player scoreboard (top 40)",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Command: user.Scoreboard, PrimaryOnly: true},
 }
 
 func ClearCommands() {
