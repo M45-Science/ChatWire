@@ -43,7 +43,8 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 			/*STANDARD WHOIS SEARCH*/
 			count := 0
-			buf = buf + fmt.Sprintf("`%20s : %10s : %20s : %18s : %18s : %7s : %s`\n", "Factorio Name", "Time", "Discord Name", "Last Seen", "Joined", "Level", "Ban reason")
+			format := "`%20v : %10v : %20v : %18v : %18v : %10v : %10v : %v`\n"
+			buf = buf + fmt.Sprintf(format, "Factorio Name", "Time", "Discord Name", "Last Seen", "Joined", "Level", "SusScore", "Ban reason")
 			for _, p := range slist {
 				if count > maxresults {
 					break
@@ -67,7 +68,9 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 					n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Minutes))
 					timestr := n.LimitFirstN(2).Format(units)
-					buf = buf + fmt.Sprintf("`%20s : %10s : %20s : %18s : %18s : %7s : %v`\n", sclean.TruncateStringEllipsis(p.Name, 20), timestr, sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level), p.BanReason)
+					buf = buf + fmt.Sprintf(format,
+						sclean.TruncateStringEllipsis(p.Name, 20), timestr, sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20),
+						lseen, joined, fact.LevelToString(p.Level), p.SusScore, p.BanReason)
 					count++
 				}
 			}
