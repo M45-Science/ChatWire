@@ -10,7 +10,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/martinhoefling/goxkcdpwgen v0.1.1
 	github.com/robfig/cron v1.2.0
-	github.com/ulikunitz/xz v0.5.10
+	github.com/ulikunitz/xz v0.5.11
 )
 
 require (
