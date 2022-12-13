@@ -39,7 +39,7 @@ var cmds = []Command{
 	/* Admin Commands */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "chatwire",
-		Description: "Actions specific to ChatWire.",
+		Description: "ADMIN ONLY: Actions specific to ChatWire.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
@@ -70,7 +70,7 @@ var cmds = []Command{
 		Command: admin.ChatWire, AdminOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-schedule",
-		Description: "Set a map reset schedule.",
+		Description: "ADMIN ONLY: Set a map reset schedule.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "preset",
@@ -174,7 +174,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",
-		Description: "Actions specific to Factorio.",
+		Description: "ADMIN ONLY: Actions specific to Factorio.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
@@ -222,14 +222,14 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-global",
-		Description: "Global server settings and options.",
+		Description: "ADMIN ONLY: Global server settings and options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",
-		Description: "remote console (remotely run a factorio command)",
+		Description: "MOD ONLY: remote console (remotely run a factorio command)",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -243,20 +243,20 @@ var cmds = []Command{
 		Command: moderator.RCONCmd, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
-		Description: "automated map reset, will kick players out of game.",
+		Description: "MOD ONLY: automated map reset, will kick players out of game.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.MapReset, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-server",
-		Description: "Server settings and options.",
+		Description: "MOD ONLY: Server settings and options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.ConfigServer, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-level",
-		Description: "Sets a player's rank.",
+		Description: "MOD ONLY: Sets a player's rank.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "name",
@@ -308,7 +308,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "change-map",
-		Description: "Load a specific save, shows drop down of last 25.",
+		Description: "MOD ONLY: Load a specific save, shows drop down of last 25.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -369,7 +369,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-map",
-		Description: "Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
+		Description: "REGULARS ONLY: Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
