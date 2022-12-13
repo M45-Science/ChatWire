@@ -705,7 +705,24 @@ func MainLoops() {
 	}()
 
 	/****************************/
-	/* Update time till reset */
+	/* Update player time       */
+	/****************************/
+	go func() {
+		time.Sleep(time.Second * 15)
+		for glob.ServerRunning {
+			glob.PlayerListLock.Lock() //Lock
+			for _, p := range glob.PlayerList {
+				if time.Since(fact.ExpandTime(p.LastSeen)) <= time.Minute {
+					p.Minutes++
+				}
+			}
+			glob.PlayerListLock.Unlock() //Unlock
+			time.Sleep(time.Minute)
+		}
+	}()
+
+	/****************************/
+	/* Update time till reset   */
 	/****************************/
 	go func() {
 		var lastDur string
