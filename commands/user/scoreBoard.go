@@ -31,7 +31,7 @@ func Scoreboard(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	scores := []scoreData{}
 	glob.PlayerListLock.RLock()
 	for _, p := range glob.PlayerList {
-		if p.Minutes != 0 {
+		if p.Minutes > 30 {
 			scores = append(scores, scoreData{Name: p.Name, Score: p.Minutes})
 		}
 	}
