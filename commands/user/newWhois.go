@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/hako/durafmt"
 
 	"ChatWire/constants"
 	"ChatWire/disc"
@@ -30,6 +31,11 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	glob.PlayerListLock.RUnlock()
 
+	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
+	if err != nil {
+		panic(err)
+	}
+
 	buf := ""
 	for _, o := range a.Options {
 		if o.Type == discordgo.ApplicationCommandOptionString {
@@ -37,7 +43,7 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 			/*STANDARD WHOIS SEARCH*/
 			count := 0
-			buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s : %s`\n", "Factorio Name", "Discord Name", "Last Seen", "Joined", "Level", "Ban reason")
+			buf = buf + fmt.Sprintf("`%20s : %10s : %20s : %18s : %18s : %7s : %s`\n", "Factorio Name", "Time", "Discord Name", "Last Seen", "Joined", "Level", "Ban reason")
 			for _, p := range slist {
 				if count > maxresults {
 					break
@@ -59,7 +65,9 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						jtime := fact.ExpandTime(p.Creation)
 						joined = jtime.Format(layoutUS)
 					}
-					buf = buf + fmt.Sprintf("`%20s : %20s : %18s : %18s : %7s : %v`\n", sclean.TruncateStringEllipsis(p.Name, 20), sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level), p.BanReason)
+					n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Minutes))
+					timestr := n.LimitFirstN(2).Format(units)
+					buf = buf + fmt.Sprintf("`%20s : %10s : %20s : %18s : %18s : %7s : %v`\n", sclean.TruncateStringEllipsis(p.Name, 20), timestr, sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20), lseen, joined, fact.LevelToString(p.Level), p.BanReason)
 					count++
 				}
 			}
