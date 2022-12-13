@@ -46,7 +46,9 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if aname != "" {
 
 		oldLevel := fact.PlayerLevelGet(aname, false)
+		glob.PlayerListLock.RLock()
 		nplayer := glob.PlayerList[aname]
+		glob.PlayerListLock.RUnlock()
 
 		if oldLevel == alevel {
 			buf := fmt.Sprintf("Player: %v level was already %v. No action taken.", nplayer.Name, fact.LevelToString(nplayer.Level))
