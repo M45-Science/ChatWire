@@ -103,12 +103,12 @@ func main() {
 
 	glob.LastSusWarning = time.Now().Add(time.Duration(-10) * time.Minute)
 
+	/* Generate number to alpha map */
 	pos := 10000
 	for i := 'a'; i <= 'z'; i++ {
 		glob.AlphaValue[string(i)] = pos
 		pos++
 	}
-
 	for i := 'a'; i <= 'z'; i++ {
 		for j := 'a'; j <= 'z'; j++ {
 			glob.AlphaValue[string(i)+string(j)] = pos

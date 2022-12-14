@@ -14,6 +14,7 @@ import (
 	"ChatWire/glob"
 )
 
+/* Local use only */
 func compactNow() int64 {
 	t := time.Now()
 	return (t.Unix() - constants.SeenEpoch) / constants.SeenDivisor

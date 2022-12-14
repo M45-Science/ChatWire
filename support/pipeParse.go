@@ -75,12 +75,12 @@ func HandleChat() {
 
 				/*********************************
 				 * FILTERED AREA
-				 * NO ESCAPED OR CONSOLE CHAT
+				 * NO CONSOLE CHAT
 				 **********************************/
 				if !strings.HasPrefix(line, "<server>") {
 
 					/******************
-					 * NO CHAT AREA
+					 * NO CHAT OR COMMAND AREA
 					 ******************/
 					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
