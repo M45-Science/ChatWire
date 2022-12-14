@@ -44,10 +44,8 @@ func forceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 /* Reboot when server is empty */
 func queReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if !fact.QueueReload {
-		disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
-		fact.QueueReload = true
-	}
+	disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
+	fact.QueueReload = true
 }
 
 /*  Restart saves and restarts the server */
