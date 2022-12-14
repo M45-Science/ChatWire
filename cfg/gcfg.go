@@ -78,6 +78,7 @@ type folderPaths struct {
 	FactorioDir   string
 	ServersRoot   string
 	Saves         string
+	Mods          string
 	MapGenerators string
 	MapPreviews   string
 	MapArchives   string
@@ -201,6 +202,9 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.Folders.Saves == "" {
 		Global.Paths.Folders.Saves = "saves"
+	}
+	if Global.Paths.Folders.Mods == "" {
+		Global.Paths.Folders.Mods = "mods"
 	}
 	if Global.Paths.Folders.UpdateCache == "" {
 		Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "update-cache/"
