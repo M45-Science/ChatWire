@@ -1190,6 +1190,7 @@ func handleOnlineMsg(line string) bool {
 
 					if pname != "" {
 						fact.UpdateSeen(pname)
+						fact.PlayerLevelSet(pname, plevel, true)
 
 						banlist.CheckBanList(pname)
 

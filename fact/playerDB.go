@@ -209,7 +209,6 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 
 		glob.PlayerList[pname].LastSeen = compactNow()
 
-		glob.PlayerList[pname].Level = level
 		if glob.PlayerList[pname].Level != level {
 			glob.PlayerList[pname].Level = level
 			SetPlayerListDirty()
