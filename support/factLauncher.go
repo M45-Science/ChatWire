@@ -162,8 +162,36 @@ func injectSoftMod(fileName, folderName string) {
 		}
 
 		/* Read files in from softmod */
+		blackList := []string{"img-source", "out"}                   /* Wildcard exclude */
+		allowList := []string{"README.md", "preview.jpg", "LICENSE"} /* Always include */
+		allowExt := []string{".lua", ".png"}
+
 		tfiles := readFolder(cfg.Local.Options.SoftModOptions.SoftModPath, folderName)
-		zipFiles = append(zipFiles, tfiles...)
+		var addFiles []zipFilesData
+		for _, tf := range tfiles {
+			skip := false
+			for _, al := range allowList {
+				if strings.HasSuffix(tf.Name, al) {
+					fmt.Println(tf.Name)
+					addFiles = append(addFiles, tf)
+				}
+			}
+			for _, bl := range blackList {
+				if strings.Contains(tf.Name, bl) {
+					skip = true
+				}
+			}
+			if skip {
+				continue
+			}
+			for _, ext := range allowExt {
+				if strings.HasSuffix(tf.Name, ext) {
+					fmt.Println(tf.Name)
+					addFiles = append(addFiles, tf)
+				}
+			}
+		}
+		zipFiles = append(zipFiles, addFiles...)
 
 		numFiles := len(zipFiles)
 		if numFiles <= 0 {
