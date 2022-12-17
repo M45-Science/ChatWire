@@ -251,7 +251,7 @@ var cmds = []Command{
 				Required:    false,
 			},
 			{
-				Name:        "diable-mod",
+				Name:        "disable-mod",
 				Description: "disable a mod by number from list-all",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
