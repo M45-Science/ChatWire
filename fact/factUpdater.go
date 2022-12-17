@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -23,17 +24,33 @@ func CheckIfNewer(ca, cb, cc int) bool {
 		return true
 	}
 	return false
-
 }
 
 /* Check if Factorio update zip is valid */
 func CheckZip(filename string) bool {
-	_, err := zip.OpenReader(filename)
+	read, err := zip.OpenReader(filename)
 	if err != nil {
+		cwlog.DoLogCW(err.Error())
 		return false
-	} else {
-		return true
 	}
+
+	for _, file := range read.File {
+		fc, err := file.Open()
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+			return false
+		}
+		content, err := ioutil.ReadAll(fc)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+			return false
+		}
+		if len(content) > 1024 {
+			return true
+		}
+	}
+
+	return false
 }
 
 /* Check if there is a new Factorio update */
@@ -51,7 +68,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			cwlog.DoLogCW(err.Error())
 		}
 
-		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.UpdateCache, "-a", GetFactorioBinary(), "-d"}
+		cmdargs := []string{cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.FactUpdater, "-O", cfg.Global.Paths.Folders.UpdateCache, "-d", "-a", GetFactorioBinary()}
 		if cfg.Local.Options.ExpUpdates {
 			cmdargs = append(cmdargs, "-x")
 		}
@@ -102,6 +119,8 @@ func CheckFactUpdate(logNoUpdate bool) {
 								} else {
 									if glob.UpdateZipAttempts < constants.MaxUpdateZipAttempts {
 										glob.UpdateZipAttempts++
+										buf := fmt.Sprintf("Waiting for zipfile to finish...(%v/%v)", glob.UpdateZipAttempts, constants.MaxUpdateZipAttempts)
+										cwlog.DoLogCW(buf)
 										time.Sleep(constants.UpdateZipInterval) //Wait a bit
 										return
 									}

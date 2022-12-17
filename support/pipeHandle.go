@@ -577,7 +577,6 @@ func handleModLoad(NoTC string) bool {
 			if numParts >= 4 {
 
 				modName := strings.Join(parts[2:numParts-1], " ")
-				modName = sclean.AlphaOnly(modName)
 
 				found := false
 				for _, m := range fact.ModList {

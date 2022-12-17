@@ -228,6 +228,62 @@ var cmds = []Command{
 		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "change-mods",
+		Description: "MOD ONLY: Change game mods",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "add-mod",
+				Description: "attempt to add a mod by name",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+				Name:        "del-mod",
+				Description: "delete a mod by number from list-all",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+				Name:        "enable-mod",
+				Description: "enable a mod by number from list-all",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+				Name:        "disable-mod",
+				Description: "disable a mod by number from list-all",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+				Name:        "action",
+				Description: "List of possible actions.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "enable-all",
+						Value: "enable-all",
+					},
+					{
+						Name:  "disable-all",
+						Value: "disable-all",
+					},
+					{
+						Name:  "delete-all",
+						Value: "delete-all",
+					},
+					{
+						Name:  "show-list",
+						Value: "show-list",
+					},
+				},
+			},
+		},
+	},
+		Command: moderator.ModManager, ModeratorOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",
 		Description: "MOD ONLY: remote console (remotely run a factorio command)",
 		Type:        discordgo.ChatApplicationCommand,
@@ -336,13 +392,17 @@ var cmds = []Command{
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "options",
-				Description: "verbose shows all info, instead of just relevant info. debug is for dev use only.",
+				Description: "verbose shows all settings/info, list-mods shows all installed game mods.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
 					{
 						Name:  "verbose",
 						Value: "verbose",
+					},
+					{
+						Name:  "list-mods",
+						Value: "list-mods",
 					},
 					{
 						Name:  "debug",

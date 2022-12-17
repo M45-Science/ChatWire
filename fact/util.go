@@ -16,14 +16,24 @@ import (
 
 func FactChat(input string) {
 
+	/* Limit length, Discord does this but just in case */
+	input = sclean.TruncateStringEllipsis(input, 2048)
+
 	if glob.SoftModVersion != constants.Unknown {
 		WriteFact("/cchat " + input)
 	} else {
+		/* Just in case there is no soft-mod */
 		input = sclean.StripControlAndSubSpecial(input)
 		input = sclean.RemoveFactorioTags(input)
 		input = sclean.RemoveDiscordMarkdown(input)
-		input = strings.TrimLeft(input, " ")
-		input = strings.TrimLeft(input, "/")
+
+		/* Prevent anyone from running a command. */
+		strlen := len(input)
+		for z := 0; z < strlen; z++ {
+			input = strings.TrimLeft(input, " ")
+			input = strings.TrimLeft(input, "/")
+			input = strings.TrimRight(input, " ")
+		}
 		WriteFact(input)
 	}
 }
@@ -36,7 +46,7 @@ func WaitFactQuit() {
 }
 
 func MakeSteamURL() (string, bool) {
-	if cfg.Global.Paths.URLs.Domain != "localhost" {
+	if cfg.Global.Paths.URLs.Domain != "localhost" && cfg.Global.Paths.URLs.Domain != "" {
 		buf := fmt.Sprintf("steam://run/427520//--mp-connect%%20%v:%v/", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)
 		return buf, true
 	} else {

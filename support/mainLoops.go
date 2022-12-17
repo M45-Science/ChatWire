@@ -47,7 +47,6 @@ func MainLoops() {
 				if fact.DoUpdateFactorio {
 					fact.FactUpdate()
 					fact.DoExit(false)
-
 					return
 				}
 				fact.DoExit(false)
@@ -468,6 +467,13 @@ func MainLoops() {
 					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
 					fact.QuitFactorio("Server rebooting for maintenance.")
 					break //We don't need to loop anymore
+				}
+			}
+			if fact.DoUpdateFactorio && fact.NumPlayers == 0 {
+				if fact.FactIsRunning && fact.FactorioBooted {
+					cwlog.DoLogCW("Stopping Factorio for update.")
+					fact.QuitFactorio("")
+					break
 				}
 			}
 		}
