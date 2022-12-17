@@ -172,7 +172,6 @@ func injectSoftMod(fileName, folderName string) {
 			skip := false
 			for _, al := range allowList {
 				if strings.HasSuffix(tf.Name, al) {
-					fmt.Println(tf.Name)
 					addFiles = append(addFiles, tf)
 				}
 			}
@@ -186,7 +185,6 @@ func injectSoftMod(fileName, folderName string) {
 			}
 			for _, ext := range allowExt {
 				if strings.HasSuffix(tf.Name, ext) {
-					fmt.Println(tf.Name)
 					addFiles = append(addFiles, tf)
 				}
 			}
