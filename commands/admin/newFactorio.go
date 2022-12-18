@@ -322,8 +322,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			disc.EphemeralResponse(s, i, "Error:", buf)
 			return
 		}
-		respData := &discordgo.InteractionResponseData{Content: newmapurl, Files: []*discordgo.File{
-			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
+		respData := &discordgo.InteractionResponseData{Content: newmapurl}
 
 		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 		err = s.InteractionRespond(i.Interaction, resp)
