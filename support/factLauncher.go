@@ -353,7 +353,7 @@ func launchFactorio() {
 	}
 
 	/* Whitelist */
-	if cfg.Local.Options.Whitelist {
+	if cfg.Local.Options.Whitelist || cfg.Local.Options.CustomWhitelist {
 		tempargs = append(tempargs, "--use-server-whitelist")
 		tempargs = append(tempargs, "true")
 	}
