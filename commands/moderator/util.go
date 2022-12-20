@@ -323,16 +323,6 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.Whitelist,
 	},
 	{
-		Name:      "custom-whitelist",
-		ShortDesc: "Custom-whitelist",
-		Desc:      "Use /whitelist add/remove/get/clear to manually edit whitelist.",
-		Type:      TYPE_BOOL,
-
-		DefBool: false,
-
-		BData: &cfg.Local.Options.CustomWhitelist,
-	},
-	{
 		Name:      "restrict-new-players",
 		ShortDesc: "Restrict New",
 		Desc:      "New player permission restrictions on/off (softmod).",
@@ -433,16 +423,6 @@ var SettingList = []SettingListData{
 		DefBool:   false,
 
 		BData: &cfg.Local.Options.SkipReset,
-	},
-	{
-		Name:      "local-description",
-		ShortDesc: "Local-description",
-		Desc:      "This description is used in the server browser.",
-		Type:      TYPE_STRING,
-
-		MaxStrLen: 128,
-		MinStrLen: 1,
-		SData:     &cfg.Local.Options.LocalDescription,
 	},
 }
 

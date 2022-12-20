@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version      = "2587-12.19.2022-1038p"
+	Version      = "2588-12.19.2022-1122p"
 	CWEpoch      = 1653239822390688174
 	SeenDivisor  = 60
 	SeenEpoch    = 1546326000
@@ -15,6 +15,7 @@ const (
 	CWGlobalConfig      = "../cw-global-config.json"
 	CWLocalConfig       = "cw-local-config.json"
 	WhitelistName       = "server-whitelist.json"
+	AdminlistName       = "server-adminlist.json"
 	ServSettingsName    = "server-settings.json"
 	ModsQueueFolder     = "mods-queue"
 	ModsFolder          = "mods"

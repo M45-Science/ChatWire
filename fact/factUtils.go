@@ -262,6 +262,53 @@ func WhitelistPlayer(pname string, level int) {
 }
 
 /* Write a full whitelist for a server, before it boots */
+func WriteAdminlist() int {
+
+	wpath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		constants.AdminlistName
+
+	glob.PlayerListLock.RLock()
+
+	var count = 0
+	var buf = "[\n"
+	var localPlayerList []*glob.PlayerData
+	localPlayerList = make([]*glob.PlayerData, len(localPlayerList))
+
+	//Add admins
+	for _, player := range glob.PlayerList {
+		if player.Level >= 254 {
+			buf = buf + "\"" + player.Name + "\",\n"
+			count = count + 1
+		}
+	}
+
+	if count > 1 {
+		lchar := len(buf)
+		buf = buf[0 : lchar-2]
+	}
+	buf = buf + "\n]\n"
+	glob.PlayerListLock.RUnlock()
+
+	_, err := os.Create(wpath)
+
+	if err != nil {
+		cwlog.DoLogCW("WriteAdminlist: os.Create failure")
+		return -1
+	}
+
+	err = os.WriteFile(wpath, []byte(buf), 0644)
+
+	if err != nil {
+		cwlog.DoLogCW("WriteAdminlist: WriteFile failure")
+		return -1
+	}
+	return count
+}
+
+/* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
 	wpath := cfg.Global.Paths.Folders.ServersRoot +
@@ -309,8 +356,10 @@ func WriteWhitelist() int {
 			count = count + 1
 		}
 
-		lchar := len(buf)
-		buf = buf[0 : lchar-2]
+		if count > 1 {
+			lchar := len(buf)
+			buf = buf[0 : lchar-2]
+		}
 		buf = buf + "\n]\n"
 		glob.PlayerListLock.RUnlock()
 

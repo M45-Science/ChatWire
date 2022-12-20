@@ -365,6 +365,7 @@ func launchFactorio() {
 			cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
 		}
 	}
+	fact.WriteAdminlist()
 
 	//Clear mod load string
 	fact.ModList = []string{}
