@@ -48,20 +48,22 @@ type channel struct {
 }
 
 type localOptions struct {
-	Schedule   string
-	ResetDay   string
-	ResetDate  int
-	ResetHour  int
-	PingString string
+	LocalDescription string
+	Schedule         string
+	ResetDay         string
+	ResetDate        int
+	ResetHour        int
+	PingString       string
 
-	AutoStart     bool
-	AutoUpdate    bool
-	ExpUpdates    bool
-	HideAutosaves bool
-	HideResearch  bool
-	Whitelist     bool
-	ModUpdate     bool
-	SkipReset     bool
+	AutoStart       bool
+	AutoUpdate      bool
+	ExpUpdates      bool
+	HideAutosaves   bool
+	HideResearch    bool
+	Whitelist       bool
+	CustomWhitelist bool
+	ModUpdate       bool
+	SkipReset       bool
 
 	SoftModOptions softmodOptions
 }

@@ -89,9 +89,13 @@ func GenerateFactorioConfig() bool {
 	if NextReset != "" {
 		descrLines = append(descrLines, AddFactColor("orange", "MAP RESETS: "+NextReset+" ("+cfg.Local.Options.Schedule+")"))
 	}
-	if cfg.Local.Options.Whitelist {
+
+	if cfg.Local.Options.CustomWhitelist {
+		descrLines = append(descrLines, AddFactColor("red", "INVITE-ONLY"))
+	} else if cfg.Local.Options.Whitelist {
 		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
 	}
+
 	if cfg.Local.Options.SoftModOptions.FriendlyFire {
 		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
 	}
@@ -123,9 +127,15 @@ func GenerateFactorioConfig() bool {
 	gdesc := strings.Split(cfg.Global.Options.Description, "\n")
 	descrLines = append(descrLines, gdesc...)
 
+	ldesc := strings.Split(cfg.Local.Options.LocalDescription, "\n")
+	descrLines = append(descrLines, ldesc...)
+
 	var tags []string
 	tags = append(tags, cfg.Global.GroupName)
-	if cfg.Local.Options.Whitelist {
+
+	if cfg.Local.Options.CustomWhitelist {
+		tags = append(tags, "INVITE-ONLY")
+	} else if cfg.Local.Options.Whitelist {
 		tags = append(tags, "MEMBERS-ONLY")
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)

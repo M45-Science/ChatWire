@@ -359,9 +359,11 @@ func launchFactorio() {
 	}
 
 	/* Write or delete whitelist */
-	count := fact.WriteWhitelist()
-	if count > 0 && cfg.Local.Options.Whitelist {
-		cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
+	if !cfg.Local.Options.CustomWhitelist {
+		count := fact.WriteWhitelist()
+		if count > 0 && cfg.Local.Options.Whitelist {
+			cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
+		}
 	}
 
 	//Clear mod load string
