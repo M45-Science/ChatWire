@@ -280,6 +280,10 @@ func WriteAdminlist() int {
 	//Add admins
 	for _, player := range glob.PlayerList {
 		if player.Level >= 254 {
+			/* Add admins to whitelist for custom whitelists */
+			if cfg.Local.Options.CustomWhitelist {
+				WriteFact(fmt.Sprintf("/whitelist add %s", player.Name))
+			}
 			buf = buf + "\"" + player.Name + "\",\n"
 			count = count + 1
 		}
