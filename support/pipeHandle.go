@@ -701,6 +701,7 @@ func handleFactReady(NoTC string) bool {
 	 * READY MESSAGE
 	 ******************/
 	if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
+		fact.WriteAdminlist()
 		if cfg.Local.Options.SoftModOptions.CleanMap {
 			fact.WriteFact("/cleanmap")
 		}
