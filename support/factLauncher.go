@@ -454,9 +454,6 @@ func ConfigSoftMod() {
 	} else {
 		fact.WriteFact("/resetdur")
 	}
-	if cfg.Local.Options.SoftModOptions.CleanMap {
-		fact.WriteFact("/cleanmap")
-	}
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 		fact.WriteFact("/blueprints off")
 	}
