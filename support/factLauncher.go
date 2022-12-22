@@ -21,6 +21,7 @@ import (
 	"ChatWire/glob"
 )
 
+/* Find the newest save game */
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -87,6 +88,7 @@ type zipFilesData struct {
 	Data []byte
 }
 
+/* Used for reading softmod directory */
 func readFolder(path string, sdir string) []zipFilesData {
 
 	var zipFiles []zipFilesData
@@ -117,6 +119,7 @@ func readFolder(path string, sdir string) []zipFilesData {
 	return zipFiles
 }
 
+/* Insert our softmod files into the save zip */
 func injectSoftMod(fileName, folderName string) {
 	var zipFiles []zipFilesData
 
@@ -242,6 +245,7 @@ func injectSoftMod(fileName, folderName string) {
 	}
 }
 
+/* Create config files, launch factorio */
 func launchFactorio() {
 
 	/* Clear this so we know if the the loaded map has our soft mod or not */
@@ -263,20 +267,6 @@ func launchFactorio() {
 		fact.FactAutoStart = false
 		return
 	}
-
-	/* Insert soft mod */
-	/* OLD SCRIPT VERSION
-	if cfg.Global.Paths.Binaries.SoftModInserter != "" {
-		command := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Binaries.SoftModInserter
-		out, errs := exec.Command(command, cfg.Local.Callsign).Output()
-		if errs != nil {
-			cwlog.DoLogCW(fmt.Sprintf("Unable to run soft-mod insert script. Details:\nout: %v\nerr: %v", string(out), errs))
-		}
-	} */
-
-	/* TODO: this should just return the most recent possible save,
-	   zip/level checking should be done in a separate function...
-	   so it can be used for vote/change map */
 
 	/* Find, test and load newest save game available */
 	found, fileName, folderName := GetSaveGame(true)

@@ -14,20 +14,28 @@ import (
 	"ChatWire/sclean"
 )
 
+/* Send chat to factorio */
 func FactChat(input string) {
 
-	/* Limit length, Discord does this but just in case */
+	/* Limit length, Discord does this... but just in case */
 	input = sclean.TruncateStringEllipsis(input, 2048)
 
+	/*
+		* If we are running our softmod, use the much safer
+		 * /cchat comamnd
+	*/
 	if glob.SoftModVersion != constants.Unknown {
 		WriteFact("/cchat " + input)
 	} else {
-		/* Just in case there is no soft-mod */
+		/*
+		 * Just in case there is no soft-mod,
+		 * filter out potential threats
+		 */
 		input = sclean.StripControlAndSubSpecial(input)
 		input = sclean.RemoveFactorioTags(input)
 		input = sclean.RemoveDiscordMarkdown(input)
 
-		/* Prevent anyone from running a command. */
+		/* Attempt to prevent anyone from running a command. */
 		strlen := len(input)
 		for z := 0; z < strlen; z++ {
 			input = strings.TrimLeft(input, " ")
@@ -45,6 +53,7 @@ func WaitFactQuit() {
 
 }
 
+/* Auto generates a steam connect URL */
 func MakeSteamURL() (string, bool) {
 	if cfg.Global.Paths.URLs.Domain != "localhost" && cfg.Global.Paths.URLs.Domain != "" {
 		buf := fmt.Sprintf("steam://run/427520//--mp-connect%%20%v:%v/", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)

@@ -41,7 +41,7 @@ func MainLoops() {
 
 			time.Sleep(constants.WatchdogInterval)
 
-			/* Check for updates */
+			/* Check for updates, or reboot flags */
 			if !fact.FactIsRunning &&
 				(fact.QueueReload || glob.DoRebootCW || fact.DoUpdateFactorio) {
 				if fact.DoUpdateFactorio {
@@ -55,6 +55,7 @@ func MainLoops() {
 				/* We are running normally */
 			} else if fact.FactIsRunning && fact.FactorioBooted {
 
+				/* If the game isn't paused, check game time */
 				nores := 0
 				if fact.PausedTicks <= constants.PauseThresh {
 
@@ -63,6 +64,7 @@ func MainLoops() {
 
 					fact.WriteFact("/time")
 				}
+				/* Just in case factorio hangs, bogs down or is flooded */
 				if nores == 120 {
 					msg := "Factorio unresponsive for over two minutes... rebooting."
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, msg)
@@ -83,13 +85,13 @@ func MainLoops() {
 	}()
 
 	/********************************
-	 * Watch ban file
+	 * Watch ban file for changes
 	 ********************************/
 	go banlist.WatchBanFile()
 
-	/********************************
+	/*************************************************
 	 *  Send buffered messages to Discord, batched.
-	 ********************************/
+	 *************************************************/
 	go func() {
 		for glob.ServerRunning {
 
@@ -175,9 +177,9 @@ func MainLoops() {
 		}
 	}()
 
-	/***********************************
+	/************************************
 	 * Delete expired registration codes
-	 ***********************************/
+	 ************************************/
 	go func() {
 
 		for glob.ServerRunning {
@@ -215,9 +217,9 @@ func MainLoops() {
 		}
 	}()
 
-	/*****************************************************
+	/******************************************************
 	 * Slow-connect, helps players catch up on large maps
-	 *****************************************************/
+	 ******************************************************/
 	go func() {
 		for glob.ServerRunning {
 
@@ -294,7 +296,7 @@ func MainLoops() {
 			if glob.PlayerListSeenDirty {
 				glob.PlayerListSeenDirty = false
 
-				/* Prevent recursive lock */
+				/* Prevent deadlock */
 				go func() {
 					//cwlog.DoLogCW("Database last seen flagged, saving.")
 					fact.WritePlayers()
@@ -446,7 +448,7 @@ func MainLoops() {
 					/* goroutine, avoid deadlock */
 
 					ConfigSoftMod()
-					go fact.GenerateFactorioConfig()
+					fact.GenerateFactorioConfig()
 				}
 				disc.RoleListUpdated = false
 			}
@@ -473,7 +475,7 @@ func MainLoops() {
 				if fact.FactIsRunning && fact.FactorioBooted {
 					cwlog.DoLogCW("Stopping Factorio for update.")
 					fact.QuitFactorio("")
-					break
+					break //We don't need to loop anymore
 				}
 			}
 		}

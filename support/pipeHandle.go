@@ -24,9 +24,8 @@ import (
 
 /* Protect players from dumb mistakes with registration codes */
 func handleIdiots(line string) bool {
-	/* Protect players from dumb mistakes with registration codes */
 	if ProtectIdiots(line) {
-		buf := "You didn't enter that as a command. You posted your registration code publicly, invalidating code. Please read the directions more carefully."
+		buf := "You did not enter that as a command!\nYou have posted your registration code publicly.\nTo protect you, the code has been invalidated.\nPlease try again, and read the directions more carefully."
 		fact.FactChat(buf)
 		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 		return true
@@ -36,9 +35,11 @@ func handleIdiots(line string) bool {
 }
 
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
-	/********************
+	/******************************************************
 	 * GET FACTORIO TIME
-	 ********************/
+	 * While this is needed for games without our softmod,
+	 * we should be using tick count instead.
+	 ******************************************************/
 	if strings.Contains(lowerCaseLine, " second") || strings.Contains(lowerCaseLine, " minute") || strings.Contains(lowerCaseLine, " hour") || strings.Contains(lowerCaseLine, " day") {
 
 		day := 0
@@ -96,7 +97,7 @@ func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListl
 			fact.GametimeString = lowerCaseLine
 			fact.Gametime = newtime
 		}
-		/* This might block stuff by accident, don't do it */
+		/* This might block input by accident, don't do it */
 		//continue
 	}
 }
@@ -232,9 +233,10 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 }
 
 func handleOnlinePlayers(line string, lineList []string, lineListlen int) bool {
-	/* ***********************
+	/* ********************************************************
 	 * CAPTURE ONLINE PLAYERS
-	 ************************/
+	 * Only used for servers that are not using our soft mod
+	 **********************************************************/
 	if strings.HasPrefix(line, "Online players") {
 
 		if lineListlen > 2 {
@@ -271,6 +273,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.Gametime, pname, plevelname)
 			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
+			/* If our softmod is active, update the time-till map-reset so it is accurate */
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
 				fact.FactorioBooted {
@@ -319,6 +322,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 			}
 		}
 
+		/* Mark as seen, async */
 		if NoDSlistlen > 1 {
 			pname := NoDSlist[1]
 
@@ -334,6 +338,7 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 func handleActMsg(line string, lineList []string, lineListLen int) bool {
 	/******************
 	 * ACT AREA
+	 * Used for logs, and to attempt to warn of potential griefing
 	 ******************/
 
 	if strings.HasPrefix(line, "[ACT]") {
@@ -351,7 +356,8 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 				return true
 			}
 
-			go fact.UpdateSeen(pname) //mark as seen so db eventually saves
+			/* Mark as seen, async */
+			go fact.UpdateSeen(pname)
 			if pname != "" {
 
 				p := disc.GetPlayerDataFromName(pname)
@@ -384,7 +390,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 						}
 						if p.SusScore > thresh {
 
-							if time.Since(glob.LastSusWarning) > time.Minute*2 {
+							if time.Since(glob.LastSusWarning) > time.Minute*constants.SusWarningInterval {
 								glob.LastSusWarning = time.Now()
 
 								if !cfg.Global.Options.ShutupSusWarn {
@@ -1161,6 +1167,7 @@ func handleCmdMsg(line string) bool {
 func handleOnlineMsg(line string) bool {
 	/* ****************
 	 * "/online"
+	 * This is specific to our soft-mod
 	 ******************/
 	newMode := false
 	if strings.HasPrefix(line, "[ONLINE]") || strings.HasPrefix(line, "[ONLINE2]") {
@@ -1191,9 +1198,10 @@ func handleOnlineMsg(line string) bool {
 					plevel := fact.StringToLevel(ptype)
 
 					if pname != "" {
-						fact.UpdateSeen(pname)
-						//fact.PlayerLevelSet(pname, plevel, true)
+						/* Mark as seen, async */
+						go fact.UpdateSeen(pname)
 
+						/* Check if user is banned */
 						banlist.CheckBanList(pname)
 
 						timeInt, _ := strconv.Atoi(ptime)

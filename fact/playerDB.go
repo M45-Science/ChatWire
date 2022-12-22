@@ -93,7 +93,7 @@ func SetPlayerListSeenDirty() {
 
 func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 
-	if pname == "" {
+	if pname == "" || len(pname) > constants.MaxNameLength || len(reason) > constants.MaxBanReasonLength {
 		return false
 	}
 
@@ -144,7 +144,7 @@ func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 /* Get playerID (Discord), add to db if not found */
 func PlayerSetID(pname string, id string, level int) bool {
 
-	if id == "" || pname == "" {
+	if id == "" || pname == "" || len(pname) > constants.MaxNameLength {
 		return false
 	}
 
@@ -179,10 +179,9 @@ func PlayerSetID(pname string, id string, level int) bool {
 
 /* Saw player (low priority) */
 func UpdateSeen(pname string) {
-	if pname == "" {
+	if pname == "" || len(pname) > constants.MaxNameLength {
 		return
 	}
-
 	pname = strings.ToLower(pname)
 	glob.PlayerListLock.Lock()
 	defer glob.PlayerListLock.Unlock()
@@ -197,7 +196,7 @@ func UpdateSeen(pname string) {
 
 /* Set player level, add to db if not found */
 func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
-	if pname == "" {
+	if pname == "" || len(pname) > constants.MaxNameLength {
 		return false
 	}
 
@@ -249,7 +248,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
 func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string, susScore int64, mins int64, doBan bool) bool {
-	if iname == "" {
+	if iname == "" || len(iname) > constants.MaxNameLength {
 		return false
 	}
 
@@ -323,7 +322,7 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 
 /* Get player level, add to db if not found */
 func PlayerLevelGet(pname string, modifyOnly bool) int {
-	if pname == "" {
+	if pname == "" || len(pname) > constants.MaxNameLength {
 		return 0
 	}
 

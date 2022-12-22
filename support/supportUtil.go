@@ -11,23 +11,25 @@ import (
 	"ChatWire/sclean"
 )
 
+/* Check if an idiot pasted their register code to a chat channel */
 func ProtectIdiots(text string) bool {
-	//If there are any active register codes, check if an idiot pasted it in chat
 	idiotID := ""
 	checkme := strings.ToLower(text)
 	checkme = sclean.AlphaOnly(checkme)
 
+	/* Only run if there are active registration codes */
 	if len(glob.PassList) > 0 {
 		for i, o := range glob.PassList {
 			password := strings.ToLower(o.Code)
 			password = sclean.AlphaOnly(password)
 
+			/* Found an active register code */
 			if strings.Contains(checkme, password) {
 				idiotID = i
 				break
 			}
 
-			/* Just in case they miss part of it when copying */
+			/* Just in case they miss part of it when copying/pasting */
 			clen := len(password)
 			if clen > 3 {
 				trimEnd := password[0 : clen-2]
@@ -42,6 +44,7 @@ func ProtectIdiots(text string) bool {
 				}
 			}
 		}
+		/* We got one, invalidate their code */
 		if idiotID != "" {
 			delete(glob.PassList, idiotID)
 			return true
@@ -116,7 +119,7 @@ func StringToBool(txt string) (bool, bool) {
 	return false, true
 }
 
-/* Bool to sting */
+/* Bool to string */
 func BoolToString(b bool) string {
 	if b {
 		return "on"

@@ -13,6 +13,7 @@ import (
 	"ChatWire/fact"
 )
 
+/* Read entire mod folder */
 func CheckMods(force bool, doReport bool) {
 	if !cfg.Local.Options.AutoUpdate && !force {
 		return
@@ -38,6 +39,7 @@ func CheckMods(force bool, doReport bool) {
 	}
 }
 
+/* Using external mod updater, update mods */
 func UpdateMods(doReport bool) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ModUpdateLimit)

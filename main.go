@@ -83,7 +83,6 @@ func main() {
 	if err != nil {
 		cwlog.DoLogCW("Couldn't create lock file!!!")
 		return
-		/* Okay, somthing is probably wrong */
 	}
 	lfile.Close()
 	buf := fmt.Sprintf("%v\n", time.Now().UTC().Round(time.Second).Format(time.RFC3339Nano))
@@ -91,7 +90,6 @@ func main() {
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write lock file!!!")
 		return
-		/* Okay, somthing is probably wrong */
 	}
 
 	/* Create our maps */
@@ -101,9 +99,10 @@ func main() {
 	glob.PlayerList = make(map[string]*glob.PlayerData)
 	glob.PassList = make(map[string]*glob.PassData)
 
-	glob.LastSusWarning = time.Now().Add(time.Duration(-10) * time.Minute)
+	/* Set time to negative so we start right away */
+	glob.LastSusWarning = time.Now().Add(time.Duration(-constants.SusWarningInterval) * time.Minute)
 
-	/* Generate number to alpha map */
+	/* Generate number to alpha map, used for auto port assignment */
 	pos := 10000
 	for i := 'a'; i <= 'z'; i++ {
 		glob.AlphaValue[string(i)] = pos
@@ -118,6 +117,7 @@ func main() {
 
 	/* Set up vote cooldown */
 	now := time.Now()
+	/* Set time to negative so we start right away */
 	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
 	glob.VoteBox.LastMapChange = then.Round(time.Second)
 
@@ -125,6 +125,7 @@ func main() {
 	fact.Gametime = (constants.Unknown)
 
 	/* Read global and local configs, then write them back if they read correctly. */
+	/* This cleans up formatting if manually edited, and verifies we can write the config */
 	if cfg.ReadGCfg() {
 		cfg.WriteGCfg()
 	} else {
@@ -147,6 +148,8 @@ func main() {
 
 	/* Read in cached discord role data */
 	disc.ReadRoleList()
+
+	/* Read bans */
 	banlist.ReadBanFile()
 
 	/* Load old votes */
@@ -190,14 +193,21 @@ var DiscordConnectAttempts int
 
 func startbot() {
 
+	/* Check if Discord token is set */
 	if cfg.Global.Discord.Token == "" {
 		cwlog.DoLogCW("Discord token not set, not starting.")
 		return
 	}
 
+	/* Attempt to start bot */
 	cwlog.DoLogCW("Starting Discord bot...")
 	bot, erra := discordgo.New("Bot " + cfg.Global.Discord.Token)
 
+	/*
+	 * If we fail, keep attempting with increasing delay and maximum tries
+	 * We do this, in case there is a failure.
+	 * Discord will invalidate the token if there are too many connection attempts.
+	 */
 	if erra != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", erra))
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
@@ -209,11 +219,14 @@ func startbot() {
 		return
 	}
 
+	/* We need a few intents to detect discord users and roles */
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
+	/* This is called when the connection is verified */
 	bot.AddHandler(BotReady)
 	errb := bot.Open()
 
+	/* This handles error after the inital connection */
 	if errb != nil {
 		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", errb))
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
@@ -225,31 +238,38 @@ func startbot() {
 		return
 	}
 
+	/* This drastically reduces log spam */
 	bot.LogLevel = discordgo.LogWarning
 }
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
+	/* Set the bot's Discord status message */
 	botstatus := cfg.Global.Paths.URLs.Domain
 	errc := s.UpdateGameStatus(0, botstatus)
 	if errc != nil {
 		cwlog.DoLogCW(errc.Error())
 	}
 
+	/* Register discord slash commands */
 	go commands.RegisterCommands(s)
+	/* Message and command hooks */
 	s.AddHandler(MessageCreate)
 	s.AddHandler(commands.SlashCommand)
 
 	if s != nil {
-		/* Save Discord descriptor here */
+		/* Save Discord descriptor, we need it */
 		disc.DS = s
 	}
 
+	/* Update the string for the channel name and topic */
 	fact.UpdateChannelName()
+	/* Send the new string to discord */
 	fact.DoUpdateChannelName()
 
 	cwlog.DoLogCW("Discord bot ready.")
 
+	/* This is untested, currently */
 	if cfg.Local.Channel.ChatChannel == "" {
 		cwlog.DoLogCW("No chat channel set, attempting to creating one.")
 		chname := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
@@ -265,17 +285,19 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 		return
 	}
 
-	//Reset attempts, we are connected.
+	//Reset attempt count, we are fully connected.
 	DiscordConnectAttempts = 0
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	/* Ignore messages from self */
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
 	/* Protect players from dumb mistakes with registration codes, even on other maps */
+	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
 	if support.ProtectIdiots(m.Content) {
 		/* If they manage to post it into chat in Factorio on a different server,
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
@@ -286,6 +308,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+	/* Throw away messages from bots */
 	if m.Author.Bot {
 		return
 	}
@@ -296,15 +319,21 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		input, _ := m.ContentWithMoreMentionsReplaced(s)
 		ctext := sclean.StripControlAndSubSpecial(input)
 
-		/* Chat message handling
-		 *  Don't bother if Factorio isn't running... */
+		/*
+		 * Chat message handling
+		 *  Don't bother if Factorio isn't running...
+		 */
 		if fact.FactorioBooted && fact.FactIsRunning {
 			cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
 
+			/* Used for name matching */
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
+			/* Remove control characters and discord markdown */
 			cmess := sclean.StripControlAndSubSpecial(ctext)
 			cmess = sclean.RemoveDiscordMarkdown(cmess)
+
+			/* Try to find factorio name, for registered players */
 			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 			nbuf := ""
 
@@ -316,6 +345,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			dnamereduced := alphafilter.ReplaceAllString(dnamelower, "")
 			fnamereduced := alphafilter.ReplaceAllString(fnamelower, "")
 
+			/* Mark as seen, async */
 			go func(factname string) {
 				fact.UpdateSeen(factname)
 			}(dname)
@@ -343,7 +373,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				}
 			}
 
-			/* Cap name length */
+			/* Cap name length for safety/annoyance */
 			cordname = sclean.TruncateString(cordname, 64)
 			factuser = sclean.TruncateString(factuser, 64)
 
@@ -355,6 +385,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordname, cmess)
 			}
 
+			/* Send the final text to factorio */
 			fact.FactChat(nbuf)
 
 		}

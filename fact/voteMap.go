@@ -17,6 +17,7 @@ import (
 	"ChatWire/glob"
 )
 
+/* See if the player's vote is valid and add it to the list */
 func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
 
 	time.Sleep(1 * time.Second)
@@ -320,6 +321,7 @@ func WriteVotes() bool {
 	return true
 }
 
+/* Read json file containing votes */
 func ReadVotes() bool {
 	_, err := os.Stat(constants.VoteFile)
 	notfound := os.IsNotExist(err)

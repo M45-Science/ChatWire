@@ -13,11 +13,19 @@ import (
 /*  Chat pipes in-game chat to Discord, and handles log events */
 func HandleChat() {
 
+	/* Don't log if the game isn't set to run */
 	for glob.ServerRunning {
 		time.Sleep(time.Millisecond * 100)
 
+		/* Check if there is anything in the input buffer */
 		if fact.GameBuffer != nil {
 			reader := bufio.NewScanner(fact.GameBuffer)
+
+			/*
+				 			* Here to limit cpu and net untilization
+							* Just in case something goes wrong,
+							* or there is some kind of attempted flood attack
+			*/
 			time.Sleep(time.Millisecond * 100)
 
 			for reader.Scan() {
@@ -34,16 +42,18 @@ func HandleChat() {
 				if ll <= 0 {
 					continue
 				}
-				/* Server is alive */
+				/* We have input, server is alive */
 				fact.SetFactRunning(true)
 
-				/* Timecode removal */
+				/*
+				 * Timecode removal, split into words, save lengths
+				 */
+
 				trimmed := strings.TrimLeft(line, " ")
 				words := strings.Split(trimmed, " ")
 				numwords := len(words)
 				NoTC := constants.Unknown
 				NoDS := constants.Unknown
-
 				if numwords > 1 {
 					NoTC = strings.Join(words[1:], " ")
 				}
@@ -79,9 +89,9 @@ func HandleChat() {
 				 **********************************/
 				if !strings.HasPrefix(line, "<server>") {
 
-					/******************
-					 * NO CHAT OR COMMAND AREA
-					 ******************/
+					/*********************************
+					 * NO CHAT OR COMMAND LOG AREA
+					 *********************************/
 					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
 						/* Don't eat event, this is capable of eating random text */

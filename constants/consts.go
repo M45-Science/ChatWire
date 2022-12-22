@@ -3,12 +3,14 @@ package constants
 import "time"
 
 const (
-	Version      = "2588-12.19.2022-1122p"
-	CWEpoch      = 1653239822390688174
-	SeenDivisor  = 60
-	SeenEpoch    = 1546326000
-	Unknown      = "Unknown"
-	MaxWhitelist = 1500 //Max whitelist items
+	Version            = "2588-12.19.2022-1122p"
+	CWEpoch            = 1653239822390688174
+	SeenDivisor        = 60
+	SeenEpoch          = 1546326000
+	Unknown            = "Unknown"
+	MaxWhitelist       = 1500 //Max whitelist items
+	MaxNameLength      = 64
+	MaxBanReasonLength = 1024
 
 	/* ChatWire files */
 	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
@@ -25,6 +27,7 @@ const (
 	ArchiveFolderSuffix = " maps"
 	TempSaveName        = "softmod.tmp"
 	BootUpdateDelayMin  = 2
+	SusWarningInterval  = 2
 	MaxSaveBackups      = 10
 	ModPackLifeMins     = 180
 	ModPackCooldownMin  = 5
