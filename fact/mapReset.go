@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -177,6 +178,22 @@ func Map_reset(data string, doReport bool) {
 			cwlog.DoLogCW(buf)
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 			return
+		}
+	}
+
+	genpath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
+
+	flist, err := filepath.Glob(genpath + "/gen-*.zip")
+	if err != nil {
+		panic(err)
+	}
+	for _, f := range flist {
+		if err := os.Remove(f); err != nil {
+			cwlog.DoLogCW("Failed to delete: " + f)
 		}
 	}
 
