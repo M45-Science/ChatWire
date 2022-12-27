@@ -5,44 +5,49 @@
     "linecount": [
         {
             "version": "0.2.7",
-            "counttime": "2022-12-21 14:39:48",
-            "filesum": 1655,
-            "codesum": 361412,
-            "commentsum": 3149,
-            "blanksum": 10338,
+            "counttime": "2022-12-27 12:29:44",
+            "filesum": 1653,
+            "codesum": 360810,
+            "commentsum": 3158,
+            "blanksum": 10337,
             "statistics": {
+                ".go": {
+                    "code": 8579,
+                    "comment": 832,
+                    "blank": 2272
+                },
+                ".md": {
+                    "code": 45,
+                    "comment": 5,
+                    "blank": 2
+                },
                 ".mod": {
                     "code": 17,
                     "comment": 3,
                     "blank": 3
-                },
-                ".go": {
-                    "code": 8565,
-                    "comment": 819,
-                    "blank": 2269
-                },
-                ".yml": {
-                    "code": 92,
-                    "comment": 34,
-                    "blank": 15
-                },
-                ".json": {
-                    "code": 5239,
-                    "comment": 0,
-                    "blank": 211
                 },
                 "": {
                     "code": 191,
                     "comment": 14,
                     "blank": 43
                 },
+                ".json": {
+                    "code": 5255,
+                    "comment": 0,
+                    "blank": 211
+                },
                 ".dat": {
                     "code": 5,
                     "comment": 0,
                     "blank": 0
                 },
-                ".sum": {
-                    "code": 51,
+                ".yml": {
+                    "code": 92,
+                    "comment": 34,
+                    "blank": 15
+                },
+                ".log": {
+                    "code": 5878,
                     "comment": 0,
                     "blank": 0
                 },
@@ -56,20 +61,20 @@
                     "comment": 1715,
                     "blank": 392
                 },
-                ".log": {
-                    "code": 6510,
-                    "comment": 4,
-                    "blank": 4
+                ".ini": {
+                    "code": 12,
+                    "comment": 551,
+                    "blank": 309
+                },
+                ".pem": {
+                    "code": 7,
+                    "comment": 0,
+                    "blank": 0
                 },
                 ".lua": {
                     "code": 152048,
                     "comment": 3,
                     "blank": 5293
-                },
-                ".ini": {
-                    "code": 12,
-                    "comment": 551,
-                    "blank": 309
                 },
                 ".psh": {
                     "code": 2759,
@@ -81,25 +86,20 @@
                     "comment": 0,
                     "blank": 238
                 },
-                ".vsh": {
-                    "code": 666,
-                    "comment": 0,
-                    "blank": 68
-                },
                 ".vert": {
                     "code": 311,
                     "comment": 0,
                     "blank": 57
                 },
-                ".pem": {
-                    "code": 7,
+                ".vsh": {
+                    "code": 666,
+                    "comment": 0,
+                    "blank": 68
+                },
+                ".sum": {
+                    "code": 51,
                     "comment": 0,
                     "blank": 0
-                },
-                ".md": {
-                    "code": 45,
-                    "comment": 5,
-                    "blank": 2
                 }
             },
             "filelist": [
@@ -351,8 +351,8 @@
                     "filename": "fact/factUtils.go"
                 },
                 {
-                    "blank": 66,
-                    "code": 248,
+                    "blank": 69,
+                    "code": 262,
                     "comment": 22,
                     "filename": "fact/mapReset.go"
                 },
@@ -365,24 +365,17 @@
                 {
                     "blank": 40,
                     "code": 105,
-                    "comment": 14,
+                    "comment": 23,
                     "filename": "fact/util.go"
                 },
                 {
                     "blank": 78,
                     "code": 262,
-                    "comment": 25,
+                    "comment": 27,
                     "filename": "fact/voteMap.go"
                 },
                 {
                     "filename": "factorio/achievements.dat",
-                    "isbinaryfile": true,
-                    "blank": 0,
-                    "code": 0,
-                    "comment": 0
-                },
-                {
-                    "filename": "factorio/bin/x64/factorio",
                     "isbinaryfile": true,
                     "blank": 0,
                     "code": 0,
@@ -9609,14 +9602,14 @@
                 },
                 {
                     "blank": 0,
-                    "code": 2936,
-                    "comment": 2,
+                    "code": 2951,
+                    "comment": 0,
                     "filename": "factorio/factorio-current.log"
                 },
                 {
                     "blank": 0,
-                    "code": 2937,
-                    "comment": 2,
+                    "code": 2927,
+                    "comment": 0,
                     "filename": "factorio/factorio-previous.log"
                 },
                 {
@@ -9642,20 +9635,6 @@
                 },
                 {
                     "filename": "factorio/mods/aai-signals_0.6.1.zip",
-                    "isbinaryfile": true,
-                    "blank": 0,
-                    "code": 0,
-                    "comment": 0
-                },
-                {
-                    "filename": "factorio/mods/alien-biomes-hr-terrain_0.6.1.zip",
-                    "isbinaryfile": true,
-                    "blank": 0,
-                    "code": 0,
-                    "comment": 0
-                },
-                {
-                    "filename": "factorio/mods/alien-biomes_0.6.8.zip",
                     "isbinaryfile": true,
                     "blank": 0,
                     "code": 0,
@@ -9815,6 +9794,13 @@
                     "comment": 0
                 },
                 {
+                    "filename": "factorio/mods/space-exploration-graphics-3_0.6.1.zip",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
                     "filename": "factorio/mods/space-exploration-graphics-4_0.6.2.zip",
                     "isbinaryfile": true,
                     "blank": 0,
@@ -9830,6 +9816,20 @@
                 },
                 {
                     "filename": "factorio/mods/space-exploration-graphics_0.6.14.zip",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "factorio/mods/space-exploration-graphics_0.6.14.zip",
+                    "isbinaryfile": true,
+                    "blank": 0,
+                    "code": 0,
+                    "comment": 0
+                },
+                {
+                    "filename": "factorio/mods/space-exploration-menu-simulations_0.6.8.zip",
                     "isbinaryfile": true,
                     "blank": 0,
                     "code": 0,
@@ -9975,7 +9975,7 @@
                     "comment": 0
                 },
                 {
-                    "filename": "factorio/saves/gen-01AD_d_OPnaGw.zip",
+                    "filename": "factorio/saves/gen-01AEJ4p6H0qh0.zip",
                     "isbinaryfile": true,
                     "blank": 0,
                     "code": 0,
@@ -9983,7 +9983,7 @@
                 },
                 {
                     "blank": 1,
-                    "code": 19,
+                    "code": 18,
                     "comment": 0,
                     "filename": "factorio/server-adminlist.json"
                 },
@@ -10001,7 +10001,7 @@
                 },
                 {
                     "blank": 2,
-                    "code": 2,
+                    "code": 19,
                     "comment": 0,
                     "filename": "factorio/server-whitelist.json"
                 },
@@ -10058,18 +10058,6 @@
                     "filename": "LICENSE"
                 },
                 {
-                    "blank": 4,
-                    "code": 247,
-                    "comment": 0,
-                    "filename": "log/cw-19-December-2022.log"
-                },
-                {
-                    "blank": 0,
-                    "code": 390,
-                    "comment": 0,
-                    "filename": "log/game-19-December-2022.log"
-                },
-                {
                     "blank": 92,
                     "code": 233,
                     "comment": 69,
@@ -10078,7 +10066,7 @@
                 {
                     "blank": 25,
                     "code": 70,
-                    "comment": 1,
+                    "comment": 3,
                     "filename": "modupdate/modUpdate.go"
                 },
                 {

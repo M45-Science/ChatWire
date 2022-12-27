@@ -2,34 +2,34 @@
 EXTENSION NAME : linecounter
 EXTENSION VERSION : 0.2.7
 -------------------------------------------------------------------------------
-count time : 2022-12-21 14:39:48
+count time : 2022-12-27 12:29:44
 count workspace : /home/dist/Documents/github/M45/cw-a
-total files : 1655
-total code lines : 361412
-total comment lines : 3149
-total blank lines : 10338
+total files : 1653
+total code lines : 360810
+total comment lines : 3158
+total blank lines : 10337
 
     statistics
    |      extension|     total code|  total comment|    total blank|percent|
    -------------------------------------------------------------------------
+   |            .go|           8579|            832|           2272|    2.4|
+   |            .md|             45|              5|              2|  0.012|
    |           .mod|             17|              3|              3| 0.0047|
-   |            .go|           8565|            819|           2269|    2.4|
-   |           .yml|             92|             34|             15|  0.025|
-   |          .json|           5239|              0|            211|    1.4|
    |               |            191|             14|             43|  0.053|
+   |          .json|           5255|              0|            211|    1.5|
    |           .dat|              5|              0|              0| 0.0014|
-   |           .sum|             51|              0|              0|  0.014|
+   |           .yml|             92|             34|             15|  0.025|
+   |           .log|           5878|              0|              0|    1.6|
    |           .cfg|         175665|              1|           1171|     49|
    |           .txt|           7204|           1715|            392|    2.0|
-   |           .log|           6510|              4|              4|    1.8|
-   |           .lua|         152048|              3|           5293|     42|
    |           .ini|             12|            551|            309| 0.0033|
+   |           .pem|              7|              0|              0| 0.0019|
+   |           .lua|         152048|              3|           5293|     42|
    |           .psh|           2759|              0|            263|   0.76|
    |          .frag|           2025|              0|            238|   0.56|
-   |           .vsh|            666|              0|             68|   0.18|
    |          .vert|            311|              0|             57|  0.086|
-   |           .pem|              7|              0|              0| 0.0019|
-   |            .md|             45|              5|              2|  0.012|
+   |           .vsh|            666|              0|             68|   0.18|
+   |           .sum|             51|              0|              0|  0.014|
    -------------------------------------------------------------------------
 .github/FUNDING.yml, code is 12, comment is 0, blank is 1.
 .github/workflows/build-linux64.yml, code is 16, comment is 0, blank is 2.
@@ -72,12 +72,11 @@ fact/factCron.go, code is 188, comment is 3, blank is 35.
 fact/factDef.go, code is 45, comment is 11, blank is 24.
 fact/factUpdater.go, code is 159, comment is 15, blank is 53.
 fact/factUtils.go, code is 732, comment is 39, blank is 182.
-fact/mapReset.go, code is 248, comment is 22, blank is 66.
+fact/mapReset.go, code is 262, comment is 22, blank is 69.
 fact/playerDB.go, code is 333, comment is 32, blank is 94.
-fact/util.go, code is 105, comment is 14, blank is 40.
-fact/voteMap.go, code is 262, comment is 25, blank is 78.
+fact/util.go, code is 105, comment is 23, blank is 40.
+fact/voteMap.go, code is 262, comment is 27, blank is 78.
 factorio/achievements.dat, it is a binary file.
-factorio/bin/x64/factorio, it is a binary file.
 factorio/config-path.cfg, code is 7, comment is 0, blank is 1.
 factorio/config/config.ini, code is 12, comment is 551, blank is 309.
 factorio/data/base/campaigns/tight-spot/description.json, code is 6, comment is 0, blank is 0.
@@ -1607,14 +1606,12 @@ factorio/data/map-gen-settings.example.json, code is 64, comment is 0, blank is 
 factorio/data/map-settings.example.json, code is 120, comment is 0, blank is 0.
 factorio/data/server-settings.example.json, code is 52, comment is 0, blank is 20.
 factorio/data/server-whitelist.example.json, code is 3, comment is 0, blank is 1.
-factorio/factorio-current.log, code is 2936, comment is 2, blank is 0.
-factorio/factorio-previous.log, code is 2937, comment is 2, blank is 0.
+factorio/factorio-current.log, code is 2951, comment is 0, blank is 0.
+factorio/factorio-previous.log, code is 2927, comment is 0, blank is 0.
 factorio/mods/aai-containers_0.2.11.zip, it is a binary file.
 factorio/mods/aai-industry_0.5.19.zip, it is a binary file.
 factorio/mods/aai-signal-transmission_0.4.7.zip, it is a binary file.
 factorio/mods/aai-signals_0.6.1.zip, it is a binary file.
-factorio/mods/alien-biomes-hr-terrain_0.6.1.zip, it is a binary file.
-factorio/mods/alien-biomes_0.6.8.zip, it is a binary file.
 factorio/mods/bobinserters_1.1.5.zip, it is a binary file.
 factorio/mods/bullet-trails_0.6.2.zip, it is a binary file.
 factorio/mods/early_construction_0.9.3.zip, it is a binary file.
@@ -1637,9 +1634,12 @@ factorio/mods/shield-projector_0.1.6.zip, it is a binary file.
 factorio/mods/simhelper_1.1.4.zip, it is a binary file.
 factorio/mods/space-exploration-graphics-2_0.6.1.zip, it is a binary file.
 factorio/mods/space-exploration-graphics-3_0.6.1.zip, it is a binary file.
+factorio/mods/space-exploration-graphics-3_0.6.1.zip, it is a binary file.
 factorio/mods/space-exploration-graphics-4_0.6.2.zip, it is a binary file.
 factorio/mods/space-exploration-graphics-5_0.6.1.zip, it is a binary file.
 factorio/mods/space-exploration-graphics_0.6.14.zip, it is a binary file.
+factorio/mods/space-exploration-graphics_0.6.14.zip, it is a binary file.
+factorio/mods/space-exploration-menu-simulations_0.6.8.zip, it is a binary file.
 factorio/mods/space-exploration-menu-simulations_0.6.8.zip, it is a binary file.
 factorio/mods/space-exploration-postprocess_0.6.20.zip, it is a binary file.
 factorio/mods/space-exploration_0.6.90.zip, it is a binary file.
@@ -1660,11 +1660,11 @@ factorio/saves/bak-6.zip, it is a binary file.
 factorio/saves/bak-7.zip, it is a binary file.
 factorio/saves/bak-8.zip, it is a binary file.
 factorio/saves/bak-9.zip, it is a binary file.
-factorio/saves/gen-01AD_d_OPnaGw.zip, it is a binary file.
-factorio/server-adminlist.json, code is 19, comment is 0, blank is 1.
+factorio/saves/gen-01AEJ4p6H0qh0.zip, it is a binary file.
+factorio/server-adminlist.json, code is 18, comment is 0, blank is 1.
 factorio/server-id.json, code is 4, comment is 0, blank is 1.
 factorio/server-settings.json, code is 26, comment is 0, blank is 1.
-factorio/server-whitelist.json, code is 2, comment is 0, blank is 2.
+factorio/server-whitelist.json, code is 19, comment is 0, blank is 2.
 glob/glob.go, code is 98, comment is 23, blank is 38.
 go.mod, code is 17, comment is 3, blank is 3.
 go.sum, code is 51, comment is 0, blank is 0.
@@ -1673,10 +1673,8 @@ img-source/chatwire3c.png, it is a binary file.
 img-source/chatwire3c.psd, it is a binary file.
 img-source/chatwire4c.png, it is a binary file.
 LICENSE, code is 178, comment is 14, blank is 43.
-log/cw-19-December-2022.log, code is 247, comment is 0, blank is 4.
-log/game-19-December-2022.log, code is 390, comment is 0, blank is 0.
 main.go, code is 233, comment is 69, blank is 92.
-modupdate/modUpdate.go, code is 70, comment is 1, blank is 25.
+modupdate/modUpdate.go, code is 70, comment is 3, blank is 25.
 README.md, code is 45, comment is 5, blank is 2.
 sclean/stringClean.go, code is 146, comment is 15, blank is 22.
 sclean/stringClean_test.go, code is 146, comment is 1, blank is 40.
