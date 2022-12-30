@@ -508,9 +508,9 @@ func ClearCommands() {
 
 //https://discord.com/developers/docs/topics/permissions
 
-var adminPerms int64 = (1 << 3)   //Administrator
-var modPerms int64 = (1 << 28)    //MANAGE_ROLES
-var playerPerms int64 = (1 << 11) //SEND_MESSAGES
+var adminPerms int64 = discordgo.PermissionAdministrator     //Admin
+var modPerms int64 = discordgo.PermissionManageRoles         //Manage Roles
+var playerPerms int64 = discordgo.PermissionUseSlashCommands //Use slash comamnds
 
 /*  RegisterCommands registers the commands on start up. */
 func RegisterCommands(s *discordgo.Session) {
