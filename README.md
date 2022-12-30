@@ -10,7 +10,7 @@
 Linux<br>
 Golang 1.19+<br>
 <br>
-ChatWire is currently approximately 8000 lines of go code.
+ChatWire is currently approximately 8500 lines of go code.
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
