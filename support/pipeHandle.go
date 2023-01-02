@@ -623,15 +623,15 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 
 					//Report bans
 					if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
-						buf := fmt.Sprintf("M45 ban: %v, Reason: %v", trustname, reasonList[1])
-						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
+						//buf := fmt.Sprintf("M45 ban: %v, Reason: %v", trustname, reasonList[1])
+						//fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					}
 
 					fact.PlayerSetBanReason(trustname, reasonList[1], false)
 				} else {
 					if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
-						buf := fmt.Sprintf("M45 ban: %v", trustname)
-						fact.CMS(cfg.Global.Discord.ReportChannel, buf)
+						//buf := fmt.Sprintf("M45 ban: %v", trustname)
+						//fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 					}
 					fact.PlayerLevelSet(trustname, -1, false)
 				}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -94,7 +93,7 @@ func ReadBanFile() {
 	file, err := os.Open(cfg.Global.Paths.DataFiles.Bans)
 
 	if err != nil {
-		log.Println(file, err)
+		//log.Println(err)
 		return
 	}
 	defer file.Close()
@@ -158,6 +157,6 @@ func ReadBanFile() {
 	}
 	if oldLen > 0 && strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) && buf != "" {
 
-		fact.CMS(cfg.Global.Discord.ReportChannel, "New bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 1000))
+		fact.CMS(cfg.Global.Discord.ReportChannel, "New FCL bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 1000))
 	}
 }
