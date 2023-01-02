@@ -705,7 +705,8 @@ func MainLoops() {
 	go func() {
 		time.Sleep(time.Minute * 5)
 
-		for glob.ServerRunning {
+		for glob.ServerRunning &&
+			cfg.Local.Options.ModUpdate {
 			modupdate.CheckMods(false, false)
 
 			time.Sleep(time.Hour * 3)
