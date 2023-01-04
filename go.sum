@@ -6,6 +6,8 @@ github.com/bwmarrin/discordgo v0.25.1-0.20220514195630-e45536276050 h1:DgLXYbHsq
 github.com/bwmarrin/discordgo v0.25.1-0.20220514195630-e45536276050/go.mod h1:NJZpH+1AfhIcyQsPeuBKsUtYrRnjkyu0kIVMCHkZtRY=
 github.com/bwmarrin/discordgo v0.26.1 h1:AIrM+g3cl+iYBr4yBxCBp9tD9jR3K7upEjl0d89FRkE=
 github.com/bwmarrin/discordgo v0.26.1/go.mod h1:NJZpH+1AfhIcyQsPeuBKsUtYrRnjkyu0kIVMCHkZtRY=
+github.com/bwmarrin/discordgo v0.26.2-0.20230103161908-ae8894be6731 h1:pmFDOgzzqgwbe4x8tY39S8Dz2e1JbJuTuIbgRkuWXrU=
+github.com/bwmarrin/discordgo v0.26.2-0.20230103161908-ae8894be6731/go.mod h1:NJZpH+1AfhIcyQsPeuBKsUtYrRnjkyu0kIVMCHkZtRY=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
