@@ -282,13 +282,15 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 			glob.PlayerList[pname].LastSeen = seen
 			WhitelistPlayer(pname, level)
 		}
-		if id != "" { //Registered
+		if level >= 0 && id != "" { //Registered, don't keep for banned
 			glob.PlayerList[pname].ID = id
 		}
-		if susScore != 0 {
+		//Don't keep sus score for regulars, admins and banned.
+		if level < 2 && level >= 0 && susScore != 0 {
 			glob.PlayerList[pname].SusScore = susScore
 		}
-		if mins > 0 && mins > glob.PlayerList[pname].Minutes {
+		//Don't keep playtime for banned
+		if level >= 0 && mins > 0 && mins > glob.PlayerList[pname].Minutes {
 			glob.PlayerList[pname].Minutes = mins
 		}
 		return didBan
