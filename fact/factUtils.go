@@ -278,8 +278,6 @@ func WriteAdminlist() int {
 
 	var count = 0
 	var buf = "[\n"
-	var localPlayerList []*glob.PlayerData
-	localPlayerList = make([]*glob.PlayerData, len(localPlayerList))
 
 	//Add admins
 	for _, player := range glob.PlayerList {
