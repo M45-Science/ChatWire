@@ -81,7 +81,7 @@ func DoExit(delay bool) {
 	glob.ServerRunning = false
 	time.Sleep(time.Second)
 	cwlog.DoLogCW("CW closing, load/save db.")
-	LoadPlayers(false)
+	//LoadPlayers(false)
 	WritePlayers()
 
 	/* File locks */
