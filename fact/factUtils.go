@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -70,12 +69,17 @@ func readMod(filename string) (*infoJSONData, bool) {
 		}
 		fileName := filepath.Base(file.Name)
 		if fileName == "info.json" {
-			content, err := ioutil.ReadAll(fc)
+			var content []byte
+			len, err := fc.Read(content)
 			if err != nil {
 				cwlog.DoLogCW(err.Error())
 				return nil, false
 			}
-			return readInfoJson(content)
+			if len > 0 {
+				return readInfoJson(content)
+			} else {
+				return nil, false
+			}
 		}
 	}
 

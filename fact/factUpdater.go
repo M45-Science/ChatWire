@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -35,17 +34,12 @@ func CheckZip(filename string) bool {
 	}
 
 	for _, file := range read.File {
-		fc, err := file.Open()
+		_, err := file.Open()
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 			return false
 		}
-		content, err := ioutil.ReadAll(fc)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-			return false
-		}
-		if len(content) > 1024 {
+		if file.UncompressedSize64 > 1024 {
 			return true
 		}
 	}
