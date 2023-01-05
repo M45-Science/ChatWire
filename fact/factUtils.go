@@ -69,13 +69,12 @@ func readMod(filename string) (*infoJSONData, bool) {
 		}
 		fileName := filepath.Base(file.Name)
 		if fileName == "info.json" {
-			var content []byte
-			len, err := fc.Read(content)
+			content, err := io.ReadAll(fc)
 			if err != nil {
 				cwlog.DoLogCW(err.Error())
 				return nil, false
 			}
-			if len > 0 {
+			if len(content) > 0 {
 				return readInfoJson(content)
 			} else {
 				return nil, false
