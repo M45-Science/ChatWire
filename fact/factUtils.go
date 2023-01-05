@@ -202,7 +202,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 	} else {
 
 		for _, file := range zip.File {
-			_, err := file.Open()
+			fc, err := file.Open()
 
 			if err != nil {
 				buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
@@ -213,9 +213,13 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 				break
 			} else {
 				if strings.HasSuffix(file.Name, "level.dat0") {
-					//Save appears valid
-					//cwlog.DoLogCW("Found " + file.Name + ", loading.")
-					return true, filepath.Dir(file.Name)
+
+					content, err := io.ReadAll(fc)
+					if len(content) > 512 && err == nil {
+						return true, filepath.Dir(file.Name)
+					} else {
+						return false, ""
+					}
 				}
 			}
 		}
