@@ -365,8 +365,6 @@ func LoadPlayers(bootMode bool) {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	didBan := false
-
 	filedata, err := os.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't read db file, skipping...")
@@ -383,22 +381,13 @@ func LoadPlayers(bootMode bool) {
 				cwlog.DoLogCW(err.Error())
 			}
 
-			banCount := 0
-			doBan := true
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
 			for pname := range tempData {
-				if banCount > 5 {
-					doBan = false
-				}
-				didBan = false
 				if bootMode && (tempData[pname].Level > 0 || tempData[pname].ID != "") {
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, "", tempData[pname].SusScore, tempData[pname].Minutes, false)
+					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, "", tempData[pname].SusScore, tempData[pname].Minutes, false)
 				} else if !bootMode && tempData[pname].Level != 0 {
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
-				}
-				if didBan {
-					banCount++
+					AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
 				}
 			}
 			glob.PlayerListLock.Unlock()
