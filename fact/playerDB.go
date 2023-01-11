@@ -395,7 +395,7 @@ func LoadPlayers(bootMode bool) {
 				if bootMode && (tempData[pname].Level > 0 || tempData[pname].ID != "") {
 					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, "", tempData[pname].SusScore, tempData[pname].Minutes, false)
 				} else if !bootMode && tempData[pname].Level != 0 {
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
+					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
 				}
 				if didBan {
 					banCount++
