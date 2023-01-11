@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -50,20 +51,19 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if didDelete {
 		buf = buf + "**NOTICE: Invalidating previous unused registration code.**\n"
 	}
-	buf = buf + fmt.Sprintf("1: Connect to the Factorio server: `%v-%v`\n", cfg.Local.Callsign, cfg.Local.Name)
-	buf = buf + "2: Copy/Paste or type this registration command into the Factorio console/chat window:\n"
+	buf = buf + fmt.Sprintf("1: Open **Factorio** and connect to: `%v-%v`\n", strings.ToUpper(cfg.Local.Callsign), cfg.Local.Name)
+	buf = buf + "2: Copy/Paste or type this registration command and code **into Factorio:**\n"
 	buf = buf + fmt.Sprintf("`/register %v`\n", password)
 
 	//Help
-	buf = buf + fmt.Sprintf("\nTo find the server, you can search for `%v` in the server browser.\n", cfg.Global.GroupName)
+	buf = buf + fmt.Sprintf("\nTo find the server, you can search for `%v` in the **Factorio server browser.**\n", cfg.Global.GroupName)
 
 	msg, isConfigured := fact.MakeSteamURL()
 	if isConfigured {
 		buf = buf + fmt.Sprintf("If you have Factorio on Steam, you can use this link to connect: %v\n", msg)
 	}
 
-	buf = buf + "You can use control-c and control-v to copy-paste the command and code (command on Mac)\n"
-	buf = buf + "The code expires after 5 minutes, if you need another one just use `/register` again.\n"
+	buf = buf + "\nThe reason this is necessary:\nYour Discord and Factorio names can be different, so this is the only way to find your player-level in Factorio.\n"
 	if cfg.Local.Options.Whitelist {
 		buf = buf + "**NOTICE: This is a MEMBERS-ONLY server, if you haven't reached the MEMBER level in-game, you will be unable to connect. If this is the case, use the /register command on a PUBLIC server.**\n"
 	}
