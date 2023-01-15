@@ -242,12 +242,9 @@ func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	glob.VoteBoxLock.Lock()
 	glob.VoteBox.LastMapChange = time.Now()
-	fact.VoidAllVotes()    /* Void all votes */
-	fact.ResetTotalVotes() /* New map, reset player's vote limits */
+	fact.VoidAllVotes() /* Void all votes */
 	fact.WriteVotes()
-	glob.VoteBoxLock.Unlock()
 
 	lines := strings.Split(string(out), "\n")
 

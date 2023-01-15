@@ -28,6 +28,7 @@ func VoteMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if strings.EqualFold(arg, "erase-all") {
 					/* Clear votes */
 					glob.VoteBox.Votes = []glob.MapVoteData{}
+					glob.VoteBox.Tally = []glob.VoteTallyData{}
 
 					disc.EphemeralResponse(s, i, "Status:", "All votes cleared.")
 					fact.TallyMapVotes()

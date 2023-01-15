@@ -40,12 +40,9 @@ func ChangeMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		fact.ShowFullMapList(s, i)
 		return
 	}
-
-	glob.VoteBoxLock.Lock()
 	glob.VoteBox.LastMapChange = time.Now()
 	fact.VoidAllVotes() /* Void all votes */
-	fact.WriteVotes()   /* Save to file before exiting */
-	glob.VoteBoxLock.Unlock()
+	fact.WriteVotes()
 
 	fact.ShowMapList(s, i, false)
 }

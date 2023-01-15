@@ -169,9 +169,6 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 		CMS(cfg.Local.Channel.ChatChannel, str)
 	}
 
-	/* Mark dirty, so vote is saved after we are done here */
-	glob.VoteBox.Dirty = true
-
 	found := false
 	var chosenMap string
 	for _, t := range glob.VoteBox.Tally {
@@ -196,28 +193,19 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	glob.VoteBox.NumChanges++
 
 	VoidAllVotes()
-	ResetTotalVotes()
+	WriteVotes()
 
 	CMS(cfg.Local.Channel.ChatChannel, "VOTE MAP: "+chosenMap)
 	FactorioBootedAt = time.Time{}
 	DoChangeMap(s, chosenMap)
 }
 
-func ResetTotalVotes() {
-	for vpos := range glob.VoteBox.Votes {
-		glob.VoteBox.Votes[vpos].TotalVotes = 0
-	}
-	TallyMapVotes()
-	WriteVotes()
-}
-
 /* Don't use if already locked */
 func VoidAllVotes() {
-	for vpos := range glob.VoteBox.Votes {
-		glob.VoteBox.Votes[vpos].Voided = true
-	}
-	TallyMapVotes()
-	WriteVotes()
+	/* Clear votes */
+	glob.VoteBox.Votes = []glob.MapVoteData{}
+	glob.VoteBox.Tally = []glob.VoteTallyData{}
+
 }
 
 func PrintVote(v glob.MapVoteData) string {
@@ -230,13 +218,15 @@ func TallyMapVotes() (string, int) {
 	validVotes := 0
 	visVotes := 0
 
+	glob.VoteBox.Tally = []glob.VoteTallyData{}
+
 	buf := "VOTE-MAP: votes cast\n```"
 	for vpos, v := range glob.VoteBox.Votes {
 
 		/* Void or Cast */
 		if v.Voided {
 			buf = buf + PrintVote(v)
-			buf = buf + " (void/cast)\n"
+			buf = buf + " (VOID)\n"
 			glob.VoteBox.Votes[vpos].NumChanges = 0
 			visVotes++
 
@@ -251,7 +241,7 @@ func TallyMapVotes() (string, int) {
 			/* Valid */
 		} else if !v.Voided && !v.Expired {
 			buf = buf + PrintVote(v)
-			buf = buf + " (VALID)\n"
+			buf = buf + "\n"
 			visVotes++
 			validVotes++
 		}
@@ -267,15 +257,16 @@ func TallyMapVotes() (string, int) {
 	/* Reset tally, recount */
 	glob.VoteBox.Tally = []glob.VoteTallyData{}
 	for _, v := range glob.VoteBox.Votes {
-		for apos, a := range glob.VoteBox.Tally {
-			if v.Selection == a.Selection &&
-				!v.Voided && !v.Expired {
-				/* Same autosave, tally */
-				glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
+		if !v.Voided && !v.Expired {
+			for apos, a := range glob.VoteBox.Tally {
+				if v.Selection == a.Selection {
+					/* Same autosave, tally */
+					glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
+				}
 			}
+			/* Different autosave, add to list */
+			glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
 		}
-		/* Different autosave, add to list */
-		glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
 	}
 
 	buf = buf + "If you have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role, use `/vote-map` to vote."
@@ -284,6 +275,7 @@ func TallyMapVotes() (string, int) {
 
 /* Expects locked votebox */
 func WriteVotes() bool {
+
 	finalPath := constants.VoteFile
 	tempPath := constants.VoteFile + "." + cfg.Local.Callsign + ".tmp"
 
@@ -344,8 +336,6 @@ func ReadVotes() bool {
 			}
 
 			glob.VoteBox = temp
-			VoidAllVotes()
-			ResetTotalVotes()
 			return true
 		} else {
 			cwlog.DoLogCW("ReadVotes: ReadFile failure")
