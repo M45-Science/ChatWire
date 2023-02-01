@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/Clinet/discordgo-embed v0.0.0-20220113222025-bafe0c917646
 	github.com/Distortions81/rcon v0.0.0-20210709062803-ce5b041d17c9
-	github.com/bwmarrin/discordgo v0.26.2-0.20230103161908-ae8894be6731
-	github.com/dustin/go-humanize v1.0.0
+	github.com/bwmarrin/discordgo v0.27.0
+	github.com/dustin/go-humanize v1.0.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/martinhoefling/goxkcdpwgen v0.1.1
 	github.com/robfig/cron v1.2.0
@@ -15,6 +15,6 @@ require (
 
 require (
 	github.com/gorilla/websocket v1.5.0 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 )
