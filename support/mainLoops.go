@@ -617,8 +617,8 @@ func MainLoops() {
 		time.Sleep(time.Minute)
 
 		for glob.ServerRunning {
-			time.Sleep(time.Hour * 3)
 			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
+			time.Sleep(time.Minute * 30)
 			fact.CheckFactUpdate(false)
 		}
 	}()
