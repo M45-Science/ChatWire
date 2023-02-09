@@ -664,7 +664,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	var tempf []fs.DirEntry
 	for _, f := range files {
 		//Hide non-zip files, temp files, and our map-change temp file.
-		if strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") && !strings.HasSuffix(f.Name(), cfg.Local.Name+"_new.zip") {
+		if strings.HasPrefix(f.Name(), "_autosave") && strings.HasSuffix(f.Name(), ".zip") && !strings.HasSuffix(f.Name(), "tmp.zip") && !strings.HasSuffix(f.Name(), cfg.Local.Name+"_new.zip") {
 			tempf = append(tempf, f)
 		}
 	}
