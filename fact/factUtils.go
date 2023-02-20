@@ -447,7 +447,7 @@ func WriteFact(input string) {
 			return
 		}
 		if buf != "/time" {
-			cwlog.DoLogGame(fmt.Sprintf("CW: %v", buf))
+			cwlog.DoLogCW(fmt.Sprintf("CW: %v", buf))
 		}
 
 	} else {

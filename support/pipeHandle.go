@@ -421,7 +421,7 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 	 * MSG AREA
 	 ******************/
 	if strings.HasPrefix(line, "[MSG]") {
-		cwlog.DoLogGame(line)
+		cwlog.DoLogCW(line)
 
 		if lineListlen > 0 {
 			ctext := strings.Join(lineList[1:], " ")
@@ -542,7 +542,7 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 	 * MAP LOAD
 	 ******************/
 	if strings.HasPrefix(NoTC, "Loading map") {
-		cwlog.DoLogGame(NoTC)
+		cwlog.DoLogCW(NoTC)
 
 		/* Strip file path */
 		if NoTClistlen > 3 {
@@ -592,7 +592,7 @@ func handleModLoad(NoTC string) bool {
 				}
 				if !found {
 					fact.ModList = append(fact.ModList, modName)
-					cwlog.DoLogGame(NoTC)
+					cwlog.DoLogCW(NoTC)
 				}
 			}
 		}
@@ -649,7 +649,7 @@ func handleSVersion(line string, lineList []string, lineListlen int) bool {
 	 * SVERSION
 	 ******************/
 	if strings.HasPrefix(line, "[SVERSION]") {
-		cwlog.DoLogGame(line)
+		cwlog.DoLogCW(line)
 
 		if lineListlen > 0 {
 			glob.SoftModVersion = lineList[1]
@@ -743,7 +743,7 @@ func handleFactVersion(NoTC string, line string, NoTClist []string, NoTClistlen 
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(NoTC, "Loading mod base") {
-		cwlog.DoLogGame(NoTC)
+		cwlog.DoLogCW(NoTC)
 		if NoTClistlen > 3 {
 			fact.FactorioVersion = NoTClist[3]
 
@@ -793,7 +793,7 @@ func handleExitSave(NoTC string, NoTClist []string, NoTClistlen int) bool {
 	 * CAPTURE MAP NAME, ON EXIT
 	 *****************************/
 	if strings.HasPrefix(NoTC, "Info MainLoop") && strings.Contains(NoTC, "Saving map as") {
-		cwlog.DoLogGame(NoTC)
+		cwlog.DoLogCW(NoTC)
 
 		/* Strip file path */
 		if NoTClistlen > 5 {
@@ -886,7 +886,7 @@ func handleCrashes(NoTC string, line string, words []string, numwords int) bool 
 	 * CAPTURE CRASHES
 	 ******************/
 	if strings.HasPrefix(NoTC, "Error") {
-		cwlog.DoLogGame(NoTC)
+		cwlog.DoLogCW(NoTC)
 
 		/* Lock error */
 		if strings.Contains(NoTC, "Couldn't acquire exclusive lock") {
@@ -1179,7 +1179,7 @@ func handleOnlineMsg(line string) bool {
 		newPlayerList := []glob.OnlinePlayerData{}
 		count := 0
 
-		cwlog.DoLogGame(line)
+		cwlog.DoLogCW(line)
 		line = strings.TrimPrefix(line, tag)
 
 		players := strings.Split(line, ";")
