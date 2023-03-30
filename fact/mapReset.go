@@ -91,8 +91,6 @@ func Map_reset(data string, doReport bool) {
 			}
 			CMS(cfg.Local.Channel.ChatChannel, "Stopping server, for map reset.")
 
-			cfg.Local.Options.SoftModOptions.SlowConnect.Speed = 1.0
-			cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed = 0.5
 			cfg.Local.Options.SkipReset = false
 			QueueReload = false      //Skip queued reboot
 			DoUpdateFactorio = false //Skip queued updates

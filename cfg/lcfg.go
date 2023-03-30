@@ -64,6 +64,7 @@ type localOptions struct {
 	CustomWhitelist bool
 	ModUpdate       bool
 	SkipReset       bool
+	Speed           float32
 
 	SoftModOptions softmodOptions
 }
@@ -76,12 +77,6 @@ type softmodOptions struct {
 	Cheats            bool
 	InjectSoftMod     bool
 	SoftModPath       string
-	SlowConnect       slowConnect
-}
-type slowConnect struct {
-	Enabled      bool
-	Speed        float32
-	ConnectSpeed float32
 }
 
 func WriteLCfg() bool {
@@ -147,6 +142,9 @@ func setLocalDefaults() {
 	}
 	if Local.Settings.AFKMin <= 0 {
 		Local.Settings.AFKMin = 15
+	}
+	if Local.Options.Speed <= 0 {
+		Local.Options.Speed = 1
 	}
 	if Local.Settings.AutosaveMin <= 0 {
 		Local.Settings.AutosaveMin = 15

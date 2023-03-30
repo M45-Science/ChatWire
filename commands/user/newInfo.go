@@ -198,9 +198,6 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	fact.TickHistoryLock.Unlock()
 
-	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled && cfg.Local.Options.SoftModOptions.SlowConnect.Speed != 1.0 {
-		buf = buf + fmt.Sprintf("\nUPS is set to: %2.2f\n", cfg.Local.Options.SoftModOptions.SlowConnect.Speed*60.0)
-	}
 	if oneHourAvr > 0 {
 		buf = buf + fmt.Sprintf("UPS Average: 10m: %2.2f, 30m: %2.2f, 1h: %2.2f\n", tenMinAvr, thirtyMinAvr, oneHourAvr)
 	} else if thirtyMinAvr > 0 {

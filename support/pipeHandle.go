@@ -477,66 +477,6 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 
 }
 
-func handleSlowConnect(NoTC string, line string) {
-	/* *****************
-	 * Slow on catch-up
-	 ******************/
-	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
-
-		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
-
-			if strings.Contains(line, "removing peer") {
-
-				/* We do this, so we can get a corrected player count */
-				if glob.SoftModVersion != constants.Unknown {
-					fact.WriteFact(glob.OnlineCommand)
-				}
-
-			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
-				SlowConnectStart()
-			} else if strings.Contains(line, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
-				SlowConnectEnd()
-			} else if strings.Contains(line, "oldState(TryingToCatchUp) newState(DisconnectScheduled") {
-				SlowConnectEnd()
-			}
-
-		}
-	}
-}
-
-func SlowConnectStart() {
-	if cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed <= 0.0 {
-		fact.WriteFact("/gspeed 0.5")
-	} else {
-		fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed))
-	}
-
-	tn := time.Now()
-	fact.SlowConnectLock.Lock()
-	fact.SlowConnectTimer = tn.Unix()
-	fact.SlowConnectEvents++
-	fact.SlowConnectLock.Unlock()
-}
-
-func SlowConnectEnd() {
-
-	fact.SlowConnectLock.Lock()
-
-	fact.SlowConnectEvents--
-	if fact.SlowConnectEvents <= 0 {
-		fact.SlowConnectEvents = 0
-		fact.SlowConnectTimer = 0
-
-		if cfg.Local.Options.SoftModOptions.SlowConnect.Speed >= 0.0 {
-			fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.Speed))
-		} else {
-			fact.WriteFact("/gspeed 1.0")
-		}
-	}
-
-	fact.SlowConnectLock.Unlock()
-}
-
 func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistlen int) bool {
 	/******************
 	 * MAP LOAD
@@ -716,6 +656,7 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
+		fact.WriteFact(fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
 	}
 	return false
 }

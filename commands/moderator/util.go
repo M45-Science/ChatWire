@@ -279,40 +279,6 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.HideResearch,
 	},
 	{
-		Name:      "slow-connect",
-		ShortDesc: "Slow Connect",
-		Desc:      "Slow game to 'connect-speed' when players are connecting, and then back to 'default-speed'",
-		Type:      TYPE_BOOL,
-
-		DefBool: false,
-
-		BData: &cfg.Local.Options.SoftModOptions.SlowConnect.Enabled,
-	},
-	{
-		Name:      "default-speed",
-		ShortDesc: "Default Speed",
-		Desc:      "Normal speed while playing, 1.0 is normal, 0.5 would be half (30fps)",
-		Type:      TYPE_F32,
-
-		MaxF32: 10.0,
-		MinF32: 0.1,
-		DefF32: 1.0,
-
-		FData32: &cfg.Local.Options.SoftModOptions.SlowConnect.Speed,
-	},
-	{
-		Name:      "connect-speed",
-		ShortDesc: "Connect Speed",
-		Desc:      "Speed to slow to when players are connecting, 1.0 is normal speed so 0.5 is half (30fps).",
-		Type:      TYPE_F32,
-
-		MaxF32: 10.0,
-		MinF32: 0.1,
-		DefF32: 0.5,
-
-		FData32: &cfg.Local.Options.SoftModOptions.SlowConnect.ConnectSpeed,
-	},
-	{
 		Name:      "members-only",
 		ShortDesc: "Members Only",
 		Desc:      "Only members, regulars and moderators can connect.",
@@ -423,6 +389,19 @@ var SettingList = []SettingListData{
 		DefBool:   false,
 
 		BData: &cfg.Local.Options.SkipReset,
+	},
+	{
+		Name:      "Speed",
+		ShortDesc: "Game Speed",
+		Desc:      "Set the game speed (1.0 normal)",
+		Type:      TYPE_F32,
+
+		MaxF32: 10,
+		MinF32: 0.01,
+		DefInt: 1,
+
+		FData32:           &cfg.Local.Options.Speed,
+		FactUpdateCommand: "/gspeed",
 	},
 }
 

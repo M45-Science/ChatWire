@@ -146,6 +146,11 @@ var (
 	ChatterSpamScore map[string]int
 
 	LastSusWarning time.Time
+
+	PausedForConnect bool
+	PausedCount      int
+	PausedAt         time.Time
+	PausedLock       sync.Mutex
 )
 
 /* Used for map names */

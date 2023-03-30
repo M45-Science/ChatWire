@@ -105,9 +105,6 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 		descrLines = append(descrLines, AddFactColor("blue", "NO BLUEPRINTS"))
 	}
-	if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
-		descrLines = append(descrLines, AddFactColor("yellow", "Slow-connect on"))
-	}
 	if !cfg.Local.Settings.AutoPause {
 		descrLines = append(descrLines, AddFactColor("orange", "AUTO-PAUSE OFF"))
 	}

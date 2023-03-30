@@ -121,8 +121,6 @@ func HandleChat() {
 							continue
 						}
 
-						go handleSlowConnect(NoTC, line)
-
 						if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
 							continue
 						}

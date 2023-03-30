@@ -220,7 +220,7 @@ func injectSoftMod(fileName, folderName string) {
 		for _, file := range zipFiles {
 			fh := new(zip.FileHeader)
 			fh.Name = file.Name
-			fh.UncompressedSize = uint32(len(file.Data))
+			fh.UncompressedSize64 = uint64(len(file.Data))
 
 			writer, err := zipWriter.CreateHeader(fh)
 			if err != nil {

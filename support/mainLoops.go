@@ -198,41 +198,6 @@ func MainLoops() {
 		}
 	}()
 
-	/******************************************************
-	 * Slow-connect, helps players catch up on large maps
-	 ******************************************************/
-	go func() {
-		for glob.ServerRunning {
-
-			time.Sleep(5 * time.Second)
-			tn := time.Now()
-
-			if cfg.Local.Options.SoftModOptions.SlowConnect.Enabled {
-
-				fact.SlowConnectLock.Lock()
-
-				if fact.SlowConnectTimer > 0 {
-					if tn.Unix()-fact.SlowConnectTimer >= 30 {
-						fact.SlowConnectTimer = 0
-						fact.SlowConnectEvents = 0
-
-						buf := "Catch-up taking over 30 seconds, returning to normal speed."
-						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-						fact.WriteFact("/chat (SYSTEM) " + buf)
-
-						if cfg.Local.Options.SoftModOptions.SlowConnect.Speed > 0.0 {
-							fact.WriteFact("/gspeed " + fmt.Sprintf("%v", cfg.Local.Options.SoftModOptions.SlowConnect.Speed))
-						} else {
-							fact.WriteFact("/gspeed 1.0")
-						}
-					}
-				}
-
-				fact.SlowConnectLock.Unlock()
-
-			}
-		}
-	}()
 	/********************************
 	 * Save database, if marked dirty
 	 ********************************/
@@ -369,7 +334,13 @@ func MainLoops() {
 			if disc.Guild != nil {
 				changed := false
 				for _, role := range disc.Guild.Roles {
-					if cfg.Global.Discord.Roles.Moderator != "" &&
+					if cfg.Global.Discord.Roles.Admin != "" &&
+						role.Name == cfg.Global.Discord.Roles.Admin &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Admin != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Admin = role.ID
+						changed = true
+
+					} else if cfg.Global.Discord.Roles.Moderator != "" &&
 						role.Name == cfg.Global.Discord.Roles.Moderator &&
 						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Moderator != role.ID {
 						cfg.Global.Discord.Roles.RoleCache.Moderator = role.ID
