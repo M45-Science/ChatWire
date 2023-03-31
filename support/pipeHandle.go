@@ -34,6 +34,46 @@ func handleIdiots(line string) bool {
 	return false
 }
 
+func handlePause(NoTC string, line string) {
+	if glob.PausedForConnect {
+
+		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
+
+			glob.PausedLock.Lock()
+			defer glob.PausedLock.Unlock()
+
+			if strings.Contains(line, "removing peer") {
+
+				/* We do this, so we can get a corrected player count */
+				if glob.SoftModVersion != constants.Unknown {
+					fact.WriteFact(glob.OnlineCommand)
+				}
+
+			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
+				glob.PausedConnectAttempt = true
+			} else if strings.Contains(line, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
+				glob.PausedForConnect = false
+				glob.PausedConnectAttempt = false
+				if glob.PausedCount > 0 {
+					glob.PausedCount--
+				}
+				fact.WriteFact(
+					fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+
+			} else if strings.Contains(line, "oldState(TryingToCatchUp) newState(DisconnectScheduled") {
+				glob.PausedForConnect = false
+				glob.PausedConnectAttempt = false
+				if glob.PausedCount > 0 {
+					glob.PausedCount--
+				}
+				fact.WriteFact(
+					fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+			}
+
+		}
+	}
+}
+
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
 	/******************************************************
 	 * GET FACTORIO TIME
