@@ -616,6 +616,29 @@ func MainLoops() {
 		}
 	}()
 
+	/* Check for expired pauses */
+	go func() {
+		for glob.ServerRunning {
+			glob.PausedLock.Lock()
+
+			if glob.PausedForConnect {
+				limit := time.Minute
+				if glob.PausedConnectAttempt {
+					limit = time.Minute * 2
+				}
+
+				if time.Since(glob.PausedAt) > limit {
+					glob.PausedForConnect = false
+					fact.WriteFact(
+						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+				}
+			}
+
+			glob.PausedLock.Unlock()
+			time.Sleep(time.Second * 2)
+		}
+	}()
+
 	/**********************************
 	* Poll online players
 	* Just in case there is no soft-mod
