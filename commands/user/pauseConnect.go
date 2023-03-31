@@ -22,7 +22,7 @@ func PauseConnect(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		defer glob.PausedLock.Unlock()
 
 		/* Throttle */
-		score := 3 * math.Pow(float64(glob.PausedCount+1), 4)
+		score := math.Pow(float64(glob.PausedCount+1), 4)
 		if glob.PausedCount == 0 {
 			score = 0
 		}
@@ -46,8 +46,8 @@ func PauseConnect(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				}
 
 				/* Otherwise pause game */
-				buf := "If you don't connect within 15 seconds game will unpause.\nIf you don't finish joining the game within 2 minutes, the game will also unpause."
-				disc.EphemeralResponse(s, i, "Game Paused:", buf)
+				buf := "If you don't attempt to connect within 60 seconds, the pause-on-connect will be canceled.\nIf you don't finish joining the game within 2 minutes, the game will unpause."
+				disc.EphemeralResponse(s, i, "Status:", buf)
 
 				glob.PausedForConnect = true
 				glob.PausedAt = time.Now()
@@ -55,9 +55,7 @@ func PauseConnect(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				glob.PausedFor = factname
 				glob.PausedCount++
 
-				fact.WriteFact("/gspeed 0.1")
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Pausing game, requested by "+factname)
-				fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": Pausing game, requested by: "+factname)
+				fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": Pause-on-connect, requested by: "+factname)
 			} else {
 				buf := fmt.Sprintf("The map was paused %v ago, you must wait an additonal %v to pause again. (%v total)",
 					time.Since(glob.PausedAt).Round(time.Second),
@@ -67,7 +65,7 @@ func PauseConnect(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				disc.EphemeralResponse(s, i, "Error:", buf)
 			}
 		} else {
-			buf := fmt.Sprintf("Game is already paused, requested by: %v", glob.PausedFor)
+			buf := fmt.Sprintf("A pause-on-connect is already running, requested by: %v", glob.PausedFor)
 			disc.EphemeralResponse(s, i, "Error:", buf)
 		}
 	} else {

@@ -707,6 +707,8 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 			if glob.PausedForConnect {
 				if strings.EqualFold(glob.PausedFor, pName) {
 					glob.PausedConnectAttempt = true
+					fact.WriteFact("/gspeed 0.1")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Pausing game, requested by "+pName)
 				}
 			}
 			glob.PausedLock.Unlock()
