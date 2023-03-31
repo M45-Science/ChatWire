@@ -147,10 +147,11 @@ var (
 
 	LastSusWarning time.Time
 
-	PausedForConnect bool
-	PausedCount      int
-	PausedAt         time.Time
-	PausedLock       sync.Mutex
+	PausedForConnect     bool
+	PausedCount          int
+	PausedAt             time.Time
+	PausedConnectAttempt bool
+	PausedLock           sync.Mutex
 )
 
 /* Used for map names */
