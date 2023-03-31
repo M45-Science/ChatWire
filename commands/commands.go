@@ -464,6 +464,21 @@ var cmds = []Command{
 		Command: user.VoteMap},
 
 	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "pause-game",
+		Description: "REGULARS ONLY: Briefly pause a game to aid conencting on large maps.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "pause-now",
+				Description: "Just press ENTER or RETURN to continue.",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Required:    false,
+			},
+		},
+	},
+		Command: user.PauseConnect},
+
+	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "register",
 		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
 		Type:        discordgo.ChatApplicationCommand,

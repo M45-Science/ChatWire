@@ -151,6 +151,7 @@ var (
 	PausedCount          int
 	PausedAt             time.Time
 	PausedConnectAttempt bool
+	PausedFor            string
 	PausedLock           sync.Mutex
 )
 

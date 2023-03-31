@@ -52,11 +52,15 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if strings.Contains(strings.ToLower(p.Name), strings.ToLower(arg)) || strings.Contains(strings.ToLower(disc.GetNameFromID(p.ID, false)), strings.ToLower(arg)) {
 
 					lseen := ""
-					if p.LastSeen == 0 {
-						lseen = constants.Unknown
+					if fact.IsPlayerOnline(p.Name) {
+						lseen = "Online"
 					} else {
-						ltime := fact.ExpandTime(p.LastSeen)
-						lseen = ltime.Format(layoutUS)
+						if p.LastSeen == 0 {
+							lseen = constants.Unknown
+						} else {
+							ltime := fact.ExpandTime(p.LastSeen)
+							lseen = ltime.Format(layoutUS)
+						}
 					}
 
 					joined := ""

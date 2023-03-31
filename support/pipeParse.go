@@ -94,7 +94,7 @@ func HandleChat() {
 					 *********************************/
 					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
-						go handlePause(NoTC, line)
+						go handleDisconnect(NoTC, line)
 
 						/* Don't eat event, this is capable of eating random text */
 						go handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)

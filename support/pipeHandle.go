@@ -34,44 +34,21 @@ func handleIdiots(line string) bool {
 	return false
 }
 
-func handlePause(NoTC string, line string) {
-	if glob.PausedForConnect {
+func handleDisconnect(NoTC string, line string) {
 
-		if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
+	if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
-			glob.PausedLock.Lock()
-			defer glob.PausedLock.Unlock()
+		if strings.Contains(line, "removing peer") {
 
-			if strings.Contains(line, "removing peer") {
-
-				/* We do this, so we can get a corrected player count */
-				if glob.SoftModVersion != constants.Unknown {
-					fact.WriteFact(glob.OnlineCommand)
-				}
-
-			} else if strings.Contains(line, "oldState(ConnectedLoadingMap) newState(TryingToCatchUp)") {
-				glob.PausedConnectAttempt = true
-			} else if strings.Contains(line, "oldState(WaitingForCommandToStartSendingTickClosures) newState(InGame)") {
-				glob.PausedForConnect = false
-				glob.PausedConnectAttempt = false
-				if glob.PausedCount > 0 {
-					glob.PausedCount--
-				}
-				fact.WriteFact(
-					fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
-
-			} else if strings.Contains(line, "oldState(TryingToCatchUp) newState(DisconnectScheduled") {
-				glob.PausedForConnect = false
-				glob.PausedConnectAttempt = false
-				if glob.PausedCount > 0 {
-					glob.PausedCount--
-				}
-				fact.WriteFact(
-					fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+			/* We do this, so we can get a corrected player count */
+			if glob.SoftModVersion != constants.Unknown {
+				time.Sleep(time.Second * 2)
+				fact.WriteFact(glob.OnlineCommand)
 			}
 
 		}
 	}
+
 }
 
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
@@ -311,6 +288,18 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			pname = sclean.EscapeDiscordMarkdown(pname)
 
 			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.Gametime, pname, plevelname)
+			glob.PausedLock.Lock()
+			if glob.PausedForConnect {
+				if strings.EqualFold(glob.PausedFor, pname) {
+					glob.PausedForConnect = false
+					glob.PausedFor = ""
+					glob.PausedConnectAttempt = false
+					fact.WriteFact(
+						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+					buf = buf + " (Unpausing game)"
+				}
+			}
+			glob.PausedLock.Unlock()
 			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 			/* If our softmod is active, update the time-till map-reset so it is accurate */
@@ -713,6 +702,14 @@ func handleIncomingAnnounce(NoTC string, words []string, numwords int) bool {
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.FactChat(fmsg)
 			fact.CMS(cfg.Local.Channel.ChatChannel, dmsg)
+
+			glob.PausedLock.Lock()
+			if glob.PausedForConnect {
+				if strings.EqualFold(glob.PausedFor, pName) {
+					glob.PausedConnectAttempt = true
+				}
+			}
+			glob.PausedLock.Unlock()
 			return true
 		}
 	}

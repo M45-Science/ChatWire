@@ -35,6 +35,7 @@ func main() {
 	//debug.SetMaxThreads(1000)
 
 	flag.Parse()
+	glob.PausedAt = time.Now()
 
 	/* Mark uptime start */
 	glob.Uptime = time.Now().UTC().Round(time.Second)

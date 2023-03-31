@@ -622,18 +622,34 @@ func MainLoops() {
 			glob.PausedLock.Lock()
 
 			if glob.PausedForConnect {
-				limit := time.Minute
+
+				limit := time.Second * 15
 				if glob.PausedConnectAttempt {
 					limit = time.Minute * 2
 				}
 
 				if time.Since(glob.PausedAt) > limit {
-					glob.PausedForConnect = false
+
 					fact.WriteFact(
 						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Unpausing, "+glob.PausedFor+" did not connect within the time limit.")
+
+					glob.PausedForConnect = false
+					glob.PausedFor = ""
+					glob.PausedConnectAttempt = false
+				}
+			} else {
+				/* Eventually reset timers */
+				if glob.PausedCount > 0 {
+					if time.Since(glob.PausedAt) > time.Minute*30 {
+						glob.PausedCount = 0
+						glob.PausedAt = time.Now()
+						glob.PausedFor = ""
+						glob.PausedConnectAttempt = false
+					}
 				}
 			}
-
 			glob.PausedLock.Unlock()
 			time.Sleep(time.Second * 2)
 		}

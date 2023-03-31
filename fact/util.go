@@ -14,6 +14,24 @@ import (
 	"ChatWire/sclean"
 )
 
+func IsPlayerOnline(who string) bool {
+
+	if len(who) <= 0 {
+		return false
+	}
+
+	OnlinePlayersLock.RLock()
+	defer OnlinePlayersLock.RUnlock()
+
+	for _, p := range glob.OnlinePlayers {
+		if strings.EqualFold(p.Name, who) {
+			return true
+		}
+	}
+
+	return false
+}
+
 /* Send chat to factorio */
 func FactChat(input string) {
 
