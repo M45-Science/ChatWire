@@ -634,9 +634,9 @@ func MainLoops() {
 						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
 
 					if glob.PausedConnectAttempt {
-						fact.CMS(cfg.Local.Channel.ChatChannel, "Unpausing, "+glob.PausedFor+" did not finish joining within the time limit.")
-					} else {
-						fact.CMS(cfg.Local.Channel.ChatChannel, "Pause-on-connect canceled, "+glob.PausedFor+" did not attempt to connect within the time limit.")
+						msg := "Unpausing, " + glob.PausedFor + " did not finish joining within the time limit."
+						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
+						fact.FactChat(msg)
 					}
 
 					glob.PausedForConnect = false

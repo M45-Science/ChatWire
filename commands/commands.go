@@ -465,12 +465,12 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "pause-game",
-		Description: "REGULARS ONLY: Briefly pause a game to aid conencting on large maps.",
+		Description: "REGULARS ONLY: Use BEFORE connecting, will temporarily pause the game while you connect. Expires after 60 seconds.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "pause-now",
-				Description: "Just press ENTER or RETURN to continue.",
+				Description: "Use BEFORE connecting, will temporarily pause the game while you connect. Expires after 60 seconds.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
