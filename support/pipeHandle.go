@@ -219,16 +219,16 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 							errrole, regrole := disc.RoleExists(guild, newrole)
 
 							if !errrole {
-								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register, but there is an error. I could not find the discord role '%s'.", pname, newrole))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error, I could not find the discord role '%s'. The moderatators will be informed of the issue.", pname, newrole))
+								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Register: Can not find role '%v'. Requested for user '%v'", newrole, pname))
+								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error. I could not find the discord role '%s'. The moderatators will be informed of the issue.", pname, newrole))
 								continue
 							}
 
 							erradd := disc.SmartRoleAdd(cfg.Global.Discord.Guild, pid, regrole.ID)
 
 							if erradd != nil || disc.DS == nil {
-								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Register: Could not assign role '%v' for factorio user '%v'.", newrole, pname))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s'. The moderatators will be informed of the issue.", pname, newrole))
+								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Register: Could not assign role '%v'. Requested for user '%v'.", newrole, pname))
+								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error. I could not assign discord role '%s'. The moderatators will be informed of the issue.", pname, newrole))
 								continue
 							}
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
