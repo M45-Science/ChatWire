@@ -187,23 +187,26 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					factname := disc.GetFactorioNameFromDiscordID(pid)
 
 					if !strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] You need to read things more carefully... This is not the correct server for entering registration codes! You need to connect to %v-%v to use that command.",
+						/* Some people just can't be bothered to read two short lines of text. */
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register... but can't read the directions.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This is not the correct server for entering registration codes! You need to connect to %v-%v to use that command. Please read the directions more carefully...",
 							pname, cfg.Global.GroupName, cfg.Global.PrimaryServer))
 						return true
 					}
 
 					if strings.EqualFold(discid, pid) && strings.EqualFold(factname, pname) {
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account, and Discord account are already connected! Setting role, if needed.", pname))
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', wants to regiser a few times... just to be sure.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This factorio user, and discord user are already connected! You do not need to re-register...", pname))
 						codegood = true
 						/* Do not break, process */
 					} else if discid != "" {
-						cwlog.DoLogCW(fmt.Sprintf("Factorio player '%s' tried to connect a Discord account, that is already connected to a different Factorio account.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That Discord name is already connected to a different Factorio account.", pname))
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a discord user that is already registered to different factorio player.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different factorio user... Unable to complete registration.", pname))
 						codegood = false
 						continue
 					} else if factname != "" {
-						cwlog.DoLogCW(fmt.Sprintf("Factorio player '%s' tried to connect their Factorio account, that is already connected to a different Discord account.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account is already connected to a different Discord account.", pname))
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a factorio user that is already registered to a different discord user.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This factorio user is already connected to a different discord user... Unable to complete registration.", pname))
 						codegood = false
 						continue
 					}
@@ -216,24 +219,24 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 							errrole, regrole := disc.RoleExists(guild, newrole)
 
 							if !errrole {
-								fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Sorry, there is an error. I could not find the Discord role '%s'.", newrole))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error, I could not find the Discord role '%s' Let the moderators know!", pname, newrole))
+								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register, but there is an error. I could not find the discord role '%s'.", pname, newrole))
+								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error, I could not find the discord role '%s'. The moderatators will be informed of the issue.", pname, newrole))
 								continue
 							}
 
 							erradd := disc.SmartRoleAdd(cfg.Global.Discord.Guild, pid, regrole.ID)
 
 							if erradd != nil || disc.DS == nil {
-								fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Sorry, there is an error. I could not assign the Discord role '%s'.", newrole))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s' Let the moderators know!", pname, newrole))
+								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Register: Could not assign role '%v' for factorio user '%v'.", newrole, pname))
+								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s'. The moderatators will be informed of the issue.", pname, newrole))
 								continue
 							}
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
 							fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Registered player: %v", pname))
 							continue
 						} else {
-							cwlog.DoLogCW("No guild info.")
-							fact.CMS(cfg.Local.Channel.ChatChannel, "Sorry, I couldn't find the guild info!")
+							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, I couldn't find the discord guild info! The moderators will be informed of the issue.", pname))
+							fact.LogCMS(cfg.Global.Discord.ReportChannel, "Register: Unable to get discord guild info!")
 							continue
 						}
 					}
@@ -242,8 +245,8 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 			} /* End of loop */
 			glob.PasswordListLock.Unlock()
 			if !codefound {
-				cwlog.DoLogCW(fmt.Sprintf("Factorio player '%s', tried to use an invalid or expired code.", pname))
-				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired. Make sure you are entering the code on the correct Factorio server!", pname))
+				cwlog.DoLogCW(fmt.Sprintf("Register: factorio player '%s' tried to use an invalid or expired code.", pname))
+				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired.", pname))
 				return true
 			}
 		} else {
