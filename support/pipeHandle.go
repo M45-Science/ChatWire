@@ -186,6 +186,12 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					discid := disc.GetDiscordIDFromFactorioName(pname)
 					factname := disc.GetFactorioNameFromDiscordID(pid)
 
+					if !strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] You need to read things more carefully... This is not the correct server for entering registration codes! You need to connect to %v-%v to use that command.",
+							pname, cfg.Global.GroupName, cfg.Global.PrimaryServer))
+						return true
+					}
+
 					if strings.EqualFold(discid, pid) && strings.EqualFold(factname, pname) {
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio account, and Discord account are already connected! Setting role, if needed.", pname))
 						codegood = true
@@ -211,7 +217,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 
 							if !errrole {
 								fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Sorry, there is an error. I could not find the Discord role '%s'.", newrole))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s  [SYSTEM] Sorry, there was an internal error, I could not find the Discord role '%s' Let the moderators know!", newrole, pname))
+								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error, I could not find the Discord role '%s' Let the moderators know!", pname, newrole))
 								continue
 							}
 
@@ -219,7 +225,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 
 							if erradd != nil || disc.DS == nil {
 								fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Sorry, there is an error. I could not assign the Discord role '%s'.", newrole))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s' Let the moderators know!", newrole, pname))
+								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an error, could not assign role '%s' Let the moderators know!", pname, newrole))
 								continue
 							}
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
