@@ -304,19 +304,26 @@ func Map_reset(data string, doReport bool) {
 
 			if strings.HasSuffix(f.Name(), ".zip") {
 
-				lowerName := strings.ToLower(f.Name())
 				/* Delete mods queued up to be deleted */
-				if strings.HasPrefix(lowerName, "deleteme-") {
+				if strings.HasPrefix(f.Name(), "deleteme-") {
 
-					err = os.Remove(modPath + strings.TrimPrefix(lowerName, "deleteme-"))
+					delModName := f.Name()
+					err = os.Remove(qPath + delModName)
 					if err != nil {
-						cwlog.DoLogCW(err.Error())
-					}
-					err = os.Remove(qPath + f.Name())
-					if err != nil {
-						cwlog.DoLogCW(err.Error())
+
+						modName := strings.TrimPrefix(delModName, "deleteme-")
+						err = os.Remove(modPath + modName)
+						if err != nil {
+							buf := fmt.Sprintf("Failed to remove mod: %v", modName)
+							cwlog.DoLogCW(buf)
+							CMS(cfg.Local.Channel.ChatChannel, buf)
+						} else {
+							buf := fmt.Sprintf("Removed mod: %v", modName)
+							cwlog.DoLogCW(buf)
+							CMS(cfg.Local.Channel.ChatChannel, buf)
+						}
 					} else {
-						buf := fmt.Sprintf("Removed mod: %v", strings.TrimPrefix(lowerName, "deleteme-"))
+						buf := "Mod queue: incorrect file permissions."
 						cwlog.DoLogCW(buf)
 						CMS(cfg.Local.Channel.ChatChannel, buf)
 					}
