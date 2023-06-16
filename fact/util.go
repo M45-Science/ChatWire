@@ -74,7 +74,7 @@ func WaitFactQuit() {
 /* Auto generates a steam connect URL */
 func MakeSteamURL() (string, bool) {
 	if cfg.Global.Paths.URLs.Domain != "localhost" && cfg.Global.Paths.URLs.Domain != "" {
-		buf := fmt.Sprintf("steam://run/427520//--mp-connect%%20%v:%v/", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)
+		buf := fmt.Sprintf("https://go-game.net/gosteam/427520.--mp-connect%%20%v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)
 		return buf, true
 	} else {
 		return "(not configured)", false
