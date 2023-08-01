@@ -203,7 +203,7 @@ func UpdateScheduleDesc() (err bool) {
 		NextResetUnix = n.Unix()
 		TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
 
-		if time.Until(n) < time.Hour {
+		if time.Until(n) <= time.Minute*30 {
 			NextReset = "Soon"
 		}
 
