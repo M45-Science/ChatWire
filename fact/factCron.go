@@ -189,38 +189,47 @@ func InterpSchedule(desc string, test bool) (err bool) {
 
 func UpdateScheduleDesc() (err bool) {
 
-	if cfg.Local.Options.Schedule != "" && CronVar != nil {
-		e := CronVar.Entries()
-		a := len(e)
-		if a > 5 {
-
-			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,week:weeks,day:days,hour:hours,minute:minutes,sec:secs,ms:ms,us:us")
-			if err != nil {
-				panic(err)
+	if cfg.Local.Options.Schedule != "" && CronVar != nil && len(CronVar.Entries()) > 0 {
+		var minTime time.Duration = (time.Hour * 87600)
+		var entries = CronVar.Entries()
+		var targetEntry *cron.Entry
+		for e, entry := range entries {
+			until := time.Until(entry.Next)
+			if until < minTime {
+				minTime = until
+				targetEntry = entries[e]
 			}
-
-			n := e[a-1].Next
-			if cfg.Local.Options.SkipReset {
-				NextReset = "(SKIP) "
-			} else {
-				NextReset = ""
-			}
-			NextReset = NextReset + n.Format("Mon Jan 02 15:04 MST")
-			NextResetUnix = n.Unix()
-
-			if cfg.Local.Options.SkipReset {
-				TillReset = "(SKIP) "
-			} else {
-				TillReset = ""
-			}
-			TillReset = TillReset + durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
-
-			return false
-		} else {
-			cwlog.DoLogCW("UpdateScheduleDesc: No schedule set, skipping.")
-			return true
 		}
+
+		units, err := durafmt.DefaultUnitsCoder.Decode("y:y,week:weeks,day:days,hour:hours,minute:minutes,sec:secs,ms:ms,us:us")
+		if err != nil {
+			panic(err)
+		}
+
+		n := targetEntry.Next
+		if cfg.Local.Options.SkipReset {
+			NextReset = "(SKIP) "
+		} else {
+			NextReset = ""
+		}
+		NextReset = NextReset + n.Format("Mon Jan 02 15:04 MST")
+		NextResetUnix = n.Unix()
+
+		if cfg.Local.Options.SkipReset {
+			TillReset = "(SKIP) "
+		} else {
+			TillReset = ""
+		}
+		TillReset = TillReset + durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
+
+		return false
 	}
 
-	return false
+	//Fallback
+	TillReset = ""
+	NextReset = ""
+	NextResetUnix = 0
+
+	cwlog.DoLogCW("UpdateScheduleDesc: No schedule set, skipping.")
+	return true
 }
