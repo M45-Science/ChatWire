@@ -20,6 +20,7 @@ func SetSchedule(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if strings.EqualFold(o.Name, "preset") {
 			arg := o.StringValue()
 			err := fact.InterpSchedule(arg, true)
+			fact.UpdateScheduleDesc()
 			if err {
 				lbuf = "That is not a valid preset."
 			} else {

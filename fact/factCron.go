@@ -24,6 +24,7 @@ func SetupSchedule() (err bool) {
 		if CronVar != nil {
 			cwlog.DoLogCW("SetupSchedule: CronVar is not nil, removing old schedule")
 			CronVar.Stop()
+			CronVar = nil
 		}
 		CronVar = cron.NewWithLocation(time.UTC)
 		err := InterpSchedule(cfg.Local.Options.Schedule, false)
@@ -34,6 +35,16 @@ func SetupSchedule() (err bool) {
 		} else {
 			cwlog.DoLogCW("Schedule set up: " + cfg.Local.Options.Schedule)
 			CronVar.Start()
+
+			var maxTime time.Duration = 0
+			for _, entry := range CronVar.Entries() {
+				until := time.Until(entry.Next)
+				if until > maxTime {
+					maxTime = until
+					NextResetTime = entry.Next
+				}
+			}
+
 			UpdateScheduleDesc()
 			return false
 		}
@@ -152,16 +163,6 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		err2 := CronVar.AddFunc(warn1, func() { doWarn(1) })
 		err1 := CronVar.AddFunc(reset, func() { go Map_reset("", false) })
 
-		var maxTime time.Duration
-		entries := CronVar.Entries()
-		for _, entry := range entries {
-			until := time.Until(entry.Next)
-			if until > maxTime {
-				maxTime = until
-				NextResetTime = entry.Next
-			}
-		}
-
 		if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil {
 			cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error() + err5.Error())
 			return true
@@ -192,7 +193,7 @@ func InterpSchedule(desc string, test bool) (err bool) {
 
 func UpdateScheduleDesc() (err bool) {
 
-	if cfg.Local.Options.Schedule != "" {
+	if cfg.Local.Options.Schedule != "" && cfg.Local.Options.Schedule != "no-reset" && time.Until(NextResetTime) > 0 {
 
 		units, err := durafmt.DefaultUnitsCoder.Decode("y:y,week:weeks,day:days,hour:hours,minute:minutes,sec:secs,ms:ms,us:us")
 		if err != nil {
