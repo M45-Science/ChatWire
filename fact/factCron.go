@@ -156,7 +156,7 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		entries := CronVar.Entries()
 		for e, entry := range entries {
 			until := time.Until(entry.Next)
-			if until < maxTime {
+			if until > maxTime {
 				maxTime = until
 				NextResetTime = entries[e].Next
 			}
