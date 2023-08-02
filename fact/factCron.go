@@ -14,6 +14,7 @@ import (
 )
 
 var CronVar *cron.Cron
+var NextResetTime time.Time
 var NextReset string
 var TillReset string
 var NextResetUnix int64
@@ -151,6 +152,16 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		err2 := CronVar.AddFunc(warn1, func() { doWarn(1) })
 		err1 := CronVar.AddFunc(reset, func() { go Map_reset("", false) })
 
+		var maxTime time.Duration
+		entries := CronVar.Entries()
+		for e, entry := range entries {
+			until := time.Until(entry.Next)
+			if until < maxTime {
+				maxTime = until
+				NextResetTime = entries[e].Next
+			}
+		}
+
 		if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil {
 			cwlog.DoLogCW("interpSchedule: Error adding function: " + err1.Error() + err2.Error() + err3.Error() + err4.Error() + err5.Error())
 			return true
@@ -181,31 +192,17 @@ func InterpSchedule(desc string, test bool) (err bool) {
 
 func UpdateScheduleDesc() (err bool) {
 
-	if cfg.Local.Options.Schedule != "" && CronVar != nil && len(CronVar.Entries()) > 0 {
-		var minTime time.Duration = (time.Hour * 87600)
-		var entries = CronVar.Entries()
-		var targetEntry *cron.Entry
-		for e, entry := range entries {
-			until := time.Until(entry.Next)
-			if until < minTime {
-				minTime = until
-				targetEntry = entries[e]
-			}
-		}
+	if cfg.Local.Options.Schedule != "" {
 
 		units, err := durafmt.DefaultUnitsCoder.Decode("y:y,week:weeks,day:days,hour:hours,minute:minutes,sec:secs,ms:ms,us:us")
 		if err != nil {
 			panic(err)
 		}
 
-		n := targetEntry.Next
+		n := NextResetTime
 		NextReset = n.Format("Mon Jan 02 15:04 MST")
 		NextResetUnix = n.Unix()
 		TillReset = durafmt.Parse(time.Until(n).Round(time.Minute)).LimitFirstN(2).Format(units)
-
-		if time.Until(n) <= time.Minute*30 {
-			NextReset = "Soon"
-		}
 
 		if cfg.Local.Options.SkipReset {
 			TillReset = "(SKIP) " + TillReset
