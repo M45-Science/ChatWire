@@ -23,7 +23,7 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if i.Member != nil {
 		banBy = i.Member.User.Username
-		banBy = banBy + "#" + i.Member.User.Discriminator
+		banBy = banBy
 	}
 	tNow := time.Now()
 

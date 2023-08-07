@@ -368,7 +368,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				}
 				cordnamelen := len(cordname)
 				if cordnamelen > 0 {
-					cordname = fmt.Sprintf("%s#%s", fnamereduced, m.Author.Discriminator)
+					cordname = fmt.Sprintf("%s", fnamereduced)
 				} else {
 					cordname = fmt.Sprintf("ID#%s", m.Author.ID)
 				}

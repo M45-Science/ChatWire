@@ -187,11 +187,7 @@ func GetNameFromID(id string, disc bool) string {
 	if g != nil {
 		for _, m := range g.Members {
 			if m.User.ID == id {
-				if disc {
-					return m.User.Username + "#" + m.User.Discriminator
-				} else {
-					return m.User.Username
-				}
+				return m.User.Username
 			}
 		}
 	}
