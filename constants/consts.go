@@ -8,7 +8,7 @@ const (
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
 	Unknown            = "Unknown"
-	MaxWhitelist       = 1000 //Max whitelist items
+	MaxWhitelist       = 100 //Max whitelist items
 	MaxNameLength      = 64
 	MaxBanReasonLength = 1024
 
