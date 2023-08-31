@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version            = "2600-08.07.2023-0220p"
+	Version            = "2601-08.30.2023-1023p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -77,7 +77,7 @@ const (
 	 * the zip can appear invalid if another server is still downloading it
 	 */
 	MaxUpdateZipAttempts = 5
-	UpdateZipInterval    = time.Second * 15
+	UpdateZipInterval    = time.Minute
 
 	/* Maximum time before giving up on patching */
 	FactorioUpdateProcessLimit = 10 * time.Minute
