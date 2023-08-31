@@ -135,6 +135,18 @@ func UpdateRoleList() {
 						foundChange = true
 						RoleList.Patreons = append(RoleList.Patreons, m.User.Username)
 					}
+				} else if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Supporter) {
+					foundP := false
+					for _, u := range RoleList.Supporters {
+						if strings.EqualFold(u, m.User.Username) {
+							foundP = true
+							break
+						}
+					}
+					if !foundP {
+						foundChange = true
+						RoleList.Supporters = append(RoleList.Supporters, m.User.Username)
+					}
 				} else if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
 					foundM := false
 					for _, u := range RoleList.Moderators {

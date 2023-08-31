@@ -44,8 +44,9 @@ type roles struct {
 	Member    string
 	New       string
 
-	Patreon string
-	Nitro   string
+	Patreon   string
+	Supporter string
+	Nitro     string
 
 	RoleCache roleCache
 }
@@ -57,8 +58,9 @@ type roleCache struct {
 	Member    string
 	New       string
 
-	Patreon string
-	Nitro   string
+	Patreon   string
+	Supporter string
+	Nitro     string
 }
 
 type factData struct {

@@ -68,6 +68,8 @@ func IsPatreon(id string) bool {
 				for _, r := range m.Roles {
 					if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Patreon) {
 						return true
+					} else if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Supporter) {
+						return true
 					}
 				}
 			}

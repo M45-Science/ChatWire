@@ -453,7 +453,8 @@ func ConfigSoftMod() {
 
 	/* Patreon list */
 	if len(disc.RoleList.Patreons) > 0 {
-		fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ","))
+		fact.WriteFact("/patreonlist " + strings.Join(disc.RoleList.Patreons, ",") + "," +
+			strings.Join(disc.RoleList.Supporters, ","))
 	}
 	if len(disc.RoleList.NitroBooster) > 0 {
 		fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))

@@ -34,6 +34,7 @@ type CMSBuf struct {
 type RoleListData struct {
 	Version      string
 	Patreons     []string
+	Supporters   []string
 	NitroBooster []string
 	Moderators   []string
 }
