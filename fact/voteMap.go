@@ -136,7 +136,10 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	/* Create new vote, if we didn't already change it above */
 	if !changedVote {
 
-		newVote := glob.MapVoteData{Name: i.Member.User.Username, DiscID: i.Member.User.ID, TotalVotes: 0, Time: time.Now(), Selection: arg, NumChanges: 0, Voided: false, Expired: false}
+		newVote := glob.MapVoteData{Name: i.Member.User.Username,
+			DiscID: i.Member.User.ID, TotalVotes: 0, Time: time.Now(),
+			Selection: arg, NumChanges: 0, Voided: false, Expired: false,
+			Moderator: disc.CheckModerator(i), Supporter: disc.CheckSupporter(i)}
 
 		/* Re-use old vote if we found one, or old votes will block new ones */
 		if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
@@ -209,7 +212,17 @@ func VoidAllVotes() {
 }
 
 func PrintVote(v glob.MapVoteData) string {
-	buf := fmt.Sprintf("%v: %v (%v ago)", v.Name, v.Selection, time.Since(v.Time).Round(time.Second).String())
+	typeStr := ""
+	points := 1
+	if v.Moderator {
+		typeStr = typeStr + " (Moderator)"
+		points = 2
+	} else if v.Supporter {
+		typeStr = typeStr + " (Supporter)"
+		points = 2
+	}
+
+	buf := fmt.Sprintf("%v: Points: %v: %v (%v ago)%v", v.Name, points, v.Selection, time.Since(v.Time).Round(time.Second).String(), typeStr)
 	return buf
 }
 
@@ -244,6 +257,10 @@ func TallyMapVotes() (string, int) {
 			buf = buf + "\n"
 			visVotes++
 			validVotes++
+			if v.Moderator || v.Supporter {
+				validVotes++
+			}
+
 		}
 	}
 	buf = buf + " ```\n"
@@ -252,7 +269,7 @@ func TallyMapVotes() (string, int) {
 	if visVotes == 0 {
 		buf = ""
 	}
-	buf = buf + fmt.Sprintf("`Total valid votes: %v -- (need %v of same selection)`\n", validVotes, constants.VotesNeeded)
+	buf = buf + fmt.Sprintf("`Points: %v -- (need %v of same selection)`\n", validVotes, constants.VotesNeeded)
 
 	/* Reset tally, recount */
 	glob.VoteBox.Tally = []glob.VoteTallyData{}
@@ -260,12 +277,22 @@ func TallyMapVotes() (string, int) {
 		if !v.Voided && !v.Expired {
 			for apos, a := range glob.VoteBox.Tally {
 				if v.Selection == a.Selection {
+
 					/* Same autosave, tally */
-					glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
+					if v.Moderator || v.Supporter {
+						/* Supporters and mods get two votes */
+						glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 2}
+					} else {
+						glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
+					}
 				}
 			}
 			/* Different autosave, add to list */
-			glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
+			if v.Moderator || v.Supporter {
+				glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 2})
+			} else {
+				glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
+			}
 		}
 	}
 

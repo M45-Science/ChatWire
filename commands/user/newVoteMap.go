@@ -51,6 +51,12 @@ func VoteMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						if tvote.Voided {
 							tags = " (void/cast)"
 						}
+						if tvote.Supporter {
+							tags += " (supporter)"
+						}
+						if tvote.Moderator {
+							tags += " (moderator)"
+						}
 						if tvote.Expired {
 							tags = tags + " (expired)"
 						}

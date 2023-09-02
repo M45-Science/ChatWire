@@ -11,6 +11,7 @@ require (
 	github.com/martinhoefling/goxkcdpwgen v0.1.1
 	github.com/robfig/cron v1.2.0
 	github.com/ulikunitz/xz v0.5.11
+	golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e
 )
 
 require (

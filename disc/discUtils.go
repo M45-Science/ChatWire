@@ -47,6 +47,25 @@ func CheckModerator(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
+func CheckSupporter(i *discordgo.InteractionCreate) bool {
+
+	if cfg.Global.Discord.Roles.RoleCache.Patreon == "" ||
+		cfg.Global.Discord.Roles.RoleCache.Supporter == "" {
+		cwlog.DoLogCW("CheckSupporter RoleID not found for that role, check configuration files.")
+		return false
+	}
+
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Patreon) ||
+				strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Supporter) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 /* Check if Discord regular */
 func CheckRegular(i *discordgo.InteractionCreate) bool {
 

@@ -56,8 +56,12 @@ type VoteContainerData struct {
 
 /* Votes */
 type MapVoteData struct {
-	Name       string
-	DiscID     string
+	Name   string
+	DiscID string
+
+	Moderator bool
+	Supporter bool
+
 	TotalVotes int
 
 	Selection  string
