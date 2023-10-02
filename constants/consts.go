@@ -3,12 +3,12 @@ package constants
 import "time"
 
 const (
-	Version            = "2602-09.01.2023-0924p"
+	Version            = "2603-09.01.2023-1254p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
 	Unknown            = "Unknown"
-	MaxWhitelist       = 100 //Max whitelist items
+	MaxWhitelist       = 500 //Max whitelist items
 	MaxNameLength      = 64
 	MaxBanReasonLength = 1024
 
