@@ -166,7 +166,7 @@ func GenerateFactorioConfig() bool {
 		Autosave_slots:          autosaves,
 		Afk_autokick_interval:   autokick,
 		Auto_pause:              cfg.Local.Settings.AutoPause,
-		Only_admins_can_pause:   true,
+		Only_admins_can_pause:   cfg.Local.Settings.AdminOnlyPause,
 		Autosave_only_on_server: true,
 	}
 
