@@ -42,7 +42,7 @@ type FactConf struct {
 	Autosave_slots          int  `json:"autosave_slots"`
 	Afk_autokick_interval   int  `json:"afk_autokick_interval"`
 	Auto_pause              bool `json:"auto_pause"`
-	Only_admins_can_pause   bool `json:"only_admins_can_pause"`
+	Only_admins_can_pause   bool `json:"only_admins_can_pause_the_game"`
 	Autosave_only_on_server bool `json:"autosave_only_on_server"`
 }
 
