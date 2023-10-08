@@ -35,12 +35,13 @@ type ModPackData struct {
 }
 
 type settings struct {
-	MapGenerator string
-	MapPreset    string
-	Seed         int
-	AFKMin       int
-	AutosaveMin  int
-	AutoPause    bool
+	MapGenerator   string
+	MapPreset      string
+	Seed           int
+	AFKMin         int
+	AutosaveMin    int
+	AutoPause      bool
+	AdminOnlyPause bool
 }
 
 type channel struct {
@@ -124,6 +125,7 @@ func setLocalDefaults() {
 		g.SetDelimiter("")
 		Local.Name = g.GeneratePasswordString()
 	}
+	Local.Settings.AdminOnlyPause = true
 	if Local.Callsign == "" {
 		ex, err := os.Executable()
 		if err != nil {
