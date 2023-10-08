@@ -125,7 +125,6 @@ func setLocalDefaults() {
 		g.SetDelimiter("")
 		Local.Name = g.GeneratePasswordString()
 	}
-	Local.Settings.AdminOnlyPause = true
 	if Local.Callsign == "" {
 		ex, err := os.Executable()
 		if err != nil {
@@ -165,6 +164,9 @@ func setLocalDefaults() {
 
 		os.Mkdir(path, os.ModePerm)
 	}
+	if !Local.Options.Whitelist {
+		Local.Settings.AdminOnlyPause = true
+	}
 }
 
 func ReadLCfg() bool {
@@ -180,6 +182,7 @@ func ReadLCfg() bool {
 		if !Local.Settings.AutoPause {
 			Local.Settings.AutoPause = true
 		}
+		Local.Settings.AdminOnlyPause = true
 		WriteLCfg() /* Write the defaults */
 		return true
 	} else { /* Just read the config */
