@@ -41,7 +41,7 @@ func PauseConnect(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				/* Check if user is already online */
 				factname := disc.GetFactorioNameFromDiscordID(i.Member.User.ID)
 				if factname == "" {
-					disc.EphemeralResponse(s, i, "Error:", "You need to register!")
+					disc.EphemeralResponse(s, i, "Error:", "You need to register to use this command!")
 					return
 				}
 				if fact.IsPlayerOnline(factname) {

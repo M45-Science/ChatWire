@@ -139,7 +139,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 		newVote := glob.MapVoteData{Name: i.Member.User.Username,
 			DiscID: i.Member.User.ID, TotalVotes: 0, Time: time.Now(),
 			Selection: arg, NumChanges: 0, Voided: false, Expired: false,
-			Moderator: disc.CheckModerator(i), Supporter: disc.CheckSupporter(i)}
+			Moderator: disc.CheckModerator(i), Supporter: disc.CheckSupporter(i), Mature: disc.CheckMature(i)}
 
 		/* Re-use old vote if we found one, or old votes will block new ones */
 		if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
@@ -279,13 +279,7 @@ func TallyMapVotes() (string, int) {
 				if v.Selection == a.Selection {
 
 					/* Same autosave, tally */
-					target := glob.PlayerList[v.Name]
-					mature := false
-
-					if target != nil && target.Minutes >= constants.MatureThresh {
-						mature = true
-					}
-					if v.Moderator || v.Supporter || mature {
+					if v.Moderator || v.Supporter || v.Mature {
 						/* Supporters and mods get two votes */
 						glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 2}
 					} else {
