@@ -257,7 +257,7 @@ func TallyMapVotes() (string, int) {
 			buf = buf + "\n"
 			visVotes++
 			validVotes++
-			if v.Moderator || v.Supporter {
+			if v.Moderator || v.Supporter || v.Mature {
 				validVotes++
 			}
 
