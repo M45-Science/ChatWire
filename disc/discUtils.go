@@ -87,29 +87,20 @@ func CheckRegular(i *discordgo.InteractionCreate) bool {
 
 func CheckMature(i *discordgo.InteractionCreate) bool {
 
-	if cfg.Global.Discord.Roles.RoleCache.Regular == "" {
-		cwlog.DoLogCW("CheckRegular RoleID not found for that role, check configuration files.")
+	if CheckRegular(i) {
+		factname := GetFactorioNameFromDiscordID(i.Member.User.ID)
+		player := GetPlayerDataFromName(factname)
+
+		if player == nil {
+			return false
+		}
+
+		if player.Minutes >= constants.MatureThresh {
+			return true
+		}
 		return false
 	}
 
-	if i.Member != nil {
-		for _, r := range i.Member.Roles {
-			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Regular) {
-				factName := GetFactorioNameFromDiscordID(i.Member.User.ID)
-				if factName == "" {
-					return false
-				}
-				player := glob.PlayerList[factName]
-				if player == nil {
-					return false
-				}
-				if player.Minutes >= constants.MatureThresh {
-					return true
-				}
-				return false
-			}
-		}
-	}
 	return false
 }
 
