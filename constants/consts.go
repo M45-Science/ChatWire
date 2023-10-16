@@ -45,6 +45,7 @@ const (
 
 	/* Player suspect settings */
 	SusWarningThresh = 40
+	MatureThresh     = (60 * 12) //12 Hours
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"

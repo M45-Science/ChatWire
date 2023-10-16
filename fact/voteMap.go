@@ -279,7 +279,13 @@ func TallyMapVotes() (string, int) {
 				if v.Selection == a.Selection {
 
 					/* Same autosave, tally */
-					if v.Moderator || v.Supporter {
+					target := glob.PlayerList[v.Name]
+					mature := false
+
+					if target != nil && target.Minutes >= constants.MatureThresh {
+						mature = true
+					}
+					if v.Moderator || v.Supporter || mature {
 						/* Supporters and mods get two votes */
 						glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 2}
 					} else {
