@@ -274,6 +274,8 @@ func TallyMapVotes() (string, int) {
 	/* Reset tally, recount */
 	glob.VoteBox.Tally = []glob.VoteTallyData{}
 	for _, v := range glob.VoteBox.Votes {
+		skipAdd := false
+
 		if !v.Voided && !v.Expired {
 			for apos, a := range glob.VoteBox.Tally {
 				if v.Selection == a.Selection {
@@ -285,13 +287,17 @@ func TallyMapVotes() (string, int) {
 					} else {
 						glob.VoteBox.Tally[apos] = glob.VoteTallyData{Selection: a.Selection, Count: a.Count + 1}
 					}
+					skipAdd = true
 				}
 			}
-			/* Different autosave, add to list */
-			if v.Moderator || v.Supporter || v.Mature {
-				glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 2})
-			} else {
-				glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
+
+			if !skipAdd {
+				/* Different autosave, add to list */
+				if v.Moderator || v.Supporter || v.Mature {
+					glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 2})
+				} else {
+					glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
+				}
 			}
 		}
 	}
