@@ -288,7 +288,7 @@ func TallyMapVotes() (string, int) {
 				}
 			}
 			/* Different autosave, add to list */
-			if v.Moderator || v.Supporter {
+			if v.Moderator || v.Supporter || v.Mature {
 				glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 2})
 			} else {
 				glob.VoteBox.Tally = append(glob.VoteBox.Tally, glob.VoteTallyData{Selection: v.Selection, Count: 1})
