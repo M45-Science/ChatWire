@@ -31,6 +31,13 @@ func main() {
 	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
+	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
+
+	if *cleanDB {
+		fact.LoadPlayers(true, true)
+		fact.WritePlayers()
+		return
+	}
 
 	debug.SetMemoryLimit(1024 * 1024 * 250) //250mb
 	//debug.SetMaxThreads(1000)
@@ -144,8 +151,7 @@ func main() {
 	fact.SetupSchedule()
 
 	/* Read in player list */
-	/* Skip banned and level 0 (new) players on first load */
-	fact.LoadPlayers(true)
+	fact.LoadPlayers(true, false)
 
 	/* Read in cached discord role data */
 	disc.ReadRoleList()

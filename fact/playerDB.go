@@ -361,7 +361,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 }
 
 /* Load database */
-func LoadPlayers(bootMode bool) {
+func LoadPlayers(bootMode, minimize bool) {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
@@ -388,6 +388,14 @@ func LoadPlayers(bootMode bool) {
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
 			for pname := range tempData {
+				if minimize {
+					if tempData[pname].Level == 0 {
+						continue
+					}
+					if tempData[pname].Level == 1 {
+						continue
+					}
+				}
 				if banCount > 5 {
 					doBan = false
 				}
