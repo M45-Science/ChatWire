@@ -394,10 +394,6 @@ func LoadPlayers(bootMode, minimize bool) {
 						removed++
 						continue
 					}
-					if tempData[pname].Level == 1 {
-						removed++
-						continue
-					}
 					if tempData[pname].Level > 0 {
 						tempData[pname].SusScore = 0
 						tempData[pname].BanReason = ""
