@@ -37,13 +37,6 @@ func main() {
 	//debug.SetMaxThreads(1000)
 
 	flag.Parse()
-	if *cleanDB {
-		fact.LoadPlayers(true, true)
-		fact.WritePlayers()
-		fmt.Println("Database cleaned.")
-		os.Exit(0)
-		return
-	}
 
 	glob.PausedAt = time.Now()
 
@@ -54,7 +47,7 @@ func main() {
 	cwlog.StartCWLog()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
-	if !*glob.LocalTestMode {
+	if !*glob.LocalTestMode && !*cleanDB {
 		/* Handle lock file */
 		bstr, err := os.ReadFile("cw.lock")
 		if err == nil {
@@ -146,6 +139,14 @@ func main() {
 		cfg.WriteLCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+		return
+	}
+
+	if *cleanDB {
+		fact.LoadPlayers(true, true)
+		fact.WritePlayers()
+		fmt.Println("Database cleaned.")
+		os.Exit(0)
 		return
 	}
 

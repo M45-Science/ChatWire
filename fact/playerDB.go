@@ -387,15 +387,24 @@ func LoadPlayers(bootMode, minimize bool) {
 			doBan := true
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
+			var removed int
 			for pname := range tempData {
 				if minimize {
 					if tempData[pname].Level == 0 {
+						removed++
 						continue
 					}
 					if tempData[pname].Level == 1 {
+						removed++
 						continue
 					}
+					if tempData[pname].Level > 0 {
+						tempData[pname].SusScore = 0
+						tempData[pname].BanReason = ""
+						tempData[pname].SpamScore = 0
+					}
 				}
+
 				if banCount > 5 {
 					doBan = false
 				}
@@ -408,6 +417,9 @@ func LoadPlayers(bootMode, minimize bool) {
 				if didBan {
 					banCount++
 				}
+			}
+			if removed > 0 {
+				fmt.Printf("Removed: %v entries.\n", removed)
 			}
 			glob.PlayerListLock.Unlock()
 		}
