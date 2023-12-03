@@ -37,6 +37,14 @@ func main() {
 	//debug.SetMaxThreads(1000)
 
 	flag.Parse()
+
+	if *cleanDB {
+		fact.LoadPlayers(true, true)
+		fact.WritePlayers()
+		os.Exit(0)
+		return
+	}
+
 	glob.PausedAt = time.Now()
 
 	/* Mark uptime start */
@@ -45,14 +53,6 @@ func main() {
 	/* Start cw logs */
 	cwlog.StartCWLog()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
-
-	if *cleanDB {
-		fact.LoadPlayers(true, true)
-		fact.WritePlayers()
-		fmt.Println("Database cleaned.")
-		os.Exit(0)
-		return
-	}
 
 	if !*glob.LocalTestMode {
 		/* Handle lock file */
