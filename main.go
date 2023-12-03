@@ -33,12 +33,6 @@ func main() {
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 
-	if *cleanDB {
-		fact.LoadPlayers(true, true)
-		fact.WritePlayers()
-		return
-	}
-
 	debug.SetMemoryLimit(1024 * 1024 * 250) //250mb
 	//debug.SetMaxThreads(1000)
 
@@ -51,6 +45,14 @@ func main() {
 	/* Start cw logs */
 	cwlog.StartCWLog()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
+
+	if *cleanDB {
+		fact.LoadPlayers(true, true)
+		fact.WritePlayers()
+		fmt.Println("Database cleaned.")
+		os.Exit(0)
+		return
+	}
 
 	if !*glob.LocalTestMode {
 		/* Handle lock file */
