@@ -37,10 +37,10 @@ func main() {
 	//debug.SetMaxThreads(1000)
 
 	flag.Parse()
-
 	if *cleanDB {
 		fact.LoadPlayers(true, true)
 		fact.WritePlayers()
+		fmt.Println("Database cleaned.")
 		os.Exit(0)
 		return
 	}
