@@ -63,7 +63,7 @@ const (
 	VoteCooldown      = 5  /* Vote cooldown */
 	VoteExpire        = 6  /* Vote expires after this number of hours */
 	MaxVoteChanges    = 2  /* Max number of times a player can change their vote */
-	MaxVotesPerMap    = 4  /* Max number of votes per map */
+	MaxVotesPerMap    = 10 /* Max number of votes per map */
 	MaxMapResults     = 25 /* 25 is Discord max 6/2022, we add one to list for 'new' */
 	MaxFullMapResults = 500
 
