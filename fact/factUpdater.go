@@ -82,8 +82,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			clines := strings.Split(out, "\n")
 			for _, line := range clines {
 				linelen := len(line)
-				var newversion string
-				//var oldversion string
+				var newversion, oldversion string
 
 				if linelen > 0 {
 
@@ -131,12 +130,34 @@ func CheckFactUpdate(logNoUpdate bool) {
 						}
 					} else if strings.HasPrefix(line, "Dry run: would have fetched update from") {
 						if numwords >= 9 {
-							//oldversion = words[7]
+							oldversion = words[7]
 							newversion = words[9]
 
 							messdisc := "**Factorio update available!**"
 							messfact := "Factorio update available!"
 							DoUpdateFactorio = true
+
+							newDigits := strings.Split(newversion, ".")
+							oldDigits := strings.Split(oldversion, ".")
+
+							if len(newDigits) < 2 || len(oldDigits) < 2 {
+								return
+							}
+
+							if newDigits[0] != oldDigits[0] {
+								//Full revision, only manually update.
+								buf := fmt.Sprintf("Factorio update '%v' to '%v' is a full revision, disabling auto-update.", oldversion, newversion)
+								CMS(cfg.Local.Channel.ChatChannel, buf)
+								cfg.Local.Options.AutoUpdate = false
+								return
+							}
+							if newDigits[1] != oldDigits[1] {
+								//Major revision, only manually update.
+								buf := fmt.Sprintf("Factorio update '%v' to '%v' is a major revision, disabling auto-update.", oldversion, newversion)
+								CMS(cfg.Local.Channel.ChatChannel, buf)
+								cfg.Local.Options.AutoUpdate = false
+								return
+							}
 
 							/* Don't message, unless this is actually a unique new version */
 							if NewVersion != newversion {
