@@ -586,9 +586,15 @@ func MainLoops() {
 	****************************/
 	go func() {
 		time.Sleep(time.Minute)
+		if cfg.Local.Options.AutoUpdate == false {
+			return
+		}
 
 		for glob.ServerRunning {
 			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
+			if cfg.Local.Options.AutoUpdate == false {
+				return
+			}
 			time.Sleep(time.Minute * 30)
 			fact.CheckFactUpdate(false)
 		}
