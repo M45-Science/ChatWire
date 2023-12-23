@@ -68,6 +68,8 @@ type localOptions struct {
 	SkipReset       bool
 	Speed           float32
 
+	Whitelist bool
+
 	SoftModOptions softmodOptions
 }
 
@@ -215,6 +217,12 @@ func ReadLCfg() bool {
 			if !found {
 				Local.Settings.MapPreset = constants.MapTypes[1]
 				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.Settings.MapPreset)
+			}
+
+			//Migrate old setting
+			if newcfg.Options.Whitelist {
+				newcfg.Options.MembersOnly = true
+				newcfg.Options.Whitelist = false
 			}
 
 			if newcfg.Options.RegularsOnly {
