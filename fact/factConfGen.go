@@ -57,7 +57,9 @@ func GenerateFactorioConfig() bool {
 		constants.ServSettingsName
 
 	var servName string
-	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
+	if cfg.Local.Options.CustomWhitelist {
+		cfg.ServerPrefix = constants.PrivatePrefix
+	} else if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		if cfg.Local.Options.RegularsOnly {
 			cfg.ServerPrefix = constants.RegularsPrefix
 		} else {
