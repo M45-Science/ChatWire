@@ -61,6 +61,7 @@ type localOptions struct {
 	ExpUpdates      bool
 	HideAutosaves   bool
 	HideResearch    bool
+	RegularsOnly    bool
 	Whitelist       bool
 	CustomWhitelist bool
 	ModUpdate       bool

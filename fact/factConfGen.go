@@ -58,7 +58,11 @@ func GenerateFactorioConfig() bool {
 
 	var servName string
 	if cfg.Local.Options.Whitelist {
-		cfg.ServerPrefix = constants.MembersPrefix
+		if cfg.Local.Options.RegularsOnly {
+			cfg.ServerPrefix = constants.RegularsPrefix
+		} else {
+			cfg.ServerPrefix = constants.MembersPrefix
+		}
 		servName = "\u0080[" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
 	} else {
@@ -133,7 +137,11 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.Options.CustomWhitelist {
 		tags = append(tags, "INVITE-ONLY")
 	} else if cfg.Local.Options.Whitelist {
-		tags = append(tags, "MEMBERS-ONLY")
+		if cfg.Local.Options.RegularsOnly {
+			tags = append(tags, "REGULARS-ONLY")
+		} else {
+			tags = append(tags, "MEMBERS-ONLY")
+		}
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 

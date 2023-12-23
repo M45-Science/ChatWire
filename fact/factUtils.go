@@ -335,8 +335,14 @@ func WriteWhitelist() int {
 		localPlayerList = make([]*glob.PlayerData, len(localPlayerList))
 
 		for _, player := range glob.PlayerList {
-			if player.Level > 0 {
-				localPlayerList = append(localPlayerList, player)
+			if cfg.Local.Options.RegularsOnly {
+				if player.Level > 1 {
+					localPlayerList = append(localPlayerList, player)
+				}
+			} else {
+				if player.Level > 0 {
+					localPlayerList = append(localPlayerList, player)
+				}
 			}
 		}
 

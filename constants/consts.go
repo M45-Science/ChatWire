@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version            = "2609-12.21.2023-0258p"
+	Version            = "2610-12.22.2023-0654p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -24,6 +24,7 @@ const (
 	RoleListFile        = "../RoleList.dat"
 	VoteFile            = "votes.dat"
 	MembersPrefix       = "M"
+	RegularsPrefix      = "R"
 	ArchiveFolderSuffix = " maps"
 	TempSaveName        = "softmod.tmp"
 	BootUpdateDelayMin  = 2
