@@ -224,6 +224,9 @@ func ReadLCfg() bool {
 				newcfg.Options.MembersOnly = true
 				newcfg.Options.Whitelist = false
 			}
+			if newcfg.Options.RegularsOnly {
+				newcfg.Options.MembersOnly = false
+			}
 
 			if newcfg.Options.RegularsOnly {
 				ServerPrefix = constants.RegularsPrefix
