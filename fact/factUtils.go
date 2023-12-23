@@ -260,8 +260,16 @@ func GetGuildName() string {
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
 	if FactorioBooted && FactIsRunning {
-		if cfg.Local.Options.Whitelist && !cfg.Local.Options.CustomWhitelist {
+		if !cfg.Local.Options.CustomWhitelist {
+			return
+		}
+		if cfg.Local.Options.MembersOnly {
 			if level > 0 {
+				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
+			}
+		}
+		if cfg.Local.Options.RegularsOnly {
+			if level > 1 {
 				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
 			}
 		}
@@ -326,7 +334,7 @@ func WriteWhitelist() int {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.WhitelistName
 
-	if cfg.Local.Options.Whitelist {
+	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		glob.PlayerListLock.RLock()
 
 		var count = 0
@@ -576,10 +584,16 @@ func UpdateChannelName() {
 
 	var newchname string
 	nump := NumPlayers
-	icon := "🔵"
+	icon := "⚪"
 
-	if cfg.Local.Options.Whitelist {
-		icon = "🟣"
+	if cfg.Local.Options.CustomWhitelist {
+		icon = "🔴"
+	}
+	if cfg.Local.Options.MembersOnly {
+		icon = "🟢"
+	}
+	if cfg.Local.Options.RegularsOnly {
+		icon = "🟠"
 	}
 	if nump == 0 {
 		icon = "⚫"

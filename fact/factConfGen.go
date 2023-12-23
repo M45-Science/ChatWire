@@ -57,7 +57,7 @@ func GenerateFactorioConfig() bool {
 		constants.ServSettingsName
 
 	var servName string
-	if cfg.Local.Options.Whitelist {
+	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		if cfg.Local.Options.RegularsOnly {
 			cfg.ServerPrefix = constants.RegularsPrefix
 		} else {
@@ -96,7 +96,9 @@ func GenerateFactorioConfig() bool {
 
 	if cfg.Local.Options.CustomWhitelist {
 		descrLines = append(descrLines, AddFactColor("red", "INVITE-ONLY"))
-	} else if cfg.Local.Options.Whitelist {
+	} else if cfg.Local.Options.RegularsOnly {
+		descrLines = append(descrLines, AddFactColor("red", "REGULARS-ONLY"))
+	} else if cfg.Local.Options.MembersOnly {
 		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
 	}
 
@@ -136,12 +138,10 @@ func GenerateFactorioConfig() bool {
 
 	if cfg.Local.Options.CustomWhitelist {
 		tags = append(tags, "INVITE-ONLY")
-	} else if cfg.Local.Options.Whitelist {
-		if cfg.Local.Options.RegularsOnly {
-			tags = append(tags, "REGULARS-ONLY")
-		} else {
-			tags = append(tags, "MEMBERS-ONLY")
-		}
+	} else if cfg.Local.Options.MembersOnly {
+		tags = append(tags, "MEMBERS-ONLY")
+	} else if cfg.Local.Options.RegularsOnly {
+		tags = append(tags, "REGULARS-ONLY")
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 

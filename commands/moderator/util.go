@@ -286,7 +286,17 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData: &cfg.Local.Options.Whitelist,
+		BData: &cfg.Local.Options.MembersOnly,
+	},
+	{
+		Name:      "regulars-only",
+		ShortDesc: "regulars only",
+		Desc:      "Only regulars and moderators can connect.",
+		Type:      TYPE_BOOL,
+
+		DefBool: false,
+
+		BData: &cfg.Local.Options.RegularsOnly,
 	},
 	{
 		Name:      "restrict-new-players",

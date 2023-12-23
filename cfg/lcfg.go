@@ -62,7 +62,7 @@ type localOptions struct {
 	HideAutosaves   bool
 	HideResearch    bool
 	RegularsOnly    bool
-	Whitelist       bool
+	MembersOnly     bool
 	CustomWhitelist bool
 	ModUpdate       bool
 	SkipReset       bool
@@ -165,8 +165,10 @@ func setLocalDefaults() {
 
 		os.Mkdir(path, os.ModePerm)
 	}
-	if !Local.Options.Whitelist {
+	if !Local.Options.RegularsOnly {
 		Local.Settings.AdminOnlyPause = true
+	} else {
+		Local.Settings.AdminOnlyPause = false
 	}
 }
 
@@ -215,7 +217,9 @@ func ReadLCfg() bool {
 				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.Settings.MapPreset)
 			}
 
-			if newcfg.Options.Whitelist {
+			if newcfg.Options.RegularsOnly {
+				ServerPrefix = constants.RegularsPrefix
+			} else if newcfg.Options.MembersOnly {
 				ServerPrefix = constants.MembersPrefix
 			} else {
 				ServerPrefix = ""

@@ -64,7 +64,9 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	buf = buf + "\nThe reason this is necessary:\nYour Discord and Factorio names can be different, so this is the only way to find your player-level in Factorio.\n"
-	if cfg.Local.Options.Whitelist {
+	if cfg.Local.Options.RegularsOnly {
+		buf = buf + "**NOTICE: This is a REGULARS-ONLY server, if you haven't reached the REGULAR level in-game, you will be unable to connect. If this is the case, use the /register command on a PUBLIC server.**\n"
+	} else if cfg.Local.Options.MembersOnly {
 		buf = buf + "**NOTICE: This is a MEMBERS-ONLY server, if you haven't reached the MEMBER level in-game, you will be unable to connect. If this is the case, use the /register command on a PUBLIC server.**\n"
 	}
 

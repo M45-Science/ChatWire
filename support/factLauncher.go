@@ -343,7 +343,7 @@ func launchFactorio() {
 	}
 
 	/* Whitelist */
-	if cfg.Local.Options.Whitelist || cfg.Local.Options.CustomWhitelist {
+	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly || cfg.Local.Options.CustomWhitelist {
 		tempargs = append(tempargs, "--use-server-whitelist")
 		tempargs = append(tempargs, "true")
 	}
@@ -351,7 +351,7 @@ func launchFactorio() {
 	/* Write or delete whitelist */
 	if !cfg.Local.Options.CustomWhitelist {
 		count := fact.WriteWhitelist()
-		if count > 0 && cfg.Local.Options.Whitelist {
+		if count > 0 && (cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly) {
 			cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
 		}
 	}
