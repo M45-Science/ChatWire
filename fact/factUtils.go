@@ -524,6 +524,13 @@ func AutoPromote(pname string) string {
 		} else if plevel == -1 {
 			playerName = " **(Banned)**"
 
+			name := strings.ToLower(pname)
+			glob.PlayerListLock.Lock()
+			if glob.PlayerList[name] != nil {
+				WriteFact("/ban " + pname + " " + glob.PlayerList[name].BanReason)
+			}
+			glob.PlayerListLock.Unlock()
+
 		} else if plevel == 1 {
 			playerName = " *(Member)*"
 			WriteFact(fmt.Sprintf("/member %s", pname))
