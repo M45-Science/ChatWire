@@ -24,7 +24,8 @@ type banDataType struct {
 	Reason   string `json:"reason,omitempty"`
 }
 
-func CheckBanList(player string) {
+func CheckBanList(name string) {
+	pname := strings.ToLower(name)
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
@@ -33,7 +34,7 @@ func CheckBanList(player string) {
 	}
 
 	for _, ban := range BanList {
-		if strings.EqualFold(ban.UserName, player) {
+		if strings.EqualFold(ban.UserName, pname) {
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
 				fact.PlayerSetBanReason(ban.UserName, "[FCL] "+ban.Reason, true)
 			}
@@ -41,10 +42,10 @@ func CheckBanList(player string) {
 		}
 	}
 
-	if fact.PlayerLevelGet(player, false) == -1 {
+	if fact.PlayerLevelGet(pname, false) == -1 {
 		glob.PlayerListLock.Lock()
-		if glob.PlayerList[player] != nil {
-			fact.WriteFact("/ban " + player + " " + glob.PlayerList[player].BanReason)
+		if glob.PlayerList[pname] != nil {
+			fact.WriteFact("/ban " + pname + " " + glob.PlayerList[pname].BanReason)
 		}
 		glob.PlayerListLock.Unlock()
 	}
