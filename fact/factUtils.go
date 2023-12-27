@@ -527,7 +527,7 @@ func AutoPromote(pname string) string {
 			name := strings.ToLower(pname)
 			glob.PlayerListLock.Lock()
 			if glob.PlayerList[name] != nil {
-				WriteFact("/ban " + name + " [FCL] " + glob.PlayerList[name].BanReason)
+				WriteFact("/ban " + name + " " + glob.PlayerList[name].BanReason)
 			}
 			glob.PlayerListLock.Unlock()
 
