@@ -260,7 +260,7 @@ func GetGuildName() string {
 /* Whitelist a specifc player. */
 func WhitelistPlayer(pname string, level int) {
 	if FactorioBooted && FactIsRunning {
-		if !cfg.Local.Options.CustomWhitelist {
+		if cfg.Local.Options.CustomWhitelist {
 			return
 		}
 		if cfg.Local.Options.MembersOnly {
