@@ -432,11 +432,23 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 								glob.LastSusWarning = time.Now()
 
 								if !cfg.Global.Options.ShutupSusWarn {
+									pingStr := ""
+									if cfg.Global.Discord.SusPingRole != "" {
+										pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
+									}
 									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)", pname)
+
 									fact.FactChat("[color=red]" + sbuf + "[/color]")
 									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+
 									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
-									fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
+
+									if pingStr != "" {
+										reportMsg := fmt.Sprintf("%v %v", pingStr, sbuf)
+										fact.CMS(cfg.Global.Discord.ReportChannel, reportMsg)
+									} else {
+										fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
+									}
 								}
 
 								p.SusScore = 0

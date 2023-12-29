@@ -35,6 +35,7 @@ type discord struct {
 	ReportChannel   string
 	AnnounceChannel string
 	Roles           roles
+	SusPingRole     string
 }
 
 type roles struct {
