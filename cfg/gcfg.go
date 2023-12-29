@@ -111,7 +111,7 @@ type dataFiles struct {
 
 type globalOptions struct {
 	Description        string
-	PingString         string
+	ResetPingRole      string
 	UseAuthserver      bool
 	AutosaveMax        int
 	RconOffset         int

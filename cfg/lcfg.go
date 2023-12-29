@@ -54,7 +54,7 @@ type localOptions struct {
 	ResetDay         string
 	ResetDate        int
 	ResetHour        int
-	PingString       string
+	ResetPingRole    string
 
 	AutoStart       bool
 	AutoUpdate      bool

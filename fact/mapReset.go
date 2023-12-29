@@ -257,10 +257,10 @@ func Map_reset(data string, doReport bool) {
 
 	/* If available, use per-server ping setting... otherwise use global */
 	pingstr := ""
-	if cfg.Local.Options.PingString != "" {
-		pingstr = cfg.Local.Options.PingString
-	} else if cfg.Global.Options.PingString != "" {
-		pingstr = cfg.Global.Options.PingString
+	if cfg.Local.Options.ResetPingRole != "" {
+		pingstr = fmt.Sprintf("<@&%v>", cfg.Local.Options.ResetPingRole)
+	} else if cfg.Global.Options.ResetPingRole != "" {
+		pingstr = fmt.Sprintf("<@&%v>", cfg.Global.Options.ResetPingRole)
 	}
 	CMS(cfg.Global.Discord.AnnounceChannel, pingstr+" Map "+cfg.Local.Callsign+"-"+cfg.Local.Name+" auto-reset.")
 
