@@ -276,7 +276,7 @@ func WhitelistPlayer(pname string, level int) {
 	}
 }
 
-/* Write a full whitelist for a server, before it boots */
+/* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
 
 	wpath := cfg.Global.Paths.Folders.ServersRoot +
