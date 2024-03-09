@@ -99,14 +99,6 @@ func HandleChat() {
 						/* Don't eat event, this is capable of eating random text */
 						go handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
 
-						if handlePlayerReport(line, lineList, lowerCaseListlen) {
-							continue
-						}
-
-						if handlePlayerRegister(line, lineList, lineListlen) {
-							continue
-						}
-
 						if handleOnlinePlayers(line, lineList, lineListlen) {
 							continue
 						}
@@ -116,10 +108,6 @@ func HandleChat() {
 						}
 
 						if handlePlayerLeave(NoDS, line, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handleSoftModMsg(line, lineList, lineListlen) {
 							continue
 						}
 
@@ -167,6 +155,13 @@ func HandleChat() {
 							continue
 						}
 
+						/*
+						 * Softmod only after this point
+						 */
+						if glob.SoftModVersion == constants.Unknown {
+							continue
+						}
+
 						if handleCmdMsg(line) {
 							continue
 						}
@@ -176,6 +171,19 @@ func HandleChat() {
 						if handleOnlineMsg(line) {
 							continue
 						}
+
+						if handleSoftModMsg(line, lineList, lineListlen) {
+							continue
+						}
+
+						if handlePlayerReport(line, lineList, lowerCaseListlen) {
+							continue
+						}
+
+						if handlePlayerRegister(line, lineList, lineListlen) {
+							continue
+						}
+
 					} else {
 						/* Protect players from dumb mistakes with registration codes */
 						if handleIdiots(line) {
