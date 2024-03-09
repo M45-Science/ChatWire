@@ -40,15 +40,9 @@ func handleDisconnect(NoTC string, line string) {
 
 		if strings.Contains(line, "removing peer") {
 
-			/* We do this, so we can get a corrected player count */
-			if glob.SoftModVersion != constants.Unknown {
-				time.Sleep(time.Second * 2)
-				fact.WriteFact(glob.OnlineCommand)
-			}
-
+			fact.WriteFact(glob.OnlineCommand)
 		}
 	}
-
 }
 
 func handleGameTime(lowerCaseLine string, lowerCaseList []string, lowerCaseListlen int) {
@@ -297,44 +291,55 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			pname = sclean.EscapeDiscordMarkdown(pname)
 
 			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.Gametime, pname, plevelname)
-			glob.PausedLock.Lock()
-			if glob.PausedForConnect {
-				if strings.EqualFold(glob.PausedFor, pname) {
-					glob.PausedForConnect = false
-					glob.PausedFor = ""
-					glob.PausedConnectAttempt = false
-					fact.WriteFact(
-						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
-					buf = buf + " (Unpausing game)"
-				}
-			}
-			glob.PausedLock.Unlock()
-			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
-			/* If our softmod is active, update the time-till map-reset so it is accurate */
+			/* If softmod is active, handle pause on connect */
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
 				fact.FactorioBooted {
+
+				glob.PausedLock.Lock()
+				if glob.PausedForConnect {
+					if strings.EqualFold(glob.PausedFor, pname) {
+						glob.PausedForConnect = false
+						glob.PausedFor = ""
+						glob.PausedConnectAttempt = false
+						fact.WriteFact(
+							fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+						buf = buf + " (Unpausing game)"
+					}
+				}
+				glob.PausedLock.Unlock()
+			}
+
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+
+			/* Update softmod map schedule */
+			if glob.SoftModVersion != constants.Unknown &&
+				fact.FactIsRunning &&
+				fact.FactorioBooted {
+
 				fact.UpdateScheduleDesc()
 				if fact.TillReset != "" && cfg.Local.Options.Schedule != "" {
 					fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
 				} else {
 					fact.WriteFact("/resetdur")
 				}
+
+				/* Give people patreon/nitro tags in-game. */
+				did := disc.GetDiscordIDFromFactorioName(pname)
+				if did != "" {
+					if IsPatreon(did) {
+						fact.WriteFact(fmt.Sprintf("/regular %s", pname))
+						fact.WriteFact(fmt.Sprintf("/patreon %s", pname))
+					}
+					if IsNitro(did) {
+						fact.WriteFact(fmt.Sprintf("/regular %s", pname))
+						fact.WriteFact(fmt.Sprintf("/nitro %s", pname))
+					}
+				}
 			}
 
-			/* Give people patreon/nitro tags in-game. */
-			did := disc.GetDiscordIDFromFactorioName(pname)
-			if did != "" {
-				if IsPatreon(did) {
-					fact.WriteFact(fmt.Sprintf("/regular %s", pname))
-					fact.WriteFact(fmt.Sprintf("/patreon %s", pname))
-				}
-				if IsNitro(did) {
-					fact.WriteFact(fmt.Sprintf("/regular %s", pname))
-					fact.WriteFact(fmt.Sprintf("/nitro %s", pname))
-				}
-			}
+			fact.WriteFact(glob.OnlineCommand)
 		}
 		return true
 	}
@@ -347,18 +352,9 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 	 ******************/
 	if strings.HasPrefix(NoDS, "[LEAVE]") &&
 		/* Suppress quit messages from map load */
-		!fact.FactorioBootedAt.IsZero() &&
-		time.Since(fact.FactorioBootedAt) > time.Second*30 {
+		fact.FactorioBooted && fact.FactIsRunning {
 
 		cwlog.DoLogGame(NoDS)
-
-		/* Handle softmod and vanilla */
-		if glob.SoftModVersion == constants.Unknown {
-			if NoDSlistlen > 1 {
-				buf := strings.Join(NoDSlist[1:NoDSlistlen], " ")
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-			}
-		}
 
 		/* Mark as seen, async */
 		if NoDSlistlen > 1 {
@@ -549,6 +545,7 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 			fact.LastSaveName = filename
 
 			buf := fmt.Sprintf("Loading map %s (%v)...", filename, humanize.Bytes(uint64(sizei)))
+
 			cwlog.DoLogCW(buf)
 		} else { /* Just in case */
 			cwlog.DoLogCW("Loading map...")
@@ -584,6 +581,7 @@ func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 			}
 
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(NoDSlist[1:], " ")))
+			fact.WriteFact(glob.OnlineCommand)
 		}
 		return true
 	}
@@ -662,7 +660,7 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
-
+		fact.WriteFact(glob.OnlineCommand)
 	}
 	return false
 }
