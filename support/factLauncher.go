@@ -459,4 +459,6 @@ func ConfigSoftMod() {
 	if len(disc.RoleList.NitroBooster) > 0 {
 		fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ","))
 	}
+
+	fact.WriteFact(fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
 }
