@@ -127,10 +127,6 @@ func HandleChat() {
 							continue
 						}
 
-						if handleModLoad(NoTC) {
-							continue
-						}
-
 						go handleBan(NoDS, NoDSlist, NoDSlistlen)
 
 						if handleSVersion(line, lineList, lineListlen) {

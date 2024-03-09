@@ -36,19 +36,6 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			str := arg.StringValue()
 			if strings.EqualFold(str, "verbose") {
 				verbose = true
-			} else if strings.EqualFold(str, "debug") {
-				if disc.CheckAdmin(i) {
-					debug = true
-				} else {
-					buf = buf + "Sorry, the debug option is admin-only.\n\n"
-				}
-			} else if strings.EqualFold(str, "list-mods") {
-				mList, err := fact.MakeModList()
-				if err != nil {
-					disc.EphemeralResponse(s, i, "Server Mods: (basic list)", strings.Join(fact.ModList, ", "))
-				} else {
-					disc.EphemeralResponse(s, i, "Server Mods:", "```\n"+mList+"\n```")
-				}
 			}
 		}
 	}

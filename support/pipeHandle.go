@@ -558,39 +558,6 @@ func handleMapLoad(NoTC string, NoDSlist []string, NoTClist []string, NoTClistle
 	return false
 }
 
-func handleModLoad(NoTC string) bool {
-	/******************
-	 * LOADING MOD
-	 ******************/
-	if strings.HasPrefix(NoTC, "Loading mod") {
-
-		if !strings.Contains(NoTC, "base") &&
-			!strings.Contains(NoTC, "core") &&
-			!strings.Contains(NoTC, "settings") {
-
-			parts := strings.Split(NoTC, " ")
-			numParts := len(parts) - 1
-			if numParts >= 4 {
-
-				modName := strings.Join(parts[2:numParts-1], " ")
-
-				found := false
-				for _, m := range fact.ModList {
-					if strings.EqualFold(m, modName) {
-						found = true
-					}
-				}
-				if !found {
-					fact.ModList = append(fact.ModList, modName)
-					cwlog.DoLogCW(NoTC)
-				}
-			}
-		}
-	}
-	/* Dont eat, factorio version handle uses this too */
-	return false
-}
-
 func handleBan(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 	/******************
 	 * BAN
