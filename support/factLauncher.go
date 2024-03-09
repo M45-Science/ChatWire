@@ -376,6 +376,7 @@ func launchFactorio() {
 	/* Okay, prep for factorio launch */
 	fact.SetFactRunning(true)
 	fact.FactorioBooted = false
+	fact.FactorioBootedAt = time.Time{}
 
 	fact.Gametime = (constants.Unknown)
 	glob.NoResponseCount = 0
@@ -383,7 +384,6 @@ func launchFactorio() {
 
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-
 	LinuxSetProcessGroup(cmd)
 	/* Connect Factorio stdout to a buffer for processing */
 	fact.GameBuffer = new(bytes.Buffer)
