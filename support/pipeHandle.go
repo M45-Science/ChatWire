@@ -662,7 +662,7 @@ func handleFactReady(NoTC string) bool {
 		fact.SetFactRunning(true)
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
-		fact.WriteFact(fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+
 	}
 	return false
 }
