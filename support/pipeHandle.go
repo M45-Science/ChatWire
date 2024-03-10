@@ -38,9 +38,11 @@ func handleDisconnect(NoTC string, line string) {
 
 	if strings.HasPrefix(NoTC, "Info ServerMultiplayerManager") {
 
-		if strings.Contains(line, "removing peer") {
-
-			fact.WriteFact(glob.OnlineCommand)
+		if glob.SoftModVersion == constants.Unknown {
+			if strings.Contains(line, "removing peer") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "A player has disconnected.")
+				fact.WriteFact(glob.OnlineCommand)
+			}
 		}
 	}
 }
@@ -359,6 +361,12 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 		/* Mark as seen, async */
 		if NoDSlistlen > 1 {
 			pname := NoDSlist[1]
+
+			/* Show quit if there is no soft-mod */
+			if glob.SoftModVersion == constants.Unknown {
+				buf := fmt.Sprintf("%v left.", pname)
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+			}
 
 			go func(factname string) {
 				fact.UpdateSeen(factname)
