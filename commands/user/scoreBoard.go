@@ -31,7 +31,7 @@ func Scoreboard(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	scores := []scoreData{}
 	glob.PlayerListLock.RLock()
 	for _, p := range glob.PlayerList {
-		if p.Minutes > 4320 {
+		if p.Minutes >= 4320 {
 			scores = append(scores, scoreData{Name: p.Name, Score: p.Minutes})
 		}
 	}
@@ -49,7 +49,7 @@ func Scoreboard(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		p := scores[x]
 
 		n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Score))
-		timestr := n.Format(units)
+		timestr := n.LimitFirstN(2).Format(units)
 		buf = buf + fmt.Sprintf("#%2v: %24v: %-15v\n", count+1, p.Name, timestr)
 
 		count++
