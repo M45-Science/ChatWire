@@ -33,22 +33,20 @@ func checkHours() {
 				shutTime := time.Now()
 				shutTime = shutTime.Add(time.Minute * 10)
 
-				if fact.NumPlayers > 0 {
-					for {
-						if time.Until(shutTime) <= time.Second {
-							break
-						}
-						if WithinHours() {
-							buf := fmt.Sprintf("Time was adjusted to %v - %v GMT, shutdown timer aborted.",
-								cfg.Local.Options.PlayStartHour,
-								cfg.Local.Options.PlayEndHour)
-
-							fact.FactChat(buf)
-							fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-							return
-						}
-						time.Sleep(time.Second)
+				for fact.NumPlayers > 0 {
+					if time.Until(shutTime) <= time.Second {
+						break
 					}
+					if WithinHours() {
+						buf := fmt.Sprintf("Time was adjusted to %v - %v GMT, shutdown timer aborted.",
+							cfg.Local.Options.PlayStartHour,
+							cfg.Local.Options.PlayEndHour)
+
+						fact.FactChat(buf)
+						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+						return
+					}
+					time.Sleep(time.Second)
 				}
 
 				if !WithinHours() {
