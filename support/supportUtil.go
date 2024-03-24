@@ -77,13 +77,13 @@ func WithinHours() bool {
 		curTime := time.Now().UTC().Hour()
 
 		if cfg.Local.Options.PlayStartHour > cfg.Local.Options.PlayEndHour {
-			if curTime <= cfg.Local.Options.PlayStartHour &&
-				curTime >= cfg.Local.Options.PlayEndHour {
+			if curTime >= cfg.Local.Options.PlayStartHour ||
+				curTime < cfg.Local.Options.PlayEndHour {
 				return true
 			}
 		} else {
 			if curTime >= cfg.Local.Options.PlayStartHour &&
-				curTime <= cfg.Local.Options.PlayEndHour {
+				curTime < cfg.Local.Options.PlayEndHour {
 				return true
 			}
 		}
