@@ -177,7 +177,6 @@ func main() {
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
 	go startbot()
-
 	if cfg.Local.Options.AutoStart {
 		fact.FactAutoStart = true
 	}

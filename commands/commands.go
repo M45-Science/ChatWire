@@ -253,6 +253,36 @@ var cmds = []Command{
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.ConfigServer, ModeratorOnly: true},
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "config-hours",
+		Description: "MOD ONLY: Set hours map can be played (GMT)",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "start-hour",
+				Description: "hour to start server (GMT)",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				MinValue:    &valZero,
+				MaxValue:    23,
+				Required:    false,
+			},
+			{
+				Name:        "end-hour",
+				Description: "hour to stop server (GMT)",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				MinValue:    &valZero,
+				MaxValue:    23,
+				Required:    false,
+			},
+			{
+				Name:        "enabled",
+				Description: "hour limits enabled",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Required:    false,
+			},
+		},
+	},
+		Command: moderator.ConfigHours, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-level",

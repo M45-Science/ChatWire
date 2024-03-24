@@ -62,6 +62,10 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	if cfg.Local.Options.PlayHourEnable {
+		buf = buf + fmt.Sprintf("Time restrictions: %v - %v GMT.\n",
+			cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
+	}
 	if verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
 	}

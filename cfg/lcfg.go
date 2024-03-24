@@ -55,6 +55,9 @@ type localOptions struct {
 	ResetDate        int
 	ResetHour        int
 	ResetPingRole    string
+	PlayHourEnable   bool
+	PlayStartHour    int
+	PlayEndHour      int
 
 	AutoStart       bool
 	AutoUpdate      bool

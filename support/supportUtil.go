@@ -1,15 +1,67 @@
 package support
 
 import (
+	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
 )
+
+func checkHours() {
+	for glob.ServerRunning {
+
+		if cfg.Local.Options.PlayHourEnable {
+
+			tn := time.Now().UTC()
+			shouldPlay := WithinHours()
+
+			if !shouldPlay && fact.FactIsRunning {
+				buf := fmt.Sprintf("It is now %v GMT, server will stop in 10 minutes.", tn.Hour())
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+
+				time.Sleep(time.Minute * 10)
+				fact.FactAutoStart = false
+				fact.QuitFactorio("Time is up...")
+			} else if shouldPlay && !fact.FactIsRunning {
+				buf := fmt.Sprintf("It is now %v GMT, server will now start.", tn.Hour())
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				fact.FactAutoStart = true
+			}
+
+		}
+
+		time.Sleep(time.Minute)
+	}
+}
+
+func WithinHours() bool {
+
+	if cfg.Local.Options.PlayHourEnable {
+		curTime := time.Now().UTC().Hour()
+
+		if cfg.Local.Options.PlayStartHour > cfg.Local.Options.PlayEndHour {
+			if curTime <= cfg.Local.Options.PlayStartHour &&
+				curTime >= cfg.Local.Options.PlayEndHour {
+				return true
+			}
+		} else {
+			if curTime >= cfg.Local.Options.PlayStartHour &&
+				curTime <= cfg.Local.Options.PlayEndHour {
+				return true
+			}
+		}
+		return false
+	} else {
+		return true
+	}
+}
 
 /* Check if an idiot pasted their register code to a chat channel */
 func ProtectIdiots(text string) bool {
