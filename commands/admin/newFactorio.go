@@ -21,6 +21,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
+	"ChatWire/support"
 )
 
 func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -348,8 +349,11 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 /* Reboots Factorio only */
 func startFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-	if fact.FactorioBooted || fact.FactIsRunning {
-
+	if !support.WithinHours() {
+		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
+			cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
+		disc.EphemeralResponse(s, i, "Status:", buf)
+	} else if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Restarting Factorio..."
 		disc.EphemeralResponse(s, i, "Status:", buf)
 		fact.QuitFactorio("Server rebooting...")

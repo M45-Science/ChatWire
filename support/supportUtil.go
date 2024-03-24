@@ -18,23 +18,23 @@ func checkHours() {
 	for glob.ServerRunning {
 
 		if cfg.Local.Options.PlayHourEnable {
-
-			tn := time.Now().UTC()
 			shouldPlay := WithinHours()
 
 			if !shouldPlay && fact.FactIsRunning {
-				buf := fmt.Sprintf("It is now %v GMT, server will stop in 10 minutes.", tn.Hour())
+				buf := fmt.Sprintf("It is now past %v GMT, server will stop in 10 minutes.",
+					cfg.Local.Options.PlayEndHour)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 				time.Sleep(time.Minute * 10)
+
 				fact.FactAutoStart = false
 				fact.QuitFactorio("Time is up...")
 			} else if shouldPlay && !fact.FactIsRunning {
-				buf := fmt.Sprintf("It is now %v GMT, server will now start.", tn.Hour())
+				buf := fmt.Sprintf("It is now past %v GMT, server will now start.",
+					cfg.Local.Options.PlayStartHour)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				fact.FactAutoStart = true
 			}
-
 		}
 
 		time.Sleep(time.Minute)
