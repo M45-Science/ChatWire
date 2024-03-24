@@ -365,7 +365,9 @@ func handlePlayerLeave(NoDS string, line string, NoDSlist []string, NoDSlistlen 
 			/* Show quit if there is no soft-mod */
 			if glob.SoftModVersion == constants.Unknown {
 				buf := fmt.Sprintf("%v left.", pname)
+				fact.WriteFact(glob.OnlineCommand)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+
 			}
 
 			go func(factname string) {
