@@ -55,11 +55,10 @@ func checkHours() {
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Server shutting down.")
 				}
 			} else if shouldPlay && !fact.FactIsRunning {
-				buf := fmt.Sprintf("It is now within %v - %v GMT. Server will now start.",
+				buf := fmt.Sprintf("It is now between %v - %v GMT. Server will now start.",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)
 
-				fact.FactChat(buf)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				fact.FactAutoStart = true
 			}
