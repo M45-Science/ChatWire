@@ -29,17 +29,20 @@ func checkHours() {
 
 				time.Sleep(time.Minute * 10)
 
-				fact.FactAutoStart = false
-				fact.QuitFactorio("Time is up...")
+				if !WithinHours() {
+					fact.FactAutoStart = false
+					fact.QuitFactorio("Time is up...")
+				}
 			} else if shouldPlay && !fact.FactIsRunning {
 				buf := fmt.Sprintf("It is now past %v GMT, server will now start.",
 					cfg.Local.Options.PlayStartHour)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				fact.FactAutoStart = true
+				time.Sleep(time.Minute)
 			}
 		}
 
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 15)
 	}
 }
 
