@@ -21,28 +21,53 @@ func checkHours() {
 			shouldPlay := WithinHours()
 
 			if !shouldPlay && fact.FactIsRunning {
-				buf := fmt.Sprintf("It is now past %v GMT, server will stop in 10 minutes.",
+				buf := fmt.Sprintf("It no longer between %v - %v GMT. Server will stop in 10 minutes.",
+					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+
+				fact.FactChat(buf)
+				fact.FactChat(buf)
+				fact.FactChat(buf)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
-				time.Sleep(time.Minute * 10)
+				shutTime := time.Now()
+				shutTime = shutTime.Add(time.Minute * 10)
+
+				if fact.NumPlayers > 0 {
+					for {
+						if time.Until(shutTime) <= time.Second {
+							break
+						}
+						if WithinHours() {
+							buf := fmt.Sprintf("Time was adjusted to %v - %v GMT, shutdown timer aborted.",
+								cfg.Local.Options.PlayStartHour,
+								cfg.Local.Options.PlayEndHour)
+
+							fact.FactChat(buf)
+							fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+							return
+						}
+						time.Sleep(time.Second)
+					}
+				}
 
 				if !WithinHours() {
 					fact.FactAutoStart = false
 					fact.QuitFactorio("Time is up...")
+					fact.CMS(cfg.Local.Channel.ChatChannel, "Server shutting down.")
 				}
 			} else if shouldPlay && !fact.FactIsRunning {
-				buf := fmt.Sprintf("It is now past %v GMT, server will now start.",
-					cfg.Local.Options.PlayStartHour)
+				buf := fmt.Sprintf("It is now within %v - %v GMT. Server will now start.",
+					cfg.Local.Options.PlayStartHour,
+					cfg.Local.Options.PlayEndHour)
+
+				fact.FactChat(buf)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				fact.FactAutoStart = true
-				time.Sleep(time.Minute)
 			}
 		}
 
-		time.Sleep(time.Second * 15)
+		time.Sleep(time.Second * 5)
 	}
 }
 
