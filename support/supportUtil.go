@@ -49,7 +49,7 @@ func checkHours() {
 
 						fact.FactChat(buf)
 						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-						return
+						break
 					}
 					time.Sleep(time.Second)
 				}
