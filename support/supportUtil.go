@@ -24,6 +24,8 @@ func checkHours() {
 				buf := fmt.Sprintf("It is now past %v GMT, server will stop in 10 minutes.",
 					cfg.Local.Options.PlayEndHour)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 				time.Sleep(time.Minute * 10)
 
