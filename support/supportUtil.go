@@ -18,13 +18,12 @@ func checkHours() {
 	for glob.ServerRunning {
 
 		if cfg.Local.Options.PlayHourEnable {
-			shouldPlay := WithinHours()
 
 			graceString := " Server shutting down."
 			if fact.NumPlayers > 0 {
 				graceString = " Server will shut down in 10 minutes."
 			}
-			if !shouldPlay && fact.FactIsRunning {
+			if !WithinHours() && fact.FactIsRunning {
 				buf := fmt.Sprintf("It no longer between %v - %v GMT.%v",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour,
@@ -58,7 +57,7 @@ func checkHours() {
 					fact.FactAutoStart = false
 					fact.QuitFactorio("Time is up...")
 				}
-			} else if shouldPlay && !fact.FactIsRunning {
+			} else if WithinHours() && !fact.FactIsRunning {
 				buf := fmt.Sprintf("It is now between %v - %v GMT. Server will now start.",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)
