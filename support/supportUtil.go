@@ -23,7 +23,7 @@ func checkHours() {
 			if fact.NumPlayers > 0 {
 				graceString = " Server will shut down in 10 minutes."
 			}
-			if !WithinHours() && fact.FactIsRunning {
+			if !WithinHours() && fact.FactIsRunning && fact.FactAutoStart {
 				buf := fmt.Sprintf("It is now time for the map to close (%v-%v GMT).%v",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour,
@@ -57,7 +57,7 @@ func checkHours() {
 					fact.FactAutoStart = false
 					fact.QuitFactorio("Time is up...")
 				}
-			} else if WithinHours() && !fact.FactIsRunning {
+			} else if WithinHours() && !fact.FactIsRunning && !fact.FactAutoStart {
 				buf := fmt.Sprintf("It is now time for the map to open (%v-%v GMT). Server starting.",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)
