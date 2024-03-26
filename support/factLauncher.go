@@ -248,6 +248,11 @@ func injectSoftMod(fileName, folderName string) {
 /* Create config files, launch factorio */
 func launchFactorio() {
 
+	if fact.FactIsRunning {
+		cwlog.DoLogCW("launchFactorio: Factorio is already running.")
+		return
+	}
+
 	/* Clear this so we know if the the loaded map has our soft mod or not */
 	glob.SoftModVersion = constants.Unknown
 	glob.OnlineCommand = constants.OnlineCommand

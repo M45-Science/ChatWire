@@ -84,6 +84,7 @@ func MainLoops() {
 				/* Don't relaunch if we are set to auto update */
 
 				if WithinHours() {
+					time.Sleep(time.Second)
 					launchFactorio()
 				}
 			}

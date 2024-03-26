@@ -67,7 +67,7 @@ func checkHours() {
 			}
 		}
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Millisecond * 100)
 	}
 }
 
