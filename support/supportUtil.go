@@ -24,7 +24,7 @@ func checkHours() {
 				graceString = " Server will shut down in 10 minutes."
 			}
 			if !WithinHours() && fact.FactIsRunning {
-				buf := fmt.Sprintf("It no longer between %v - %v GMT.%v",
+				buf := fmt.Sprintf("The current time is no longer between the hours of %v - %v GMT. %v",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour,
 					graceString)
@@ -58,7 +58,7 @@ func checkHours() {
 					fact.QuitFactorio("Time is up...")
 				}
 			} else if WithinHours() && !fact.FactIsRunning {
-				buf := fmt.Sprintf("It is now between %v - %v GMT. Server will now start.",
+				buf := fmt.Sprintf("The current time is now between the hours of %v - %v GMT. Server will now start.",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)
 
