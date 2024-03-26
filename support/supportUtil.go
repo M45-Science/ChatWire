@@ -48,15 +48,17 @@ func checkHours() {
 
 						fact.FactChat(buf)
 						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+						time.Sleep(time.Second * 30)
 						break
 					}
-					time.Sleep(time.Second)
 				}
 
 				if !WithinHours() {
 					fact.FactAutoStart = false
 					fact.QuitFactorio("Time is up...")
 				}
+
+				time.Sleep(time.Second * 30)
 			} else if WithinHours() && !fact.FactIsRunning && !fact.FactAutoStart {
 				buf := fmt.Sprintf("It is now time for the map to open (%v-%v GMT). Server starting.",
 					cfg.Local.Options.PlayStartHour,
@@ -64,6 +66,7 @@ func checkHours() {
 
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				fact.FactAutoStart = true
+				time.Sleep(time.Second * 30)
 			}
 		}
 
