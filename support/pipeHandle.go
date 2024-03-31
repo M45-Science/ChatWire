@@ -122,8 +122,12 @@ func handlePlayerReport(line string, lineList []string, lineListlen int) bool {
 	if strings.HasPrefix(line, "[REPORT]") {
 		cwlog.DoLogGame(line)
 		if lineListlen >= 3 {
-			buf := fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v",
-				cfg.Local.Callsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "))
+			pingStr := ""
+			if cfg.Global.Discord.SusPingRole != "" {
+				pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
+			}
+			buf := fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\n%v",
+				cfg.Local.Callsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "), pingStr)
 			fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 		}
 		return true
