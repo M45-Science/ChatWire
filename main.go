@@ -146,6 +146,7 @@ func main() {
 		fact.LoadPlayers(true, true)
 		fact.WritePlayers()
 		fmt.Println("Database cleaned.")
+		_ = os.Remove("cw.lock")
 		os.Exit(0)
 		return
 	}
