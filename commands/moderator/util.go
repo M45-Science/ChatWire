@@ -365,15 +365,6 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.ModUpdate,
 	},
 	{
-		Name:      "auto-clean-map",
-		ShortDesc: "Auto Clean",
-		Desc:      "Run CleanMap mod on boot (only works with mod installed)",
-		Type:      TYPE_BOOL,
-		DefBool:   false,
-
-		BData: &cfg.Local.Options.SoftModOptions.CleanMap,
-	},
-	{
 		Name:      "map-seed",
 		ShortDesc: "Map Seed",
 		Desc:      "Seed for map gen, clears after map resets.",

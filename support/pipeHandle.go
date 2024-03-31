@@ -666,9 +666,6 @@ func handleFactReady(NoTC string) bool {
 	 ******************/
 	if strings.HasPrefix(NoTC, "Info RemoteCommandProcessor") && strings.Contains(NoTC, "Starting RCON interface") {
 		fact.WriteAdminlist()
-		if cfg.Local.Options.SoftModOptions.CleanMap {
-			fact.WriteFact("/cleanmap")
-		}
 		fact.FactorioBooted = true
 		fact.FactorioBootedAt = time.Now()
 		fact.SetFactRunning(true)
