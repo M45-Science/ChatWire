@@ -406,7 +406,7 @@ func launchFactorio() {
 	}
 
 	/* Save pipe */
-	if tpipe != nil && err == nil {
+	if tpipe != nil {
 		fact.PipeLock.Lock()
 		fact.Pipe = tpipe
 		fact.PipeLock.Unlock()

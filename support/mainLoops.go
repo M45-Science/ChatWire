@@ -324,7 +324,7 @@ func MainLoops() {
 
 					break
 				}
-				if nguild == nil || err != nil {
+				if nguild == nil {
 					disc.Guildname = constants.Unknown
 					cwlog.DoLogCW("Guild data came back nil.")
 					break
@@ -500,7 +500,7 @@ func MainLoops() {
 						fact.QueueReload = true
 						cwlog.DoLogCW("Reboot queued!")
 					}
-				} else if errb != nil && !failureReported {
+				} else if !failureReported {
 					failureReported = true
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .queue file, ignoring.")
 				}
@@ -518,7 +518,7 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting.")
 						fact.DoExit(false)
 					}
-				} else if errb != nil && !failureReported {
+				} else if !failureReported {
 					failureReported = true
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .halt file, ignoring.")
 				}
@@ -531,7 +531,7 @@ func MainLoops() {
 					if errb = os.Remove(".qrestart"); errb == nil {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio quick restarting!")
 						fact.QuitFactorio("Server quick restarting...")
-					} else if errb != nil && !failureReported {
+					} else if !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .qrestart file, ignoring.")
 					}
@@ -542,7 +542,7 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio stopping!")
 						fact.FactAutoStart = false
 						fact.QuitFactorio("Server manually stopped.")
-					} else if errb != nil && !failureReported {
+					} else if !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
 					}
@@ -553,7 +553,7 @@ func MainLoops() {
 					if errb = os.Remove(".start"); errb == nil {
 						fact.FactAutoStart = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio starting!")
-					} else if errb != nil && !failureReported {
+					} else if !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .start file, ignoring.")
 					}
@@ -593,13 +593,13 @@ func MainLoops() {
 	****************************/
 	go func() {
 		time.Sleep(time.Minute)
-		if cfg.Local.Options.AutoUpdate == false {
+		if !cfg.Local.Options.AutoUpdate {
 			return
 		}
 
 		for glob.ServerRunning {
 			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
-			if cfg.Local.Options.AutoUpdate == false {
+			if !cfg.Local.Options.AutoUpdate {
 				return
 			}
 			time.Sleep(time.Minute * 30)
