@@ -454,7 +454,7 @@ func handleActMsg(line string, lineList []string, lineListLen int) bool {
 									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
 
 									if pingStr != "" {
-										reportMsg := fmt.Sprintf("%v %v", pingStr, sbuf)
+										reportMsg := fmt.Sprintf("%v\n%v", sbuf, pingStr)
 										fact.CMS(cfg.Global.Discord.ReportChannel, reportMsg)
 									} else {
 										fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
