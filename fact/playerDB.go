@@ -12,7 +12,6 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
-	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -411,11 +410,6 @@ func LoadPlayers(bootMode, minimize bool) {
 					if ID == 0 || err != nil {
 						tempData[pname].BanReason = tempData[pname].ID
 						tempData[pname].ID = ""
-					} else {
-						//Otherwise, lets see if this is a valid discordid.
-						if disc.GetNameFromID(tempData[pname].ID) == "" {
-							tempData[pname].ID = ""
-						}
 					}
 					//Delete id "0"
 					if tempData[pname].ID == "0" {
