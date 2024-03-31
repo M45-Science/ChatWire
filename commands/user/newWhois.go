@@ -49,7 +49,7 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if count > maxresults {
 					break
 				}
-				if strings.Contains(strings.ToLower(p.Name), strings.ToLower(arg)) || strings.Contains(strings.ToLower(disc.GetNameFromID(p.ID, false)), strings.ToLower(arg)) {
+				if strings.Contains(strings.ToLower(p.Name), strings.ToLower(arg)) || strings.Contains(strings.ToLower(disc.GetNameFromID(p.ID)), strings.ToLower(arg)) {
 
 					lseen := ""
 					if fact.IsPlayerOnline(p.Name) {
@@ -73,8 +73,14 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Minutes))
 					timestr := n.LimitFirstN(2).Format(units)
 					buf = buf + fmt.Sprintf(format,
-						sclean.TruncateStringEllipsis(p.Name, 20), timestr, sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID, false), 20),
-						lseen, joined, fact.LevelToString(p.Level), p.SusScore, p.BanReason)
+						sclean.TruncateStringEllipsis(p.Name, 20),
+						timestr,
+						sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID), 20),
+						lseen,
+						joined,
+						fact.LevelToString(p.Level),
+						p.SusScore,
+						p.BanReason)
 					count++
 				}
 			}

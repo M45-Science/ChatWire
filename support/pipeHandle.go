@@ -1070,7 +1070,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				}(pname)
 
 				did := disc.GetDiscordIDFromFactorioName(pname)
-				dname := disc.GetNameFromID(did, false)
+				dname := disc.GetNameFromID(did)
 				avatar := disc.GetDiscordAvatarFromId(did, 64)
 				factname := sclean.StripControlAndSubSpecial(pname)
 				factname = sclean.TruncateString(factname, 25)

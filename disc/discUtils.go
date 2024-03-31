@@ -217,7 +217,7 @@ func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 }
 
 /* Discord name from discordid */
-func GetNameFromID(id string, disc bool) string {
+func GetNameFromID(id string) string {
 	if id == "" || DS == nil {
 		return ""
 	}
@@ -231,7 +231,7 @@ func GetNameFromID(id string, disc bool) string {
 		}
 	}
 
-	return id
+	return ""
 }
 
 /* Discord avatar from discordid */

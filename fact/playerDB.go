@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -389,15 +391,35 @@ func LoadPlayers(bootMode, minimize bool) {
 			glob.PlayerListLock.Lock()
 			var removed int
 			for pname := range tempData {
+				//DB cleaning
 				if minimize {
-					if tempData[pname].Level == 0 {
+					//Get rid of new/deleted
+					if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
 						removed++
+						defer delete(tempData, pname)
 						continue
 					}
+					//Delete uneeded data from member/reg/moderator
 					if tempData[pname].Level > 0 {
 						tempData[pname].SusScore = 0
 						tempData[pname].BanReason = ""
 						tempData[pname].SpamScore = 0
+					}
+					//Check discord id, fixed if needed.
+					ID, err := strconv.ParseUint(tempData[pname].ID, 10, 64)
+					//There are some old DBs that had ban reasons in the ID field, fix them.
+					if ID == 0 || err != nil {
+						tempData[pname].BanReason = tempData[pname].ID
+						tempData[pname].ID = ""
+					} else {
+						//Otherwise, lets see if this is a valid discordid.
+						if disc.GetNameFromID(tempData[pname].ID) == "" {
+							tempData[pname].ID = ""
+						}
+					}
+					//Delete id "0"
+					if tempData[pname].ID == "0" {
+						tempData[pname].ID = ""
 					}
 				}
 

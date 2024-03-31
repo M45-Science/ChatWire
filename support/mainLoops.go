@@ -197,7 +197,7 @@ func MainLoops() {
 			glob.PasswordListLock.Lock()
 			for _, pass := range glob.PassList {
 				if (t.Unix() - pass.Time) > 300 {
-					cwlog.DoLogCW("Invalidating unused registration code for player: " + disc.GetNameFromID(pass.DiscID, false))
+					cwlog.DoLogCW("Invalidating unused registration code for player: " + disc.GetNameFromID(pass.DiscID))
 					delete(glob.PassList, pass.DiscID)
 				}
 			}
