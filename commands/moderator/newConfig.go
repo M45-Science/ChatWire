@@ -114,18 +114,20 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			}
 		}
 	}
-	if buf != "" {
-		support.ConfigSoftMod()
-		if cfg.WriteLCfg() {
-			if !fact.GenerateFactorioConfig() {
-				disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
-				return
-			}
-
-			disc.EphemeralResponse(s, i, "Status:", buf)
-			fact.UpdateChannelName() //For channel renaming, only updates if changed.
-		} else {
-			disc.EphemeralResponse(s, i, "Error:", "Unable to save cw-local, check file permissions.")
-		}
+	if buf == "" {
+		buf = "Done"
 	}
+	support.ConfigSoftMod()
+	if cfg.WriteLCfg() {
+		if !fact.GenerateFactorioConfig() {
+			disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
+			return
+		}
+
+		disc.EphemeralResponse(s, i, "Status:", buf)
+		fact.UpdateChannelName() //For channel renaming, only updates if changed.
+	} else {
+		disc.EphemeralResponse(s, i, "Error:", "Unable to save cw-local, check file permissions.")
+	}
+
 }
