@@ -79,35 +79,36 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 							buf = buf + "\n"
 						}
 					}
-				}
-			} else if o.Type == discordgo.ApplicationCommandOptionNumber {
-				if co.Type == TYPE_F32 {
-					val := float32(o.FloatValue())
-					if val > co.MaxF32 || val < co.MinF32 {
-						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
-					} else {
-						*co.FData32 = val
-						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData32)
 
-						if co.FactUpdateCommand != "" && fact.FactorioBooted {
-							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
-							buf = buf + " (live update)\n"
+				} else if o.Type == discordgo.ApplicationCommandOptionNumber {
+					if co.Type == TYPE_F32 {
+						val := float32(o.FloatValue())
+						if val > co.MaxF32 || val < co.MinF32 {
+							buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 						} else {
-							buf = buf + "\n"
+							*co.FData32 = val
+							buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData32)
+
+							if co.FactUpdateCommand != "" && fact.FactorioBooted {
+								fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+								buf = buf + " (live update)\n"
+							} else {
+								buf = buf + "\n"
+							}
 						}
-					}
-				} else if co.Type == TYPE_F64 {
-					val := float64(o.FloatValue())
-					if val > co.MaxF64 || val < co.MinF64 {
-						buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
-					} else {
-						*co.FData64 = val
-						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData64)
-						if co.FactUpdateCommand != "" && fact.FactorioBooted {
-							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
-							buf = buf + " (live update)\n"
+					} else if co.Type == TYPE_F64 {
+						val := float64(o.FloatValue())
+						if val > co.MaxF64 || val < co.MinF64 {
+							buf = buf + fmt.Sprintf("%v: invalid value %v\n", co.Name, val)
 						} else {
-							buf = buf + "\n"
+							*co.FData64 = val
+							buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData64)
+							if co.FactUpdateCommand != "" && fact.FactorioBooted {
+								fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+								buf = buf + " (live update)\n"
+							} else {
+								buf = buf + "\n"
+							}
 						}
 					}
 				}
