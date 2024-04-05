@@ -116,7 +116,7 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf == "" {
-		buf = "Done"
+		buf = "Setting not found!"
 	}
 	support.ConfigSoftMod()
 	if cfg.WriteLCfg() {
