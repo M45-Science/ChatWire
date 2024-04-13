@@ -199,7 +199,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This factorio user, and discord user are already connected! You do not need to re-register...", pname))
 						codegood = true
 						/* Do not break, process */
-					} else if discid != "" {
+					} else if discid != "" && discid != "0" {
 						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a discord user that is already registered to different factorio player.", pname))
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different factorio user... Unable to complete registration.", pname))
 						codegood = false
