@@ -85,7 +85,6 @@ type folderPaths struct {
 	MapGenerators string
 	MapPreviews   string
 	MapArchives   string
-	UpdateCache   string
 	ModPack       string
 }
 
@@ -208,9 +207,6 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.Folders.Mods == "" {
 		Global.Paths.Folders.Mods = "mods"
-	}
-	if Global.Paths.Folders.UpdateCache == "" {
-		Global.Paths.Folders.UpdateCache = Global.Paths.Folders.ServersRoot + "update-cache/"
 	}
 	if Global.Paths.Folders.MapPreviews == "" {
 		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "map-preview/"

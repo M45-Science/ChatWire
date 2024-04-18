@@ -155,6 +155,12 @@ func GetFactorioBinary() string {
 	return bloc
 }
 
+func GetUpdateCachePath() string {
+	return cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" + "UpdateCache/"
+}
+
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
