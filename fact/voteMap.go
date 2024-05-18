@@ -20,6 +20,14 @@ import (
 /* See if the player's vote is valid and add it to the list */
 func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
 
+	if strings.EqualFold(arg, "new-map") ||
+		strings.EqualFold(arg, "skip-reset") {
+		if !cfg.Local.Options.MembersOnly ||
+			!cfg.Local.Options.RegularsOnly {
+			return
+		}
+	}
+
 	time.Sleep(1 * time.Second)
 	glob.VoteBoxLock.Lock()
 	defer glob.VoteBoxLock.Unlock()

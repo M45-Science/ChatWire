@@ -544,26 +544,28 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 		numFiles = constants.MaxMapResults - 2
 	}
 
-	availableMaps = append(availableMaps,
-		discordgo.SelectMenuOption{
+	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
+		availableMaps = append(availableMaps,
+			discordgo.SelectMenuOption{
 
-			Label:       "NEW-MAP",
-			Description: "Archive the current map, and generate a new one.",
-			Value:       "NEW-MAP",
-			Emoji: discordgo.ComponentEmoji{
-				Name: "⭐",
+				Label:       "NEW-MAP",
+				Description: "Archive the current map, and generate a new one.",
+				Value:       "NEW-MAP",
+				Emoji: discordgo.ComponentEmoji{
+					Name: "⭐",
+				},
 			},
-		},
-		discordgo.SelectMenuOption{
+			discordgo.SelectMenuOption{
 
-			Label:       "SKIP-RESET",
-			Description: "Skip the next map reset.",
-			Value:       "SKIP-RESET",
-			Emoji: discordgo.ComponentEmoji{
-				Name: "🚫",
+				Label:       "SKIP-RESET",
+				Description: "Skip the next map reset.",
+				Value:       "SKIP-RESET",
+				Emoji: discordgo.ComponentEmoji{
+					Name: "🚫",
+				},
 			},
-		},
-	)
+		)
+	}
 
 	for i := 0; i < numFiles; i++ {
 
