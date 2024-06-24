@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version            = "2625-05.17.2024-0751p"
+	Version            = "2626-06.24.2024-1107"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -96,10 +96,10 @@ const (
 	WatchdogInterval = time.Second
 
 	/* Throttle Discord chat */
-	CMSRate                 = 250 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
+	CMSRate                 = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
 	CMSRestTime             = 2000 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate             = 100 * time.Millisecond  //Time between polls
-	MaxDiscordAttempts      = 100
+	MaxDiscordAttempts      = 95
 	ApplicationCommandSleep = time.Second * 3
 )
 

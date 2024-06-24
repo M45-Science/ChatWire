@@ -21,11 +21,6 @@ func HandleChat() {
 		if fact.GameBuffer != nil {
 			reader := bufio.NewScanner(fact.GameBuffer)
 
-			/*
-				 			* Here to limit cpu and net untilization
-							* Just in case something goes wrong,
-							* or there is some kind of attempted flood attack
-			*/
 			time.Sleep(time.Millisecond * 100)
 
 			for reader.Scan() {

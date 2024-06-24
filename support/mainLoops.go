@@ -683,10 +683,9 @@ func MainLoops() {
 				//Game isn't paused
 				if fact.PausedTicks <= constants.PauseThresh {
 					fact.WriteFact(glob.OnlineCommand)
-					time.Sleep(time.Second * 60)
 				}
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Minute)
 		}
 	}()
 
@@ -761,7 +760,7 @@ func MainLoops() {
 		time.Sleep(time.Minute)
 		for glob.ServerRunning {
 
-			time.Sleep(time.Second * 15)
+			time.Sleep(time.Minute)
 			numItems := len(cfg.Local.ModPackList)
 
 			if numItems > 0 {

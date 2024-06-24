@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -33,7 +32,7 @@ func main() {
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 
-	debug.SetMemoryLimit(1024 * 1024 * 250) //250mb
+	//debug.SetMemoryLimit(1024 * 1024 * 250) //250mb
 	//debug.SetMaxThreads(1000)
 
 	flag.Parse()
