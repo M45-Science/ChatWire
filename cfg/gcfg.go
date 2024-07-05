@@ -99,6 +99,7 @@ type urlPaths struct {
 	Domain      string
 	PathPrefix  string
 	LogPath     string
+	LogsPathWeb string
 	ArchivePath string
 	ModPackPath string
 }
@@ -230,6 +231,9 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.URLs.LogPath == "" {
 		Global.Paths.URLs.LogPath = "/logs/"
+	}
+	if Global.Paths.URLs.LogsPathWeb == "" {
+		Global.Paths.URLs.LogsPathWeb = "/current-logs/"
 	}
 	if Global.Paths.URLs.ArchivePath == "" {
 		Global.Paths.URLs.ArchivePath = "/archive/"

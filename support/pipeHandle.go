@@ -126,8 +126,14 @@ func handlePlayerReport(line string, lineList []string, lineListlen int) bool {
 			if cfg.Global.Discord.SusPingRole != "" {
 				pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
 			}
-			buf := fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\n%v",
-				cfg.Local.Callsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "), pingStr)
+			buf := ""
+			if cfg.GetGameLogURL() == "" {
+				buf = fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\n%v",
+					cfg.Local.Callsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "), pingStr)
+			} else {
+				buf = fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
+					cfg.Local.Callsign+"-"+cfg.Local.Name, lineList[1], strings.Join(lineList[2:], " "), cfg.GetGameLogURL(), pingStr)
+			}
 			fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 		}
 		return true

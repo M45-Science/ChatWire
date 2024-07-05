@@ -6,6 +6,7 @@ import (
 	"ChatWire/glob"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -83,6 +84,18 @@ type softmodOptions struct {
 	Cheats            bool
 	InjectSoftMod     bool
 	SoftModPath       string
+}
+
+func GetGameLogURL() string {
+	if Global.Paths.URLs.LogsPathWeb == "" {
+		return ""
+	}
+	return fmt.Sprintf("https://%v%v%v%v%v",
+		Global.Paths.URLs.Domain,
+		Global.Paths.URLs.PathPrefix,
+		Global.Paths.URLs.LogsPathWeb,
+		Local.Callsign+"/",
+		glob.GameLogName)
 }
 
 func WriteLCfg() bool {
