@@ -451,6 +451,7 @@ func UpdateChannelName() {
 }
 
 var oldTopic string
+var chPos int
 
 /* When appropriate, actually update the channel name */
 func DoUpdateChannelName() {
@@ -492,7 +493,8 @@ func DoUpdateChannelName() {
 			return
 		}
 
-		_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: ch.Position, Topic: newTopic})
+		chPos = ch.Position
+		_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: &chPos, Topic: newTopic})
 
 		if aerr != nil {
 			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
@@ -551,7 +553,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 				Label:       "NEW-MAP",
 				Description: "Archive the current map, and generate a new one.",
 				Value:       "NEW-MAP",
-				Emoji: discordgo.ComponentEmoji{
+				Emoji: &discordgo.ComponentEmoji{
 					Name: "⭐",
 				},
 			},
@@ -560,7 +562,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 				Label:       "SKIP-RESET",
 				Description: "Skip the next map reset.",
 				Value:       "SKIP-RESET",
-				Emoji: discordgo.ComponentEmoji{
+				Emoji: &discordgo.ComponentEmoji{
 					Name: "🚫",
 				},
 			},
@@ -593,7 +595,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 					Label:       saveName,
 					Description: modStr,
 					Value:       saveName,
-					Emoji: discordgo.ComponentEmoji{
+					Emoji: &discordgo.ComponentEmoji{
 						Name: "💾",
 					},
 				},
