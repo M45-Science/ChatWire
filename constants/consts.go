@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version            = "2627-07.05.2024-0146p"
+	Version            = "2627-07.05.2024-0834p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
