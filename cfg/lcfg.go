@@ -95,7 +95,7 @@ func GetGameLogURL() string {
 		Global.Paths.URLs.PathPrefix,
 		Global.Paths.URLs.LogsPathWeb,
 		Local.Callsign+"/",
-		glob.GameLogName)
+		strings.TrimPrefix(glob.GameLogName, "log/"))
 }
 
 func WriteLCfg() bool {
