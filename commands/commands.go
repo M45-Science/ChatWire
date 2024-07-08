@@ -228,6 +228,34 @@ var cmds = []Command{
 		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "ftp-load",
+		Description: "MOD ONLY: load a map, mod or modpack from the FTP.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "choose-type",
+				Description: "Type of file to load from the FTP.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "load-map",
+						Value: "load-map",
+					},
+					{
+						Name:  "load-mod",
+						Value: "load-mod",
+					},
+					{
+						Name:  "load-modpack",
+						Value: "load-modpack",
+					},
+				},
+			},
+		},
+	},
+		Command: moderator.FTPLoad},
+	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",
 		Description: "MOD ONLY: remote console (remotely run a factorio command)",
 		Type:        discordgo.ChatApplicationCommand,
