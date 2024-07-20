@@ -333,6 +333,10 @@ var cmds = []Command{
 						Value: 255,
 					},
 					{
+						Name:  "Veteran",
+						Value: 3,
+					},
+					{
 						Name:  "Regular",
 						Value: 2,
 					},

@@ -42,6 +42,7 @@ type roles struct {
 	Admin     string
 	Moderator string
 	Regular   string
+	Veteran   string
 	Member    string
 	New       string
 
@@ -56,6 +57,7 @@ type roleCache struct {
 	Admin     string
 	Moderator string
 	Regular   string
+	Veteran   string
 	Member    string
 	New       string
 
