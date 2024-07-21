@@ -95,8 +95,7 @@ func ShowFTPMapList(s *discordgo.Session, i *discordgo.InteractionCreate, path s
 		disc.EphemeralResponse(s, i, "Error:", "No maps were found.")
 	} else {
 
-		var response *discordgo.InteractionResponse
-		response = &discordgo.InteractionResponse{
+		response := &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Choose a map to load from the FTP:",
