@@ -768,6 +768,8 @@ func DoFTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	_, err := zip.OpenReader(cfg.Global.Paths.Folders.FTP + arg)
 	if err != nil {
 		buf = "The file does not appear to be a valid zip file."
+	} else {
+		buf = "The zip file appears to be valid."
 	}
 
 	f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
