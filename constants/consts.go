@@ -3,7 +3,7 @@ package constants
 import "time"
 
 const (
-	Version            = "2627-07.05.2024-0834p"
+	Version            = "2628-07.20.2024-0738p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -47,7 +47,7 @@ const (
 
 	/* Player suspect settings */
 	SusWarningThresh = 40
-	MatureThresh     = (60 * 24 * 3) //3 days
+	VeteranThresh    = (60 * 24 * 3) //3 days
 
 	/* Online commands */
 	OnlineCommand    = "/p o c"

@@ -42,6 +42,7 @@ type roles struct {
 	Admin     string
 	Moderator string
 	Regular   string
+	Veteran   string
 	Member    string
 	New       string
 
@@ -56,6 +57,7 @@ type roleCache struct {
 	Admin     string
 	Moderator string
 	Regular   string
+	Veteran   string
 	Member    string
 	New       string
 
@@ -86,6 +88,7 @@ type folderPaths struct {
 	MapPreviews   string
 	MapArchives   string
 	ModPack       string
+	FTP           string
 }
 
 type binaryPaths struct {
@@ -217,6 +220,9 @@ func setGlobalDefaults() {
 	}
 	if Global.Paths.Folders.ModPack == "" {
 		Global.Paths.Folders.ModPack = Global.Paths.Folders.ServersRoot + "www/public_html/modpack/"
+	}
+	if Global.Paths.Folders.FTP == "" {
+		Global.Paths.Folders.FTP = "/home/upload/"
 	}
 	if Global.Paths.Folders.FactorioDir == "" {
 		Global.Paths.Folders.FactorioDir = "factorio"

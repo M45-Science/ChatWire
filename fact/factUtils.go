@@ -317,6 +317,8 @@ func LevelToString(level int) string {
 		name = "Member"
 	} else if level == 2 {
 		name = "Regular"
+	} else if level == 3 {
+		name = "Veteran"
 	} else if level >= 255 {
 		name = "Moderator"
 	}
@@ -334,6 +336,8 @@ func StringToLevel(input string) int {
 		level = 1
 	} else if strings.EqualFold(input, "regulars") {
 		level = 2
+	} else if strings.EqualFold(input, "veterans") {
+		level = 3
 	} else if strings.EqualFold(input, "banished") {
 		level = 0
 	} else if strings.EqualFold(input, "moderator") {
@@ -371,6 +375,10 @@ func AutoPromote(pname string) string {
 			playerName = " *(Regular)*"
 
 			WriteFact(fmt.Sprintf("/regular %s", pname))
+		} else if plevel == 3 {
+			playerName = " *(Veteran)*"
+
+			WriteFact(fmt.Sprintf("/veteran %s", pname))
 		} else if plevel == 255 {
 			playerName = " *(Moderator)*"
 
@@ -389,6 +397,8 @@ func AutoPromote(pname string) string {
 				newrole = cfg.Global.Discord.Roles.Member
 			} else if plevel == 2 {
 				newrole = cfg.Global.Discord.Roles.Regular
+			} else if plevel == 3 {
+				newrole = cfg.Global.Discord.Roles.Veteran
 			} else if plevel == 255 {
 				newrole = cfg.Global.Discord.Roles.Moderator
 			}

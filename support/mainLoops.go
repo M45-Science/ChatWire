@@ -353,6 +353,12 @@ func MainLoops() {
 						cfg.Global.Discord.Roles.RoleCache.Moderator = role.ID
 						changed = true
 
+					} else if cfg.Global.Discord.Roles.Veteran != "" &&
+						role.Name == cfg.Global.Discord.Roles.Veteran &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Veteran != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Veteran = role.ID
+						changed = true
+
 					} else if cfg.Global.Discord.Roles.Regular != "" &&
 						role.Name == cfg.Global.Discord.Roles.Regular &&
 						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Regular != role.ID {
@@ -379,6 +385,11 @@ func MainLoops() {
 						role.Name == cfg.Global.Discord.Roles.Nitro &&
 						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Nitro != role.ID {
 						cfg.Global.Discord.Roles.RoleCache.Nitro = role.ID
+						changed = true
+					} else if cfg.Global.Discord.Roles.Supporter != "" &&
+						role.Name == cfg.Global.Discord.Roles.Supporter &&
+						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Supporter != role.ID {
+						cfg.Global.Discord.Roles.RoleCache.Supporter = role.ID
 						changed = true
 					}
 				}

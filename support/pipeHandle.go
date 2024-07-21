@@ -181,6 +181,9 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					} else if strings.EqualFold(ptype, "regular") {
 						newrole = cfg.Global.Discord.Roles.Regular
 						plevel = 2
+					} else if strings.EqualFold(ptype, "veteran") {
+						newrole = cfg.Global.Discord.Roles.Veteran
+						plevel = 3
 					} else if strings.EqualFold(ptype, "moderator") {
 						newrole = cfg.Global.Discord.Roles.Moderator
 						plevel = 255
