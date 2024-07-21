@@ -397,6 +397,8 @@ func AutoPromote(pname string) string {
 				newrole = cfg.Global.Discord.Roles.Member
 			} else if plevel == 2 {
 				newrole = cfg.Global.Discord.Roles.Regular
+			} else if plevel == 3 {
+				newrole = cfg.Global.Discord.Roles.Veteran
 			} else if plevel == 255 {
 				newrole = cfg.Global.Discord.Roles.Moderator
 			}
