@@ -761,6 +761,12 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+func DoFTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
+	buf := "Meep"
+	f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
+	disc.FollowupResponse(s, i, &f)
+}
+
 func DoChangeMap(s *discordgo.Session, arg string) {
 
 	if strings.EqualFold(arg, "new-map") {

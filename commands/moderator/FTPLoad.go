@@ -23,11 +23,12 @@ const (
 
 func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	path := cfg.Global.Paths.Folders.FTP + MapFolder
-	ShowFTPMapList(s, i, path)
+
+	ShowFTPList(s, i, path)
 }
 
 /* Load a different save-game */
-func ShowFTPMapList(s *discordgo.Session, i *discordgo.InteractionCreate, path string) {
+func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, path string) {
 
 	files, err := os.ReadDir(path)
 
@@ -105,7 +106,7 @@ func ShowFTPMapList(s *discordgo.Session, i *discordgo.InteractionCreate, path s
 						Components: []discordgo.MessageComponent{
 							discordgo.SelectMenu{
 								// Select menu, as other components, must have a customID, so we set it to this value.
-								CustomID:    "FTPMaps",
+								CustomID:    "FTPFile",
 								Placeholder: "Select one",
 								Options:     availableMaps,
 							},

@@ -750,12 +750,14 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 					break
 				}
-			} else if strings.EqualFold(data.CustomID, "FTPMaps") {
+			} else if strings.EqualFold(data.CustomID, "FTPFile") {
 				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Loading: %v, please wait.", c)
 					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
 					disc.InteractionResponse(s, i, &elist)
+
+					fact.DoFTPLoad(s, i, c)
 
 					break
 				}
