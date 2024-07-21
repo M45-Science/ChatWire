@@ -16,7 +16,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-	"ChatWire/sclean"
 	"ChatWire/support"
 )
 
@@ -225,16 +224,5 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) string {
-
-	glob.PlayerListLock.RLock()
-	defer glob.PlayerListLock.RUnlock()
-
-	buf := "Suspects:\n"
-	for _, p := range glob.PlayerList {
-		if p.SusScore != 0 || p.SpamScore != 0 {
-			buf = buf + fmt.Sprintf("%v: sus: %v spam: %v\n", p.Name, p.SusScore, p.SpamScore)
-		}
-	}
-	return sclean.TruncateStringEllipsis(buf, 4000)
-
+	return ""
 }
