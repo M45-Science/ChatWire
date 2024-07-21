@@ -82,7 +82,7 @@ func ShowFTPMapList(s *discordgo.Session, i *discordgo.InteractionCreate, path s
 
 					Label:       saveName,
 					Description: modStr,
-					Value:       saveName,
+					Value:       path + "/" + saveName,
 					Emoji: &discordgo.ComponentEmoji{
 						Name: "🗜️",
 					},

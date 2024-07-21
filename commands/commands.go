@@ -750,6 +750,15 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 					break
 				}
+			} else if strings.EqualFold(data.CustomID, "FTPMaps") {
+				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+
+					buf := fmt.Sprintf("Loading: %v, please wait.", c)
+					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
+					disc.InteractionResponse(s, i, &elist)
+
+					break
+				}
 			}
 		}
 	} else if i.Type == discordgo.InteractionApplicationCommand {
