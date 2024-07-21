@@ -556,17 +556,20 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 		numFiles = constants.MaxMapResults - 2
 	}
 
+	availableMaps = append(availableMaps,
+		discordgo.SelectMenuOption{
+
+			Label:       "NEW-MAP",
+			Description: "Archive the current map, and generate a new one.",
+			Value:       "NEW-MAP",
+			Emoji: &discordgo.ComponentEmoji{
+				Name: "⭐",
+			},
+		},
+	)
+	//Skip reset, not allowed for public maps
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		availableMaps = append(availableMaps,
-			discordgo.SelectMenuOption{
-
-				Label:       "NEW-MAP",
-				Description: "Archive the current map, and generate a new one.",
-				Value:       "NEW-MAP",
-				Emoji: &discordgo.ComponentEmoji{
-					Name: "⭐",
-				},
-			},
 			discordgo.SelectMenuOption{
 
 				Label:       "SKIP-RESET",

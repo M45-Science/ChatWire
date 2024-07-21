@@ -346,17 +346,15 @@ var SettingList = []SettingListData{
 
 		IData: &cfg.Local.Settings.AutosaveMin,
 	},
-	/*
-		{
-			Name:      "auto-pause",
-			ShortDesc: "Auto Pause",
-			Desc:      "Game pauses when no players are connected.",
-			Type:      TYPE_BOOL,
-			DefBool:   true,
+	{
+		Name:      "auto-pause",
+		ShortDesc: "Auto Pause",
+		Desc:      "Game pauses when no players are connected.",
+		Type:      TYPE_BOOL,
+		DefBool:   true,
 
-			BData: &cfg.Local.Settings.AutoPause,
-		},
-	*/
+		BData: &cfg.Local.Settings.AutoPause,
+	},
 	{
 		Name:      "auto-mod-update",
 		ShortDesc: "Auto Mod Update",
