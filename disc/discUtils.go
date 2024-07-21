@@ -7,7 +7,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
-	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
 )
@@ -85,22 +84,20 @@ func CheckRegular(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
-func CheckMature(i *discordgo.InteractionCreate) bool {
+func CheckVeteran(i *discordgo.InteractionCreate) bool {
 
-	if CheckRegular(i) {
-		factname := GetFactorioNameFromDiscordID(i.Member.User.ID)
-		player := GetPlayerDataFromName(factname)
-
-		if player == nil {
-			return false
-		}
-
-		if player.Minutes >= constants.MatureThresh {
-			return true
-		}
+	if cfg.Global.Discord.Roles.RoleCache.Veteran == "" {
+		cwlog.DoLogCW("CheckVeteran RoleID not found for that role, check configuration files.")
 		return false
 	}
 
+	if i.Member != nil {
+		for _, r := range i.Member.Roles {
+			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Veteran) {
+				return true
+			}
+		}
+	}
 	return false
 }
 

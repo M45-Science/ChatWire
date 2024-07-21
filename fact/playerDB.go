@@ -421,7 +421,7 @@ func LoadPlayers(bootMode, minimize bool) {
 					doBan = false
 				}
 				didBan = false
-				if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.MatureThresh {
+				if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
 					tempData[pname].Level = 3
 				}
 				if bootMode {

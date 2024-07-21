@@ -61,7 +61,7 @@ type MapVoteData struct {
 
 	Moderator bool
 	Supporter bool
-	Mature    bool
+	Veteran   bool
 
 	TotalVotes int
 
