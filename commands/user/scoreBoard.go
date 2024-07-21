@@ -39,16 +39,16 @@ func Scoreboard(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	//Sort by score
 	sort.Slice(scores, func(i, j int) bool {
-		return scores[i].Score < scores[j].Score
+		return scores[i].Score > scores[j].Score
 	})
 
 	//Print scoreboard
 	count := 0
 	numScores := len(scores) - 1
-	if numScores > 24 {
-		numScores = 24
+	if numScores > 40 {
+		numScores = 40
 	}
-	for x := numScores; x >= 0; x-- {
+	for x := 0; x < numScores; x++ {
 		p := scores[x]
 
 		n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Score))
