@@ -167,16 +167,8 @@ func Map_reset(data string, doReport bool) {
 			return
 		}
 
-		var buf string
-		if erra == nil && errb == nil && errc == nil {
-			buf = fmt.Sprintf("Map archived as: %s", newmapurl)
-			CMS(cfg.Local.Channel.ChatChannel, buf)
-		} else {
-			buf = "Map archive failed."
-			cwlog.DoLogCW(buf)
-			CMS(cfg.Local.Channel.ChatChannel, buf)
-			return
-		}
+		buf := fmt.Sprintf("Map archived as: %s", newmapurl)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
 	}
 
 	genpath := cfg.Global.Paths.Folders.ServersRoot +

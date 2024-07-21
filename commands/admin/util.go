@@ -74,7 +74,7 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	_ = os.Mkdir("factorio/saves", 0755)
+	err = os.Mkdir("factorio/saves", 0755)
 
 	if err == nil {
 		var elist []*discordgo.MessageEmbed
