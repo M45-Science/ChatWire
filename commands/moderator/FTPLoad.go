@@ -78,12 +78,14 @@ func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, path stri
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
 
+			trimedPath := strings.TrimPrefix(path, cfg.Global.Paths.Folders.FTP)
+
 			availableMaps = append(availableMaps,
 				discordgo.SelectMenuOption{
 
 					Label:       saveName,
 					Description: modStr,
-					Value:       path + "/" + saveName,
+					Value:       trimedPath + "/" + saveName,
 					Emoji: &discordgo.ComponentEmoji{
 						Name: "🗜️",
 					},

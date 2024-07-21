@@ -762,7 +762,14 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func DoFTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
-	buf := "Meep"
+
+	buf := ""
+
+	_, err := zip.OpenReader(cfg.Global.Paths.Folders.FTP + arg)
+	if err != nil {
+		buf = "The file does not appear to be a valid zip file."
+	}
+
 	f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 	disc.FollowupResponse(s, i, &f)
 }
