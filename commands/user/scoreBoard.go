@@ -31,7 +31,7 @@ func Scoreboard(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	scores := []scoreData{}
 	glob.PlayerListLock.RLock()
 	for _, p := range glob.PlayerList {
-		if p.Minutes >= 4320 {
+		if p.Level >= 2 {
 			scores = append(scores, scoreData{Name: p.Name, Score: p.Minutes})
 		}
 	}
@@ -45,6 +45,9 @@ func Scoreboard(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	//Print scoreboard
 	count := 0
 	numScores := len(scores) - 1
+	if numScores > 24 {
+		numScores = 24
+	}
 	for x := numScores; x >= 0; x-- {
 		p := scores[x]
 
