@@ -175,7 +175,7 @@ func handlePlayerRegister(line string, lineList []string, lineListlen int) bool 
 					delete(glob.PassList, i)
 
 					newrole := ""
-					if strings.EqualFold(ptype, "trusted") {
+					if strings.EqualFold(ptype, "member") {
 						newrole = cfg.Global.Discord.Roles.Member
 						plevel = 1
 					} else if strings.EqualFold(ptype, "regular") {
