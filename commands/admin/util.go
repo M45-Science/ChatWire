@@ -74,21 +74,13 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	err = os.Mkdir("factorio/saves", 0755)
+	os.Mkdir("factorio/saves", 0755)
 
 	if err == nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
 		f := discordgo.WebhookParams{Embeds: elist}
 		disc.FollowupResponse(s, i, &f)
-		return
-	} else {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Installing Factorio failed."})
-		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
-
-		cwlog.DoLogCW(err.Error())
 		return
 	}
 
