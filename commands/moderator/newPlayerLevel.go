@@ -68,7 +68,7 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				nplayer.BanReason = reasonString
 			}
 
-			fact.AutoPromote(aname)
+			fact.AutoPromote(aname, false, false)
 			fact.PlayerLevelSet(nplayer.Name, alevel, true)
 			fact.SetPlayerListDirty()
 			buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))

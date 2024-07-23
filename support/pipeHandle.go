@@ -301,7 +301,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 		if NoDSlistlen > 1 {
 			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
 			banlist.CheckBanList(pname)
-			plevelname := fact.AutoPromote(pname)
+			plevelname := fact.AutoPromote(pname, false, true)
 
 			pname = sclean.EscapeDiscordMarkdown(pname)
 
@@ -518,22 +518,22 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 
 				if strings.Contains(line, " is now a member!") {
 					fact.PlayerLevelSet(trustname, 1, false)
-					fact.AutoPromote(trustname)
+					fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(line, " is now a regular!") {
 					fact.PlayerLevelSet(trustname, 2, false)
-					fact.AutoPromote(trustname)
+					fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(line, " is now reset!") {
 					fact.PlayerLevelSet(trustname, 0, false)
-					fact.AutoPromote(trustname)
+					fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(line, " moved to moderators group") {
 					fact.PlayerLevelSet(trustname, 255, false)
-					fact.AutoPromote(trustname)
+					fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(line, " has nil permissions.") {
-					fact.AutoPromote(trustname)
+					fact.AutoPromote(trustname, false, false)
 					return true
 				}
 			}

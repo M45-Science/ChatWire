@@ -390,6 +390,7 @@ func LoadPlayers(bootMode, minimize bool) {
 			glob.PlayerListLock.Lock()
 			var removed int
 			for pname := range tempData {
+
 				//DB cleaning
 				if minimize {
 					//Get rid of new/deleted
@@ -426,6 +427,10 @@ func LoadPlayers(bootMode, minimize bool) {
 					tempData[pname].Level = 3
 				}
 				if bootMode {
+					//If primary server, update discord roles
+					if strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) {
+						go AutoPromote(pname, true, false)
+					}
 					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
 				} else if !bootMode {
 					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)

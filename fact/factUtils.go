@@ -348,41 +348,45 @@ func StringToLevel(input string) int {
 }
 
 /* Promote a player to the level they have, in Factorio and on Discord */
-func AutoPromote(pname string) string {
+func AutoPromote(pname string, bootMode bool, doBan bool) string {
 	playerName := " *(New Player)* "
 
 	if pname != "" {
 		plevel := PlayerLevelGet(pname, false)
 
-		if plevel <= -254 {
-			playerName = " **(Deleted Player)** "
+		if !bootMode {
+			if plevel <= -254 {
+				playerName = " **(Deleted Player)** "
 
-		} else if plevel == -1 {
-			playerName = " **(Banned)**"
+			} else if plevel == -1 {
+				playerName = " **(Banned)**"
 
-			name := strings.ToLower(pname)
-			glob.PlayerListLock.Lock()
-			if glob.PlayerList[name] != nil {
-				WriteFact("/ban " + name + " " + glob.PlayerList[name].BanReason)
+				if doBan {
+					name := strings.ToLower(pname)
+					glob.PlayerListLock.Lock()
+					if glob.PlayerList[name] != nil {
+						WriteFact("/ban " + name + " " + glob.PlayerList[name].BanReason)
+					}
+					glob.PlayerListLock.Unlock()
+				}
+
+			} else if plevel == 1 {
+				playerName = " *(Member)*"
+				WriteFact(fmt.Sprintf("/member %s", pname))
+
+			} else if plevel == 2 {
+				playerName = " *(Regular)*"
+
+				WriteFact(fmt.Sprintf("/regular %s", pname))
+			} else if plevel == 3 {
+				playerName = " *(Veteran)*"
+
+				WriteFact(fmt.Sprintf("/veteran %s", pname))
+			} else if plevel == 255 {
+				playerName = " *(Moderator)*"
+
+				WriteFact(fmt.Sprintf("/promote %s", pname))
 			}
-			glob.PlayerListLock.Unlock()
-
-		} else if plevel == 1 {
-			playerName = " *(Member)*"
-			WriteFact(fmt.Sprintf("/member %s", pname))
-
-		} else if plevel == 2 {
-			playerName = " *(Regular)*"
-
-			WriteFact(fmt.Sprintf("/regular %s", pname))
-		} else if plevel == 3 {
-			playerName = " *(Veteran)*"
-
-			WriteFact(fmt.Sprintf("/veteran %s", pname))
-		} else if plevel == 255 {
-			playerName = " *(Moderator)*"
-
-			WriteFact(fmt.Sprintf("/promote %s", pname))
 		}
 
 		discid := disc.GetDiscordIDFromFactorioName(pname)
@@ -403,23 +407,20 @@ func AutoPromote(pname string) string {
 				newrole = cfg.Global.Discord.Roles.Moderator
 			}
 
-			guild := disc.Guild
+			if discid != "" {
+				if disc.Guild != nil && disc.DS != nil {
 
-			if guild != nil && disc.DS != nil {
+					errrole, regrole := disc.RoleExists(disc.Guild, newrole)
 
-				errrole, regrole := disc.RoleExists(guild, newrole)
-
-				if !errrole {
-					cwlog.DoLogCW(fmt.Sprintf("Couldn't find role %v.", newrole))
-				} else {
-					errset := disc.SmartRoleAdd(cfg.Global.Discord.Guild, discid, regrole.ID)
-					if errset != nil {
-						cwlog.DoLogCW(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
+					if !errrole {
+						cwlog.DoLogCW(fmt.Sprintf("Couldn't find role %v.", newrole))
+					} else {
+						errset := disc.SmartRoleAdd(cfg.Global.Discord.Guild, discid, regrole.ID)
+						if errset != nil {
+							cwlog.DoLogCW(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
+						}
 					}
 				}
-			} else {
-
-				cwlog.DoLogCW("No guild data.")
 			}
 		}
 	}

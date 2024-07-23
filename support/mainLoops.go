@@ -334,6 +334,7 @@ func MainLoops() {
 					disc.Guild = nguild
 					disc.Guildname = nguild.Name
 					cwlog.DoLogCW("Guild data linked.")
+					fact.LoadPlayers(true, false)
 				}
 			}
 
