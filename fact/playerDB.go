@@ -12,6 +12,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -389,6 +390,11 @@ func LoadPlayers(bootMode, minimize bool) {
 			//Add name back in, makes db file smaller
 			glob.PlayerListLock.Lock()
 			var removed int
+
+			if disc.Guild != nil && strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) {
+				cwlog.DoLogCW("Updating Discord roles...")
+			}
+
 			for pname := range tempData {
 
 				//DB cleaning
