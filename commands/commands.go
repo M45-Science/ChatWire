@@ -170,7 +170,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.SetSchedule, AdminOnly: true},
+		Command: admin.SetSchedule},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",
