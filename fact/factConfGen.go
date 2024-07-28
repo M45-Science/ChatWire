@@ -148,7 +148,7 @@ func GenerateFactorioConfig() bool {
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 
-	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Supporters: " + strings.Join(disc.RoleList.Patreons, ",") + "," + strings.Join(disc.RoleList.Supporters, ",") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
+	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Supporters: " + strings.Join(disc.RoleList.Patreons, ", ") + ", " + strings.Join(disc.RoleList.Supporters, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
 
 	normalMode := true
 	if *glob.LocalTestMode {
