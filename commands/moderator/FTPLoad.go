@@ -5,6 +5,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"archive/zip"
 	"io/fs"
 	"os"
 	"sort"
@@ -23,8 +24,7 @@ const (
 )
 
 const (
-	TYPE_NONE = iota
-	TYPE_MAP
+	TYPE_MAP = iota
 	TYPE_MOD
 	TYPE_MODPACK
 	TYPE_MODSETTINGS
@@ -33,46 +33,43 @@ const (
 )
 
 type ftpTypeData struct {
-	fType int
-	Name  string
-	Path  string
+	fType   int
+	Name    string
+	ID      string
+	Command string
+	Path    string
 }
 
 var ftpTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
-	{fType: TYPE_NONE, Name: "None", Path: ""},
-	{fType: TYPE_MAP, Name: "Map", Path: MapFolder},
-	{fType: TYPE_MOD, Name: "Mod", Path: ModFolder},
-	{fType: TYPE_MODPACK, Name: "Mod Pack", Path: ModPackFolder},
-	{fType: TYPE_MODSETTINGS, Name: "Mod Setting File", Path: ModSettingsFolder},
+	{fType: TYPE_MAP, Name: "map", ID: "ftp-map", Command: "load-map", Path: MapFolder},
+	{fType: TYPE_MOD, Name: "mod", ID: "ftp-mod", Command: "load-mod", Path: ModFolder},
+	{fType: TYPE_MODPACK, Name: "modpack", ID: "ftp-modpack", Command: "load-modpack", Path: ModPackFolder},
+	{fType: TYPE_MODSETTINGS, Name: "settings", ID: "ftp-settings", Command: "load-settings", Path: ModSettingsFolder},
 }
 
 func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 
-	// Get args
-	fType := ftpTypes[TYPE_NONE]
 	for _, arg := range a.Options {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
 			for _, item := range ftpTypes {
-				if "FTP "+item.Name == arg.StringValue() {
-					fType = item
+				if item.Command == arg.Value {
+					ShowFTPList(s, i, item)
+					return
 				}
 			}
 		}
 	}
 
-	if fType.fType == TYPE_NONE {
-		disc.EphemeralResponse(s, i, "Error:", "No valid option was selected.")
-		return
-	}
-	ShowFTPList(s, i, fType)
+	disc.EphemeralResponse(s, i, "Error:", "No valid options were selected.")
 }
 
 /* Load a different save-game */
 func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftpTypeData) {
 
-	files, err := os.ReadDir(cfg.Global.Paths.Folders.FTP + fType.Path)
+	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path
+	files, err := os.ReadDir(pathPrefix)
 
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
@@ -120,17 +117,32 @@ func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftp
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
 
-			availableFiles = append(availableFiles,
-				discordgo.SelectMenuOption{
+			zip, err := zip.OpenReader(pathPrefix + "/" + fName)
+			if err != nil || zip == nil {
+				availableFiles = append(availableFiles,
+					discordgo.SelectMenuOption{
 
-					Label:       saveName,
-					Description: modStr,
-					Value:       fType.Path + "/" + saveName,
-					Emoji: &discordgo.ComponentEmoji{
-						Name: "🗜️",
+						Label:       saveName,
+						Description: "INVALID ZIP FILE!",
+						Value:       "INVALID",
+						Emoji: &discordgo.ComponentEmoji{
+							Name: "🚫",
+						},
 					},
-				},
-			)
+				)
+			} else {
+				availableFiles = append(availableFiles,
+					discordgo.SelectMenuOption{
+
+						Label:       saveName,
+						Description: modStr,
+						Value:       saveName,
+						Emoji: &discordgo.ComponentEmoji{
+							Name: "🗜️",
+						},
+					},
+				)
+			}
 		}
 	}
 
@@ -148,7 +160,7 @@ func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftp
 						Components: []discordgo.MessageComponent{
 							discordgo.SelectMenu{
 								// Select menu, as other components, must have a customID, so we set it to this value.
-								CustomID:    "FTP " + fType.Name,
+								CustomID:    fType.ID,
 								Placeholder: "Select a " + fType.Name,
 								Options:     availableFiles,
 							},

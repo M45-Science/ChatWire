@@ -250,6 +250,10 @@ var cmds = []Command{
 						Name:  "load-modpack",
 						Value: "load-modpack",
 					},
+					{
+						Name:  "load-settings",
+						Value: "load-settings",
+					},
 				},
 			},
 		},
