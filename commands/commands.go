@@ -754,15 +754,14 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 					break
 				}
-			} else if strings.EqualFold(data.CustomID, "FTPFile") {
-				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
-
-					buf := fmt.Sprintf("Loading: %v, please wait.", c)
-					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
-					disc.InteractionResponse(s, i, &elist)
-
-					fact.DoFTPLoad(s, i, c)
-
+			}
+			for f, fType := range moderator.FTPTypes {
+				if strings.EqualFold(data.CustomID, fType.ID) {
+					if c == "INVALID" {
+						disc.EphemeralResponse(s, i, "Error:", "Invalid zip file!")
+						break
+					}
+					moderator.LoadFTPFile(c, f)
 					break
 				}
 			}

@@ -5,6 +5,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"archive/zip"
 	"io/fs"
 	"os"
@@ -40,7 +41,7 @@ type ftpTypeData struct {
 	Path    string
 }
 
-var ftpTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
+var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MAP, Name: "map", ID: "ftp-map", Command: "load-map", Path: MapFolder},
 	{fType: TYPE_MOD, Name: "mod", ID: "ftp-mod", Command: "load-mod", Path: ModFolder},
 	{fType: TYPE_MODPACK, Name: "modpack", ID: "ftp-modpack", Command: "load-modpack", Path: ModPackFolder},
@@ -53,7 +54,7 @@ func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	for _, arg := range a.Options {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
-			for _, item := range ftpTypes {
+			for _, item := range FTPTypes {
 				if item.Command == arg.Value {
 					ShowFTPList(s, i, item)
 					return
@@ -63,6 +64,10 @@ func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	disc.EphemeralResponse(s, i, "Error:", "No valid options were selected.")
+}
+
+func LoadFTPFile(file string, fType int) {
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Would have loaded: "+file)
 }
 
 /* Load a different save-game */
