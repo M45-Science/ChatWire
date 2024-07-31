@@ -67,7 +67,7 @@ func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func LoadFTPFile(file string, fType int) {
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Would have loaded: "+file)
+	fact.CMS(cfg.Local.Channel.ChatChannel, "Would have loaded: "+FTPTypes[fType].Name+": "+file)
 }
 
 /* Load a different save-game */
