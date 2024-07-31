@@ -112,7 +112,10 @@ func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftp
 			}
 
 			/* Get mod date */
-			info, _ := f.Info()
+			info, err := f.Info()
+			if err != nil {
+				continue
+			}
 			modDate := time.Since(info.ModTime())
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
