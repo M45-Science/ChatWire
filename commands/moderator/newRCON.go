@@ -25,6 +25,9 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
 			if strings.EqualFold(arg.Name, "command") {
 				command = arg.StringValue()
+				//Fix missing slash
+				command = strings.TrimPrefix(command, "/")
+				command = "/" + command
 			}
 		}
 	}
