@@ -39,11 +39,11 @@ var cmds = []Command{
 	/* Admin Commands */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "chatwire",
-		Description: "ADMIN ONLY: Actions specific to ChatWire.",
+		Description: "ADMIN ONLY: Reboot/reload ChatWire.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
-				Description: "do not use these unless you are certain of what you are doing",
+				Description: "DO NOT use these unless you are certain of what you are doing",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
@@ -70,11 +70,11 @@ var cmds = []Command{
 		Command: admin.ChatWire, AdminOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-schedule",
-		Description: "ADMIN ONLY: Set a map reset schedule.",
+		Description: "MOD ONLY: Set a map reset schedule.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "preset",
-				Description: "How often to reset the map, based on a preset.",
+				Description: "How often to reset the map.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
@@ -154,7 +154,7 @@ var cmds = []Command{
 			},
 			{
 				Name:        "date",
-				Description: "FOR 3,2 OR 1 MONTH, TWICE-MONHTLY PRESETS ONLY! 0 = default",
+				Description: "For two-week or monthly schedules.",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    &valZero,
 				MaxValue:    27,
@@ -162,7 +162,7 @@ var cmds = []Command{
 			},
 			{
 				Name:        "hour",
-				Description: "RESET HOUR, 24-HOUR, UTC! 0 = default",
+				Description: "Hour to reset. (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    &valZero,
 				MaxValue:    23,
@@ -170,15 +170,15 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.SetSchedule},
+		Command: admin.SetSchedule, ModeratorOnly: true},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",
-		Description: "ADMIN ONLY: Actions specific to Factorio.",
+		Description: "ADMIN ONLY: start/stop, install/update.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
-				Description: "do not use these unless you are certain of what you are doing",
+				Description: "DO NOT use these unless you are certain of what you are doing!",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
@@ -222,14 +222,14 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-global",
-		Description: "ADMIN ONLY: Global server settings and options.",
+		Description: "ADMIN ONLY: Settings for ALL maps/servers",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "ftp-load",
-		Description: "MOD ONLY: load a map, mod or modpack from the FTP.",
+		Description: "(INCOMPLETE) MOD ONLY: load a map, mod or modpack from the FTP.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -258,10 +258,10 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.FTPLoad},
+		Command: moderator.FTPLoad, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",
-		Description: "MOD ONLY: remote console (remotely run a factorio command)",
+		Description: "MOD ONLY: Remotely run a factorio command",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -275,7 +275,7 @@ var cmds = []Command{
 		Command: moderator.RCONCmd, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
-		Description: "MOD ONLY: automated map reset, will kick players out of game.",
+		Description: "MOD ONLY: Force a map reset, will kick players.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.MapReset, ModeratorOnly: true},
@@ -287,12 +287,12 @@ var cmds = []Command{
 		Command: moderator.ConfigServer, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-hours",
-		Description: "MOD ONLY: Set hours map can be played (GMT)",
+		Description: "MOD ONLY: Hours map can be played (24-hour UTC)",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "start-hour",
-				Description: "hour to start server (GMT)",
+				Description: "hour to start server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    &valZero,
 				MaxValue:    23,
@@ -300,7 +300,7 @@ var cmds = []Command{
 			},
 			{
 				Name:        "end-hour",
-				Description: "hour to stop server (GMT)",
+				Description: "hour to stop server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    &valZero,
 				MaxValue:    23,
@@ -318,11 +318,11 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-level",
-		Description: "MOD ONLY: Sets a player's rank.",
+		Description: "MOD ONLY: Ban, or sets a player's level.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "name",
-				Description: "Factorio name of target player",
+				Description: "Factorio name of player",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 			},
@@ -374,18 +374,18 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "change-map",
-		Description: "MOD ONLY: Load a specific save, shows drop down of last 25.",
+		Description: "MOD ONLY: Load a save, lists last 25.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "list",
-				Description: "show full list of saves",
+				Description: "list ALL save files",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
 			{
 				Name:        "load",
-				Description: "manually specifiy a save name to load",
+				Description: "specify a save file to load",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
 			},
@@ -397,7 +397,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "info",
-		Description: "displays status and settings of the server.",
+		Description: "Displays status and settings of the server.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -417,26 +417,26 @@ var cmds = []Command{
 		Command: user.Info},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "modpack",
-		Description: "Creates a zip file with the installed mods.",
+		Description: "Creates a download link with all mods.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: user.ModPack},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "players",
-		Description: "Shows detailed info about players currently online.",
+		Description: "Lists players currently playing.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: user.Players},
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "vote-map",
-		Description: "REGULARS ONLY: Vote for a new map, or a previous map. Requires TWO votes, requires `REGULARS` discord role.",
+		Description: "REGULARS/VET ONLY: Vote for a new/previous map. Requires TWO vote points.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "vote-now",
-				Description: "Just press ENTER or RETURN to open the voting dialog box.",
+				Description: "Press ENTER or RETURN to open the voting box.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
@@ -467,12 +467,12 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "pause-game",
-		Description: "REGULARS ONLY: Use BEFORE connecting, will temporarily pause the game while you connect. Expires after 60 seconds.",
+		Description: "REGULARS/VET ONLY: Use BEFORE connecting, pauses map while you connect.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "pause-now",
-				Description: "Use BEFORE connecting, will temporarily pause the game while you connect. Expires after 60 seconds.",
+				Description: "Pauses map while you connect, expires after 3 mins.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
@@ -482,13 +482,13 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "register",
-		Description: "Registers a new account, giving you associated Discord roles with more privleges.",
+		Description: "Get a discord role, get access to commands.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: user.Register, PrimaryOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "whois",
-		Description: "Shows information about <search>",
+		Description: "Get info about <player>",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -502,7 +502,7 @@ var cmds = []Command{
 		Command: user.Whois, PrimaryOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "scoreboard",
-		Description: "Shows player scoreboard (top 40)",
+		Description: "Top 40 players",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: user.Scoreboard, PrimaryOnly: true},
