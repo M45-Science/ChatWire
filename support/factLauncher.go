@@ -248,6 +248,9 @@ func injectSoftMod(fileName, folderName string) {
 /* Create config files, launch factorio */
 func launchFactorio() {
 
+	if *glob.DoDeregisterCommands {
+		return
+	}
 	if fact.FactIsRunning {
 		cwlog.DoLogCW("launchFactorio: Factorio is already running.")
 		return

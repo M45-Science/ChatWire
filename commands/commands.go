@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -522,6 +523,8 @@ func ClearCommands() {
 			time.Sleep(constants.ApplicationCommandSleep)
 		}
 	}
+	_ = os.Remove("cw.lock")
+	os.Exit(0)
 }
 
 //https://discord.com/developers/docs/topics/permissions

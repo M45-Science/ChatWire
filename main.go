@@ -27,13 +27,10 @@ import (
 
 func main() {
 	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register discord commands")
-	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
+	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands and quit.")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
-
-	//debug.SetMemoryLimit(1024 * 1024 * 250) //250mb
-	//debug.SetMaxThreads(1000)
 
 	flag.Parse()
 
