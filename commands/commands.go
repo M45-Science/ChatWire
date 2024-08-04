@@ -27,6 +27,7 @@ type Command struct {
 	AdminOnly     bool
 
 	PrimaryOnly bool
+	Disabled    bool
 }
 
 var CL []Command
@@ -39,7 +40,7 @@ var cmds = []Command{
 	/* Admin Commands */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "chatwire",
-		Description: "ADMIN ONLY: Reboot/reload ChatWire.",
+		Description: "Reboot/reload ChatWire.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
@@ -70,7 +71,7 @@ var cmds = []Command{
 		Command: admin.ChatWire, AdminOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-schedule",
-		Description: "MOD ONLY: Set a map reset schedule.",
+		Description: "Set a map reset schedule.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "preset",
@@ -174,7 +175,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "factorio",
-		Description: "ADMIN ONLY: start/stop, install/update.",
+		Description: "start/stop, install/update.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "action",
@@ -222,14 +223,14 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-global",
-		Description: "ADMIN ONLY: Settings for ALL maps/servers",
+		Description: "Settings for ALL maps/servers",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "ftp-load",
-		Description: "(INCOMPLETE) MOD ONLY: load a map, mod or modpack from the FTP.",
+		Description: "(INCOMPLETE) load a map, mod or modpack from the FTP.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -258,10 +259,10 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.FTPLoad, ModeratorOnly: true},
+		Command: moderator.FTPLoad, ModeratorOnly: true, Disabled: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",
-		Description: "MOD ONLY: Remotely run a factorio command",
+		Description: "Remotely run a factorio command",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -275,19 +276,19 @@ var cmds = []Command{
 		Command: moderator.RCONCmd, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "map-reset",
-		Description: "MOD ONLY: Force a map reset, will kick players.",
+		Description: "Force a map reset, will kick players.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.MapReset, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-server",
-		Description: "MOD ONLY: Server settings and options.",
+		Description: "Server settings and options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Command: moderator.ConfigServer, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "config-hours",
-		Description: "MOD ONLY: Hours map can be played (24-hour UTC)",
+		Description: "Hours map can be played (24-hour UTC)",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -318,7 +319,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "player-level",
-		Description: "MOD ONLY: Ban, or sets a player's level.",
+		Description: "Ban, or sets a player's level.",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "name",
@@ -374,7 +375,7 @@ var cmds = []Command{
 
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "change-map",
-		Description: "MOD ONLY: Load a save, lists last 25.",
+		Description: "Load a save, lists last 25.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []*discordgo.ApplicationCommandOption{
 			{
@@ -542,6 +543,9 @@ func RegisterCommands(s *discordgo.Session) {
 
 		for i, o := range CL {
 
+			if o.Disabled {
+				continue
+			}
 			if o.AppCmd == nil {
 				continue
 			}
