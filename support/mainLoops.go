@@ -648,10 +648,7 @@ func MainLoops() {
 
 			if glob.PausedForConnect {
 
-				limit := time.Minute
-				if glob.PausedConnectAttempt {
-					limit = time.Minute * 2
-				}
+				limit := time.Minute * 3
 
 				if time.Since(glob.PausedAt) > limit {
 
