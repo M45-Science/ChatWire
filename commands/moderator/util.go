@@ -108,7 +108,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "description",
 		ShortDesc: "Description",
-		Desc:      "This description is used in the server browser.",
+		Desc:      "This description is shown in the server browser.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 128,
@@ -209,7 +209,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "auto-start-factorio",
 		ShortDesc: "Auto-Start",
-		Desc:      "Auto-start and Auto-Restart Factorio.",
+		Desc:      "Auto-start and auto-restart Factorio.",
 		Type:      TYPE_BOOL,
 
 		DefBool: true,
@@ -229,7 +229,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "auto-update-experimental",
 		ShortDesc: "Experimental Updates",
-		Desc:      "Force Factorio updater to use experimental versions if auto-update is on.",
+		Desc:      "When updating factorio, use experimental releases.",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -301,7 +301,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "restrict-new-players",
 		ShortDesc: "Restrict New",
-		Desc:      "New player permission restrictions on/off (softmod).",
+		Desc:      "New player restrictions on/off (softmod).",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.Restrict,
@@ -313,7 +313,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "friendly-fire",
 		ShortDesc: "Friendly Fire",
-		Desc:      "Allow friendly fire: damage to teammates or buildings (softmod)",
+		Desc:      "Allow damage to teammates or buildings (softmod)",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.FriendlyFire,
@@ -325,7 +325,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "afk-kick-mins",
 		ShortDesc: "AFK Mins",
-		Desc:      "If AFK, kick after this amount of time (in game time, based on 60fps).",
+		Desc:      "If idle/afk, kick after this amount of time (game time, 60ups).",
 		Type:      TYPE_INT,
 
 		MaxInt: 120,
@@ -337,7 +337,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "autosave-mins",
 		ShortDesc: "Autosave Mins",
-		Desc:      "Save the map every X minutes (in game time, based on 60fps)",
+		Desc:      "Save the map this often (game time, 60ups)",
 		Type:      TYPE_INT,
 
 		MaxInt: 30,
@@ -367,7 +367,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-seed",
 		ShortDesc: "Map Seed",
-		Desc:      "Seed for map gen, clears after map resets.",
+		Desc:      "Seed for map gen, clears after map reset.",
 		Type:      TYPE_INT,
 		DefInt:    0,
 
@@ -376,7 +376,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "soft-mod-inject",
 		ShortDesc: "SoftMod Inject",
-		Desc:      "Inject soft mod scripts from factorio/softmod",
+		Desc:      "Inject softmod scripts.",
 		Type:      TYPE_BOOL,
 		DefBool:   false,
 
@@ -385,7 +385,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-reset-skip",
 		ShortDesc: "Map reset skip",
-		Desc:      "Skip the next map reset, clears after.",
+		Desc:      "Skip the next map reset.",
 		Type:      TYPE_BOOL,
 		DefBool:   false,
 
