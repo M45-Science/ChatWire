@@ -50,7 +50,7 @@ func PauseConnect(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				}
 
 				/* Otherwise pause game */
-				buf := "If you don't attempt to connect within 60 seconds, the pause-on-connect will be canceled.\nIf you don't finish joining the game within 2 minutes, the game will unpause."
+				buf := "If you don't attempt to connect within 3 minutes, the pause-on-connect will be canceled.\nIf you don't finish joining the game within 3 minutes, the game will unpause."
 				disc.EphemeralResponse(s, i, "Status:", buf)
 
 				glob.PausedForConnect = true
