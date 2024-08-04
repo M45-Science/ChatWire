@@ -151,7 +151,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 
 		/* Re-use old vote if we found one, or old votes will block new ones */
 		if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
-			if glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
+			if !disc.CheckModerator(i) && glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
 				buf := "You have used all of your allotted votes for this cycle."
 				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 				disc.FollowupResponse(s, i, &f)
