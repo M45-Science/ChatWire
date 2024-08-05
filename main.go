@@ -150,6 +150,10 @@ func main() {
 
 	moderator.MakeFTPFolders()
 
+	/* Start Discord bot, don't wait for it.
+	 * We want Factorio online even if Discord is down. */
+	go startbot()
+
 	/* Setup cron */
 	fact.SetupSchedule()
 
@@ -174,9 +178,6 @@ func main() {
 	/* Loop to read Factorio stdout, runs in a goroutine */
 	go support.HandleChat()
 
-	/* Start Discord bot, don't wait for it.
-	 * We want Factorio online even if Discord is down. */
-	go startbot()
 	if cfg.Local.Options.AutoStart {
 		fact.FactAutoStart = true
 	}
