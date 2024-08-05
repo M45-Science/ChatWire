@@ -37,6 +37,7 @@ func MainLoops() {
 	 * Game watchdog
 	 ***************/
 	go func() {
+		time.Sleep(time.Second * 2)
 		for glob.ServerRunning {
 
 			time.Sleep(constants.WatchdogInterval)
