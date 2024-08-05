@@ -307,6 +307,8 @@ func launchFactorio() {
 				return
 			}
 		}
+	} else {
+		cwlog.DoLogCW("Unable to read mod dir.")
 	}
 
 	/* Inject softmod */
