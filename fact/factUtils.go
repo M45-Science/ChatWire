@@ -24,6 +24,12 @@ import (
 )
 
 func CheckSave(path, name string, showError bool) (good bool, folder string) {
+
+	if HasZipBomb(path + "/" + name) {
+		LogCMS(cfg.Local.Channel.ChatChannel, "Save contains a zip-bomb, aborting.")
+		return false, ""
+	}
+
 	zip, err := zip.OpenReader(path + "/" + name)
 	if err != nil || zip == nil {
 		buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())

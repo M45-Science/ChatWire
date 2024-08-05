@@ -97,7 +97,13 @@ func modCheckError(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file string, fType int) {
 
 	pathPrefix := cfg.Global.Paths.Folders.FTP + FTPTypes[fType].Path + "/"
+	zipPath := pathPrefix + file + ".zip"
+
 	if fType == TYPE_MAP {
+		if fact.HasZipBomb(zipPath) {
+			fact.ReportZipBomb(s, i, zipPath)
+			return
+		}
 		pass, _ := fact.CheckSave(pathPrefix, file+".zip", false)
 
 		if pass {
@@ -108,7 +114,11 @@ func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file stri
 	} else if fType == TYPE_MODSETTINGS {
 
 	} else {
-		zipPath := pathPrefix + file + ".zip"
+		if fact.HasZipBomb(zipPath) {
+			fact.ReportZipBomb(s, i, zipPath)
+			return
+		}
+
 		zip, err := zip.OpenReader(zipPath)
 		if err != nil || zip == nil {
 			disc.EphemeralResponse(s, i, "Error:", "Unable to read the zip file!")
@@ -126,7 +136,10 @@ func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file stri
 						return
 					}
 				} else {
-					//check each zip/mod
+					if file.UncompressedSize64 > fact.MaxZipSize {
+						fact.ReportZipBomb(s, i, zipPath)
+						return
+					}
 				}
 			}
 			disc.EphemeralResponse(s, i, "Error:", "Doing the stuff.")

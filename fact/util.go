@@ -1,6 +1,7 @@
 package fact
 
 import (
+	"archive/zip"
 	"fmt"
 	"os"
 	"strings"
@@ -12,7 +13,41 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+
+	"github.com/bwmarrin/discordgo"
 )
+
+const MaxZipSize = 1024 * 1024 * 1024 * 10 //10gb
+
+func ReportZipBomb(s *discordgo.Session, i *discordgo.InteractionCreate, file string) {
+	susRole := ""
+	if cfg.Global.Discord.SusPingRole != "" {
+		susRole = fmt.Sprintf("<@&%v> ", cfg.Global.Discord.SusPingRole)
+	}
+	buf := fmt.Sprintf("%vFile '%v' contains a zip-bomb!\n", susRole, file)
+	buf = buf + fmt.Sprintf("FTP command from: <@%v>", i.Member.User.ID)
+	LogCMS(cfg.Global.Discord.ReportChannel, buf)
+}
+
+func HasZipBomb(path string) bool {
+	zip, err := zip.OpenReader(path)
+	if err != nil || zip == nil {
+		cwlog.DoLogCW("ZipBomb: Unable to open zip file: " + path)
+		return false
+	}
+	defer zip.Close()
+
+	var totalSize uint64
+
+	for _, file := range zip.File {
+		size := file.UncompressedSize64
+		if size > MaxZipSize {
+			return true
+		}
+		totalSize += size
+	}
+	return totalSize > MaxZipSize
+}
 
 func IsPlayerOnline(who string) bool {
 
