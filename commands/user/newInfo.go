@@ -198,7 +198,7 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/* End tick history */
 
 	glob.PlayerListLock.RLock()
-	var mem, reg, vet, mod, ban int
+	var mem, reg, vet, mod, ban, total int
 	for _, player := range glob.PlayerList {
 		switch player.Level {
 		case -1:
@@ -212,10 +212,13 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		case 255:
 			mod++
 		}
+		total++
 	}
-	ban += len(banlist.BanList)
-	buf = buf + fmt.Sprintf("Members: %v, Regulars: %v, Veterans: %v\nModerators: %v, Banned: %v\n",
-		mem, reg, vet, mod, ban)
+	bCount := len(banlist.BanList)
+	ban += bCount
+	total += bCount
+	buf = buf + fmt.Sprintf("Members: %v, Regulars: %v, Veterans: %v\nModerators: %v, Banned: %v, Total: %v\n",
+		mem, reg, vet, mod, ban, total)
 	glob.PlayerListLock.RUnlock()
 
 	if fact.PausedTicks > 4 {
