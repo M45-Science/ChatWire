@@ -32,13 +32,15 @@ func CheckZip(filename string) bool {
 		cwlog.DoLogCW(err.Error())
 		return false
 	}
+	defer read.Close()
 
 	for _, file := range read.File {
-		_, err := file.Open()
+		data, err := file.Open()
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 			return false
 		}
+		defer data.Close()
 		if file.UncompressedSize64 > 1024 {
 			return true
 		}

@@ -16,6 +16,7 @@ import (
 	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands"
+	"ChatWire/commands/moderator"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
@@ -146,6 +147,8 @@ func main() {
 		os.Exit(0)
 		return
 	}
+
+	moderator.MakeFTPFolders()
 
 	/* Setup cron */
 	fact.SetupSchedule()

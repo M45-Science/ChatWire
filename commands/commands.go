@@ -765,7 +765,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			for f, fType := range moderator.FTPTypes {
 				if strings.EqualFold(data.CustomID, fType.ID) {
 					if c == "INVALID" {
-						disc.EphemeralResponse(s, i, "Error:", "Invalid zip file!")
+						disc.EphemeralResponse(s, i, "Error:", "Invalid file!")
 						break
 					}
 					//disc.EphemeralResponse(s, i, "Status:", "Loading "+fType.Name+": "+c)

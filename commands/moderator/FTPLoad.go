@@ -55,6 +55,19 @@ var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MODSETTINGS, Name: "settings", ID: "ftp-settings", Command: "load-settings", Path: ModSettingsFolder},
 }
 
+func MakeFTPFolders() {
+	pathPrefix := cfg.Global.Paths.Folders.FTP + "/"
+
+	var err error
+	for _, item := range FTPTypes {
+		dirPath := pathPrefix + item.Path
+		err = os.MkdirAll(dirPath, os.ModePerm)
+		if err != nil {
+			cwlog.DoLogCW("Unable to create FTP dir: " + dirPath)
+		}
+	}
+}
+
 func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
@@ -63,7 +76,11 @@ func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if arg.Type == discordgo.ApplicationCommandOptionString {
 			for _, item := range FTPTypes {
 				if item.Command == arg.Value {
-					ShowFTPList(s, i, item)
+					if item.fType == TYPE_MODSETTINGS {
+						ShowDatList(s, i, item)
+					} else {
+						ShowZipList(s, i, item)
+					}
 					return
 				}
 			}
@@ -88,6 +105,8 @@ func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file stri
 		} else {
 			disc.EphemeralResponse(s, i, "Error:", "Map appears to be invalid!")
 		}
+	} else if fType == TYPE_MODSETTINGS {
+
 	} else {
 		zipPath := pathPrefix + file + ".zip"
 		zip, err := zip.OpenReader(zipPath)
@@ -107,9 +126,10 @@ func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file stri
 						return
 					}
 				} else {
-
+					//check each zip/mod
 				}
 			}
+			disc.EphemeralResponse(s, i, "Error:", "Doing the stuff.")
 		} else if fType == TYPE_MOD {
 			for _, file := range zip.File {
 				if path.Base(file.Name) == "info.json" {
@@ -149,8 +169,102 @@ func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file stri
 
 }
 
+func ShowDatList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftpTypeData) {
+	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
+	dir, err := os.ReadDir(pathPrefix)
+	if err != nil {
+		disc.EphemeralResponse(s, i, "Error:", "Unable to read the mod settings directory.")
+		return
+	}
+
+	var availableFiles []discordgo.SelectMenuOption
+
+	found := false
+	units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
+	if err != nil {
+		panic(err)
+	}
+
+	sort.Slice(dir, func(i, j int) bool {
+		iInfo, _ := dir[i].Info()
+		jInfo, _ := dir[j].Info()
+		return iInfo.ModTime().After(jInfo.ModTime())
+	})
+
+	for _, file := range dir {
+		if file.IsDir() {
+			continue
+		}
+		if strings.HasSuffix(file.Name(), ".dat") {
+			found = true
+
+			/* Get mod date */
+			info, err := file.Info()
+			if err != nil {
+				continue
+			}
+			modDate := time.Since(info.ModTime())
+			modDate = modDate.Round(time.Second)
+			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
+
+			if info.Size() < 15 {
+				availableFiles = append(availableFiles,
+					discordgo.SelectMenuOption{
+
+						Label:       file.Name(),
+						Description: "INVALID SETTINGS FILE!",
+						Value:       "INVALID",
+						Emoji: &discordgo.ComponentEmoji{
+							Name: "🚫",
+						},
+					},
+				)
+			} else {
+				availableFiles = append(availableFiles,
+					discordgo.SelectMenuOption{
+
+						Label:       file.Name(),
+						Description: modStr,
+						Value:       file.Name(),
+						Emoji: &discordgo.ComponentEmoji{
+							Name: "📄",
+						},
+					},
+				)
+			}
+		}
+	}
+	if found {
+		response := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Choose a settings file to load from the FTP:",
+				Flags:   1 << 6,
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.SelectMenu{
+								// Select menu, as other components, must have a customID, so we set it to this value.
+								CustomID:    fType.ID,
+								Placeholder: "Select a " + fType.Name + " file.",
+								Options:     availableFiles,
+							},
+						},
+					},
+				},
+			},
+		}
+		err := s.InteractionRespond(i.Interaction, response)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
+	} else {
+		disc.EphemeralResponse(s, i, "Error:", "No settings files were found.")
+	}
+}
+
 /* Load a different save-game */
-func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftpTypeData) {
+func ShowZipList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftpTypeData) {
 
 	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
 	files, err := os.ReadDir(pathPrefix)
@@ -182,6 +296,11 @@ func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftp
 		numFiles = constants.MaxMapResults - 1
 	}
 
+	units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
+	if err != nil {
+		panic(err)
+	}
+
 	for i := 0; i < numFiles; i++ {
 
 		f := tempf[i]
@@ -189,11 +308,6 @@ func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftp
 
 		if strings.HasSuffix(fName, ".zip") {
 			saveName := strings.TrimSuffix(fName, ".zip")
-
-			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
-			if err != nil {
-				panic(err)
-			}
 
 			/* Get mod date */
 			info, err := f.Info()
