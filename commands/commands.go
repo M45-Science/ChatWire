@@ -741,7 +741,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		for _, c := range data.Values {
 			if strings.EqualFold(data.CustomID, "ChangeMap") {
-				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+				if disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
 
 					buf := fmt.Sprintf("Loading: %v, please wait.", c)
 					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
@@ -752,7 +752,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					break
 				}
 			} else if strings.EqualFold(data.CustomID, "VoteMap") {
-				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+				if disc.CheckRegular(i) || disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
 
 					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
 					disc.EphemeralResponse(s, i, "Notice:", buf)
@@ -789,7 +789,7 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
 				if c.AdminOnly {
-					if disc.CheckAdmin(i) {
+					if disc.CheckAdmin(s, i) {
 						c.Command(s, i)
 						var options []string
 						for _, o := range c.AppCmd.Options {
@@ -799,17 +799,17 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						return
 					} else {
 						disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
-						fact.CMS(i.ChannelID, "You do not have permission to use admin commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						fact.CMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord admin permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
 				} else if c.ModeratorOnly {
-					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+					if disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
 						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
 						c.Command(s, i)
 						return
 					} else {
 						disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
-						fact.CMS(i.ChannelID, "You do not have permission to use moderator commands. ("+i.Member.User.Username+", "+c.AppCmd.Name+")")
+						fact.CMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord moderator permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
 				} else {

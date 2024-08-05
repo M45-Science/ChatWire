@@ -11,8 +11,22 @@ import (
 	"ChatWire/glob"
 )
 
+func MultiFactorAuthCheck(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
+
+	if i != nil && i.User != nil {
+		if !i.User.Verified || !i.User.MFAEnabled {
+			EphemeralResponse(s, i, "Error:", "Sorry, you your Discord account must have a verified email and have MFA enabled!\nhttps://support.discord.com/hc/en-us/articles/219576828-Setting-up-Multi-Factor-Authentication")
+			return false
+		} else {
+			cwlog.DoLogCW("MultiFactorAuthCheck: i.user nil")
+			return false
+		}
+	}
+	return true
+}
+
 /*  Check if Discord admin */
-func CheckAdmin(i *discordgo.InteractionCreate) bool {
+func CheckAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Admin == "" {
 		cwlog.DoLogCW("CheckAdmin: RoleID not found for that role, check configuration files.")
@@ -22,7 +36,7 @@ func CheckAdmin(i *discordgo.InteractionCreate) bool {
 	if i.Member != nil {
 		for _, r := range i.Member.Roles {
 			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Admin) {
-				return true
+				return MultiFactorAuthCheck(s, i)
 			}
 		}
 	}
@@ -30,7 +44,7 @@ func CheckAdmin(i *discordgo.InteractionCreate) bool {
 }
 
 /*  Check if Discord moderator */
-func CheckModerator(i *discordgo.InteractionCreate) bool {
+func CheckModerator(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
 		cwlog.DoLogCW("CheckModerator: RoleID not found for that role, check configuration files.")
@@ -40,7 +54,7 @@ func CheckModerator(i *discordgo.InteractionCreate) bool {
 	if i.Member != nil {
 		for _, r := range i.Member.Roles {
 			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
-				return true
+				return MultiFactorAuthCheck(s, i)
 			}
 		}
 	}

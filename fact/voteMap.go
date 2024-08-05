@@ -40,7 +40,7 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	}
 
 	/* Only if allowed */
-	if !disc.CheckRegular(i) && !disc.CheckModerator(i) && !disc.CheckAdmin(i) {
+	if !disc.CheckRegular(i) && !disc.CheckModerator(s, i) && !disc.CheckAdmin(s, i) {
 		buf := "You must have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role to use this command. See /register and the read-this-first channel for more info."
 		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 		disc.FollowupResponse(s, i, &f)
@@ -147,11 +147,11 @@ func CheckVote(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 		newVote := glob.MapVoteData{Name: i.Member.User.Username,
 			DiscID: i.Member.User.ID, TotalVotes: 0, Time: time.Now(),
 			Selection: arg, NumChanges: 0, Voided: false, Expired: false,
-			Moderator: disc.CheckModerator(i), Supporter: disc.CheckSupporter(i), Veteran: disc.CheckVeteran(i)}
+			Moderator: disc.CheckModerator(s, i), Supporter: disc.CheckSupporter(i), Veteran: disc.CheckVeteran(i)}
 
 		/* Re-use old vote if we found one, or old votes will block new ones */
 		if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
-			if !disc.CheckModerator(i) && glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
+			if !disc.CheckModerator(s, i) && glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
 				buf := "You have used all of your allotted votes for this cycle."
 				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
 				disc.FollowupResponse(s, i, &f)

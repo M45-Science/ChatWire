@@ -21,7 +21,7 @@ func VoteMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	/* Mod commands */
-	if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+	if disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
 		for _, o := range a.Options {
 			if o.Type == discordgo.ApplicationCommandOptionString {
 				arg := o.StringValue()
@@ -71,7 +71,7 @@ func VoteMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+	if disc.CheckRegular(i) || disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
 		fact.ShowMapList(s, i, true)
 	} else {
 		buf := fmt.Sprintf("Sorry, you must have the `%v` role to use this command, see the /register command.", cfg.Global.Discord.Roles.Regular)
