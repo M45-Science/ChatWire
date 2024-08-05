@@ -32,11 +32,13 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 		}
 		cwlog.DoLogCW(buf)
 	} else {
-
+		defer zip.Close()
 		for _, file := range zip.File {
 			fc, err := file.Open()
 
 			if err != nil {
+				defer fc.Close()
+
 				buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
 				if showError {
 					CMS(cfg.Local.Channel.ChatChannel, buf)
@@ -45,7 +47,6 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 				break
 			} else {
 				if strings.HasSuffix(file.Name, "level.dat0") {
-
 					content, err := io.ReadAll(fc)
 					if len(content) > (50*1024) && err == nil {
 						return true, filepath.Dir(file.Name)

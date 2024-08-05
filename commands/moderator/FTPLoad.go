@@ -7,8 +7,11 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"archive/zip"
+	"encoding/json"
+	"io"
 	"io/fs"
 	"os"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -41,6 +44,10 @@ type ftpTypeData struct {
 	Path    string
 }
 
+type modInfoData struct {
+	Name, Version, Author, Factorio_version string
+}
+
 var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MAP, Name: "map", ID: "ftp-map", Command: "load-map", Path: MapFolder},
 	{fType: TYPE_MOD, Name: "mod", ID: "ftp-mod", Command: "load-mod", Path: ModFolder},
@@ -66,14 +73,86 @@ func FTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(s, i, "Error:", "No valid options were selected.")
 }
 
-func LoadFTPFile(file string, fType int) {
-	fact.CMS(cfg.Local.Channel.ChatChannel, "Would have loaded: "+FTPTypes[fType].Name+": "+file)
+func modCheckError(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(s, i, "Error:", "The mod appears to be invalid or corrupt.")
+}
+
+func LoadFTPFile(s *discordgo.Session, i *discordgo.InteractionCreate, file string, fType int) {
+
+	pathPrefix := cfg.Global.Paths.Folders.FTP + FTPTypes[fType].Path + "/"
+	if fType == TYPE_MAP {
+		pass, _ := fact.CheckSave(pathPrefix, file+".zip", false)
+
+		if pass {
+			disc.EphemeralResponse(s, i, "Debug:", "Map appears to be valid.")
+		} else {
+			disc.EphemeralResponse(s, i, "Error:", "Map appears to be invalid!")
+		}
+	} else {
+		zipPath := pathPrefix + file + ".zip"
+		zip, err := zip.OpenReader(zipPath)
+		if err != nil || zip == nil {
+			disc.EphemeralResponse(s, i, "Error:", "Unable to read the zip file!")
+			return
+		}
+		defer zip.Close()
+
+		if fType == TYPE_MODPACK {
+			for _, file := range zip.File {
+				if !strings.HasSuffix(file.Name, ".zip") {
+					if strings.EqualFold(file.Name, "mod-list.json") {
+						//check mod-list
+					} else {
+						disc.EphemeralResponse(s, i, "Error:", "The modpack contains unknown files, aborting.")
+						return
+					}
+				} else {
+
+				}
+			}
+		} else if fType == TYPE_MOD {
+			for _, file := range zip.File {
+				if path.Base(file.Name) == "info.json" {
+					fc, err := file.Open()
+					if err != nil {
+						disc.EphemeralResponse(s, i, "Error:", "The mod info file could not be opened.")
+						return
+					}
+					defer fc.Close()
+
+					content, err := io.ReadAll(fc)
+					if err != nil {
+						disc.EphemeralResponse(s, i, "Error:", "The mod info file could not be read.")
+						return
+					}
+
+					jsonData := modInfoData{}
+					err = json.Unmarshal(content, &jsonData)
+					if err != nil {
+						disc.EphemeralResponse(s, i, "Error:", "The mod info could not be decoded.")
+						return
+					}
+
+					if len(jsonData.Author) < 2 || len(jsonData.Factorio_version) < 3 ||
+						len(jsonData.Name) < 3 || len(jsonData.Version) < 3 {
+						disc.EphemeralResponse(s, i, "Error:", "The mod info contains invalid values.")
+						return
+					}
+
+					disc.EphemeralResponse(s, i, "Status:", "Doing the thing.")
+					return
+				}
+			}
+			modCheckError(s, i)
+		}
+	}
+
 }
 
 /* Load a different save-game */
 func ShowFTPList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftpTypeData) {
 
-	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path
+	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
 	files, err := os.ReadDir(pathPrefix)
 
 	if err != nil {

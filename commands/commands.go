@@ -260,7 +260,7 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.FTPLoad, ModeratorOnly: true, Disabled: true},
+		Command: moderator.FTPLoad, ModeratorOnly: true},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command",
@@ -768,8 +768,8 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						disc.EphemeralResponse(s, i, "Error:", "Invalid zip file!")
 						break
 					}
-					disc.EphemeralResponse(s, i, "Status:", "Loading "+fType.Name+": "+c)
-					moderator.LoadFTPFile(c, f)
+					//disc.EphemeralResponse(s, i, "Status:", "Loading "+fType.Name+": "+c)
+					moderator.LoadFTPFile(s, i, c, f)
 					break
 				}
 			}
