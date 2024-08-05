@@ -284,6 +284,31 @@ func launchFactorio() {
 		return
 	}
 
+	//Check for zip bombs in mod files
+	modPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		constants.ModsFolder + "/"
+
+	modList, errm := os.ReadDir(modPath)
+
+	if errm == nil {
+		for _, mod := range modList {
+			if strings.HasSuffix(mod.Name(), ".zip") {
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Reading mod files...")
+				break
+			}
+		}
+
+		for _, mod := range modList {
+			if strings.HasSuffix(mod.Name(), ".zip") && fact.HasZipBomb(mod.Name()) {
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Mod '"+mod.Name()+"' contains a zip-bomb, aborting.")
+				return
+			}
+		}
+	}
+
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
 		injectSoftMod(fileName, folderName)
