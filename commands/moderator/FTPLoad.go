@@ -364,7 +364,7 @@ func ShowZipList(s *discordgo.Session, i *discordgo.InteractionCreate, fType ftp
 	}
 
 	if numFiles <= 0 {
-		disc.EphemeralResponse(s, i, "Error:", "No maps were found.")
+		disc.EphemeralResponse(s, i, "Error:", "No files of that type were found.")
 	} else {
 
 		response := &discordgo.InteractionResponse{
