@@ -24,6 +24,7 @@ const (
 	MapFolder         = "maps"
 	ModFolder         = "mods"
 	ModPackFolder     = "modPacks"
+	ModListsFolder    = "modLists"
 	ModSettingsFolder = "modSettings"
 )
 
@@ -31,6 +32,7 @@ const (
 	TYPE_MAP = iota
 	TYPE_MOD
 	TYPE_MODPACK
+	TYPE_MODLIST
 	TYPE_MODSETTINGS
 
 	TYPE_MAX
@@ -52,6 +54,7 @@ var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MAP, Name: "map", ID: "ftp-map", Command: "load-map", Path: MapFolder},
 	{fType: TYPE_MOD, Name: "mod", ID: "ftp-mod", Command: "load-mod", Path: ModFolder},
 	{fType: TYPE_MODPACK, Name: "modpack", ID: "ftp-modpack", Command: "load-modpack", Path: ModPackFolder},
+	{fType: TYPE_MODLIST, Name: "modlist", ID: "ftp-modlist", Command: "load-modlist", Path: ModListsFolder},
 	{fType: TYPE_MODSETTINGS, Name: "settings", ID: "ftp-settings", Command: "load-settings", Path: ModSettingsFolder},
 }
 
