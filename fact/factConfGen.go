@@ -98,11 +98,13 @@ func GenerateFactorioConfig() bool {
 	}
 
 	if cfg.Local.Options.CustomWhitelist {
-		descrLines = append(descrLines, AddFactColor("red", "INVITE-ONLY"))
+		descrLines = append(descrLines, AddFactColor("red", "Whitelist: INVITE-ONLY"))
 	} else if cfg.Local.Options.RegularsOnly {
-		descrLines = append(descrLines, AddFactColor("red", "REGULARS-ONLY"))
+		descrLines = append(descrLines, AddFactColor("red", "Whitelist: REGULARS-ONLY"))
 	} else if cfg.Local.Options.MembersOnly {
-		descrLines = append(descrLines, AddFactColor("red", "MEMBERS-ONLY"))
+		descrLines = append(descrLines, AddFactColor("red", "Whitelist: MEMBERS-ONLY"))
+	} else {
+		descrLines = append(descrLines, AddFactColor("green", "OPEN-TO-PUBLIC"))
 	}
 
 	if cfg.Local.Options.SoftModOptions.FriendlyFire {
@@ -145,6 +147,8 @@ func GenerateFactorioConfig() bool {
 		tags = append(tags, "MEMBERS-ONLY")
 	} else if cfg.Local.Options.RegularsOnly {
 		tags = append(tags, "REGULARS-ONLY")
+	} else {
+		tags = append(tags, "PUBLIC")
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 
