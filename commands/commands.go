@@ -396,7 +396,20 @@ var cmds = []Command{
 		Command: moderator.ChangeMap, ModeratorOnly: true},
 
 	/* PLAYER COMMMANDS -------------------- */
-
+	{AppCmd: &discordgo.ApplicationCommand{
+		Name:        "list-mods",
+		Description: "Show list of mod files",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "list-now",
+				Description: "Press ENTER or RETURN to display the list of mods.",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Required:    false,
+			},
+		},
+	},
+		Command: moderator.ShowMods},
 	{AppCmd: &discordgo.ApplicationCommand{
 		Name:        "info",
 		Description: "Displays status and settings of the server.",
