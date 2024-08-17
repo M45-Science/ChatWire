@@ -11,20 +11,6 @@ import (
 	"ChatWire/glob"
 )
 
-func MultiFactorAuthCheck(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
-
-	if i != nil && i.User != nil {
-		if !i.User.Verified || !i.User.MFAEnabled {
-			EphemeralResponse(s, i, "Error:", "Sorry, you your Discord account must have a verified email and have MFA enabled!\nhttps://support.discord.com/hc/en-us/articles/219576828-Setting-up-Multi-Factor-Authentication")
-			return false
-		} else {
-			cwlog.DoLogCW("MultiFactorAuthCheck: i.user nil")
-			return false
-		}
-	}
-	return true
-}
-
 /*  Check if Discord admin */
 func CheckAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 
@@ -36,7 +22,7 @@ func CheckAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 	if i.Member != nil {
 		for _, r := range i.Member.Roles {
 			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Admin) {
-				return MultiFactorAuthCheck(s, i)
+				return true
 			}
 		}
 	}
@@ -54,7 +40,7 @@ func CheckModerator(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 	if i.Member != nil {
 		for _, r := range i.Member.Roles {
 			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Moderator) {
-				return MultiFactorAuthCheck(s, i)
+				return true
 			}
 		}
 	}
