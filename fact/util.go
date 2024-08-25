@@ -84,7 +84,7 @@ func FactChat(input string) {
 		 * Just in case there is no soft-mod,
 		 * filter out potential threats
 		 */
-		input = sclean.StripControlAndSubSpecial(input)
+		input = sclean.UnicodeCleanup(input)
 		input = sclean.RemoveFactorioTags(input)
 		input = sclean.RemoveDiscordMarkdown(input)
 
@@ -161,11 +161,11 @@ func DoExit(delay bool) {
 }
 
 func AddFactColor(color string, text string) string {
-	text = sclean.StripControlAndSubSpecial(text)
+	text = sclean.UnicodeCleanup(text)
 	text = sclean.RemoveDiscordMarkdown(text)
 	text = sclean.RemoveFactorioTags(text)
 
-	color = sclean.StripControlAndSubSpecial(color)
+	color = sclean.UnicodeCleanup(color)
 	color = sclean.RemoveFactorioTags(color)
 	color = strings.TrimSpace(color)
 	color = strings.ToLower(color)

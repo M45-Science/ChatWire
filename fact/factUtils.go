@@ -278,7 +278,7 @@ func WriteFact(input string) {
 	defer PipeLock.Unlock()
 
 	/* Clean string */
-	buf := sclean.StripControlAndSubSpecial(input)
+	buf := sclean.UnicodeCleanup(input)
 
 	gpipe := Pipe
 	if gpipe != nil {

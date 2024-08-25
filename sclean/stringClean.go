@@ -1,13 +1,30 @@
 package sclean
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
+func UnicodeCleanup(input string) string {
+	input = strings.ToValidUTF8(input, "")
+	transformed := func(r rune) rune {
+
+		if r < ' ' {
+			return -1
+		} else if r != ' ' && (unicode.IsSpace(r) || !unicode.IsPrint(r)) {
+			return -1
+		} else {
+			return r
+		}
+	}
+	input = strings.Map(transformed, input)
+
+	return input
+}
+
 func UnixSafeFilename(input string) string {
-	input = StripControl(input)
+	input = UnicodeCleanup(input)
 	input = strings.ReplaceAll(input, " ", "_")
 	input = strings.ReplaceAll(input, "..", "_")
 	input = strings.ReplaceAll(input, ".", "_")
@@ -62,71 +79,6 @@ func TruncateString(str string, num int) string {
 		bnoden = str[0:num]
 	}
 	return bnoden
-}
-
-/* Strip all but a-z */
-func StripControlAndSpecial(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c >= 32 && c < 127 {
-			b[bl] = c
-			bl++
-		}
-	}
-	return string(b[:bl])
-}
-
-/* Sub specials with '?', sub newlines, returns and tabs with ' ' */
-func SubControlAndSpecial(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := fmt.Sprintf("%c", i)
-		if c[0] >= 32 && c[0] < 127 {
-			b[bl] = c[0]
-			bl++
-		} else if c[0] == '\n' || c[0] == '\r' || c[0] == '\t' {
-			b[bl] = ' '
-			bl++
-		} else {
-			b[bl] = '?'
-			bl++
-		}
-	}
-	return string(b[:bl])
-}
-
-/* Strip lower ascii codes, sub newlines, returns and tabs with ' ' */
-func StripControlAndSubSpecial(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c == '\n' || c == '\r' || c == '\t' {
-			b[bl] = ' '
-			bl++
-		} else if c >= 32 && c != 127 {
-			b[bl] = c
-			bl++
-		}
-	}
-	return string(b[:bl])
-}
-
-/* Strip lower ascii codes */
-func StripControl(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := fmt.Sprintf("%c", i)
-		if c[0] >= 32 && c[0] != 127 {
-			b[bl] = c[0]
-			bl++
-		}
-	}
-	return string(b[:bl])
 }
 
 func EscapeDiscordMarkdown(input string) string {

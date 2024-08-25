@@ -158,6 +158,6 @@ func ReadBanFile() {
 	}
 	if oldLen > 0 && strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) && buf != "" {
 
-		fact.CMS(cfg.Global.Discord.ReportChannel, "New FCL bans: "+sclean.TruncateStringEllipsis(sclean.StripControlAndSubSpecial(buf), 1000))
+		fact.CMS(cfg.Global.Discord.ReportChannel, "New FCL bans: "+sclean.TruncateStringEllipsis(sclean.UnicodeCleanup(buf), 1000))
 	}
 }

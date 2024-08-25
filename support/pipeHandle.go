@@ -299,7 +299,7 @@ func handlePlayerJoin(NoDS string, NoDSlist []string, NoDSlistlen int) bool {
 		cwlog.DoLogGame(NoDS)
 
 		if NoDSlistlen > 1 {
-			pname := sclean.StripControlAndSubSpecial(NoDSlist[1])
+			pname := sclean.UnicodeCleanup(NoDSlist[1])
 			banlist.CheckBanList(pname)
 			plevelname := fact.AutoPromote(pname, false, true)
 
@@ -494,7 +494,7 @@ func handleSoftModMsg(line string, lineList []string, lineListlen int) bool {
 			ctext := strings.Join(lineList[1:], " ")
 
 			/* Clean strings */
-			cmess := sclean.StripControlAndSubSpecial(ctext)
+			cmess := sclean.UnicodeCleanup(ctext)
 			cmess = sclean.EscapeDiscordMarkdown(cmess)
 			cmess = sclean.RemoveFactorioTags(cmess)
 
@@ -1056,7 +1056,7 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				glob.ChatterLock.Unlock()
 
 				cmess := strings.Join(NoDSlist[2:], " ")
-				cmess = sclean.StripControlAndSubSpecial(cmess)
+				cmess = sclean.UnicodeCleanup(cmess)
 				cmess = sclean.EscapeDiscordMarkdown(cmess)
 				cmess = sclean.RemoveFactorioTags(cmess)
 
@@ -1076,13 +1076,13 @@ func handleChatMsg(NoDS string, line string, NoDSlist []string, NoDSlistlen int)
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				dname := disc.GetNameFromID(did)
 				avatar := disc.GetDiscordAvatarFromId(did, 64)
-				factname := sclean.StripControlAndSubSpecial(pname)
+				factname := sclean.UnicodeCleanup(pname)
 				factname = sclean.TruncateString(factname, 25)
 
 				fbuf := ""
 				/* Filter Factorio names */
 
-				factname = sclean.StripControlAndSubSpecial(factname)
+				factname = sclean.UnicodeCleanup(factname)
 				factname = sclean.EscapeDiscordMarkdown(factname)
 				if dname != "" {
 					fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.Gametime, factname, cmess)

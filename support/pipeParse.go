@@ -8,6 +8,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/sclean"
 )
 
 /*  Chat pipes in-game chat to Discord, and handles log events */
@@ -27,10 +28,9 @@ func HandleChat() {
 				if !fact.FactIsRunning {
 					break
 				}
-				line := reader.Text()
-				/* Remove return/newline */
-				line = strings.TrimSuffix(line, "\r")
-				line = strings.TrimSuffix(line, "\n")
+				readLine := reader.Text()
+
+				line := sclean.UnicodeCleanup(readLine)
 
 				/* Reject short lines */
 				ll := len(line)

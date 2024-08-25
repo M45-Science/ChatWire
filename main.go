@@ -306,9 +306,15 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	message, _ := m.ContentWithMoreMentionsReplaced(s)
+	if len(message) > 500 {
+		message = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(message, 500))
+	}
+	message = sclean.UnicodeCleanup(message)
+
 	/* Protect players from dumb mistakes with registration codes, even on other maps */
 	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
-	if support.ProtectIdiots(m.Content) {
+	if support.ProtectIdiots(message) {
 		/* If they manage to post it into chat in Factorio on a different server,
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
 		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
@@ -326,22 +332,19 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	/* Command handling
 	 * Factorio channel ONLY */
 	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
-		input, _ := m.ContentWithMoreMentionsReplaced(s)
-		ctext := sclean.StripControlAndSubSpecial(input)
 
 		/*
 		 * Chat message handling
 		 *  Don't bother if Factorio isn't running...
 		 */
 		if fact.FactorioBooted && fact.FactIsRunning {
-			cwlog.DoLogCW("[" + m.Author.Username + "] " + ctext)
+			cwlog.DoLogCW("[" + m.Author.Username + "] " + message)
 
 			/* Used for name matching */
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
 			/* Remove control characters and discord markdown */
-			cmess := sclean.StripControlAndSubSpecial(ctext)
-			cmess = sclean.RemoveDiscordMarkdown(cmess)
+			cmess := sclean.RemoveDiscordMarkdown(message)
 
 			/* Try to find factorio name, for registered players */
 			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
@@ -361,9 +364,9 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}(dname)
 
 			/* Filter names... */
-			corduser := sclean.StripControlAndSubSpecial(m.Author.Username)
-			cordnick := sclean.StripControlAndSubSpecial(m.Member.Nick)
-			factuser := sclean.StripControlAndSubSpecial(dname)
+			corduser := sclean.UnicodeCleanup(m.Author.Username)
+			cordnick := sclean.UnicodeCleanup(m.Member.Nick)
+			factuser := sclean.UnicodeCleanup(dname)
 
 			corduserlen := len(corduser)
 			cordnicklen := len(cordnick)
