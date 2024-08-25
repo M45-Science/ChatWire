@@ -10,9 +10,7 @@ func UnicodeCleanup(input string) string {
 	input = strings.ToValidUTF8(input, "")
 	transformed := func(r rune) rune {
 
-		if r < ' ' {
-			return -1
-		} else if r != ' ' && (unicode.IsSpace(r) || !unicode.IsPrint(r)) {
+		if r != ' ' && (unicode.IsSpace(r) || !unicode.IsPrint(r)) {
 			return -1
 		} else {
 			return r
