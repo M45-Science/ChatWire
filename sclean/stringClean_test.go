@@ -89,7 +89,7 @@ func TestTruncateString(t *testing.T) {
 func TestUnicodeCleanup(t *testing.T) {
 
 	expectA := " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-	filteredA := UnicodeCleanup(allChars(127))
+	filteredA := UnicodeCleanup(allChars(128))
 
 	expectB := "Falsches Üben, イロハニホヘト チリヌルヲ, חב, רה איך הקליטה,  жил бы цитрус 🇦🇶😃👻"
 	filteredB := UnicodeCleanup(expectB)
@@ -101,7 +101,6 @@ func TestUnicodeCleanup(t *testing.T) {
 	} else {
 		println("UnicodeCleanup passed")
 	}
-
 }
 
 func TestEscapeDiscordMarkdown(t *testing.T) {
