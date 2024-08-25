@@ -57,21 +57,26 @@ func GenerateFactorioConfig() bool {
 		constants.ServSettingsName
 
 	var servName string
-	if cfg.Local.Options.CustomWhitelist {
-		cfg.ServerPrefix = constants.PrivatePrefix
-		servName = "\u0080[" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
-	} else if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
-		if cfg.Local.Options.RegularsOnly {
-			cfg.ServerPrefix = constants.RegularsPrefix
-		} else {
-			cfg.ServerPrefix = constants.MembersPrefix
-		}
-		servName = "\u0080[" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
-	} else {
-		cfg.ServerPrefix = ""
-		servName = "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
-	}
+	cfg.ServerPrefix = ""
+	servName = "\u0080[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
+
+	/*
+		if cfg.Local.Options.CustomWhitelist {
+			cfg.ServerPrefix = constants.PrivatePrefix
+			servName = "\u0080[" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
+		} else if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
+			if cfg.Local.Options.RegularsOnly {
+				cfg.ServerPrefix = constants.RegularsPrefix
+			} else {
+				cfg.ServerPrefix = constants.MembersPrefix
+			}
+			servName = "\u0080[" + cfg.Global.GroupName + "-" + cfg.ServerPrefix + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
+
+		} else {
+			cfg.ServerPrefix = ""
+			servName = "\u0080 [" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
+		} */
 
 	/* Setup some defaults */
 	heartbeats := 60
