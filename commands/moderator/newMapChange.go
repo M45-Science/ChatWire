@@ -12,7 +12,7 @@ import (
 )
 
 /* Load a different save-game */
-func ChangeMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ChangeMap(i *discordgo.InteractionCreate) {
 
 	var saveName string
 	var list bool
@@ -34,15 +34,15 @@ func ChangeMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err == nil && num > 0 {
 			saveName = fmt.Sprintf("_autosave%v", num)
 		}
-		fact.DoChangeMap(s, saveName)
+		fact.DoChangeMap(saveName)
 		return
 	} else if list {
-		fact.ShowFullMapList(s, i)
+		fact.ShowFullMapList(i)
 		return
 	}
 	glob.VoteBox.LastMapChange = time.Now()
 	fact.VoidAllVotes() /* Void all votes */
 	fact.WriteVotes()
 
-	fact.ShowMapList(s, i, false)
+	fact.ShowMapList(i, false)
 }

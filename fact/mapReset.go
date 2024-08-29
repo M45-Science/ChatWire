@@ -133,12 +133,15 @@ func Map_reset(data string, doReport bool) {
 		/* Attach map, send to chat */
 		dData := &discordgo.MessageSend{Files: []*discordgo.File{
 			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
-		_, err := disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
+		if disc.DS != nil {
+			_, err := disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
+
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
 		}
 
-		_, err = from.Seek(0, io.SeekStart)
+		_, err := from.Seek(0, io.SeekStart)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}

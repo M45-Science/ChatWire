@@ -22,7 +22,7 @@ import (
 )
 
 type Command struct {
-	Command       func(s *discordgo.Session, i *discordgo.InteractionCreate)
+	Command       func(i *discordgo.InteractionCreate)
 	AppCmd        *discordgo.ApplicationCommand
 	ModeratorOnly bool
 	AdminOnly     bool
@@ -524,6 +524,9 @@ var cmds = []Command{
 }
 
 func ClearCommands() {
+	if disc.DS == nil {
+		return
+	}
 	if *glob.DoDeregisterCommands && disc.DS != nil {
 		cmds, _ := disc.DS.ApplicationCommands(cfg.Global.Discord.Application, cfg.Global.Discord.Guild)
 		for _, v := range cmds {
@@ -732,7 +735,7 @@ func LinkConfigData(p int, gconfig bool) {
 	}
 }
 
-func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	/* Ignore appid that aren't relevant to us */
 	if i.AppID != cfg.Global.Discord.Application {
@@ -754,23 +757,23 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		for _, c := range data.Values {
 			if strings.EqualFold(data.CustomID, "ChangeMap") {
-				if disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
+				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Loading: %v, please wait.", c)
 					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
-					disc.InteractionResponse(s, i, &elist)
+					disc.InteractionResponse(i, &elist)
 
-					fact.DoChangeMap(s, c)
+					fact.DoChangeMap(c)
 
 					break
 				}
 			} else if strings.EqualFold(data.CustomID, "VoteMap") {
-				if disc.CheckRegular(i) || disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
+				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
-					disc.EphemeralResponse(s, i, "Notice:", buf)
+					disc.EphemeralResponse(i, "Notice:", buf)
 
-					go fact.CheckVote(s, i, c)
+					go fact.CheckVote(i, c)
 
 					break
 				}
@@ -778,11 +781,11 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			for f, fType := range moderator.FTPTypes {
 				if strings.EqualFold(data.CustomID, fType.ID) {
 					if c == "INVALID" {
-						disc.EphemeralResponse(s, i, "Error:", "Invalid file!")
+						disc.EphemeralResponse(i, "Error:", "Invalid file!")
 						break
 					}
-					//disc.EphemeralResponse(s, i, "Status:", "Loading "+fType.Name+": "+c)
-					moderator.LoadFTPFile(s, i, c, f)
+					//disc.EphemeralResponse( i, "Status:", "Loading "+fType.Name+": "+c)
+					moderator.LoadFTPFile(i, c, f)
 					break
 				}
 			}
@@ -802,8 +805,8 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			if strings.EqualFold(c.AppCmd.Name, data.Name) {
 
 				if c.AdminOnly {
-					if disc.CheckAdmin(s, i) {
-						c.Command(s, i)
+					if disc.CheckAdmin(i) {
+						c.Command(i)
 						var options []string
 						for _, o := range c.AppCmd.Options {
 							options = append(options, o.Name)
@@ -811,23 +814,23 @@ func SlashCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", ")))
 						return
 					} else {
-						disc.EphemeralResponse(s, i, "Error", "You must be a admin to use this command.")
+						disc.EphemeralResponse(i, "Error", "You must be a admin to use this command.")
 						fact.CMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord admin permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
 				} else if c.ModeratorOnly {
-					if disc.CheckModerator(s, i) || disc.CheckAdmin(s, i) {
+					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
-						c.Command(s, i)
+						c.Command(i)
 						return
 					} else {
-						disc.EphemeralResponse(s, i, "Error", "You must be a moderator to use this command.")
+						disc.EphemeralResponse(i, "Error", "You must be a moderator to use this command.")
 						fact.CMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord moderator permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
 				} else {
 					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
-					c.Command(s, i)
+					c.Command(i)
 					return
 				}
 			}

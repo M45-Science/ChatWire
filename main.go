@@ -52,6 +52,8 @@ func main() {
 			lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
 			if err != nil {
 				cwlog.DoLogCW("Unable to parse cw.lock: " + err.Error())
+				_ = os.Remove("cw.lock")
+
 			} else {
 				cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
 
@@ -60,19 +62,9 @@ func main() {
 					msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
 
 					cwlog.DoLogCW(msg)
-					go func(msg string) {
-						for i := 0; i < constants.RestartLimitSleepMinutes*60*10 && glob.ServerRunning; i++ {
-							if disc.DS == nil {
-								time.Sleep(time.Millisecond * 100)
-							}
-						}
-						disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, msg)
-					}(msg)
 
 					time.Sleep(constants.RestartLimitMinutes * time.Minute)
 					_ = os.Remove("cw.lock")
-					cwlog.DoLogCW("Sleep done, exiting.")
-					return
 				}
 			}
 		}
@@ -253,6 +245,10 @@ func startbot() {
 }
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
+	if s != nil {
+		/* Save Discord descriptor, we need it */
+		disc.DS = s
+	}
 
 	/* Set the bot's Discord status message */
 	botstatus := cfg.Global.Paths.URLs.Domain
@@ -266,11 +262,6 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	/* Message and command hooks */
 	s.AddHandler(MessageCreate)
 	s.AddHandler(commands.SlashCommand)
-
-	if s != nil {
-		/* Save Discord descriptor, we need it */
-		disc.DS = s
-	}
 
 	/* Update the string for the channel name and topic */
 	fact.UpdateChannelName()
@@ -318,7 +309,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		/* If they manage to post it into chat in Factorio on a different server,
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
 		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
-		_, err := disc.DS.ChannelMessageSend(m.ChannelID, buf)
+		_, err := s.ChannelMessageSend(m.ChannelID, buf)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}

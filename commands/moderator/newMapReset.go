@@ -8,8 +8,8 @@ import (
 	"ChatWire/fact"
 )
 
-func MapReset(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(s, i, "Status:", "Resetting map...")
+func MapReset(i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(i, "Status:", "Resetting map...")
 
 	//Turn off skip reset flag
 	cfg.Local.Options.SkipReset = false

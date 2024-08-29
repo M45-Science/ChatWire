@@ -11,7 +11,7 @@ import (
 	"ChatWire/fact"
 )
 
-func SetSchedule(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func SetSchedule(i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	buf := ""
@@ -51,7 +51,7 @@ func SetSchedule(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 		fact.SetupSchedule()
 		cfg.WriteLCfg()
 	}

@@ -24,18 +24,18 @@ var modPackLock sync.Mutex
 var lastRun time.Time
 
 /* executes /online on the server, response handled in chat.go */
-func ModPack(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ModPack(i *discordgo.InteractionCreate) {
 	modPackLock.Lock()
 	defer modPackLock.Unlock()
 
 	if !lastRun.IsZero() && time.Since(lastRun) < constants.ModPackCooldownMin*time.Minute {
-		disc.EphemeralResponse(s, i, "Error", "A modpack was already created recently, please wait a bit.")
+		disc.EphemeralResponse(i, "Error", "A modpack was already created recently, please wait a bit.")
 		return
 	}
 	lastRun = time.Now()
 
 	if len(cfg.Local.ModPackList) >= constants.MaxModPacks {
-		disc.EphemeralResponse(s, i, "Error", "Too many existing modpack files already!\nTry again later.")
+		disc.EphemeralResponse(i, "Error", "Too many existing modpack files already!\nTry again later.")
 		return
 	}
 
@@ -49,7 +49,7 @@ func ModPack(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	files, err := os.ReadDir(modPath)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
-		disc.EphemeralResponse(s, i, "Error", "Error reading mods folder, please inform mods.")
+		disc.EphemeralResponse(i, "Error", "Error reading mods folder, please inform mods.")
 		return
 	}
 
@@ -82,16 +82,16 @@ func ModPack(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	if modFiles > 0 {
 		msg := fmt.Sprintf("%d mods found, %v total.\nGenerating modpack zip, please wait.", modFiles, humanize.Bytes(uint64(fbytes)))
-		disc.EphemeralResponse(s, i, "Mods", msg)
+		disc.EphemeralResponse(i, "Mods", msg)
 
-		makeModPack(s, i, modsList)
+		makeModPack(i, modsList)
 	} else {
 
-		disc.EphemeralResponse(s, i, "Error:", "No mods are currently installed.")
+		disc.EphemeralResponse(i, "Error:", "No mods are currently installed.")
 	}
 }
 
-func makeModPack(s *discordgo.Session, i *discordgo.InteractionCreate, modsList []string) {
+func makeModPack(i *discordgo.InteractionCreate, modsList []string) {
 	packName := fmt.Sprintf("%v-%v-%v.zip",
 		cfg.Local.Callsign,
 		cfg.Local.Name,
@@ -103,7 +103,7 @@ func makeModPack(s *discordgo.Session, i *discordgo.InteractionCreate, modsList 
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
 		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 		return
 	} else {
 
@@ -125,7 +125,7 @@ func makeModPack(s *discordgo.Session, i *discordgo.InteractionCreate, modsList 
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: buf})
 		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 	}
 
 }

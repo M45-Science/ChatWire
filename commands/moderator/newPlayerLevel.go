@@ -13,7 +13,7 @@ import (
 )
 
 /* Set a player's level */
-func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func PlayerLevel(i *discordgo.InteractionCreate) {
 
 	var aname string
 	var alevel int
@@ -51,7 +51,7 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		if oldLevel == alevel {
 			buf := fmt.Sprintf("Player: %v level was already %v. No action taken.", nplayer.Name, fact.LevelToString(nplayer.Level))
-			disc.EphemeralResponse(s, i, "ERROR:", buf)
+			disc.EphemeralResponse(i, "ERROR:", buf)
 			return
 		}
 
@@ -72,7 +72,7 @@ func PlayerLevel(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			fact.PlayerLevelSet(nplayer.Name, alevel, true)
 			fact.SetPlayerListDirty()
 			buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
-			disc.EphemeralResponse(s, i, "Complete:", buf)
+			disc.EphemeralResponse(i, "Complete:", buf)
 			return
 		}
 	}

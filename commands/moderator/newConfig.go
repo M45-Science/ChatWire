@@ -13,7 +13,7 @@ import (
 )
 
 /* Change server settings */
-func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ConfigServer(i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 	buf := ""
@@ -121,14 +121,14 @@ func ConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	support.ConfigSoftMod()
 	if cfg.WriteLCfg() {
 		if !fact.GenerateFactorioConfig() {
-			disc.EphemeralResponse(s, i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
+			disc.EphemeralResponse(i, "Error:", "(Unable to write Factorio server settings, check file permissions.")
 			return
 		}
 
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 		fact.UpdateChannelName() //For channel renaming, only updates if changed.
 	} else {
-		disc.EphemeralResponse(s, i, "Error:", "Unable to save cw-local, check file permissions.")
+		disc.EphemeralResponse(i, "Error:", "Unable to save cw-local, check file permissions.")
 	}
 
 }

@@ -12,46 +12,46 @@ import (
 	"ChatWire/support"
 )
 
-func ChatWire(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ChatWire(i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	for _, o := range a.Options {
 		arg := o.StringValue()
 		if strings.EqualFold(arg, "reboot") {
-			rebootCW(s, i)
+			rebootCW(i)
 			return
 		} else if strings.EqualFold(arg, "queue-reboot") {
-			queReboot(s, i)
+			queReboot(i)
 			return
 		} else if strings.EqualFold(arg, "force-reboot") {
-			forceReboot(s, i)
+			forceReboot(i)
 			return
 		} else if strings.EqualFold(arg, "reload-config") {
-			reloadConfig(s, i)
+			reloadConfig(i)
 			return
 		}
 	}
 }
 
 /* Reboots cw */
-func forceReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func forceReboot(i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(s, i, "Status:", "Rebooting!")
+	disc.EphemeralResponse(i, "Status:", "Rebooting!")
 	glob.RelaunchThrottle = 0
 	fact.DoExit(false)
 }
 
 /* Reboot when server is empty */
-func queReboot(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func queReboot(i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(s, i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
+	disc.EphemeralResponse(i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
 	fact.QueueReload = true
 }
 
 /*  Restart saves and restarts the server */
-func rebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func rebootCW(i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(s, i, "Status:", "Rebooting ChatWire...")
+	disc.EphemeralResponse(i, "Status:", "Rebooting ChatWire...")
 
 	glob.DoRebootCW = true
 	glob.RelaunchThrottle = 0
@@ -59,17 +59,17 @@ func rebootCW(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /* Reload config files */
-func reloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func reloadConfig(i *discordgo.InteractionCreate) {
 
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {
 		buf := "Unable to reload global config file."
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
 	if !cfg.ReadLCfg() {
 		buf := "Unable to reload local config file."
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
 
@@ -78,7 +78,7 @@ func reloadConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg.WriteLCfg()
 	fact.DoUpdateChannelName()
 	buf := "Config files have been reloaded."
-	disc.EphemeralResponse(s, i, "Complete:", buf)
+	disc.EphemeralResponse(i, "Complete:", buf)
 
 	fact.SetupSchedule()
 

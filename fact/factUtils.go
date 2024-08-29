@@ -415,7 +415,7 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 			}
 
 			if discid != "" {
-				if disc.Guild != nil && disc.DS != nil {
+				if disc.Guild != nil {
 
 					errrole, regrole := disc.RoleExists(disc.Guild, newrole)
 
@@ -523,7 +523,10 @@ func DoUpdateChannelName() {
 	}
 }
 
-func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode bool) {
+func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
+	if disc.DS == nil {
+		return
+	}
 
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -535,7 +538,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	/* We can't read saves dir */
 	if err != nil {
 		log.Fatal(err)
-		disc.EphemeralResponse(s, i, "Error:", "Unable to read saves directory.")
+		disc.EphemeralResponse(i, "Error:", "Unable to read saves directory.")
 	}
 
 	step := 1
@@ -625,7 +628,7 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 	}
 
 	if numFiles <= 0 {
-		disc.EphemeralResponse(s, i, "Error:", "No saves were found.")
+		disc.EphemeralResponse(i, "Error:", "No saves were found.")
 	} else {
 
 		var response *discordgo.InteractionResponse
@@ -670,14 +673,17 @@ func ShowMapList(s *discordgo.Session, i *discordgo.InteractionCreate, voteMode 
 				},
 			}
 		}
-		err := s.InteractionRespond(i.Interaction, response)
+		err := disc.DS.InteractionRespond(i.Interaction, response)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
 	}
 }
 
-func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ShowFullMapList(i *discordgo.InteractionCreate) {
+	if disc.DS == nil {
+		return
+	}
 
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -689,7 +695,7 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	/* We can't read saves dir */
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
-		disc.EphemeralResponse(s, i, "Error:", "Unable to read saves directory.")
+		disc.EphemeralResponse(i, "Error:", "Unable to read saves directory.")
 	}
 
 	step := 1
@@ -754,7 +760,7 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if numFiles <= 0 {
-		disc.EphemeralResponse(s, i, "Error:", "No saves were found.")
+		disc.EphemeralResponse(i, "Error:", "No saves were found.")
 	} else {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Full map list", Description: mapList})
@@ -762,14 +768,14 @@ func ShowFullMapList(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		//1 << 6 is ephemeral/private, don't use disc.EphemeralResponse (logged)
 		respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
 		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-		err := s.InteractionRespond(i.Interaction, resp)
+		err := disc.DS.InteractionRespond(i.Interaction, resp)
 		if err != nil {
 			return
 		}
 	}
 }
 
-func DoFTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate, arg string) {
+func DoFTPLoad(i *discordgo.InteractionCreate, arg string) {
 
 	buf := ""
 
@@ -782,10 +788,10 @@ func DoFTPLoad(s *discordgo.Session, i *discordgo.InteractionCreate, arg string)
 	defer z.Close()
 
 	f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-	disc.FollowupResponse(s, i, &f)
+	disc.FollowupResponse(i, &f)
 }
 
-func DoChangeMap(s *discordgo.Session, arg string) {
+func DoChangeMap(arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
 

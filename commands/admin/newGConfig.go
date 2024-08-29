@@ -14,7 +14,7 @@ import (
 )
 
 /* Change server settings */
-func GConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func GConfigServer(i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 	buf := ""
@@ -118,9 +118,9 @@ func GConfigServer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if buf != "" {
 		support.ConfigSoftMod()
 		if cfg.WriteGCfg() {
-			disc.EphemeralResponse(s, i, "Status:", buf)
+			disc.EphemeralResponse(i, "Status:", buf)
 		} else {
-			disc.EphemeralResponse(s, i, "Error:", "Unable to save cw-global, check file permissions.")
+			disc.EphemeralResponse(i, "Error:", "Unable to save cw-global, check file permissions.")
 		}
 	}
 }

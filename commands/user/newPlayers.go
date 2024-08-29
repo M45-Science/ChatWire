@@ -12,11 +12,11 @@ import (
 )
 
 /* executes /online on the server, response handled in chat.go */
-func Players(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Players(i *discordgo.InteractionCreate) {
 	if fact.FactorioBooted && fact.FactIsRunning {
 
 		if fact.NumPlayers == 0 {
-			disc.EphemeralResponse(s, i, "Players Online:", "None")
+			disc.EphemeralResponse(i, "Players Online:", "None")
 		} else {
 			buf := ""
 			fact.OnlinePlayersLock.Lock()
@@ -26,9 +26,9 @@ func Players(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 			}
 			fact.OnlinePlayersLock.Unlock()
-			disc.EphemeralResponse(s, i, "Players Online:", buf)
+			disc.EphemeralResponse(i, "Players Online:", buf)
 		}
 	} else {
-		disc.EphemeralResponse(s, i, "Error:", "Factorio isn't running.")
+		disc.EphemeralResponse(i, "Error:", "Factorio isn't running.")
 	}
 }

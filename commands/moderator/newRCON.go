@@ -15,7 +15,7 @@ import (
 )
 
 /* Set a player's level */
-func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func RCONCmd(i *discordgo.InteractionCreate) {
 
 	var server, command string
 
@@ -40,7 +40,7 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil || remoteConsole == nil {
 			cwlog.DoLogCW(fmt.Sprintf("Error: `%v`\n", err))
 
-			disc.EphemeralResponse(s, i, "Error:", err.Error())
+			disc.EphemeralResponse(i, "Error:", err.Error())
 		}
 
 		cwlog.DoLogCW(i.Member.User.Username + ": " + server + ": " + command)
@@ -59,11 +59,11 @@ func RCONCmd(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 
-		disc.EphemeralResponse(s, i, "Result:", resp)
+		disc.EphemeralResponse(i, "Result:", resp)
 		cwlog.DoLogCW("RCON RESPONSE: " + resp)
 	} else {
 		buf := "You must supply a command to run."
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 	}
 
 }

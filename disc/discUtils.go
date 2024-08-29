@@ -12,7 +12,7 @@ import (
 )
 
 /*  Check if Discord admin */
-func CheckAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
+func CheckAdmin(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Admin == "" {
 		cwlog.DoLogCW("CheckAdmin: RoleID not found for that role, check configuration files.")
@@ -30,7 +30,7 @@ func CheckAdmin(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
 }
 
 /*  Check if Discord moderator */
-func CheckModerator(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
+func CheckModerator(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
 		cwlog.DoLogCW("CheckModerator: RoleID not found for that role, check configuration files.")
@@ -302,31 +302,37 @@ func GetPlayerDataFromName(input string) *glob.PlayerData {
 	return p
 }
 
-func InteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
+func InteractionResponse(i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
+	if DS == nil {
+		return
+	}
 	cwlog.DoLogCW("InteractionResponse:\n" + i.Member.User.Username + "\n" + embed.Title + "\n" + embed.Description)
 
 	var embedList []*discordgo.MessageEmbed
 	embedList = append(embedList, embed)
 	respData := &discordgo.InteractionResponseData{Embeds: embedList}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err := s.InteractionRespond(i.Interaction, resp)
+	err := DS.InteractionRespond(i.Interaction, resp)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
 }
 
-func FollowupResponse(s *discordgo.Session, i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
+func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
+	if DS == nil {
+		return
+	}
 	if f.Embeds != nil {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
 
-		_, err := s.FollowupMessageCreate(i.Interaction, false, f)
+		_, err := DS.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
 	} else if f.Content != "" {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Content)
 
-		_, err := s.FollowupMessageCreate(i.Interaction, false, f)
+		_, err := DS.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
@@ -334,7 +340,10 @@ func FollowupResponse(s *discordgo.Session, i *discordgo.InteractionCreate, f *d
 
 }
 
-func EphemeralResponse(s *discordgo.Session, i *discordgo.InteractionCreate, title, message string) {
+func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) {
+	if DS == nil {
+		return
+	}
 	cwlog.DoLogCW("EphemeralResponse:\n" + i.Member.User.Username + "\n" + title + "\n" + message)
 
 	var elist []*discordgo.MessageEmbed
@@ -343,7 +352,7 @@ func EphemeralResponse(s *discordgo.Session, i *discordgo.InteractionCreate, tit
 	//1 << 6 is ephemeral/private
 	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err := s.InteractionRespond(i.Interaction, resp)
+	err := DS.InteractionRespond(i.Interaction, resp)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}

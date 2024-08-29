@@ -19,7 +19,7 @@ import (
 
 const MaxZipSize = 1024 * 1024 * 1024 * 10 //10gb
 
-func ReportZipBomb(s *discordgo.Session, i *discordgo.InteractionCreate, file string) {
+func ReportZipBomb(i *discordgo.InteractionCreate, file string) {
 	susRole := ""
 	if cfg.Global.Discord.SusPingRole != "" {
 		susRole = fmt.Sprintf("<@&%v> ", cfg.Global.Discord.SusPingRole)

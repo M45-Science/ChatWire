@@ -22,7 +22,7 @@ import (
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Info(i *discordgo.InteractionCreate) {
 
 	verbose := false
 	debug := false
@@ -236,12 +236,12 @@ func Info(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf = buf + fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", fact.NextResetUnix)
 	}
 
-	if debug && disc.CheckAdmin(s, i) {
-		buf = buf + debugStat(s, i)
+	if debug && disc.CheckAdmin(i) {
+		buf = buf + debugStat(i)
 	}
-	disc.EphemeralResponse(s, i, "Server Info:", buf)
+	disc.EphemeralResponse(i, "Server Info:", buf)
 }
 
-func debugStat(s *discordgo.Session, i *discordgo.InteractionCreate) string {
+func debugStat(i *discordgo.InteractionCreate) string {
 	return ""
 }

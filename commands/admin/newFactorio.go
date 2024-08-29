@@ -24,51 +24,54 @@ import (
 	"ChatWire/support"
 )
 
-func Factorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Factorio(i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	for _, o := range a.Options {
 		if o.Type == discordgo.ApplicationCommandOptionString {
 			arg := o.StringValue()
 			if strings.EqualFold(arg, "start") {
-				startFact(s, i)
+				startFact(i)
 				return
 			} else if strings.EqualFold(arg, "stop") {
-				stopFact(s, i)
+				stopFact(i)
 				return
 			} else if strings.EqualFold(arg, "new-map-preview") {
-				newMapPrev(s, i)
+				newMapPrev(i)
 				return
 			} else if strings.EqualFold(arg, "new-map") {
-				makeNewMap(s, i)
+				makeNewMap(i)
 				return
 			} else if strings.EqualFold(arg, "update-factorio") {
-				updateFact(s, i)
+				updateFact(i)
 				return
 			} else if strings.EqualFold(arg, "update-mods") {
-				updateMods(s, i)
+				updateMods(i)
 				return
 			} else if strings.EqualFold(arg, "archive-map") {
-				archiveMap(s, i)
+				archiveMap(i)
 				return
 			} else if strings.EqualFold(arg, "install-factorio") {
-				installFactorio(s, i)
+				installFactorio(i)
 			} else if strings.EqualFold(arg, "map-schedule") {
-				resetSchedule(s, i)
+				resetSchedule(i)
 			}
 		}
 	}
 }
 
-func resetSchedule(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(s, i, "Status:", "Schedule reset.")
+func resetSchedule(i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(i, "Status:", "Schedule reset.")
 }
 
 /* RandomMap locks FactorioLaunchLock */
-func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func newMapPrev(i *discordgo.InteractionCreate) {
+	if disc.DS == nil {
+		return
+	}
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
 
@@ -79,7 +82,7 @@ func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf := fmt.Sprintf("Unable to create map preview directory: %v", err.Error())
 		cwlog.DoLogCW(buf)
 		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, &elist)
+		disc.InteractionResponse(i, &elist)
 		return
 	}
 
@@ -119,7 +122,7 @@ func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf := fmt.Sprintf("An error occurred when attempting to generate the map preview: %s", aerr)
 		cwlog.DoLogCW(buf)
 		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, &elist)
+		disc.InteractionResponse(i, &elist)
 	}
 
 	lines := strings.Split(string(out), "\n")
@@ -133,7 +136,7 @@ func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		buf := "The game did not generate a map preview."
 		cwlog.DoLogCW(buf)
 		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, &elist)
+		disc.InteractionResponse(i, &elist)
 		return
 	}
 
@@ -144,7 +147,7 @@ func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		cwlog.DoLogCW(buf)
 
 		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(s, i, &elist)
+		disc.InteractionResponse(i, &elist)
 		return
 	}
 	defer to.Close()
@@ -156,18 +159,18 @@ func newMapPrev(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	respData := &discordgo.InteractionResponseData{Files: []*discordgo.File{{Name: path, Reader: to}}}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err = s.InteractionRespond(i.Interaction, resp)
+	err = disc.DS.InteractionRespond(i.Interaction, resp)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
 }
 
 /* Generate map */
-func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func makeNewMap(i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
 
@@ -188,18 +191,18 @@ func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if ourseed <= 0 {
 		buf := "Invalid seed data. (internal error)"
 		cwlog.DoLogCW(buf)
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
 
 	if strings.EqualFold(MapPreset, "error") {
 		buf := "Invalid map preset."
 		cwlog.DoLogCW(buf)
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
 
-	disc.EphemeralResponse(s, i, "Status:", "Generating map...")
+	disc.EphemeralResponse(i, "Status:", "Generating map...")
 
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
@@ -239,7 +242,7 @@ func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
 		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 		return
 	}
 
@@ -255,7 +258,7 @@ func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			var elist []*discordgo.MessageEmbed
 			elist = append(elist, &discordgo.MessageEmbed{Title: "Complete:", Description: buf})
 			f := discordgo.WebhookParams{Embeds: elist}
-			disc.FollowupResponse(s, i, &f)
+			disc.FollowupResponse(i, &f)
 			return
 		}
 	}
@@ -263,18 +266,18 @@ func makeNewMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var elist []*discordgo.MessageEmbed
 	elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unknown error."})
 	f := discordgo.WebhookParams{Embeds: elist}
-	disc.FollowupResponse(s, i, &f)
+	disc.FollowupResponse(i, &f)
 }
 
 /* Archive map */
-func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func archiveMap(i *discordgo.InteractionCreate) {
 
 	version := strings.Split(fact.FactorioVersion, ".")
 	vlen := len(version)
 
 	if vlen < 3 {
 		buf := "Unable to determine Factorio version."
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 	}
 
 	if fact.GameMapPath != "" && fact.FactorioVersion != constants.Unknown {
@@ -297,7 +300,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if erra != nil {
 			buf := fmt.Sprintf("An error occurred reading the map to archive: %s", erra)
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(s, i, "Error:", buf)
+			disc.EphemeralResponse(i, "Error:", buf)
 			return
 		}
 		defer from.Close()
@@ -308,7 +311,7 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil {
 			buf := fmt.Sprintf("Unable to create archive directory: %v", err.Error())
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(s, i, "Error:", buf)
+			disc.EphemeralResponse(i, "Error:", buf)
 			return
 		}
 
@@ -317,13 +320,13 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if errb != nil {
 			buf := fmt.Sprintf("Unable to write archive file: %v", errb)
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(s, i, "Error:", buf)
+			disc.EphemeralResponse(i, "Error:", buf)
 			return
 		}
 		respData := &discordgo.InteractionResponseData{Content: newmapurl}
 
 		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-		err = s.InteractionRespond(i.Interaction, resp)
+		err = disc.DS.InteractionRespond(i.Interaction, resp)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
@@ -335,31 +338,31 @@ func archiveMap(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if errc != nil {
 			buf := fmt.Sprintf("Unable to write map archive file: %s", errc)
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(s, i, "Error:", buf)
+			disc.EphemeralResponse(i, "Error:", buf)
 			return
 		}
 		return
 
 	} else {
-		disc.EphemeralResponse(s, i, "Error:", "No map has been loaded yet.")
+		disc.EphemeralResponse(i, "Error:", "No map has been loaded yet.")
 	}
 
 }
 
 /* Reboots Factorio only */
-func startFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func startFact(i *discordgo.InteractionCreate) {
 
 	if !support.WithinHours() {
 		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
 			cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 	} else if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Restarting Factorio..."
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 		fact.QuitFactorio("Server rebooting...")
 	} else {
 		buf := "Starting Factorio..."
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 	}
 
 	fact.FactAutoStart = true
@@ -367,24 +370,24 @@ func startFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 /*  StopServer saves the map and closes Factorio.  */
-func stopFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func stopFact(i *discordgo.InteractionCreate) {
 	glob.RelaunchThrottle = 0
 	fact.FactAutoStart = false
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 
 		buf := "Stopping Factorio."
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 		fact.QuitFactorio("Server quitting...")
 	} else {
 		buf := "Factorio isn't running, disabling auto-reboot."
-		disc.EphemeralResponse(s, i, "Warning:", buf)
+		disc.EphemeralResponse(i, "Warning:", buf)
 	}
 
 }
 
 /* Update Factorio  */
-func updateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func updateFact(i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	argnum := len(args)
@@ -395,19 +398,19 @@ func updateFact(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			cfg.Local.Options.AutoUpdate = false
 
 			buf := "Update canceled, and auto-update disabled."
-			disc.EphemeralResponse(s, i, "Status:", buf)
+			disc.EphemeralResponse(i, "Status:", buf)
 			return
 		}
 		fact.CheckFactUpdate(true)
-		disc.EphemeralResponse(s, i, "Status:", "Checking for Factorio updates.")
+		disc.EphemeralResponse(i, "Status:", "Checking for Factorio updates.")
 	} else {
 		buf := "The Factorio updater isn't configured."
-		disc.EphemeralResponse(s, i, "Error:", buf)
+		disc.EphemeralResponse(i, "Error:", buf)
 	}
 }
 
-func updateMods(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func updateMods(i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(s, i, "Status:", "Checking for mod updates.")
+	disc.EphemeralResponse(i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)
 }

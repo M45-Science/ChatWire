@@ -17,16 +17,16 @@ import (
 	"ChatWire/disc"
 )
 
-func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func installFactorio(i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(s, i, "Status:", "Downloading Factorio server...")
+	disc.EphemeralResponse(i, "Status:", "Downloading Factorio server...")
 	resp, err := http.Get(constants.FactHeadlessURL)
 
 	if err != nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to download Factorio server."})
 		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 
 		cwlog.DoLogCW(err.Error())
 		return
@@ -38,7 +38,7 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to read the http response."})
 		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 
 		cwlog.DoLogCW(err.Error())
 		return
@@ -47,14 +47,14 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var elist []*discordgo.MessageEmbed
 	elist = append(elist, &discordgo.MessageEmbed{Title: "Status:", Description: "Downloaded, decompressing..."})
 	f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-	disc.FollowupResponse(s, i, &f)
+	disc.FollowupResponse(i, &f)
 
 	data, err := unXZData(gzdata)
 	if err != nil {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "The gzip data appears to be invalid."})
 		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 
 		cwlog.DoLogCW(err.Error())
 		return
@@ -68,7 +68,7 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to open tar archive."})
 		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 
 		cwlog.DoLogCW(err.Error())
 		return
@@ -80,7 +80,7 @@ func installFactorio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
 		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(s, i, &f)
+		disc.FollowupResponse(i, &f)
 		return
 	}
 

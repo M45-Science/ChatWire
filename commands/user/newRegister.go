@@ -16,11 +16,11 @@ import (
 
 /* AccessServer locks PasswordListLock
  * This allows players to register, for discord roles and in-game perks */
-func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Register(i *discordgo.InteractionCreate) {
 
 	if !fact.FactIsRunning {
 		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running."}
-		disc.InteractionResponse(s, i, embed)
+		disc.InteractionResponse(i, embed)
 		return
 	}
 	/* Do before lock */
@@ -76,7 +76,7 @@ func Register(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	//1 << 6 is ephemeral/private, don't use disc.EphemeralResponse (logged)
 	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err := s.InteractionRespond(i.Interaction, resp)
+	err := disc.DS.InteractionRespond(i.Interaction, resp)
 	if err != nil {
 		return
 	}

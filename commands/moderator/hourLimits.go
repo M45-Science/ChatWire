@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func ConfigHours(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ConfigHours(i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	buf := ""
@@ -36,9 +36,9 @@ func ConfigHours(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
-		disc.EphemeralResponse(s, i, "Status:", buf)
+		disc.EphemeralResponse(i, "Status:", buf)
 		cfg.WriteLCfg()
 	} else {
-		disc.EphemeralResponse(s, i, "Error:", "You didn't supply any options!")
+		disc.EphemeralResponse(i, "Error:", "You didn't supply any options!")
 	}
 }

@@ -1,14 +1,13 @@
 package cwlog
 
 import (
+	"ChatWire/glob"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"time"
-
-	"ChatWire/glob"
 )
 
 /* Normal CW log */

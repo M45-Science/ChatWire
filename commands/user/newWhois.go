@@ -15,7 +15,10 @@ import (
 )
 
 /*  Get info on a specific player */
-func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func Whois(i *discordgo.InteractionCreate) {
+	if disc.DS == nil {
+		return
+	}
 
 	var slist []glob.PlayerData
 	layoutUS := "01-02-06 3:04 PM"
@@ -91,13 +94,13 @@ func Whois(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			//1 << 6 is ephemeral/private
 			respData := &discordgo.InteractionResponseData{Content: buf, Flags: 1 << 6}
 			resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-			err := s.InteractionRespond(i.Interaction, resp)
+			err := disc.DS.InteractionRespond(i.Interaction, resp)
 			if err != nil {
 				return
 			}
 			return
 		}
 	}
-	disc.EphemeralResponse(s, i, "Error:", "You must supply a search term.")
+	disc.EphemeralResponse(i, "Error:", "You must supply a search term.")
 
 }
