@@ -32,142 +32,39 @@ func main() {
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
-
 	flag.Parse()
-
-	glob.PausedAt = time.Now()
-
-	/* Mark uptime start */
-	glob.Uptime = time.Now().UTC().Round(time.Second)
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
-
-	if !*glob.LocalTestMode && !*cleanDB {
-		/* Handle lock file */
-		bstr, err := os.ReadFile("cw.lock")
-		if err == nil {
-			lastTimeStr := strings.TrimSpace(string(bstr))
-			lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
-			if err != nil {
-				cwlog.DoLogCW("Unable to parse cw.lock: " + err.Error())
-				_ = os.Remove("cw.lock")
-
-			} else {
-				cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
-
-				/* Recent lockfile, probable crash loop */
-				if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
-					msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
-
-					cwlog.DoLogCW(msg)
-
-					time.Sleep(constants.RestartLimitMinutes * time.Minute)
-					_ = os.Remove("cw.lock")
-				}
-			}
-		}
-	}
-
-	/* Make lockfile */
-	lfile, err := os.OpenFile("cw.lock", os.O_CREATE, 0666)
-	if err != nil {
-		cwlog.DoLogCW("Couldn't create lock file!!!")
-		return
-	}
-	lfile.Close()
-	buf := fmt.Sprintf("%v\n", time.Now().UTC().Round(time.Second).Format(time.RFC3339Nano))
-	err = os.WriteFile("cw.lock", []byte(buf), 0644)
-	if err != nil {
-		cwlog.DoLogCW("Couldn't write lock file!!!")
-		return
-	}
-
-	/* Create our maps */
-	glob.AlphaValue = make(map[string]int)
-	glob.ChatterList = make(map[string]time.Time)
-	glob.ChatterSpamScore = make(map[string]int)
-	glob.PlayerList = make(map[string]*glob.PlayerData)
-	glob.PassList = make(map[string]*glob.PassData)
-
-	/* Set time to negative so we start right away */
-	glob.LastSusWarning = time.Now().Add(time.Duration(-constants.SusWarningInterval) * time.Minute)
-
-	/* Generate number to alpha map, used for auto port assignment */
-	pos := 10000
-	for i := 'a'; i <= 'z'; i++ {
-		glob.AlphaValue[string(i)] = pos
-		pos++
-	}
-	for i := 'a'; i <= 'z'; i++ {
-		for j := 'a'; j <= 'z'; j++ {
-			glob.AlphaValue[string(i)+string(j)] = pos
-			pos++
-		}
-	}
-
-	/* Set up vote cooldown */
-	now := time.Now()
-	/* Set time to negative so we start right away */
-	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
-	glob.VoteBox.LastMapChange = then.Round(time.Second)
-
-	/* Blank game time */
-	fact.Gametime = (constants.Unknown)
-
-	/* Read global and local configs, then write them back if they read correctly. */
-	/* This cleans up formatting if manually edited, and verifies we can write the config */
-	if cfg.ReadGCfg() {
-		cfg.WriteGCfg()
-	} else {
-		time.Sleep(constants.ErrorDelayShutdown * time.Second)
-		return
-	}
-	if cfg.ReadLCfg() {
-		cfg.WriteLCfg()
-	} else {
-		time.Sleep(constants.ErrorDelayShutdown * time.Second)
-		return
-	}
 
 	if *cleanDB {
 		fact.LoadPlayers(true, true)
 		fact.WritePlayers()
 		fmt.Println("Database cleaned.")
 		_ = os.Remove("cw.lock")
-		os.Exit(0)
 		return
 	}
 
+	initTime()
+	if !*glob.LocalTestMode {
+		checkLockFile()
+	}
+	initMaps()
+	readConfigs()
 	moderator.MakeFTPFolders()
 
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
 	go startbot()
 
-	/* Setup cron */
 	fact.SetupSchedule()
-
-	/* Read in player list */
 	fact.LoadPlayers(true, false)
-
-	/* Read in cached discord role data */
 	disc.ReadRoleList()
-
-	/* Read bans */
 	banlist.ReadBanFile()
-
-	/* Load old votes */
 	fact.ReadVotes()
-
-	/* Start game log */
 	cwlog.StartGameLog()
-
-	/* Main loop */
 	go support.MainLoops()
-
-	/* Loop to read Factorio stdout, runs in a goroutine */
 	go support.HandleChat()
 
 	if cfg.Local.Options.AutoStart {
@@ -393,5 +290,106 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			fact.FactChat(nbuf)
 
 		}
+	}
+}
+
+func checkLockFile() {
+	/* Handle lock file */
+	bstr, err := os.ReadFile("cw.lock")
+	if err == nil {
+		lastTimeStr := strings.TrimSpace(string(bstr))
+		lastTime, err := time.Parse(time.RFC3339Nano, lastTimeStr)
+		if err != nil {
+			cwlog.DoLogCW("Unable to parse cw.lock: " + err.Error())
+			_ = os.Remove("cw.lock")
+
+		} else {
+			cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
+
+			/* Recent lockfile, probable crash loop */
+			if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
+				msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
+
+				cwlog.DoLogCW(msg)
+
+				time.Sleep(constants.RestartLimitMinutes * time.Minute)
+				_ = os.Remove("cw.lock")
+			}
+		}
+	}
+
+	/* Make lockfile */
+	lfile, err := os.OpenFile("cw.lock", os.O_CREATE, 0666)
+	if err != nil {
+		cwlog.DoLogCW("Couldn't create lock file!!!")
+		return
+	}
+	lfile.Close()
+	buf := fmt.Sprintf("%v\n", time.Now().UTC().Round(time.Second).Format(time.RFC3339Nano))
+	err = os.WriteFile("cw.lock", []byte(buf), 0644)
+	if err != nil {
+		cwlog.DoLogCW("Couldn't write lock file!!!")
+		return
+	}
+}
+
+func initMaps() {
+	/* Create our maps */
+	glob.AlphaValue = make(map[string]int)
+	glob.ChatterList = make(map[string]time.Time)
+	glob.ChatterSpamScore = make(map[string]int)
+	glob.PlayerList = make(map[string]*glob.PlayerData)
+	glob.PassList = make(map[string]*glob.PassData)
+
+	/* Generate number to alpha map, used for auto port assignment */
+	pos := 10000
+	for i := 'a'; i <= 'z'; i++ {
+		glob.AlphaValue[string(i)] = pos
+		pos++
+	}
+	for i := 'a'; i <= 'z'; i++ {
+		for j := 'a'; j <= 'z'; j++ {
+			glob.AlphaValue[string(i)+string(j)] = pos
+			pos++
+		}
+	}
+
+}
+
+func initTime() {
+
+	/* Set time to negative so we start right away */
+	glob.LastSusWarning = time.Now().Add(time.Duration(-constants.SusWarningInterval) * time.Minute)
+
+	/* Set up vote cooldown */
+	now := time.Now()
+	/* Set time to negative so we start right away */
+	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
+	glob.VoteBox.LastMapChange = then.Round(time.Second)
+
+	/* Blank game time */
+	fact.Gametime = (constants.Unknown)
+
+	glob.PausedAt = time.Now()
+
+	/* Mark uptime start */
+	glob.Uptime = time.Now().UTC().Round(time.Second)
+}
+
+func readConfigs() {
+
+	/* Read global and local configs, then write them back if they read correctly. */
+	/* This cleans up formatting if manually edited, and verifies we can write the config */
+	if cfg.ReadGCfg() {
+		cfg.WriteGCfg()
+	} else {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+		return
+	}
+	if cfg.ReadLCfg() {
+		cfg.WriteLCfg()
+	} else {
+		time.Sleep(constants.ErrorDelayShutdown * time.Second)
+		return
 	}
 }
