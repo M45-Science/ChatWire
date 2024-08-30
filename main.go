@@ -76,7 +76,6 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	//Bypass for faster shutdown
 	commands.ClearCommands()
 
 	_ = os.Remove("cw.lock")

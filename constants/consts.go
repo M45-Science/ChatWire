@@ -11,6 +11,7 @@ const (
 	MaxWhitelist       = 1500 //Max whitelist items
 	MaxNameLength      = 64
 	MaxBanReasonLength = 1024
+	PassExpireSec      = 5 * 60
 
 	/* ChatWire files */
 	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"

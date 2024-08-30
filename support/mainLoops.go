@@ -197,7 +197,7 @@ func MainLoops() {
 
 			glob.PasswordListLock.Lock()
 			for _, pass := range glob.PassList {
-				if (t.Unix() - pass.Time) > 300 {
+				if (t.Unix() - pass.Time) > constants.PassExpireSec {
 					cwlog.DoLogCW("Invalidating unused registration code for player: " + disc.GetNameFromID(pass.DiscID))
 					delete(glob.PassList, pass.DiscID)
 				}
@@ -342,6 +342,7 @@ func MainLoops() {
 			/* Update role IDs */
 			if disc.Guild != nil {
 				changed := false
+				/* TODO: Clean up dupe code. This started off simple and grew */
 				for _, role := range disc.Guild.Roles {
 					if cfg.Global.Discord.Roles.Admin != "" &&
 						role.Name == cfg.Global.Discord.Roles.Admin &&
@@ -518,6 +519,9 @@ func MainLoops() {
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .queue file, ignoring.")
 				}
 			}
+
+			/* Currently only queue and stop are used, the rest is legacy */
+
 			/* Halt, regardless of game state */
 			if _, err = os.Stat(".halt"); err == nil {
 				if errb = os.Remove(".halt"); errb == nil {
