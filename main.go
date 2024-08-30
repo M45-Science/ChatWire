@@ -58,7 +58,7 @@ func main() {
 				cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
 
 				/* Recent lockfile, probable crash loop */
-				if lastTime.Sub(glob.Uptime) < (constants.RestartLimitMinutes * time.Minute) {
+				if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
 					msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
 
 					cwlog.DoLogCW(msg)
