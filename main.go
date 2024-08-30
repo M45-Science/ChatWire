@@ -322,14 +322,14 @@ func checkLockFile() {
 	lfile, err := os.OpenFile("cw.lock", os.O_CREATE, 0666)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't create lock file!!!")
-		return
+		os.Exit(1)
 	}
 	lfile.Close()
 	buf := fmt.Sprintf("%v\n", time.Now().UTC().Round(time.Second).Format(time.RFC3339Nano))
 	err = os.WriteFile("cw.lock", []byte(buf), 0644)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write lock file!!!")
-		return
+		os.Exit(1)
 	}
 }
 
@@ -357,22 +357,12 @@ func initMaps() {
 }
 
 func initTime() {
-
-	/* Set time to negative so we start right away */
 	glob.LastSusWarning = time.Now().Add(time.Duration(-constants.SusWarningInterval) * time.Minute)
-
-	/* Set up vote cooldown */
 	now := time.Now()
-	/* Set time to negative so we start right away */
 	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
 	glob.VoteBox.LastMapChange = then.Round(time.Second)
-
-	/* Blank game time */
 	fact.Gametime = (constants.Unknown)
-
 	glob.PausedAt = time.Now()
-
-	/* Mark uptime start */
 	glob.Uptime = time.Now().UTC().Round(time.Second)
 }
 
@@ -384,12 +374,12 @@ func readConfigs() {
 		cfg.WriteGCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
-		return
+		os.Exit(1)
 	}
 	if cfg.ReadLCfg() {
 		cfg.WriteLCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
-		return
+		os.Exit(1)
 	}
 }
