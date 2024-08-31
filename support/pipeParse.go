@@ -12,44 +12,43 @@ import (
 )
 
 type funcList struct {
-	name     string
 	function func(input *handleData) bool
 }
 
 var handleList = []funcList{
-	{name: "handleDisconnect", function: handleDisconnect},
-	{name: "handleGameTime", function: handleGameTime},
-	{name: "handleOnlinePlayers", function: handleOnlinePlayers},
-	{name: "handlePlayerJoin", function: handlePlayerJoin},
-	{name: "handlePlayerLeave", function: handlePlayerLeave},
-	{name: "handleMapLoad", function: handleMapLoad},
-	{name: "handleBan", function: handleBan},
-	{name: "handleSVersion", function: handleSVersion},
-	{name: "handleUnBan", function: handleUnBan},
-	{name: "handleFactGoodbye", function: handleFactGoodbye},
-	{name: "handleFactReady", function: handleFactReady},
-	{name: "handleIncomingAnnounce", function: handleIncomingAnnounce},
-	{name: "handleFactVersion", function: handleFactVersion},
-	{name: "handleSaveMsg", function: handleSaveMsg},
-	{name: "handleExitSave", function: handleExitSave},
-	{name: "handleDesync", function: handleDesync},
-	{name: "handleCrashes", function: handleCrashes},
+	{function: handleDisconnect},
+	{function: handleGameTime},
+	{function: handleOnlinePlayers},
+	{function: handlePlayerJoin},
+	{function: handlePlayerLeave},
+	{function: handleMapLoad},
+	{function: handleBan},
+	{function: handleSVersion},
+	{function: handleUnBan},
+	{function: handleFactGoodbye},
+	{function: handleFactReady},
+	{function: handleIncomingAnnounce},
+	{function: handleFactVersion},
+	{function: handleSaveMsg},
+	{function: handleExitSave},
+	{function: handleDesync},
+	{function: handleCrashes},
 }
 
 var softModHandleList = []funcList{
-	{name: "handleCmdMsg", function: handleCmdMsg},
-	{name: "handleActMsg", function: handleActMsg},
-	{name: "handleOnlineMsg", function: handleOnlineMsg},
-	{name: "handleSoftModMsg", function: handleSoftModMsg},
-	{name: "handlePlayerReport", function: handlePlayerReport},
-	{name: "handlePlayerRegister", function: handlePlayerRegister},
-	{name: "handleIdiots", function: handleIdiots},
-	{name: "handleChatMsg", function: handleChatMsg},
+	{function: handleCmdMsg},
+	{function: handleActMsg},
+	{function: handleOnlineMsg},
+	{function: handleSoftModMsg},
+	{function: handlePlayerReport},
+	{function: handlePlayerRegister},
+	{function: handleIdiots},
+	{function: handleChatMsg},
 }
 
 var nonChatHandleList = []funcList{
-	{name: "handleIdiots", function: handleIdiots},
-	{name: "handleChatMsg", function: handleChatMsg},
+	{function: handleIdiots},
+	{function: handleChatMsg},
 }
 
 type handleData struct {
