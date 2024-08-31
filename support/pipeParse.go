@@ -11,67 +11,77 @@ import (
 	"ChatWire/sclean"
 )
 
+type funcList struct {
+	function func(input *handleData) bool
+}
+
+var noChatHandles = []funcList{
+	{function: handleDisconnect},
+	{function: handleGameTime},
+	{function: handleOnlinePlayers},
+	{function: handlePlayerJoin},
+	{function: handlePlayerLeave},
+	{function: handleMapLoad},
+	{function: handleBan},
+	{function: handleSVersion},
+	{function: handleUnBan},
+	{function: handleFactGoodbye},
+	{function: handleFactReady},
+	{function: handleIncomingAnnounce},
+	{function: handleFactVersion},
+	{function: handleSaveMsg},
+	{function: handleExitSave},
+	{function: handleDesync},
+	{function: handleCrashes},
+}
+
+var softModHandles = []funcList{
+	{function: handleCmdMsg},
+	{function: handleActMsg},
+	{function: handleOnlineMsg},
+	{function: handleSoftModMsg},
+	{function: handlePlayerReport},
+	{function: handlePlayerRegister},
+}
+
+var chatHandles = []funcList{
+	{function: handleIdiots},
+	{function: handleChatMsg},
+}
+
+type handleData struct {
+	line, lowerLine, noTimecode, noDatestamp                                          string
+	wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords            []string
+	trimmedWordsLen, noDatestampListLen, lowerListLen, noTimecodeListLen, wordListLen int
+}
+
 /*  Chat pipes in-game chat to Discord, and handles log events */
 func HandleChat() {
 
 	/* Don't log if the game isn't set to run */
 	for glob.ServerRunning {
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Second)
 
 		/* Check if there is anything in the input buffer */
 		if fact.GameBuffer != nil {
 			reader := bufio.NewScanner(fact.GameBuffer)
-
-			time.Sleep(time.Millisecond * 100)
 
 			for reader.Scan() {
 				if !fact.FactIsRunning {
 					break
 				}
 				readLine := reader.Text()
-
-				line := sclean.UnicodeCleanup(readLine)
+				rawLine := sclean.UnicodeCleanup(readLine)
 
 				/* Reject short lines */
-				ll := len(line)
-				if ll <= 0 {
+				ll := len(rawLine)
+				if ll == 0 {
 					continue
 				}
 				/* We have input, server is alive */
 				fact.SetFactRunning(true)
 
-				/*
-				 * Timecode removal, split into words, save lengths
-				 */
-
-				trimmed := strings.TrimLeft(line, " ")
-				words := strings.Split(trimmed, " ")
-				numwords := len(words)
-				NoTC := constants.Unknown
-				NoDS := constants.Unknown
-				if numwords > 1 {
-					NoTC = strings.Join(words[1:], " ")
-				}
-				if numwords > 2 {
-					NoDS = strings.Join(words[2:], " ")
-				}
-
-				/* Separate args -- for use with script output */
-				lineList := strings.Split(line, " ")
-				lineListlen := len(lineList)
-
-				/* Separate args, notc -- for use with Factorio subsystem output */
-				NoTClist := strings.Split(NoTC, " ")
-				NoTClistlen := len(NoTClist)
-
-				/* Separate args, nods -- for use with normal Factorio log output */
-				NoDSlist := strings.Split(NoDS, " ")
-				NoDSlistlen := len(NoDSlist)
-
-				/* Lowercase converted */
-				lowerCaseLine := strings.ToLower(line)
-				lowerCaseList := strings.Split(lowerCaseLine, " ")
-				lowerCaseListlen := len(lowerCaseList)
+				input := preProcessFactorioOutput(rawLine)
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
@@ -82,118 +92,88 @@ func HandleChat() {
 				 * FILTERED AREA
 				 * NO CONSOLE CHAT
 				 **********************************/
-				if !strings.HasPrefix(line, "<server>") {
+				if !strings.HasPrefix(input.line, "<server>") {
 
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
+					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
 
-						go handleDisconnect(NoTC, line)
-
-						/* Don't eat event, this is capable of eating random text */
-						go handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
-
-						if handleOnlinePlayers(line, lineList, lineListlen) {
-							continue
-						}
-
-						if handlePlayerJoin(NoDS, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handlePlayerLeave(NoDS, line, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
-							continue
-						}
-
-						go handleBan(NoDS, NoDSlist, NoDSlistlen)
-
-						if handleSVersion(line, lineList, lineListlen) {
-							continue
-						}
-
-						if handleUnBan(NoDS, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handleFactGoodbye(NoTC) {
-							continue
-						}
-
-						if handleFactReady(NoTC) {
-							continue
-						}
-
-						if handleIncomingAnnounce(NoTC, words, numwords) {
-							continue
-						}
-
-						go handleFactVersion(NoTC, line, NoTClist, NoTClistlen)
-
-						if handleSaveMsg(NoTC) {
-							continue
-						}
-
-						if handleExitSave(NoTC, NoTClist, NoTClistlen) {
-							continue
-						}
-
-						if handleDesync(NoTC, line) {
-							continue
-						}
-
-						if handleCrashes(NoTC, line, words, numwords) {
-							continue
+						/*
+						 * No-chat handles
+						 */
+						for _, handle := range noChatHandles {
+							if handle.function(input) {
+								continue
+							}
 						}
 
 						/*
-						 * Softmod only after this point
+						 * Soft-mod only
 						 */
-						if glob.SoftModVersion == constants.Unknown {
-							continue
-						}
-
-						if handleCmdMsg(line) {
-							continue
-						}
-						if handleActMsg(line, lineList, lineListlen) {
-							continue
-						}
-						if handleOnlineMsg(line) {
-							continue
-						}
-
-						if handleSoftModMsg(line, lineList, lineListlen) {
-							continue
-						}
-
-						if handlePlayerReport(line, lineList, lowerCaseListlen) {
-							continue
-						}
-
-						if handlePlayerRegister(line, lineList, lineListlen) {
-							continue
+						if glob.SoftModVersion != constants.Unknown {
+							for _, handle := range softModHandles {
+								if handle.function(input) {
+									continue
+								}
+							}
 						}
 
 					} else {
-						/* Protect players from dumb mistakes with registration codes */
-						if handleIdiots(line) {
-							continue
-						}
 
-						if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
-							continue
+						/*
+						 * Chat only
+						 */
+						for _, handle := range chatHandles {
+							if handle.function(input) {
+								continue
+							}
 						}
 					}
-					/******************
-					 * END FILTERED
-					 ******************/
 				}
 			}
 		}
+	}
+}
+
+func preProcessFactorioOutput(line string) *handleData {
+	/*
+	 * Timecode removal, split into words, save lengths
+	 */
+
+	trimmed := strings.TrimLeft(line, " ")
+	trimmedWords := strings.Split(trimmed, " ")
+	trimmedWordsLen := len(trimmedWords)
+	noTimecode := constants.Unknown
+	noDatestamp := constants.Unknown
+
+	if trimmedWordsLen > 1 {
+		noTimecode = strings.Join(trimmedWords[1:], " ")
+	}
+	if trimmedWordsLen > 2 {
+		noDatestamp = strings.Join(trimmedWords[2:], " ")
+	}
+
+	/* Separate args -- for use with script output */
+	wordList := strings.Split(line, " ")
+	wordListLen := len(wordList)
+
+	/* Separate args, no timecode -- for use with Factorio subsystem output */
+	noTimecodeList := strings.Split(noTimecode, " ")
+	noTimecodeListLen := len(noTimecodeList)
+
+	/* Separate args, no datestamp -- for use with normal Factorio log output */
+	noDatestampList := strings.Split(noDatestamp, " ")
+	noDatestampListLen := len(noDatestampList)
+
+	/* Lowercase converted */
+	lowerLine := strings.ToLower(line)
+	lowerWordList := strings.Split(lowerLine, " ")
+	lowerWordListLen := len(lowerWordList)
+
+	return &handleData{
+		line, lowerLine, noTimecode, noDatestamp,
+		wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords,
+		trimmedWordsLen, noDatestampListLen, lowerWordListLen, noTimecodeListLen, wordListLen,
 	}
 }

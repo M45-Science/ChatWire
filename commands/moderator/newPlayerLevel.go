@@ -13,7 +13,7 @@ import (
 )
 
 /* Set a player's level */
-func PlayerLevel(i *discordgo.InteractionCreate) {
+func PlayerLevel(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	var aname string
 	var alevel int
@@ -49,12 +49,6 @@ func PlayerLevel(i *discordgo.InteractionCreate) {
 		nplayer := glob.PlayerList[aname]
 		glob.PlayerListLock.RUnlock()
 
-		if oldLevel == alevel {
-			buf := fmt.Sprintf("Player: %v level was already %v. No action taken.", nplayer.Name, fact.LevelToString(nplayer.Level))
-			disc.EphemeralResponse(i, "ERROR:", buf)
-			return
-		}
-
 		if nplayer != nil {
 
 			/* Unban automatically */
@@ -74,7 +68,11 @@ func PlayerLevel(i *discordgo.InteractionCreate) {
 			buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
 			disc.EphemeralResponse(i, "Complete:", buf)
 			return
+		} else {
+			disc.EphemeralResponse(i, "Error:", "Player not found.")
 		}
+	} else {
+		disc.EphemeralResponse(i, "Error:", "You must specify a player.")
 	}
 
 }

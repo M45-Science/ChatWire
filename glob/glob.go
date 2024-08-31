@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"ChatWire/constants"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func Ptr[T any](v T) *T {
@@ -86,6 +88,39 @@ type OnlinePlayerData struct {
 	TimeTicks  int
 	Level      int
 	AFK        string
+}
+
+type AppCmdData struct {
+	Name, Description        string
+	Options                  []OptionData
+	Type                     discordgo.ApplicationCommandType
+	DefaultMemberPermissions *int64
+}
+
+type CommandData struct {
+	Function      func(cmd *CommandData, i *discordgo.InteractionCreate)
+	ModeratorOnly bool
+	AdminOnly     bool
+
+	PrimaryOnly bool
+	Disabled    bool
+	AppCmd      AppCmdData
+}
+
+type OptionData struct {
+	Name, Description string
+	Type              discordgo.ApplicationCommandOptionType
+	Required          bool
+	MinValue          float64
+	MaxValue          float64
+
+	Choices []ChoiceData
+}
+
+type ChoiceData struct {
+	Name     string
+	Value    interface{}
+	Function func(cmd *CommandData, i *discordgo.InteractionCreate)
 }
 
 var (

@@ -10,11 +10,12 @@ import (
 	"ChatWire/commands/moderator"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"ChatWire/support"
 )
 
 /* Change server settings */
-func GConfigServer(i *discordgo.InteractionCreate) {
+func GConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 	buf := ""
@@ -122,5 +123,7 @@ func GConfigServer(i *discordgo.InteractionCreate) {
 		} else {
 			disc.EphemeralResponse(i, "Error:", "Unable to save cw-global, check file permissions.")
 		}
+	} else {
+		disc.EphemeralResponse(i, "Error:", "Unable to find any matching options.")
 	}
 }

@@ -9,9 +9,10 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
-func SetSchedule(i *discordgo.InteractionCreate) {
+func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	buf := ""
@@ -54,5 +55,7 @@ func SetSchedule(i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(i, "Status:", buf)
 		fact.SetupSchedule()
 		cfg.WriteLCfg()
+	} else {
+		disc.EphemeralResponse(i, "Error:", "No valid options were found.")
 	}
 }

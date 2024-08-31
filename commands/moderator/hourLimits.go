@@ -3,13 +3,14 @@ package moderator
 import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
+	"ChatWire/glob"
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func ConfigHours(i *discordgo.InteractionCreate) {
+func ConfigHours(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	buf := ""
@@ -39,6 +40,6 @@ func ConfigHours(i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(i, "Status:", buf)
 		cfg.WriteLCfg()
 	} else {
-		disc.EphemeralResponse(i, "Error:", "You didn't supply any options!")
+		disc.EphemeralResponse(i, "Error:", "Didn't find any valid options!")
 	}
 }

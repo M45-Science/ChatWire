@@ -22,7 +22,7 @@ import (
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func Info(i *discordgo.InteractionCreate) {
+func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	verbose := false
 	debug := false
@@ -141,10 +141,6 @@ func Info(i *discordgo.InteractionCreate) {
 			}
 		}
 	}
-	/* modStr := strings.Join(fact.ModList, ",")
-	if modStr != constants.Unknown && modStr != "" {
-		buf = buf + "\nLoaded mods: " + modStr + "\n"
-	} */
 
 	/*************************
 	 * Tick history

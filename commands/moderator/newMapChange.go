@@ -12,7 +12,7 @@ import (
 )
 
 /* Load a different save-game */
-func ChangeMap(i *discordgo.InteractionCreate) {
+func ChangeMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	var saveName string
 	var list bool

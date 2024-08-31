@@ -132,6 +132,7 @@ func DoExit(delay bool) {
 
 	/* This kills all loops! */
 	glob.ServerRunning = false
+
 	time.Sleep(time.Second)
 	cwlog.DoLogCW("CW closing, load/save db.")
 	//LoadPlayers(false)

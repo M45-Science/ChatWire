@@ -1,8 +1,6 @@
 package admin
 
 import (
-	"strings"
-
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
@@ -12,44 +10,23 @@ import (
 	"ChatWire/support"
 )
 
-func ChatWire(i *discordgo.InteractionCreate) {
-	a := i.ApplicationCommandData()
-
-	for _, o := range a.Options {
-		arg := o.StringValue()
-		if strings.EqualFold(arg, "reboot") {
-			rebootCW(i)
-			return
-		} else if strings.EqualFold(arg, "queue-reboot") {
-			queReboot(i)
-			return
-		} else if strings.EqualFold(arg, "force-reboot") {
-			forceReboot(i)
-			return
-		} else if strings.EqualFold(arg, "reload-config") {
-			reloadConfig(i)
-			return
-		}
-	}
-}
-
 /* Reboots cw */
-func forceReboot(i *discordgo.InteractionCreate) {
+func ForceReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(i, "Status:", "Rebooting!")
+	disc.EphemeralResponse(i, "Status:", "Force rebooting!")
 	glob.RelaunchThrottle = 0
 	fact.DoExit(false)
 }
 
 /* Reboot when server is empty */
-func queReboot(i *discordgo.InteractionCreate) {
+func QueReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
 	fact.QueueReload = true
 }
 
 /*  Restart saves and restarts the server */
-func rebootCW(i *discordgo.InteractionCreate) {
+func RebootCW(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(i, "Status:", "Rebooting ChatWire...")
 
@@ -59,7 +36,7 @@ func rebootCW(i *discordgo.InteractionCreate) {
 }
 
 /* Reload config files */
-func reloadConfig(i *discordgo.InteractionCreate) {
+func ReloadConfig(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	/* Read global and local configs */
 	if !cfg.ReadGCfg() {

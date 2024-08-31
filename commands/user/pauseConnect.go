@@ -12,7 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func PauseConnect(i *discordgo.InteractionCreate) {
+func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	/* regular, mod or admin */
 	if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {

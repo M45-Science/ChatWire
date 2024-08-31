@@ -13,7 +13,7 @@ import (
 )
 
 /* Allow regulars to vote to change the map*/
-func VoteMap(i *discordgo.InteractionCreate) {
+func VoteMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	glob.VoteBoxLock.Lock()
 	defer glob.VoteBoxLock.Unlock()
