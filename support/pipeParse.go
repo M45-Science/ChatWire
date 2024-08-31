@@ -74,17 +74,17 @@ func HandleChat() {
 				}
 				readLine := reader.Text()
 
-				line := sclean.UnicodeCleanup(readLine)
+				rawLine := sclean.UnicodeCleanup(readLine)
 
 				/* Reject short lines */
-				ll := len(line)
+				ll := len(rawLine)
 				if ll <= 0 {
 					continue
 				}
 				/* We have input, server is alive */
 				fact.SetFactRunning(true)
 
-				input := preProcessFactorioOutput(line)
+				input := preProcessFactorioOutput(rawLine)
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
@@ -95,12 +95,12 @@ func HandleChat() {
 				 * FILTERED AREA
 				 * NO CONSOLE CHAT
 				 **********************************/
-				if !strings.HasPrefix(line, "<server>") {
+				if !strings.HasPrefix(input.line, "<server>") {
 
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
+					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
 
 						/*
 						 * No-chat handles
@@ -146,27 +146,27 @@ func preProcessFactorioOutput(line string) *handleData {
 
 	trimmed := strings.TrimLeft(line, " ")
 	words := strings.Split(trimmed, " ")
-	numwords := len(words)
-	NoTC := constants.Unknown
-	NoDS := constants.Unknown
-	if numwords > 1 {
-		NoTC = strings.Join(words[1:], " ")
+	numWords := len(words)
+	noTimecode := constants.Unknown
+	noDatestamp := constants.Unknown
+	if numWords > 1 {
+		noTimecode = strings.Join(words[1:], " ")
 	}
-	if numwords > 2 {
-		NoDS = strings.Join(words[2:], " ")
+	if numWords > 2 {
+		noDatestamp = strings.Join(words[2:], " ")
 	}
 
 	/* Separate args -- for use with script output */
 	lineList := strings.Split(line, " ")
-	lineListlen := len(lineList)
+	lineListLen := len(lineList)
 
 	/* Separate args, notc -- for use with Factorio subsystem output */
-	NoTClist := strings.Split(NoTC, " ")
-	NoTClistlen := len(NoTClist)
+	noTimecodeList := strings.Split(noTimecode, " ")
+	noTimecodeListLen := len(noTimecodeList)
 
 	/* Separate args, nods -- for use with normal Factorio log output */
-	NoDSlist := strings.Split(NoDS, " ")
-	NoDSlistlen := len(NoDSlist)
+	noDatestampList := strings.Split(noDatestamp, " ")
+	noDatestampListLen := len(noDatestampList)
 
 	/* Lowercase converted */
 	lowerCaseLine := strings.ToLower(line)
@@ -174,8 +174,8 @@ func preProcessFactorioOutput(line string) *handleData {
 	lowerCaseListlen := len(lowerCaseList)
 
 	return &handleData{
-		line, lowerCaseLine, NoTC, NoDS,
-		lineList, lowerCaseList, NoTClist, NoDSlist, words,
-		numwords, NoDSlistlen, lowerCaseListlen, NoTClistlen, lineListlen,
+		line, lowerCaseLine, noTimecode, noDatestamp,
+		lineList, lowerCaseList, noTimecodeList, noDatestampList, words,
+		numWords, noDatestampListLen, lowerCaseListlen, noTimecodeListLen, lineListLen,
 	}
 }
