@@ -9,7 +9,7 @@ import (
 	"ChatWire/glob"
 )
 
-// Fill in blank values from names
+// Fill in blank choice values from names
 func init() {
 	for c, command := range cmds {
 		for o, option := range command.AppCmd.Options {
@@ -29,7 +29,7 @@ var cmds = []glob.CommandData{
 	/* Admin Commands */
 	{AppCmd: glob.AppCmdData{
 		Name:        "chatwire",
-		Description: "Reboot/reload ChatWire.",
+		Description: "reboot, or reload config files.",
 		Options: []glob.OptionData{
 			{
 				Name:        "action",
@@ -60,7 +60,7 @@ var cmds = []glob.CommandData{
 		AdminOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
-		Description: "Set a map reset schedule.",
+		Description: "Change the automatic map reset schedule.",
 		Options: []glob.OptionData{
 			{
 				Name:        "preset",
@@ -153,7 +153,7 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "factorio",
-		Description: "start, stop, new-map, update, install, etc",
+		Description: "Start/stop or update.",
 		Options: []glob.OptionData{
 			{
 				Name:        "action",
@@ -201,7 +201,7 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "config-global",
-		Description: "Settings for ALL maps/servers",
+		Description: "Settings that affect ALL servers.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
@@ -236,7 +236,7 @@ var cmds = []glob.CommandData{
 		ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
-		Description: "Remotely run a factorio command",
+		Description: "Remotely run a factorio command.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
@@ -256,7 +256,7 @@ var cmds = []glob.CommandData{
 		Function: moderator.MapReset, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "config-server",
-		Description: "Server settings and options.",
+		Description: "Server settings and options, such as the name.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: moderator.ConfigServer, ModeratorOnly: true},
@@ -396,7 +396,7 @@ var cmds = []glob.CommandData{
 		Function: user.Info},
 	{AppCmd: glob.AppCmdData{
 		Name:        "modpack",
-		Description: "Creates a download link with all mods.",
+		Description: "Provides a link to zip file of all game mods.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: user.ModPack},
@@ -410,14 +410,9 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "vote-map",
-		Description: "REGULARS/VET ONLY: Vote for a new/previous map. Requires TWO vote points.",
+		Description: "Vote for a new/previous map. Requires TWO vote points.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
-			{
-				Name:        "vote-now",
-				Description: "Press ENTER or RETURN to open the voting box.",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-			},
 			{
 
 				Name:        "moderator",
@@ -441,7 +436,7 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "pause-game",
-		Description: "REGULARS/VET ONLY: Use BEFORE connecting, pauses map while you connect.",
+		Description: "Use BEFORE connecting, pauses map while you connect.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{

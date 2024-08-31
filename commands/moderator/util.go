@@ -68,7 +68,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "group-name",
 		ShortDesc: "Group Name",
-		Desc:      "The name of the server group, used for the server list",
+		Desc:      "The name of the server group, used as prefix to name.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 5,
@@ -78,7 +78,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "primary-server",
 		ShortDesc: "Primary Server",
-		Desc:      "Server that handles global commands.",
+		Desc:      "Specify a server that handles global commands.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 2,
@@ -139,7 +139,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "sus-shutup",
 		ShortDesc: "Sus Shutup",
-		Desc:      "Disable new player sus warning.",
+		Desc:      "Disable new-player suspicious activity warning.",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Global.Options.ShutupSusWarn,
@@ -147,7 +147,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "disable-spam-protect",
 		ShortDesc: "Disable Spam Protect",
-		Desc:      "Disable spam protection",
+		Desc:      "Disable chat-spam protection (auto-ban)",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Global.Options.DisableSpamProtect,
@@ -159,7 +159,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "name",
 		ShortDesc: "Server Name",
-		Desc:      "Server name, not including callsign/letter.",
+		Desc:      "Server name, do not include callsign/letter.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 64,
@@ -195,7 +195,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "map-generator",
 		ShortDesc: "Map Generator",
-		Desc:      "Map generator to use, select 'none' for mods that remove vanilla resources.",
+		Desc:      "Map generator to use, SELECT 'NONE' FOR MODS THAT REMOVE VANILLA RESOURCES.",
 		Type:      TYPE_STRING,
 
 		MinStrLen: 1,
@@ -281,7 +281,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "members-only",
 		ShortDesc: "Members Only",
-		Desc:      "Only members, regulars and moderators can connect.",
+		Desc:      "Only members or higher can connect.",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -291,7 +291,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "regulars-only",
 		ShortDesc: "regulars only",
-		Desc:      "Only regulars and moderators can connect.",
+		Desc:      "Only regulars or higher can connect.",
 		Type:      TYPE_BOOL,
 
 		DefBool: false,
@@ -301,7 +301,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "restrict-new-players",
 		ShortDesc: "Restrict New",
-		Desc:      "New player restrictions on/off (softmod).",
+		Desc:      "Enable new-player restrictions. (softmod).",
 		Type:      TYPE_BOOL,
 
 		BData: &cfg.Local.Options.SoftModOptions.Restrict,
@@ -325,7 +325,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "afk-kick-mins",
 		ShortDesc: "AFK Mins",
-		Desc:      "If idle/afk, kick after this amount of time (game time, 60ups).",
+		Desc:      "If idle/afk, kick after this amount of time (game time, at 60UPS).",
 		Type:      TYPE_INT,
 
 		MaxInt: 120,
