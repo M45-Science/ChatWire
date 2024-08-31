@@ -11,6 +11,53 @@ import (
 	"ChatWire/sclean"
 )
 
+type funcList struct {
+	name     string
+	function func(input *handleData) bool
+}
+
+var handleList = []funcList{
+	{name: "handleDisconnect", function: handleDisconnect},
+	{name: "handleGameTime", function: handleGameTime},
+	{name: "handleOnlinePlayers", function: handleOnlinePlayers},
+	{name: "handlePlayerJoin", function: handlePlayerJoin},
+	{name: "handlePlayerLeave", function: handlePlayerLeave},
+	{name: "handleMapLoad", function: handleMapLoad},
+	{name: "handleBan", function: handleBan},
+	{name: "handleSVersion", function: handleSVersion},
+	{name: "handleUnBan", function: handleUnBan},
+	{name: "handleFactGoodbye", function: handleFactGoodbye},
+	{name: "handleFactReady", function: handleFactReady},
+	{name: "handleIncomingAnnounce", function: handleIncomingAnnounce},
+	{name: "handleFactVersion", function: handleFactVersion},
+	{name: "handleSaveMsg", function: handleSaveMsg},
+	{name: "handleExitSave", function: handleExitSave},
+	{name: "handleDesync", function: handleDesync},
+	{name: "handleCrashes", function: handleCrashes},
+}
+
+var softModHandleList = []funcList{
+	{name: "handleCmdMsg", function: handleCmdMsg},
+	{name: "handleActMsg", function: handleActMsg},
+	{name: "handleOnlineMsg", function: handleOnlineMsg},
+	{name: "handleSoftModMsg", function: handleSoftModMsg},
+	{name: "handlePlayerReport", function: handlePlayerReport},
+	{name: "handlePlayerRegister", function: handlePlayerRegister},
+	{name: "handleIdiots", function: handleIdiots},
+	{name: "handleChatMsg", function: handleChatMsg},
+}
+
+var nonChatHandleList = []funcList{
+	{name: "handleIdiots", function: handleIdiots},
+	{name: "handleChatMsg", function: handleChatMsg},
+}
+
+type handleData struct {
+	line, lowerCaseLine, NoTC, NoDS                                   string
+	lineList, lowerCaseList, NoTClist, NoDSlist, words                []string
+	numwords, NoDSlistlen, lowerCaseListlen, NoTClistlen, lineListlen int
+}
+
 /*  Chat pipes in-game chat to Discord, and handles log events */
 func HandleChat() {
 
@@ -73,6 +120,13 @@ func HandleChat() {
 				lowerCaseList := strings.Split(lowerCaseLine, " ")
 				lowerCaseListlen := len(lowerCaseList)
 
+				//We pass this via pointer to all the handler functions
+				input := &handleData{
+					line, lowerCaseLine, NoTC, NoDS,
+					lineList, lowerCaseList, NoTClist, NoDSlist, words,
+					numwords, NoDSlistlen, lowerCaseListlen, NoTClistlen, lineListlen,
+				}
+
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
 					fact.PausedTicks--
@@ -89,110 +143,37 @@ func HandleChat() {
 					 *********************************/
 					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
-						go handleDisconnect(NoTC, line)
-						/* TODO: Make a list of events and just loop it */
-
-						/* Don't eat event, this is capable of eating random text */
-						go handleGameTime(lowerCaseLine, lowerCaseList, lowerCaseListlen)
-
-						if handleOnlinePlayers(line, lineList, lineListlen) {
-							continue
-						}
-
-						if handlePlayerJoin(NoDS, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handlePlayerLeave(NoDS, line, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handleMapLoad(NoTC, NoDSlist, NoTClist, NoTClistlen) {
-							continue
-						}
-
-						go handleBan(NoDS, NoDSlist, NoDSlistlen)
-
-						if handleSVersion(line, lineList, lineListlen) {
-							continue
-						}
-
-						if handleUnBan(NoDS, NoDSlist, NoDSlistlen) {
-							continue
-						}
-
-						if handleFactGoodbye(NoTC) {
-							continue
-						}
-
-						if handleFactReady(NoTC) {
-							continue
-						}
-
-						if handleIncomingAnnounce(NoTC, words, numwords) {
-							continue
-						}
-
-						go handleFactVersion(NoTC, line, NoTClist, NoTClistlen)
-
-						if handleSaveMsg(NoTC) {
-							continue
-						}
-
-						if handleExitSave(NoTC, NoTClist, NoTClistlen) {
-							continue
-						}
-
-						if handleDesync(NoTC, line) {
-							continue
-						}
-
-						if handleCrashes(NoTC, line, words, numwords) {
-							continue
+						/*
+						 * Standard handles
+						 */
+						for _, handle := range handleList {
+							if handle.function(input) {
+								continue
+							}
 						}
 
 						/*
-						 * Softmod only after this point
+						 * Softmod only
 						 */
-						if glob.SoftModVersion == constants.Unknown {
-							continue
-						}
-
-						if handleCmdMsg(line) {
-							continue
-						}
-						if handleActMsg(line, lineList, lineListlen) {
-							continue
-						}
-						if handleOnlineMsg(line) {
-							continue
-						}
-
-						if handleSoftModMsg(line, lineList, lineListlen) {
-							continue
-						}
-
-						if handlePlayerReport(line, lineList, lowerCaseListlen) {
-							continue
-						}
-
-						if handlePlayerRegister(line, lineList, lineListlen) {
-							continue
+						if glob.SoftModVersion != constants.Unknown {
+							for _, handle := range softModHandleList {
+								if handle.function(input) {
+									continue
+								}
+							}
 						}
 
 					} else {
-						/* Protect players from dumb mistakes with registration codes */
-						if handleIdiots(line) {
-							continue
-						}
 
-						if handleChatMsg(NoDS, line, NoDSlist, NoDSlistlen) {
-							continue
+						/*
+						 * Non-chat only
+						 */
+						for _, handle := range nonChatHandleList {
+							if handle.function(input) {
+								continue
+							}
 						}
 					}
-					/******************
-					 * END FILTERED
-					 ******************/
 				}
 			}
 		}
