@@ -50,9 +50,9 @@ var chatHandles = []funcList{
 }
 
 type handleData struct {
-	line, lowerCaseLine, NoTC, NoDS                                   string
-	lineList, lowerCaseList, NoTClist, NoDSlist, words                []string
-	numwords, NoDSlistlen, lowerCaseListlen, NoTClistlen, lineListlen int
+	line, lowerLine, noTimecode, noDatestamp                                   string
+	lineList, lowerLineList, noTimecodeList, noDatestampList, words            []string
+	numWords, noDatestampListLen, lowerListLen, noTimecodeListLen, lineListLen int
 }
 
 /*  Chat pipes in-game chat to Discord, and handles log events */
@@ -100,7 +100,7 @@ func HandleChat() {
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(input.NoDS, "[CHAT]") && !strings.HasPrefix(input.NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
+					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
 						/*
 						 * No-chat handles

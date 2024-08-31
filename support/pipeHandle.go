@@ -36,7 +36,7 @@ func handleIdiots(input *handleData) bool {
 
 func handleDisconnect(input *handleData) bool {
 
-	if strings.HasPrefix(input.NoTC, "Info ServerMultiplayerManager") {
+	if strings.HasPrefix(input.noTimecode, "Info ServerMultiplayerManager") {
 
 		if glob.SoftModVersion == constants.Unknown {
 			if strings.Contains(input.line, "removing peer") {
@@ -55,24 +55,24 @@ func handleGameTime(input *handleData) bool {
 	 * While this is needed for games without our softmod,
 	 * we should be using tick count instead.
 	 ******************************************************/
-	if strings.Contains(input.lowerCaseLine, " second") || strings.Contains(input.lowerCaseLine, " minute") || strings.Contains(input.lowerCaseLine, " hour") || strings.Contains(input.lowerCaseLine, " day") {
+	if strings.Contains(input.lowerLine, " second") || strings.Contains(input.lowerLine, " minute") || strings.Contains(input.lowerLine, " hour") || strings.Contains(input.lowerLine, " day") {
 
 		day := 0
 		hour := 0
 		minute := 0
 		second := 0
 
-		if input.lowerCaseListlen > 1 {
+		if input.lowerListLen > 1 {
 
-			for x := 0; x < input.lowerCaseListlen; x++ {
-				if strings.Contains(input.lowerCaseList[x], "day") {
-					day, _ = strconv.Atoi(input.lowerCaseList[x-1])
-				} else if strings.Contains(input.lowerCaseList[x], "hour") {
-					hour, _ = strconv.Atoi(input.lowerCaseList[x-1])
-				} else if strings.Contains(input.lowerCaseList[x], "minute") {
-					minute, _ = strconv.Atoi(input.lowerCaseList[x-1])
-				} else if strings.Contains(input.lowerCaseList[x], "second") {
-					second, _ = strconv.Atoi(input.lowerCaseList[x-1])
+			for x := 0; x < input.lowerListLen; x++ {
+				if strings.Contains(input.lowerLineList[x], "day") {
+					day, _ = strconv.Atoi(input.lowerLineList[x-1])
+				} else if strings.Contains(input.lowerLineList[x], "hour") {
+					hour, _ = strconv.Atoi(input.lowerLineList[x-1])
+				} else if strings.Contains(input.lowerLineList[x], "minute") {
+					minute, _ = strconv.Atoi(input.lowerLineList[x-1])
+				} else if strings.Contains(input.lowerLineList[x], "second") {
+					second, _ = strconv.Atoi(input.lowerLineList[x-1])
 				}
 			}
 
@@ -109,7 +109,7 @@ func handleGameTime(input *handleData) bool {
 				fact.PausedTicks = 0
 			}
 			fact.LastGametime = fact.Gametime
-			fact.GametimeString = input.lowerCaseLine
+			fact.GametimeString = input.lowerLine
 			fact.Gametime = newtime
 		}
 	}
@@ -123,7 +123,7 @@ func handlePlayerReport(input *handleData) bool {
 	 ******************/
 	if strings.HasPrefix(input.line, "[REPORT]") {
 		cwlog.DoLogGame(input.line)
-		if input.lineListlen >= 3 {
+		if input.lineListLen >= 3 {
 			pingStr := ""
 			if cfg.Global.Discord.SusPingRole != "" {
 				pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
@@ -149,13 +149,13 @@ func handlePlayerRegister(input *handleData) bool {
 	 * ACCESS
 	 ******************/
 	if strings.HasPrefix(input.line, "[ACCESS]") {
-		if input.lineListlen >= 4 {
+		if input.lineListLen >= 4 {
 			/* Format:
 			 * print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter) */
 
 			ptype := input.lineList[1]
 			pname := input.lineList[2]
-			code := strings.Join(input.lineList[3:input.lineListlen], "")
+			code := strings.Join(input.lineList[3:input.lineListLen], "")
 
 			/* Filter non-letters */
 			inputCode := sclean.AlphaOnly(code)
@@ -276,7 +276,7 @@ func handleOnlinePlayers(input *handleData) bool {
 	 **********************************************************/
 	if strings.HasPrefix(input.line, "Online players") {
 
-		if input.lineListlen > 2 {
+		if input.lineListLen > 2 {
 			poc := strings.Join(input.lineList[2:], " ")
 			poc = strings.ReplaceAll(poc, "(", "")
 			poc = strings.ReplaceAll(poc, ")", "")
@@ -297,11 +297,11 @@ func handlePlayerJoin(input *handleData) bool {
 	/******************
 	 * JOIN AREA
 	 *****************/
-	if strings.HasPrefix(input.NoDS, "[JOIN]") {
-		cwlog.DoLogGame(input.NoDS)
+	if strings.HasPrefix(input.noDatestamp, "[JOIN]") {
+		cwlog.DoLogGame(input.noDatestamp)
 
-		if input.NoDSlistlen > 1 {
-			pname := sclean.UnicodeCleanup(input.NoDSlist[1])
+		if input.noDatestampListLen > 1 {
+			pname := sclean.UnicodeCleanup(input.noDatestampList[1])
 			banlist.CheckBanList(pname)
 			plevelname := fact.AutoPromote(pname, false, true)
 
@@ -365,15 +365,15 @@ func handlePlayerLeave(input *handleData) bool {
 	/******************
 	 * LEAVE
 	 ******************/
-	if strings.HasPrefix(input.NoDS, "[LEAVE]") &&
+	if strings.HasPrefix(input.noDatestamp, "[LEAVE]") &&
 		/* Suppress quit messages from map load */
 		fact.FactorioBooted && fact.FactIsRunning {
 
-		cwlog.DoLogGame(input.NoDS)
+		cwlog.DoLogGame(input.noDatestamp)
 
 		/* Mark as seen, async */
-		if input.NoDSlistlen > 1 {
-			pname := input.NoDSlist[1]
+		if input.noDatestampListLen > 1 {
+			pname := input.noDatestampList[1]
 
 			/* Show quit if there is no soft-mod */
 			if glob.SoftModVersion == constants.Unknown {
@@ -401,7 +401,7 @@ func handleActMsg(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[ACT]") {
 
 		cwlog.DoLogGame(input.line)
-		if input.lineListlen > 2 {
+		if input.lineListLen > 2 {
 
 			pname := input.lineList[1]
 			action := input.lineList[2]
@@ -492,7 +492,7 @@ func handleSoftModMsg(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[MSG]") {
 		cwlog.DoLogCW(input.line)
 
-		if input.lineListlen > 0 {
+		if input.lineListLen > 0 {
 			ctext := strings.Join(input.lineList[1:], " ")
 
 			/* Clean strings */
@@ -513,7 +513,7 @@ func handleSoftModMsg(input *handleData) bool {
 			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` **%s**", fact.Gametime, cmess))
 		}
 
-		if input.lineListlen > 1 {
+		if input.lineListLen > 1 {
 			trustname := input.lineList[1]
 
 			if trustname != "" {
@@ -550,13 +550,13 @@ func handleMapLoad(input *handleData) bool {
 	/******************
 	 * MAP LOAD
 	 ******************/
-	if strings.HasPrefix(input.NoTC, "Loading map") {
-		cwlog.DoLogCW(input.NoTC)
+	if strings.HasPrefix(input.noTimecode, "Loading map") {
+		cwlog.DoLogCW(input.noTimecode)
 
 		/* Strip file path */
-		if input.NoTClistlen > 3 {
-			fullpath := input.NoTClist[2]
-			size := input.NoTClist[3]
+		if input.noTimecodeListLen > 3 {
+			fullpath := input.noTimecodeList[2]
+			size := input.noTimecodeList[3]
 			sizei, _ := strconv.Atoi(size)
 			fullpath = strings.Replace(fullpath, ":", "", -1)
 
@@ -582,28 +582,28 @@ func handleBan(input *handleData) bool {
 	/******************
 	 * BAN
 	 ******************/
-	if strings.HasPrefix(input.NoDS, "[BAN]") {
+	if strings.HasPrefix(input.noDatestamp, "[BAN]") {
 
 		glob.PlayerListWriteLock.Lock()
 		defer glob.PlayerListWriteLock.Unlock()
 
-		cwlog.DoLogGame(input.NoDS)
+		cwlog.DoLogGame(input.noDatestamp)
 
-		if input.NoDSlistlen > 1 {
-			trustname := input.NoDSlist[1]
+		if input.noDatestampListLen > 1 {
+			trustname := input.noDatestampList[1]
 
-			if strings.Contains(input.NoDS, "was banned by") {
+			if strings.Contains(input.noDatestamp, "was banned by") {
 
-				if strings.Contains(input.NoDS, "Reason") {
+				if strings.Contains(input.noDatestamp, "Reason") {
 
-					reasonList := strings.Split(input.NoDS, "Reason: ")
+					reasonList := strings.Split(input.noDatestamp, "Reason: ")
 					fact.PlayerSetBanReason(trustname, reasonList[1], false)
 				} else {
 					fact.PlayerLevelSet(trustname, -1, false)
 				}
 			}
 
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.NoDSlist[1:], " ")))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
 			fact.WriteFact(glob.OnlineCommand)
 		}
 		return true
@@ -618,7 +618,7 @@ func handleSVersion(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[SVERSION]") {
 		cwlog.DoLogCW(input.line)
 
-		if input.lineListlen > 0 {
+		if input.lineListLen > 0 {
 			glob.SoftModVersion = input.lineList[1]
 			glob.OnlineCommand = constants.SoftModOnlineCMD
 			cwlog.DoLogCW("Softmod detected: " + glob.SoftModVersion)
@@ -633,19 +633,19 @@ func handleUnBan(input *handleData) bool {
 	/******************
 	 * UNBAN
 	 ******************/
-	if strings.HasPrefix(input.NoDS, "[UNBANNED]") {
-		cwlog.DoLogGame(input.NoDS)
+	if strings.HasPrefix(input.noDatestamp, "[UNBANNED]") {
+		cwlog.DoLogGame(input.noDatestamp)
 
-		if input.NoDSlistlen > 1 {
-			trustname := input.NoDSlist[1]
+		if input.noDatestampListLen > 1 {
+			trustname := input.noDatestampList[1]
 
-			if strings.Contains(input.NoDS, "was unbanned by") {
+			if strings.Contains(input.noDatestamp, "was unbanned by") {
 				if fact.PlayerLevelGet(trustname, true) < 0 {
 					fact.PlayerLevelSet(trustname, 0, false)
 				}
 			}
 
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.NoDSlist[1:], " ")))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
 		}
 		return true
 	}
@@ -656,8 +656,8 @@ func handleFactGoodbye(input *handleData) bool {
 	/******************
 	 * GOODBYE
 	 ******************/
-	if strings.HasPrefix(input.NoTC, "Goodbye") {
-		cwlog.DoLogGame(input.NoTC)
+	if strings.HasPrefix(input.noTimecode, "Goodbye") {
+		cwlog.DoLogGame(input.noTimecode)
 
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.FactorioBooted = false
@@ -673,7 +673,7 @@ func handleFactReady(input *handleData) bool {
 	/*****************
 	 * READY MESSAGE
 	 ******************/
-	if strings.HasPrefix(input.NoTC, "Info RemoteCommandProcessor") && strings.Contains(input.NoTC, "Starting RCON interface") {
+	if strings.HasPrefix(input.noTimecode, "Info RemoteCommandProcessor") && strings.Contains(input.noTimecode, "Starting RCON interface") {
 		fact.WriteAdminlist()
 		fact.FactorioBooted = true
 		fact.FactorioBootedAt = time.Now()
@@ -689,9 +689,9 @@ func handleIncomingAnnounce(input *handleData) bool {
 	/********************************
 	 * Announce incoming connections
 	 ********************************/
-	if strings.Contains(input.NoTC, "Queuing ban recommendation check for user ") {
-		if input.numwords > 1 {
-			pName := input.words[input.numwords-1]
+	if strings.Contains(input.noTimecode, "Queuing ban recommendation check for user ") {
+		if input.numWords > 1 {
+			pName := input.words[input.numWords-1]
 
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
@@ -719,10 +719,10 @@ func handleFactVersion(input *handleData) bool {
 	/* **********************
 	 * GET FACTORIO VERSION
 	 ***********************/
-	if strings.HasPrefix(input.NoTC, "Loading mod base") {
-		cwlog.DoLogCW(input.NoTC)
-		if input.NoTClistlen > 3 {
-			fact.FactorioVersion = input.NoTClist[3]
+	if strings.HasPrefix(input.noTimecode, "Loading mod base") {
+		cwlog.DoLogCW(input.noTimecode)
+		if input.noTimecodeListLen > 3 {
+			fact.FactorioVersion = input.noTimecodeList[3]
 
 			fv := strings.Split(fact.FactorioVersion, ".")
 			fvl := len(fv)
@@ -747,10 +747,10 @@ func handleSaveMsg(input *handleData) bool {
 	/*************************
 	 * CAPTURE SAVE MESSAGES
 	 *************************/
-	if strings.HasPrefix(input.NoTC, "Info AppManager") && strings.Contains(input.NoTC, "Saving to") {
+	if strings.HasPrefix(input.noTimecode, "Info AppManager") && strings.Contains(input.noTimecode, "Saving to") {
 		if !cfg.Local.Options.HideAutosaves {
 			savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
-			savmatch := savreg.FindStringSubmatch(input.NoTC)
+			savmatch := savreg.FindStringSubmatch(input.noTimecode)
 			if len(savmatch) > 1 {
 				if !cfg.Local.Options.HideAutosaves {
 					buf := fmt.Sprintf("`%v` 💾 %s", fact.Gametime, savmatch[1])
@@ -769,12 +769,12 @@ func handleExitSave(input *handleData) bool {
 	/*****************************
 	 * CAPTURE MAP NAME, ON EXIT
 	 *****************************/
-	if strings.HasPrefix(input.NoTC, "Info MainLoop") && strings.Contains(input.NoTC, "Saving map as") {
-		cwlog.DoLogCW(input.NoTC)
+	if strings.HasPrefix(input.noTimecode, "Info MainLoop") && strings.Contains(input.noTimecode, "Saving map as") {
+		cwlog.DoLogCW(input.noTimecode)
 
 		/* Strip file path */
-		if input.NoTClistlen > 5 {
-			fullpath := input.NoTClist[5]
+		if input.noTimecodeListLen > 5 {
+			fullpath := input.noTimecodeList[5]
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 			filename := regaa.ReplaceAllString(fullpath, "")
 			filename = strings.Replace(filename, ":", "", -1)
@@ -846,11 +846,11 @@ func handleDesync(input *handleData) bool {
 	/******************
 	 * CAPTURE DESYNC
 	 ******************/
-	if strings.HasPrefix(input.NoTC, "Info") {
+	if strings.HasPrefix(input.noTimecode, "Info") {
 
-		if strings.Contains(input.NoTC, "DesyncedWaitingForMap") {
-			cwlog.DoLogGame(input.NoTC)
-			cwlog.DoLogCW("desync: " + input.NoTC)
+		if strings.Contains(input.noTimecode, "DesyncedWaitingForMap") {
+			cwlog.DoLogGame(input.noTimecode)
+			cwlog.DoLogCW("desync: " + input.noTimecode)
 			return true
 		}
 	}
@@ -862,11 +862,11 @@ func handleCrashes(input *handleData) bool {
 	/* *****************
 	 * CAPTURE CRASHES
 	 ******************/
-	if strings.HasPrefix(input.NoTC, "Error") {
-		cwlog.DoLogCW(input.NoTC)
+	if strings.HasPrefix(input.noTimecode, "Error") {
+		cwlog.DoLogCW(input.noTimecode)
 
 		/* Lock error */
-		if strings.Contains(input.NoTC, "Couldn't acquire exclusive lock") {
+		if strings.Contains(input.noTimecode, "Couldn't acquire exclusive lock") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
@@ -874,15 +874,15 @@ func handleCrashes(input *handleData) bool {
 			return true
 		}
 		/* Mod Errors */
-		if strings.Contains(input.NoTC, "caused a non-recoverable error.") {
+		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and will reboot.")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
 		/* Stack traces */
-		if strings.Contains(input.NoTC, "Hosting multiplayer game failed") {
-			if strings.Contains(input.NoTC, "directory iterator cannot open directory") {
+		if strings.Contains(input.noTimecode, "Hosting multiplayer game failed") {
+			if strings.Contains(input.noTimecode, "directory iterator cannot open directory") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio didn't find any save-games.")
 			} else {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to load a multiplayer game.")
@@ -893,7 +893,7 @@ func handleCrashes(input *handleData) bool {
 			return true
 		}
 		/* level.dat */
-		if strings.Contains(input.NoTC, "level.dat not found.") {
+		if strings.Contains(input.noTimecode, "level.dat not found.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
@@ -901,14 +901,14 @@ func handleCrashes(input *handleData) bool {
 			return true
 		}
 		/* Stack traces */
-		if strings.Contains(input.NoTC, "Unexpected error occurred.") {
+		if strings.Contains(input.noTimecode, "Unexpected error occurred.") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
 		}
-		if strings.Contains(input.NoTC, "CommandLineMultiplayer") {
-			if strings.Contains(input.NoTC, "No latest save file found in") {
+		if strings.Contains(input.noTimecode, "CommandLineMultiplayer") {
+			if strings.Contains(input.noTimecode, "No latest save file found in") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "No save-game found.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
@@ -917,23 +917,23 @@ func handleCrashes(input *handleData) bool {
 			}
 		}
 		/* Multiplayer manger */
-		if strings.Contains(input.NoTC, "MultiplayerManager failed:") {
-			if strings.Contains(input.NoTC, "cannot be loaded because it is higher than the game version") {
+		if strings.Contains(input.noTimecode, "MultiplayerManager failed:") {
+			if strings.Contains(input.noTimecode, "cannot be loaded because it is higher than the game version") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio version is too old for the save game.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
 			}
-			if strings.Contains(input.NoTC, "syntax error") || strings.Contains(input.NoTC, "unexpected symbol") ||
-				strings.Contains(input.NoTC, "expected") || strings.Contains(input.NoTC, ".lua:") {
+			if strings.Contains(input.noTimecode, "syntax error") || strings.Contains(input.noTimecode, "unexpected symbol") ||
+				strings.Contains(input.noTimecode, "expected") || strings.Contains(input.noTimecode, ".lua:") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error and will stop.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
 			}
-			if strings.Contains(input.NoTC, "info.json not found") {
+			if strings.Contains(input.noTimecode, "info.json not found") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
@@ -941,8 +941,8 @@ func handleCrashes(input *handleData) bool {
 				return true
 			}
 			/* Bad zip file */
-			if strings.Contains(input.NoTC, "(Bad zip file)") {
-				if input.numwords > 6 {
+			if strings.Contains(input.noTimecode, "(Bad zip file)") {
+				if input.numWords > 6 {
 					if strings.HasSuffix(input.words[7], ".zip") || strings.HasSuffix(input.words[7], ".tmp.zip") {
 						err := os.Remove(input.words[7])
 						if err != nil {
@@ -956,7 +956,7 @@ func handleCrashes(input *handleData) bool {
 				}
 			}
 			/* Corrupt savegame */
-			if strings.Contains(input.NoTC, "Closing file") {
+			if strings.Contains(input.noTimecode, "Closing file") {
 				errs := os.Remove(fact.GameMapPath)
 
 				if errs != nil {
@@ -982,12 +982,12 @@ func handleChatMsg(input *handleData) bool {
 	/************************
 	 * FACTORIO CHAT MESSAGES
 	 ************************/
-	if strings.HasPrefix(input.NoDS, "[CHAT]") || strings.HasPrefix(input.NoDS, "[SHOUT]") {
-		cwlog.DoLogGame(input.NoDS)
+	if strings.HasPrefix(input.noDatestamp, "[CHAT]") || strings.HasPrefix(input.noDatestamp, "[SHOUT]") {
+		cwlog.DoLogGame(input.noDatestamp)
 
-		if input.NoDSlistlen > 1 {
-			input.NoDSlist[1] = strings.Replace(input.NoDSlist[1], ":", "", -1)
-			pname := input.NoDSlist[1]
+		if input.noDatestampListLen > 1 {
+			input.noDatestampList[1] = strings.Replace(input.noDatestampList[1], ":", "", -1)
+			pname := input.noDatestampList[1]
 
 			if pname != "<server>" {
 
@@ -1057,7 +1057,7 @@ func handleChatMsg(input *handleData) bool {
 
 				glob.ChatterLock.Unlock()
 
-				cmess := strings.Join(input.NoDSlist[2:], " ")
+				cmess := strings.Join(input.noDatestampList[2:], " ")
 				cmess = sclean.UnicodeCleanup(cmess)
 				cmess = sclean.EscapeDiscordMarkdown(cmess)
 				cmess = sclean.RemoveFactorioTags(cmess)
