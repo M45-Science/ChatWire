@@ -96,7 +96,7 @@ func readFolder(path string, sdir string) []zipFilesData {
 	/* Get all softmod files */
 	sFiles, err := os.ReadDir(path)
 	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read softmod folder: "+err.Error())
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read softmod folder.")
 		return nil
 	}
 
@@ -104,7 +104,7 @@ func readFolder(path string, sdir string) []zipFilesData {
 		if !file.IsDir() {
 			dat, err := os.ReadFile(path + "/" + file.Name())
 			if err != nil {
-				cwlog.DoLogCW("injectSoftMod: Unable to read softmod file: " + file.Name())
+				cwlog.DoLogCW("injectSoftMod: Unable to read softmod files.")
 				continue
 			}
 
@@ -142,7 +142,7 @@ func injectSoftMod(fileName, folderName string) {
 				strings.EqualFold(fileName, "level.datmetadata") {
 				file, err := f.Open()
 				if err != nil {
-					cwlog.DoLogCW("sm-inject: unable to open " + f.Name + ": " + err.Error())
+					cwlog.DoLogCW("sm-inject: unable to open " + f.Name)
 				} else {
 
 					defer file.Close()
@@ -150,7 +150,7 @@ func injectSoftMod(fileName, folderName string) {
 
 					dlen := uint64(len(data))
 					if rerr != nil && rerr != io.EOF {
-						cwlog.DoLogCW("Unable to read file: " + f.Name + ", " + rerr.Error())
+						cwlog.DoLogCW("Unable to read file: " + f.Name)
 						continue
 					} else if dlen != f.UncompressedSize64 {
 						sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
@@ -158,7 +158,6 @@ func injectSoftMod(fileName, folderName string) {
 					} else {
 						tmp := zipFilesData{Name: f.Name, Data: data}
 						zipFiles = append(zipFiles, tmp)
-						//cwlog.DoLogCW("Added from save: " + f.Name)
 					}
 				}
 			}
@@ -196,7 +195,7 @@ func injectSoftMod(fileName, folderName string) {
 
 		numFiles := len(zipFiles)
 		if numFiles <= 0 {
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, "No softmod files found, stopping.")
+			cwlog.DoLogCW("No softmod files found, stopping.")
 			return
 		}
 
@@ -303,7 +302,7 @@ func launchFactorio() {
 
 		for _, mod := range modList {
 			if strings.HasSuffix(mod.Name(), ".zip") && fact.HasZipBomb(mod.Name()) {
-				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Mod '"+mod.Name()+"' contains a zip-bomb, aborting.")
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Mod '"+mod.Name()+"' may contain a zip-bomb, aborting.")
 				return
 			}
 		}
@@ -319,7 +318,7 @@ func launchFactorio() {
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
 		fact.FactAutoStart = false
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to generate config file for Factorio server.")
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to generate config file for Factorio server.")
 		return
 	}
 
@@ -330,7 +329,7 @@ func launchFactorio() {
 		delay := throt * throt * 10
 
 		if delay > 0 {
-			cwlog.DoLogCW(fmt.Sprintf("Automatically rebooting Factorio in %d seconds.", delay))
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Rate limiting: Automatically rebooting Factorio in %d seconds.", delay))
 			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}
@@ -429,7 +428,7 @@ func launchFactorio() {
 
 	/* Factorio is not happy. */
 	if errp != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 		/* close lock  */
 		fact.DoExit(true)
 		return
@@ -445,7 +444,7 @@ func launchFactorio() {
 	/* Handle launch errors */
 	err = cmd.Start()
 	if err != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 		fact.DoExit(true)
 		return
 	}

@@ -60,13 +60,11 @@ func HandleChat() {
 
 	/* Don't log if the game isn't set to run */
 	for glob.ServerRunning {
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Second)
 
 		/* Check if there is anything in the input buffer */
 		if fact.GameBuffer != nil {
 			reader := bufio.NewScanner(fact.GameBuffer)
-
-			time.Sleep(time.Millisecond * 100)
 
 			for reader.Scan() {
 				if !fact.FactIsRunning {

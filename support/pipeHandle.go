@@ -130,10 +130,10 @@ func handlePlayerReport(input *handleData) bool {
 			}
 			buf := ""
 			if cfg.GetGameLogURL() == "" {
-				buf = fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\n%v",
+				buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\n%v",
 					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), pingStr)
 			} else {
-				buf = fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
+				buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
 					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), cfg.GetGameLogURL(), pingStr)
 			}
 			fact.CMS(cfg.Global.Discord.ReportChannel, buf)
@@ -206,7 +206,7 @@ func handlePlayerRegister(input *handleData) bool {
 					}
 
 					if strings.EqualFold(discid, pid) && strings.EqualFold(factname, pname) {
-						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', wants to regiser a few times... just to be sure.", pname))
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', wants to register a few times... just to be sure.", pname))
 						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This factorio user, and discord user are already connected! You do not need to re-register...", pname))
 						codegood = true
 						/* Do not break, process */

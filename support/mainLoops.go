@@ -31,13 +31,11 @@ func LinuxSetProcessGroup(cmd *exec.Cmd) {
 
 func MainLoops() {
 
-	time.Sleep(time.Second * 1)
-
 	/***************
 	 * Game watchdog
 	 ***************/
 	go func() {
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 1)
 		for glob.ServerRunning {
 
 			time.Sleep(constants.WatchdogInterval)
@@ -269,8 +267,6 @@ func MainLoops() {
 	go func() {
 		updated := false
 
-		time.Sleep(time.Second * 30)
-
 		for glob.ServerRunning {
 
 			time.Sleep(5 * time.Second)
@@ -288,9 +284,6 @@ func MainLoops() {
 
 				//cwlog.DoLogCW("Database file modified, loading.")
 				fact.LoadPlayers(false, false)
-
-				/* Sleep after reading */
-				time.Sleep(5 * time.Second)
 			}
 
 		}
@@ -418,14 +411,12 @@ func MainLoops() {
 
 				/* Live update server description */
 				if disc.RoleListUpdated {
-					/* goroutine, avoid deadlock */
-
 					ConfigSoftMod()
 					fact.GenerateFactorioConfig()
 				}
 				disc.RoleListUpdated = false
 			}
-			time.Sleep(time.Minute * 15)
+			time.Sleep(time.Minute)
 		}
 	}()
 
@@ -460,7 +451,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(30 * time.Second)
+			time.Sleep(time.Second * 5)
 
 			if cfg.Local.Options.AutoUpdate {
 				if fact.FactIsRunning && fact.FactorioBooted && fact.NewVersion != constants.Unknown {
@@ -468,7 +459,7 @@ func MainLoops() {
 
 						/* Warn players */
 						if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
-							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting (%v), please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", fact.NewVersion, glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
+							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.FactChat(fact.AddFactColor("orange", msg))
 						}
@@ -476,17 +467,16 @@ func MainLoops() {
 
 						/* Reboot anyway */
 						if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
-							msg := "(SYSTEM) Rebooting for Factorio update."
+							msg := "(SYSTEM) Rebooting for Factorio update!"
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-							fact.FactChat(fact.AddFactColor("orange", msg))
 							glob.UpdateWarnCounter = 0
-							fact.QuitFactorio("Rebooting for Factorio update.")
+							fact.QuitFactorio("Rebooting for Factorio update!")
 							break /* Stop looping */
 						}
 						glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
 					} else {
 						glob.UpdateWarnCounter = 0
-						fact.QuitFactorio("Rebooting for Factorio update.")
+						fact.QuitFactorio("Rebooting for Factorio update!")
 						break /* Stop looping */
 					}
 				}
@@ -519,46 +509,14 @@ func MainLoops() {
 					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .queue file, ignoring.")
 				}
 			}
-
-			/* Currently only queue and stop are used, the rest is legacy */
-
-			/* Halt, regardless of game state */
-			if _, err = os.Stat(".halt"); err == nil {
-				if errb = os.Remove(".halt"); errb == nil {
-					if fact.FactIsRunning || fact.FactorioBooted {
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting, closing Factorio.")
-						fact.FactAutoStart = false
-						fact.QuitFactorio("Server halted, quitting Factorio.")
-						fact.WaitFactQuit()
-						fact.DoExit(false)
-					} else {
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "ChatWire is halting.")
-						fact.DoExit(false)
-					}
-				} else if !failureReported {
-					failureReported = true
-					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .halt file, ignoring.")
-				}
-			}
-
 			/* Only if game is running */
 			if fact.FactIsRunning && fact.FactorioBooted {
-				/* Quick reboot */
-				if _, err = os.Stat(".qrestart"); err == nil {
-					if errb = os.Remove(".qrestart"); errb == nil {
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio quick restarting!")
-						fact.QuitFactorio("Server quick restarting...")
-					} else if !failureReported {
-						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .qrestart file, ignoring.")
-					}
-				}
 				/* Stop game */
 				if _, err = os.Stat(".stop"); err == nil {
 					if errb = os.Remove(".stop"); errb == nil {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio stopping!")
 						fact.FactAutoStart = false
-						fact.QuitFactorio("Server manually stopped.")
+						fact.QuitFactorio("Server stopping for maintenance.")
 					} else if !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
@@ -585,7 +543,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(time.Second * 30)
+			time.Sleep(time.Second * 5)
 
 			var err error
 			if _, err = os.Stat(glob.CWLogName); err != nil {
@@ -629,7 +587,6 @@ func MainLoops() {
 	****************************/
 	go func() {
 
-		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			fact.UpdateChannelName()
 
@@ -642,7 +599,7 @@ func MainLoops() {
 				fact.DoUpdateChannelName()
 			}
 
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 5)
 		}
 	}()
 
@@ -699,7 +656,7 @@ func MainLoops() {
 					fact.WriteFact(glob.OnlineCommand)
 				}
 			}
-			time.Sleep(time.Minute)
+			time.Sleep(time.Minute * 15)
 		}
 	}()
 
@@ -707,7 +664,7 @@ func MainLoops() {
 	/* Check for mod update     */
 	/****************************/
 	go func() {
-		time.Sleep(time.Minute * 5)
+		time.Sleep(time.Minute)
 
 		for glob.ServerRunning &&
 			cfg.Local.Options.ModUpdate {
@@ -721,7 +678,6 @@ func MainLoops() {
 	/* Update player time       */
 	/****************************/
 	go func() {
-		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			glob.PlayerListLock.Lock() //Lock
 			for _, p := range glob.PlayerList {
@@ -739,7 +695,6 @@ func MainLoops() {
 	/****************************/
 	go func() {
 		var lastDur string
-		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
@@ -759,8 +714,7 @@ func MainLoops() {
 				}
 			}
 
-			time.Sleep(time.Second * 5)
-
+			time.Sleep(time.Second)
 		}
 	}()
 
@@ -771,7 +725,6 @@ func MainLoops() {
 	go func() {
 		delme := -1
 
-		time.Sleep(time.Minute)
 		for glob.ServerRunning {
 
 			time.Sleep(time.Minute)
