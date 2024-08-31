@@ -2,7 +2,6 @@ package moderator
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Distortions81/rcon"
@@ -38,32 +37,44 @@ func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 
 		if err != nil || remoteConsole == nil {
-			cwlog.DoLogCW(fmt.Sprintf("Error: `%v`\n", err))
-
-			disc.EphemeralResponse(i, "Error:", err.Error())
+			msg := "RCON was unable to connect to Factorio."
+			cwlog.DoLogCW(msg)
+			disc.EphemeralResponse(i, "Error:", msg)
+			return
 		}
 
 		cwlog.DoLogCW(i.Member.User.Username + ": " + server + ": " + command)
 		reqID, err := remoteConsole.Write(command)
 		if err != nil {
-			cwlog.DoLogCW(err.Error())
+			msg := "Was unable to write to RCON."
+			cwlog.DoLogCW(msg)
+			disc.EphemeralResponse(i, "Error:", msg)
+			return
 		}
 		resp, respReqID, err := remoteConsole.Read()
 		if err != nil {
-			log.Println(err.Error())
+			msg := "Was unable to read from RCON."
+			cwlog.DoLogCW(msg)
+			disc.EphemeralResponse(i, "Error:", msg)
 			return
 		}
 
 		if reqID != respReqID {
-			log.Println("Invalid response ID.")
+			msg := "RCON responded with an invalid ID."
+			cwlog.DoLogCW(msg)
+			disc.EphemeralResponse(i, "Error:", msg)
 			return
 		}
 
+		if resp == "" {
+			resp = "(Empty response)"
+		}
 		disc.EphemeralResponse(i, "Result:", resp)
-		cwlog.DoLogCW("RCON RESPONSE: " + resp)
+		cwlog.DoLogCW("RCON: " + resp)
 	} else {
-		buf := "You must supply a command to run."
-		disc.EphemeralResponse(i, "Error:", buf)
+		msg := "You must supply a command to run."
+		cwlog.DoLogCW(msg)
+		disc.EphemeralResponse(i, "Error:", msg)
 	}
 
 }
