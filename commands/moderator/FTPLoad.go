@@ -8,6 +8,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/support"
 	"archive/zip"
 	"encoding/json"
 	"fmt"
@@ -75,25 +76,7 @@ func MakeFTPFolders() {
 }
 
 func FTPLoad(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-
-	a := i.ApplicationCommandData()
-
-	for _, arg := range a.Options {
-		if arg.Type == discordgo.ApplicationCommandOptionString {
-			for _, item := range FTPTypes {
-				if item.Command == arg.Value {
-					if item.fType == TYPE_MODSETTINGS {
-						ShowDatList(i, item)
-					} else {
-						ShowZipList(i, item)
-					}
-					return
-				}
-			}
-		}
-	}
-
-	disc.EphemeralResponse(i, "Error:", "No valid options were selected.")
+	support.RunCommandOptions(cmd, i)
 }
 
 /* Load a different save-game */

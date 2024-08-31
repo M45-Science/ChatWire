@@ -37,20 +37,24 @@ var cmds = []glob.CommandData{
 				Required:    true,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "reboot",
-						Value: "reboot",
+						Name:     "reboot",
+						Value:    "reboot",
+						Function: admin.RebootCW,
 					},
 					{
-						Name:  "queue-reboot",
-						Value: "queue-reboot",
+						Name:     "queue-reboot",
+						Value:    "queue-reboot",
+						Function: admin.QueReboot,
 					},
 					{
-						Name:  "force-reboot",
-						Value: "force-reboot",
+						Name:     "force-reboot",
+						Value:    "force-reboot",
+						Function: admin.ForceReboot,
 					},
 					{
-						Name:  "reload-config",
-						Value: "reload-config",
+						Name:     "reload-config",
+						Value:    "reload-config",
+						Function: admin.ReloadConfig,
 					},
 				},
 			},
@@ -105,7 +109,6 @@ var cmds = []glob.CommandData{
 				Name:        "day",
 				Description: "FOR DAY-OF-WEEK PRESET ONLY",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 				Choices: []glob.ChoiceData{
 					{
 						Name:  "monday",
@@ -147,7 +150,6 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    0,
 				MaxValue:    27,
-				Required:    false,
 			},
 			{
 				Name:        "hour",
@@ -155,7 +157,6 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    0,
 				MaxValue:    23,
-				Required:    false,
 			},
 		},
 	},
@@ -163,7 +164,7 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "factorio",
-		Description: "start/stop, install/update.",
+		Description: "start, stop, new-map, update, install, etc",
 		Options: []glob.OptionData{
 			{
 				Name:        "action",
@@ -172,36 +173,44 @@ var cmds = []glob.CommandData{
 				Required:    true,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "start",
-						Value: "start",
+						Name:     "start",
+						Value:    "start",
+						Function: admin.StartFact,
 					},
 					{
-						Name:  "stop",
-						Value: "stop",
+						Name:     "stop",
+						Value:    "stop",
+						Function: admin.StopFact,
 					},
 					{
-						Name:  "new-map-preview",
-						Value: "new-map-preview",
+						Name:     "new-map-preview",
+						Value:    "new-map-preview",
+						Function: admin.NewMapPreview,
 					},
 					{
-						Name:  "new-map",
-						Value: "new-map",
+						Name:     "new-map",
+						Value:    "new-map",
+						Function: admin.NewMap,
 					},
 					{
-						Name:  "update-factorio",
-						Value: "update-factorio",
+						Name:     "update-factorio",
+						Value:    "update-factorio",
+						Function: admin.UpdateFactorio,
 					},
 					{
-						Name:  "update-mods",
-						Value: "update-mods",
+						Name:     "update-mods",
+						Value:    "update-mods",
+						Function: admin.UpdateMods,
 					},
 					{
-						Name:  "archive-map",
-						Value: "archive-map",
+						Name:     "archive-map",
+						Value:    "archive-map",
+						Function: admin.ArchiveMap,
 					},
 					{
-						Name:  "install-factorio",
-						Value: "install-factorio",
+						Name:     "install-factorio",
+						Value:    "install-factorio",
+						Function: admin.InstallFact,
 					},
 				},
 			},
@@ -285,7 +294,6 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    0,
 				MaxValue:    23,
-				Required:    false,
 			},
 			{
 				Name:        "end-hour",
@@ -293,13 +301,11 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    0,
 				MaxValue:    23,
-				Required:    false,
 			},
 			{
 				Name:        "enabled",
 				Description: "hour limits enabled",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Required:    false,
 			},
 		},
 	},
@@ -355,7 +361,6 @@ var cmds = []glob.CommandData{
 				Name:        "ban-reason",
 				Description: "reason for ban",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 			},
 		},
 	},
@@ -370,13 +375,11 @@ var cmds = []glob.CommandData{
 				Name:        "list",
 				Description: "list ALL save files",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Required:    false,
 			},
 			{
 				Name:        "load",
 				Description: "specify a save file to load",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 			},
 		},
 	},
@@ -392,7 +395,6 @@ var cmds = []glob.CommandData{
 				Name:        "list-now",
 				Description: "Press ENTER or RETURN to display the list of mods.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Required:    false,
 			},
 		},
 	},
@@ -406,7 +408,6 @@ var cmds = []glob.CommandData{
 				Name:        "options",
 				Description: "verbose shows all settings/info.",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 				Choices: []glob.ChoiceData{
 					{
 						Name:  "verbose",
@@ -440,14 +441,12 @@ var cmds = []glob.CommandData{
 				Name:        "vote-now",
 				Description: "Press ENTER or RETURN to open the voting box.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Required:    false,
 			},
 			{
 
 				Name:        "moderator",
 				Description: "moderator-only options",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 				Choices: []glob.ChoiceData{
 					{
 						Name:  "erase-all",
@@ -476,7 +475,6 @@ var cmds = []glob.CommandData{
 				Name:        "pause-now",
 				Description: "Pauses map while you connect, expires after 3 mins.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Required:    false,
 			},
 		},
 	},
@@ -583,7 +581,7 @@ func RegisterCommands(s *discordgo.Session) {
 				Options: []*discordgo.ApplicationCommandOption{},
 			}
 
-			for _, option := range o.AppCmd.Options {
+			for _, option := range CL[i].AppCmd.Options {
 				var choiceList []*discordgo.ApplicationCommandOptionChoice
 				for _, choice := range option.Choices {
 					choiceList = append(choiceList, &discordgo.ApplicationCommandOptionChoice{Name: choice.Name, Value: choice.Value})

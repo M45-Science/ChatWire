@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -25,47 +26,11 @@ import (
 )
 
 func Factorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	a := i.ApplicationCommandData()
-
-	for _, o := range a.Options {
-		if o.Type == discordgo.ApplicationCommandOptionString {
-			arg := o.StringValue()
-			if strings.EqualFold(arg, "start") {
-				startFact(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "stop") {
-				stopFact(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "new-map-preview") {
-				newMapPrev(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "new-map") {
-				makeNewMap(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "update-factorio") {
-				updateFact(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "update-mods") {
-				updateMods(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "archive-map") {
-				archiveMap(cmd, i)
-				return
-			} else if strings.EqualFold(arg, "install-factorio") {
-				installFactorio(i)
-			} else if strings.EqualFold(arg, "map-schedule") {
-				resetSchedule(cmd, i)
-			}
-		}
-	}
-}
-
-func resetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(i, "Status:", "Schedule reset.")
+	support.RunCommandOptions(cmd, i)
 }
 
 /* RandomMap locks FactorioLaunchLock */
-func newMapPrev(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func NewMapPreview(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}
@@ -166,7 +131,7 @@ func newMapPrev(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 /* Generate map */
-func makeNewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
@@ -270,7 +235,7 @@ func makeNewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 /* Archive map */
-func archiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	version := strings.Split(fact.FactorioVersion, ".")
 	vlen := len(version)
@@ -350,7 +315,7 @@ func archiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 /* Reboots Factorio only */
-func startFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func StartFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if !support.WithinHours() {
 		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
@@ -370,7 +335,7 @@ func startFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 /*  StopServer saves the map and closes Factorio.  */
-func stopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	glob.RelaunchThrottle = 0
 	fact.FactAutoStart = false
 
@@ -387,7 +352,7 @@ func stopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 /* Update Factorio  */
-func updateFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	argnum := len(args)
@@ -409,8 +374,82 @@ func updateFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 }
 
-func updateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)
+}
+
+func InstallFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+
+	disc.EphemeralResponse(i, "Status:", "Downloading Factorio server...")
+	resp, err := http.Get(constants.FactHeadlessURL)
+
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to download Factorio server."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	gzdata, err := io.ReadAll(resp.Body)
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to read the http response."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
+	}
+
+	var elist []*discordgo.MessageEmbed
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Status:", Description: "Downloaded, decompressing..."})
+	f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+	disc.FollowupResponse(i, &f)
+
+	data, err := unXZData(gzdata)
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "The gzip data appears to be invalid."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
+	}
+
+	dest := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix + cfg.Local.Callsign + "/"
+
+	err = untar(dest, data)
+	if err != nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to open tar archive."})
+		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		disc.FollowupResponse(i, &f)
+
+		cwlog.DoLogCW(err.Error())
+		return
+	}
+
+	err = os.Mkdir(dest+"factorio/saves", 0755)
+
+	if err == nil {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(i, &f)
+		return
+	} else {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Failure:", Description: "Factorio server install failed: " + err.Error()})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(i, &f)
+	}
+
 }
