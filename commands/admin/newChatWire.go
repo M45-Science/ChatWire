@@ -13,7 +13,7 @@ import (
 /* Reboots cw */
 func ForceReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	disc.EphemeralResponse(i, "Status:", "Rebooting!")
+	disc.EphemeralResponse(i, "Status:", "Force rebooting!")
 	glob.RelaunchThrottle = 0
 	fact.DoExit(false)
 }

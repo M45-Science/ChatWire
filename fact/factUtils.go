@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -537,8 +536,8 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
-		log.Fatal(err)
 		disc.EphemeralResponse(i, "Error:", "Unable to read saves directory.")
+		return
 	}
 
 	step := 1
@@ -799,15 +798,15 @@ func DoChangeMap(arg string) {
 		cfg.Local.Options.SkipReset = false
 		cfg.WriteLCfg()
 
-		go Map_reset("", false)
+		go Map_reset(false)
 		return
 	} else if strings.EqualFold(arg, "skip-reset") {
 		cfg.Local.Options.SkipReset = true
 		cfg.WriteLCfg()
 
-		buf := "VOTE: The next map reset will be skipped."
-		FactChat(buf)
-		CMS(cfg.Local.Channel.ChatChannel, buf)
+		msg := "VOTE: The next map reset will be skipped."
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
 		return
 	}
 
@@ -821,17 +820,22 @@ func DoChangeMap(arg string) {
 	saveStr := fmt.Sprintf("%v.zip", arg)
 	good, _ := CheckSave(path, saveStr, false)
 	if !good {
-		cwlog.DoLogCW("DoChangeMap: Attempted to load an invalid save.")
+		msg := "DoChangeMap: Attempted to load an invalid save."
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
 		return
 	}
 
 	FactAutoStart = false
-	QuitFactorio("Server rebooting for map vote...")
+	QuitFactorio("Server rebooting for map vote!")
 	WaitFactQuit()
 	selSaveName := path + "/" + saveStr
 	from, erra := os.Open(selSaveName)
 	if erra != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to open the selected save. Details: %s", erra))
+		msg := "An error occurred when attempting to open the selected save."
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
+		return
 	}
 	defer from.Close()
 
@@ -840,24 +844,32 @@ func DoChangeMap(arg string) {
 	if !os.IsNotExist(err) {
 		err = os.Remove(newmappath)
 		if err != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to remove the temp save file. Details: %s", err))
+			msg := "An error occurred when attempting to open the selected save."
+			LogCMS(cfg.Local.Channel.ChatChannel, msg)
+			FactChat(msg)
 			return
 		}
 	}
 	to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 	if errb != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the save file. Details: %s", errb))
+		msg := "An error occurred when attempting to create the save file. "
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
 		return
 	}
 	defer to.Close()
 
 	_, errc := io.Copy(to, from)
 	if errc != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write the save file. Details: %s", errc))
+		msg := "An error occurred when attempting to write the save file."
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
 		return
 	}
 
-	CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Loading save: %v", arg))
+	msg := fmt.Sprintf("Loading save: %v", arg)
+	LogCMS(cfg.Local.Channel.ChatChannel, msg)
+	FactChat(msg)
 	glob.RelaunchThrottle = 0
 	FactAutoStart = true
 

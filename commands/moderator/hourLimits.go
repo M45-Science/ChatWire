@@ -40,6 +40,6 @@ func ConfigHours(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		disc.EphemeralResponse(i, "Status:", buf)
 		cfg.WriteLCfg()
 	} else {
-		disc.EphemeralResponse(i, "Error:", "You didn't supply any options!")
+		disc.EphemeralResponse(i, "Error:", "Didn't find any valid options!")
 	}
 }

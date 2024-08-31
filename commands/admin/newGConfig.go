@@ -123,5 +123,7 @@ func GConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		} else {
 			disc.EphemeralResponse(i, "Error:", "Unable to save cw-global, check file permissions.")
 		}
+	} else {
+		disc.EphemeralResponse(i, "Error:", "Unable to find any matching options.")
 	}
 }

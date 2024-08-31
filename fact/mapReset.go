@@ -20,7 +20,6 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/sclean"
 )
 
 func GetMapTypeNum(mapt string) int {
@@ -47,58 +46,44 @@ func GetMapTypeName(num int) string {
 }
 
 /* Generate map */
-func Map_reset(data string, doReport bool) {
+func Map_reset(doReport bool) {
 
 	/* Get Factorio version, for archive folder name */
 	version := strings.Split(FactorioVersion, ".")
 	vlen := len(version)
 	if vlen < 3 {
-		buf := "Unable to determine Factorio version."
-		cwlog.DoLogCW(buf)
-		if doReport {
-			CMS(cfg.Local.Channel.ChatChannel, buf)
-		}
+		msg := "Unable to determine Factorio version, not resetting map."
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
 		return
 	}
 
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
-		if data != "" {
-			if !doReport {
 
-				//Silence messages if we are skipping
-				if cfg.Local.Options.SkipReset {
-					return
-				}
-			}
-			CMS(cfg.Local.Channel.ChatChannel, sclean.EscapeDiscordMarkdown(data))
-			FactChat(AddFactColor("orange", data))
-			QueueReload = false      //Skip queued reboot
-			DoUpdateFactorio = false //Skip queued updates
-			return
-		} else {
-
-			/* Turn off skip reset flag regardless of reset reason */
-			if cfg.Local.Options.SkipReset {
-				cfg.Local.Options.SkipReset = false
-				cfg.WriteLCfg()
-
-				/*Don't reset if this is an automatic reset, otherwise proceed. */
-				if !doReport {
-					return
-				}
-			}
-			CMS(cfg.Local.Channel.ChatChannel, "Stopping server, for map reset.")
-
+		/* Turn off skip reset flag regardless of reset reason */
+		if cfg.Local.Options.SkipReset {
 			cfg.Local.Options.SkipReset = false
-			QueueReload = false      //Skip queued reboot
-			DoUpdateFactorio = false //Skip queued updates
 			cfg.WriteLCfg()
 
-			FactAutoStart = false
-			QuitFactorio("Server rebooting for map reset...")
+			/*Don't reset if this is an automatic reset, otherwise proceed. */
+			if !doReport {
+				return
+			}
 		}
+
+		msg := "Stopping server for map reset!"
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		FactChat(msg)
+
+		cfg.Local.Options.SkipReset = false
+		QueueReload = false      //Skip queued reboot
+		DoUpdateFactorio = false //Skip queued updates
+		cfg.WriteLCfg()
+
+		FactAutoStart = false
+		QuitFactorio("Server rebooting for map reset!!!")
 	}
 
 	/* Wait for server to stop if running */
@@ -124,8 +109,7 @@ func Map_reset(data string, doReport bool) {
 		if erra != nil {
 
 			buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
-			cwlog.DoLogCW(buf)
-			CMS(cfg.Local.Channel.ChatChannel, buf)
+			LogCMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 		defer from.Close()
@@ -156,8 +140,7 @@ func Map_reset(data string, doReport bool) {
 		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 		if errb != nil {
 			buf := fmt.Sprintf("An error occurred when attempting to create the map archive file: %s", errb)
-			cwlog.DoLogCW(buf)
-			CMS(cfg.Local.Channel.ChatChannel, buf)
+			LogCMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 		defer to.Close()
@@ -165,13 +148,12 @@ func Map_reset(data string, doReport bool) {
 		_, errc := io.Copy(to, from)
 		if errc != nil {
 			buf := fmt.Sprintf("An error occurred when attempting to write the map archive file: %s", errc)
-			cwlog.DoLogCW(buf)
-			CMS(cfg.Local.Channel.ChatChannel, buf)
+			LogCMS(cfg.Local.Channel.ChatChannel, buf)
 			return
 		}
 
 		buf := fmt.Sprintf("Map archived as: %s", newmapurl)
-		CMS(cfg.Local.Channel.ChatChannel, buf)
+		LogCMS(cfg.Local.Channel.ChatChannel, buf)
 	}
 
 	genpath := cfg.Global.Paths.Folders.ServersRoot +
@@ -198,6 +180,9 @@ func Map_reset(data string, doReport bool) {
 		ourseed = cfg.Local.Settings.Seed
 		cfg.Local.Settings.Seed = 0
 		cfg.WriteLCfg()
+
+		msg := fmt.Sprintf("Using custom map seed: %v", cfg.Local.Settings.Seed)
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
 	}
 
 	MapPreset := cfg.Local.Settings.MapPreset
@@ -205,11 +190,10 @@ func Map_reset(data string, doReport bool) {
 	if strings.EqualFold(MapPreset, "error") {
 		buf := "Invalid map preset."
 		cwlog.DoLogCW(buf)
-		CMS(cfg.Local.Channel.ChatChannel, buf)
 		return
 	}
 
-	CMS(cfg.Local.Channel.ChatChannel, "Generating map...")
+	LogCMS(cfg.Local.Channel.ChatChannel, "Generating map...")
 
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
@@ -292,8 +276,7 @@ func Map_reset(data string, doReport bool) {
 					cwlog.DoLogCW(err.Error())
 				} else {
 					buf := "Installed new mod-settings.dat"
-					cwlog.DoLogCW(buf)
-					CMS(cfg.Local.Channel.ChatChannel, buf)
+					LogCMS(cfg.Local.Channel.ChatChannel, buf)
 				}
 			}
 
@@ -310,28 +293,26 @@ func Map_reset(data string, doReport bool) {
 						err = os.Remove(modPath + modName)
 						if err != nil {
 							buf := fmt.Sprintf("Failed to remove mod: %v", modName)
-							cwlog.DoLogCW(buf)
-							CMS(cfg.Local.Channel.ChatChannel, buf)
+							LogCMS(cfg.Local.Channel.ChatChannel, buf)
 						} else {
 							buf := fmt.Sprintf("Removed mod: %v", modName)
-							cwlog.DoLogCW(buf)
-							CMS(cfg.Local.Channel.ChatChannel, buf)
+							LogCMS(cfg.Local.Channel.ChatChannel, buf)
 						}
 					} else {
 						buf := "Mod queue: incorrect file permissions."
-						cwlog.DoLogCW(buf)
-						CMS(cfg.Local.Channel.ChatChannel, buf)
+						LogCMS(cfg.Local.Channel.ChatChannel, buf)
 					}
 				} else {
 
 					/* Otherwise, install new mod */
 					err := os.Rename(qPath+f.Name(), modPath+f.Name())
 					if err != nil {
-						cwlog.DoLogCW(err.Error())
+						msg := fmt.Sprintf("Unable to install mod: %v", f.Name())
+						LogCMS(cfg.Local.Channel.ChatChannel, msg)
+
 					} else {
 						buf := fmt.Sprintf("Installed mod: %v", f.Name())
-						cwlog.DoLogCW(buf)
-						CMS(cfg.Local.Channel.ChatChannel, buf)
+						LogCMS(cfg.Local.Channel.ChatChannel, buf)
 					}
 				}
 			}
@@ -342,6 +323,6 @@ func Map_reset(data string, doReport bool) {
 	VoidAllVotes() /* Void all votes */
 	WriteVotes()
 
-	CMS(cfg.Local.Channel.ChatChannel, "Map reset complete, rebooting.")
+	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, rebooting.")
 	DoExit(false)
 }

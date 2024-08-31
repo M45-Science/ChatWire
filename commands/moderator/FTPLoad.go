@@ -75,7 +75,7 @@ func MakeFTPFolders() {
 }
 
 /* Load a different save-game */
-func ShowMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func ListMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}

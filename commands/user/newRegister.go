@@ -19,7 +19,7 @@ import (
 func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if !fact.FactIsRunning {
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running."}
+		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running, sorry!"}
 		disc.InteractionResponse(i, embed)
 		return
 	}
@@ -71,7 +71,7 @@ func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	var elist []*discordgo.MessageEmbed
-	elist = append(elist, &discordgo.MessageEmbed{Title: "How to complete registration:", Description: buf})
+	elist = append(elist, &discordgo.MessageEmbed{Title: "READ CAREFULLY!", Description: buf})
 
 	//1 << 6 is ephemeral/private, don't use disc.EphemeralResponse (logged)
 	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}

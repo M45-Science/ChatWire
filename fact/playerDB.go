@@ -41,7 +41,7 @@ func WatchDatabaseFile() {
 		initialStat, erra := os.Stat(filePath)
 
 		if erra != nil {
-			cwlog.DoLogCW("WatchDatabaseFile: stat")
+			//cwlog.DoLogCW("WatchDatabaseFile: stat")
 			time.Sleep(time.Minute)
 			continue
 		}
@@ -51,7 +51,7 @@ func WatchDatabaseFile() {
 
 			stat, errb := os.Stat(filePath)
 			if errb != nil {
-				cwlog.DoLogCW("WatchDatabaseFile: restat")
+				//cwlog.DoLogCW("WatchDatabaseFile: restat")
 				break
 			}
 

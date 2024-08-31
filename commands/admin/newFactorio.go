@@ -31,7 +31,7 @@ func NewMapPreview(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 	if fact.FactorioBooted || fact.FactIsRunning {
-		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
+		buf := "Factorio is currently running. You must stop factorio first."
 		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}
@@ -130,7 +130,7 @@ func NewMapPreview(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
-		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
+		buf := "Factorio is currently running. You must stop factorio first."
 		disc.EphemeralResponse(i, "Error:", buf)
 		return
 	}

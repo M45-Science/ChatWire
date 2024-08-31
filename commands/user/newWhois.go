@@ -87,7 +87,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 					count++
 				}
 			}
-			if count <= 0 {
+			if count == 0 {
 				buf = "No results."
 			}
 

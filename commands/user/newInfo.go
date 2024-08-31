@@ -141,10 +141,6 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			}
 		}
 	}
-	/* modStr := strings.Join(fact.ModList, ",")
-	if modStr != constants.Unknown && modStr != "" {
-		buf = buf + "\nLoaded mods: " + modStr + "\n"
-	} */
 
 	/*************************
 	 * Tick history

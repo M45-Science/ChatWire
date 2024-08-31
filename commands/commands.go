@@ -345,17 +345,17 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "change-map",
-		Description: "Load a save, lists last 25.",
+		Description: "Load a save. Lists last 25 in quick-load drop-down menu if no extra options are chosen.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
 				Name:        "list",
-				Description: "list ALL save files",
+				Description: "Print out a list of all save files.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
 				Name:        "load",
-				Description: "specify a save file to load",
+				Description: "Manually enter a map name to load.",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 		},
@@ -367,15 +367,8 @@ var cmds = []glob.CommandData{
 		Name:        "list-mods",
 		Description: "Show list of mod files",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []glob.OptionData{
-			{
-				Name:        "list-now",
-				Description: "Press ENTER or RETURN to display the list of mods.",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-			},
-		},
 	},
-		Function: moderator.ShowMods},
+		Function: moderator.ListMods},
 	{AppCmd: glob.AppCmdData{
 		Name:        "info",
 		Description: "Displays status and settings of the server.",

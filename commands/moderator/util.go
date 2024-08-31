@@ -78,7 +78,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "primary-server",
 		ShortDesc: "Primary Server",
-		Desc:      "Specify a server that handles global commands.",
+		Desc:      "Specify a server callsign to handle all global commands.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 2,
@@ -90,7 +90,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "report-channel",
 		ShortDesc: "Report Channel",
-		Desc:      "Channel for user reports.",
+		Desc:      "Channel-ID for user reports.",
 		Type:      TYPE_CHANNEL,
 
 		SData: &cfg.Global.Discord.ReportChannel,
@@ -98,7 +98,7 @@ var GSettingList = []SettingListData{
 	{
 		Name:      "announce-channel",
 		ShortDesc: "Announce Channel",
-		Desc:      "Channel for announcements.",
+		Desc:      "Channel-ID for announcements.",
 		Type:      TYPE_CHANNEL,
 
 		SData: &cfg.Global.Discord.AnnounceChannel,
