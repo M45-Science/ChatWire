@@ -100,25 +100,36 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Choices: []glob.ChoiceData{
 					{
-						Name: "monday",
+						Name:  "monday",
+						Value: "MON",
 					},
 					{
-						Name: "tuesday",
+						Name:  "tuesday",
+						Value: "TUE",
 					},
 					{
-						Name: "wednesday",
+						Name:  "wednesday",
+						Value: "WED",
 					},
 					{
-						Name: "thursday",
+						Name:  "thursday",
+						Value: "THU",
 					},
 					{
-						Name: "friday",
+						Name:  "friday",
+						Value: "FRI",
 					},
 					{
-						Name: "saturday",
+						Name:  "saturday",
+						Value: "SAT",
 					},
 					{
-						Name: "sunday",
+						Name:  "sunday",
+						Value: "SUN",
+					},
+					{
+						Name:  "default",
+						Value: "",
 					},
 				},
 			},
