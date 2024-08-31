@@ -154,7 +154,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	/* Register discord slash commands */
 	go commands.RegisterCommands(s)
 	/* Message and command hooks */
-	s.AddHandler(MessageCreate)
+	s.AddHandler(handleDiscordMessages)
 	s.AddHandler(commands.SlashCommand)
 
 	/* Update the string for the channel name and topic */

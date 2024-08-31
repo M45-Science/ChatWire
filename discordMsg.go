@@ -14,7 +14,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	/* Ignore messages from self */
 	if m.Author.ID == s.State.User.ID {
