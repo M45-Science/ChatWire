@@ -105,7 +105,6 @@ type CommandData struct {
 	PrimaryOnly bool
 	Disabled    bool
 	AppCmd      AppCmdData
-	DiscCmd     *discordgo.ApplicationCommand
 }
 
 type OptionData struct {

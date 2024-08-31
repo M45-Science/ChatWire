@@ -9,6 +9,19 @@ import (
 	"ChatWire/glob"
 )
 
+// Fill in blank values from names
+func init() {
+	for c, command := range cmds {
+		for o, option := range command.AppCmd.Options {
+			for ch, choice := range option.Choices {
+				if choice.Value == nil {
+					cmds[c].AppCmd.Options[o].Choices[ch].Value = filterName(choice.Name)
+				}
+			}
+		}
+	}
+}
+
 var CL []glob.CommandData
 
 var cmds = []glob.CommandData{
@@ -26,22 +39,18 @@ var cmds = []glob.CommandData{
 				Choices: []glob.ChoiceData{
 					{
 						Name:     "reboot",
-						Value:    "reboot",
 						Function: admin.RebootCW,
 					},
 					{
 						Name:     "queue-reboot",
-						Value:    "queue-reboot",
 						Function: admin.QueReboot,
 					},
 					{
 						Name:     "force-reboot",
-						Value:    "force-reboot",
 						Function: admin.ForceReboot,
 					},
 					{
 						Name:     "reload-config",
-						Value:    "reload-config",
 						Function: admin.ReloadConfig,
 					},
 				},
@@ -60,36 +69,28 @@ var cmds = []glob.CommandData{
 				Required:    true,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "three-months",
-						Value: "three months",
+						Name: "three-months",
 					},
 					{
-						Name:  "two-months",
-						Value: "two-months",
+						Name: "two-months",
 					},
 					{
-						Name:  "monthly",
-						Value: "monthly",
+						Name: "monthly",
 					},
 					{
-						Name:  "twice-monthly",
-						Value: "twice-monthly",
+						Name: "twice-monthly",
 					},
 					{
-						Name:  "day-of-week",
-						Value: "day-of-week",
+						Name: "day-of-week",
 					},
 					{
-						Name:  "odd-dates",
-						Value: "odd-dates",
+						Name: "odd-dates",
 					},
 					{
-						Name:  "daily",
-						Value: "daily",
+						Name: "daily",
 					},
 					{
-						Name:  "no-reset",
-						Value: "no-reset",
+						Name: "no-reset",
 					},
 				},
 			},
@@ -99,36 +100,25 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "monday",
-						Value: "MON",
+						Name: "monday",
 					},
 					{
-						Name:  "tuesday",
-						Value: "TUE",
+						Name: "tuesday",
 					},
 					{
-						Name:  "wednesday",
-						Value: "WED",
+						Name: "wednesday",
 					},
 					{
-						Name:  "thursday",
-						Value: "THU",
+						Name: "thursday",
 					},
 					{
-						Name:  "friday",
-						Value: "FRI",
+						Name: "friday",
 					},
 					{
-						Name:  "saturday",
-						Value: "SAT",
+						Name: "saturday",
 					},
 					{
-						Name:  "sunday",
-						Value: "SUN",
-					},
-					{
-						Name:  "default",
-						Value: "",
+						Name: "sunday",
 					},
 				},
 			},
@@ -162,42 +152,34 @@ var cmds = []glob.CommandData{
 				Choices: []glob.ChoiceData{
 					{
 						Name:     "start",
-						Value:    "start",
 						Function: admin.StartFact,
 					},
 					{
 						Name:     "stop",
-						Value:    "stop",
 						Function: admin.StopFact,
 					},
 					{
 						Name:     "new-map-preview",
-						Value:    "new-map-preview",
 						Function: admin.NewMapPreview,
 					},
 					{
 						Name:     "new-map",
-						Value:    "new-map",
 						Function: admin.NewMap,
 					},
 					{
 						Name:     "update-factorio",
-						Value:    "update-factorio",
 						Function: admin.UpdateFactorio,
 					},
 					{
 						Name:     "update-mods",
-						Value:    "update-mods",
 						Function: admin.UpdateMods,
 					},
 					{
 						Name:     "archive-map",
-						Value:    "archive-map",
 						Function: admin.ArchiveMap,
 					},
 					{
 						Name:     "install-factorio",
-						Value:    "install-factorio",
 						Function: admin.InstallFact,
 					},
 				},
@@ -225,20 +207,16 @@ var cmds = []glob.CommandData{
 				Required:    true,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "load-map",
-						Value: "load-map",
+						Name: "load-map",
 					},
 					{
-						Name:  "load-mod",
-						Value: "load-mod",
+						Name: "load-mod",
 					},
 					{
-						Name:  "load-modpack",
-						Value: "load-modpack",
+						Name: "load-modpack",
 					},
 					{
-						Name:  "load-settings",
-						Value: "load-settings",
+						Name: "load-settings",
 					},
 				},
 			},
@@ -398,8 +376,7 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "verbose",
-						Value: "verbose",
+						Name: "verbose",
 					},
 				},
 			},
@@ -437,16 +414,13 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Choices: []glob.ChoiceData{
 					{
-						Name:  "erase-all",
-						Value: "erase-all",
+						Name: "erase-all",
 					},
 					{
-						Name:  "void-all",
-						Value: "void-all",
+						Name: "void-all",
 					},
 					{
-						Name:  "show-all",
-						Value: "show-all",
+						Name: "show-all",
 					},
 				},
 			},

@@ -40,6 +40,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 		data := i.MessageComponentData()
 
 		for _, c := range data.Values {
+			//TODO clean these two options up
 			if strings.EqualFold(data.CustomID, "ChangeMap") {
 				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
@@ -90,7 +91,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 
 				if c.AdminOnly {
 					if disc.CheckAdmin(i) {
-						c.Function(&c, i)
+						RunCommand(&c, i)
 						var options []string
 						for _, o := range c.AppCmd.Options {
 							options = append(options, o.Name)
@@ -105,7 +106,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
-						c.Function(&c, i)
+						RunCommand(&c, i)
 						return
 					} else {
 						disc.EphemeralResponse(i, "Error", "You must be a moderator to use this command.")
@@ -114,15 +115,19 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 				} else {
 					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
-					if c.Function == nil {
-						support.RunCommandOptions(&c, i)
-					} else {
-						c.Function(&c, i)
-					}
+					RunCommand(&c, i)
 					return
 				}
 			}
 		}
+	}
+}
+
+func RunCommand(c *glob.CommandData, i *discordgo.InteractionCreate) {
+	if c.Function == nil {
+		support.RunCommandOptions(c, i)
+	} else {
+		c.Function(c, i)
 	}
 }
 
@@ -208,13 +213,12 @@ func RegisterCommands(s *discordgo.Session) {
 					Name: option.Name, Description: option.Description, Type: option.Type, Required: option.Required, MinValue: glob.Ptr(option.MinValue), MaxValue: option.MaxValue, Choices: choiceList})
 			}
 
-			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
+			_, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
 			if err != nil {
 				log.Println("Failed to create command: ",
 					CL[i].AppCmd.Name, ": ", err)
 				continue
 			}
-			CL[i].DiscCmd = cmd
 			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", CL[i].AppCmd.Name))
 		}
 	}
