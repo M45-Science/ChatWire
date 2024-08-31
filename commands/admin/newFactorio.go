@@ -25,10 +25,6 @@ import (
 	"ChatWire/support"
 )
 
-func Factorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	support.RunCommandOptions(cmd, i)
-}
-
 /* RandomMap locks FactorioLaunchLock */
 func NewMapPreview(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {

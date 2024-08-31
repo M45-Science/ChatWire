@@ -10,10 +10,6 @@ import (
 	"ChatWire/support"
 )
 
-func ChatWire(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	support.RunCommandOptions(cmd, i)
-}
-
 /* Reboots cw */
 func ForceReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 

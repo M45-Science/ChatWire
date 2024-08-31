@@ -8,7 +8,6 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-	"ChatWire/support"
 	"archive/zip"
 	"encoding/json"
 	"fmt"
@@ -73,10 +72,6 @@ func MakeFTPFolders() {
 			cwlog.DoLogCW("Unable to create FTP dir: " + dirPath)
 		}
 	}
-}
-
-func FTPLoad(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	support.RunCommandOptions(cmd, i)
 }
 
 /* Load a different save-game */
