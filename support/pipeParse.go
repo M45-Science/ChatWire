@@ -50,7 +50,7 @@ var chatHandles = []funcList{
 }
 
 type handleData struct {
-	line, lowerLine, timecode, datestamp                                       string
+	line, lowerLine, noTimecode, noDatestamp                                   string
 	lineList, lowerLineList, noTimecodeList, noDatestampList, words            []string
 	numWords, noDatestampListLen, lowerListLen, noTimecodeListLen, lineListLen int
 }
@@ -99,7 +99,7 @@ func HandleChat() {
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(input.datestamp, "[CHAT]") && !strings.HasPrefix(input.datestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
+					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
 
 						/*
 						 * No-chat handles
@@ -146,14 +146,14 @@ func preProcessFactorioOutput(line string) *handleData {
 	trimmed := strings.TrimLeft(line, " ")
 	words := strings.Split(trimmed, " ")
 	numWords := len(words)
-	timecode := constants.Unknown
-	datestamp := constants.Unknown
+	noTimecode := constants.Unknown
+	noDatestamp := constants.Unknown
 
 	if numWords > 1 {
-		timecode = strings.Join(words[1:], " ")
+		noTimecode = strings.Join(words[1:], " ")
 	}
 	if numWords > 2 {
-		datestamp = strings.Join(words[2:], " ")
+		noDatestamp = strings.Join(words[2:], " ")
 	}
 
 	/* Separate args -- for use with script output */
@@ -161,11 +161,11 @@ func preProcessFactorioOutput(line string) *handleData {
 	lineListLen := len(lineList)
 
 	/* Separate args, no timecode -- for use with Factorio subsystem output */
-	noTimecodeList := strings.Split(timecode, " ")
+	noTimecodeList := strings.Split(noTimecode, " ")
 	noTimecodeListLen := len(noTimecodeList)
 
 	/* Separate args, no datestamp -- for use with normal Factorio log output */
-	noDatestampList := strings.Split(datestamp, " ")
+	noDatestampList := strings.Split(noDatestamp, " ")
 	noDatestampListLen := len(noDatestampList)
 
 	/* Lowercase converted */
@@ -174,7 +174,7 @@ func preProcessFactorioOutput(line string) *handleData {
 	lowerCaseListlen := len(lowerCaseList)
 
 	return &handleData{
-		line, lowerCaseLine, timecode, datestamp,
+		line, lowerCaseLine, noTimecode, noDatestamp,
 		lineList, lowerCaseList, noTimecodeList, noDatestampList, words,
 		numWords, noDatestampListLen, lowerCaseListlen, noTimecodeListLen, lineListLen,
 	}
