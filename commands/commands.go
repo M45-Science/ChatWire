@@ -558,6 +558,7 @@ func RegisterCommands(s *discordgo.Session) {
 			}
 			time.Sleep(constants.ApplicationCommandSleep)
 
+			// TODO not working
 			if strings.EqualFold(o.AppCmd.Name, "config-server") {
 				LinkConfigData(i, false)
 			}
@@ -623,6 +624,7 @@ func filterDesc(desc string) string {
 	}
 }
 
+// TODO not working
 func LinkConfigData(p int, gconfig bool) {
 
 	var selection []moderator.SettingListData
