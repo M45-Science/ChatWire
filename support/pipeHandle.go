@@ -1000,7 +1000,6 @@ func handleChatMsg(input *handleData) bool {
 					var bbuf string
 
 					//Automatically ban people for chat spam
-					//TODO: Make this configurable
 					if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
 						glob.ChatterSpamScore[pname]++
 						glob.ChatterList[pname] = time.Now()
