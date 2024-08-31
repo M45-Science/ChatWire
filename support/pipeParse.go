@@ -50,9 +50,9 @@ var chatHandles = []funcList{
 }
 
 type handleData struct {
-	line, lowerLine, noTimecode, noDatestamp                                   string
-	lineList, lowerLineList, noTimecodeList, noDatestampList, words            []string
-	numWords, noDatestampListLen, lowerListLen, noTimecodeListLen, lineListLen int
+	line, lowerLine, noTimecode, noDatestamp                                          string
+	wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords            []string
+	trimmedWordsLen, noDatestampListLen, lowerListLen, noTimecodeListLen, wordListLen int
 }
 
 /*  Chat pipes in-game chat to Discord, and handles log events */
@@ -144,21 +144,21 @@ func preProcessFactorioOutput(line string) *handleData {
 	 */
 
 	trimmed := strings.TrimLeft(line, " ")
-	words := strings.Split(trimmed, " ")
-	numWords := len(words)
+	trimmedWords := strings.Split(trimmed, " ")
+	trimmedWordsLen := len(trimmedWords)
 	noTimecode := constants.Unknown
 	noDatestamp := constants.Unknown
 
-	if numWords > 1 {
-		noTimecode = strings.Join(words[1:], " ")
+	if trimmedWordsLen > 1 {
+		noTimecode = strings.Join(trimmedWords[1:], " ")
 	}
-	if numWords > 2 {
-		noDatestamp = strings.Join(words[2:], " ")
+	if trimmedWordsLen > 2 {
+		noDatestamp = strings.Join(trimmedWords[2:], " ")
 	}
 
 	/* Separate args -- for use with script output */
-	lineList := strings.Split(line, " ")
-	lineListLen := len(lineList)
+	wordList := strings.Split(line, " ")
+	wordListLen := len(wordList)
 
 	/* Separate args, no timecode -- for use with Factorio subsystem output */
 	noTimecodeList := strings.Split(noTimecode, " ")
@@ -169,13 +169,13 @@ func preProcessFactorioOutput(line string) *handleData {
 	noDatestampListLen := len(noDatestampList)
 
 	/* Lowercase converted */
-	lowerCaseLine := strings.ToLower(line)
-	lowerCaseList := strings.Split(lowerCaseLine, " ")
-	lowerCaseListlen := len(lowerCaseList)
+	lowerLine := strings.ToLower(line)
+	lowerWordList := strings.Split(lowerLine, " ")
+	lowerWordListLen := len(lowerWordList)
 
 	return &handleData{
-		line, lowerCaseLine, noTimecode, noDatestamp,
-		lineList, lowerCaseList, noTimecodeList, noDatestampList, words,
-		numWords, noDatestampListLen, lowerCaseListlen, noTimecodeListLen, lineListLen,
+		line, lowerLine, noTimecode, noDatestamp,
+		wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords,
+		trimmedWordsLen, noDatestampListLen, lowerWordListLen, noTimecodeListLen, wordListLen,
 	}
 }

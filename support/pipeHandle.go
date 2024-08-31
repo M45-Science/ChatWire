@@ -65,14 +65,14 @@ func handleGameTime(input *handleData) bool {
 		if input.lowerListLen > 1 {
 
 			for x := 0; x < input.lowerListLen; x++ {
-				if strings.Contains(input.lowerLineList[x], "day") {
-					day, _ = strconv.Atoi(input.lowerLineList[x-1])
-				} else if strings.Contains(input.lowerLineList[x], "hour") {
-					hour, _ = strconv.Atoi(input.lowerLineList[x-1])
-				} else if strings.Contains(input.lowerLineList[x], "minute") {
-					minute, _ = strconv.Atoi(input.lowerLineList[x-1])
-				} else if strings.Contains(input.lowerLineList[x], "second") {
-					second, _ = strconv.Atoi(input.lowerLineList[x-1])
+				if strings.Contains(input.lowerWordList[x], "day") {
+					day, _ = strconv.Atoi(input.lowerWordList[x-1])
+				} else if strings.Contains(input.lowerWordList[x], "hour") {
+					hour, _ = strconv.Atoi(input.lowerWordList[x-1])
+				} else if strings.Contains(input.lowerWordList[x], "minute") {
+					minute, _ = strconv.Atoi(input.lowerWordList[x-1])
+				} else if strings.Contains(input.lowerWordList[x], "second") {
+					second, _ = strconv.Atoi(input.lowerWordList[x-1])
 				}
 			}
 
@@ -123,7 +123,7 @@ func handlePlayerReport(input *handleData) bool {
 	 ******************/
 	if strings.HasPrefix(input.line, "[REPORT]") {
 		cwlog.DoLogGame(input.line)
-		if input.lineListLen >= 3 {
+		if input.wordListLen >= 3 {
 			pingStr := ""
 			if cfg.Global.Discord.SusPingRole != "" {
 				pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
@@ -131,10 +131,10 @@ func handlePlayerReport(input *handleData) bool {
 			buf := ""
 			if cfg.GetGameLogURL() == "" {
 				buf = fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\n%v",
-					cfg.Local.Callsign+"-"+cfg.Local.Name, input.lineList[1], strings.Join(input.lineList[2:], " "), pingStr)
+					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), pingStr)
 			} else {
 				buf = fmt.Sprintf("**PLAYER REPORT:**\nServer: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
-					cfg.Local.Callsign+"-"+cfg.Local.Name, input.lineList[1], strings.Join(input.lineList[2:], " "), cfg.GetGameLogURL(), pingStr)
+					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), cfg.GetGameLogURL(), pingStr)
 			}
 			fact.CMS(cfg.Global.Discord.ReportChannel, buf)
 		}
@@ -149,13 +149,13 @@ func handlePlayerRegister(input *handleData) bool {
 	 * ACCESS
 	 ******************/
 	if strings.HasPrefix(input.line, "[ACCESS]") {
-		if input.lineListLen >= 4 {
+		if input.wordListLen >= 4 {
 			/* Format:
 			 * print("[ACCESS] " .. ptype .. " " .. player.name .. " " .. param.parameter) */
 
-			ptype := input.lineList[1]
-			pname := input.lineList[2]
-			code := strings.Join(input.lineList[3:input.lineListLen], "")
+			ptype := input.wordList[1]
+			pname := input.wordList[2]
+			code := strings.Join(input.wordList[3:input.wordListLen], "")
 
 			/* Filter non-letters */
 			inputCode := sclean.AlphaOnly(code)
@@ -276,8 +276,8 @@ func handleOnlinePlayers(input *handleData) bool {
 	 **********************************************************/
 	if strings.HasPrefix(input.line, "Online players") {
 
-		if input.lineListLen > 2 {
-			poc := strings.Join(input.lineList[2:], " ")
+		if input.wordListLen > 2 {
+			poc := strings.Join(input.wordList[2:], " ")
 			poc = strings.ReplaceAll(poc, "(", "")
 			poc = strings.ReplaceAll(poc, ")", "")
 			poc = strings.ReplaceAll(poc, ":", "")
@@ -401,12 +401,12 @@ func handleActMsg(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[ACT]") {
 
 		cwlog.DoLogGame(input.line)
-		if input.lineListLen > 2 {
+		if input.wordListLen > 2 {
 
-			pname := input.lineList[1]
-			action := input.lineList[2]
+			pname := input.wordList[1]
+			action := input.wordList[2]
 
-			words := input.lineList[3:]
+			words := input.wordList[3:]
 			numWords := len(words) - 1
 
 			if pname == "" {
@@ -492,8 +492,8 @@ func handleSoftModMsg(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[MSG]") {
 		cwlog.DoLogCW(input.line)
 
-		if input.lineListLen > 0 {
-			ctext := strings.Join(input.lineList[1:], " ")
+		if input.wordListLen > 0 {
+			ctext := strings.Join(input.wordList[1:], " ")
 
 			/* Clean strings */
 			cmess := sclean.UnicodeCleanup(ctext)
@@ -513,8 +513,8 @@ func handleSoftModMsg(input *handleData) bool {
 			fact.CMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` **%s**", fact.Gametime, cmess))
 		}
 
-		if input.lineListLen > 1 {
-			trustname := input.lineList[1]
+		if input.wordListLen > 1 {
+			trustname := input.wordList[1]
 
 			if trustname != "" {
 
@@ -618,8 +618,8 @@ func handleSVersion(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[SVERSION]") {
 		cwlog.DoLogCW(input.line)
 
-		if input.lineListLen > 0 {
-			glob.SoftModVersion = input.lineList[1]
+		if input.wordListLen > 0 {
+			glob.SoftModVersion = input.wordList[1]
 			glob.OnlineCommand = constants.SoftModOnlineCMD
 			cwlog.DoLogCW("Softmod detected: " + glob.SoftModVersion)
 			ConfigSoftMod()
@@ -690,8 +690,8 @@ func handleIncomingAnnounce(input *handleData) bool {
 	 * Announce incoming connections
 	 ********************************/
 	if strings.Contains(input.noTimecode, "Queuing ban recommendation check for user ") {
-		if input.numWords > 1 {
-			pName := input.words[input.numWords-1]
+		if input.trimmedWordsLen > 1 {
+			pName := input.trimmedWords[input.trimmedWordsLen-1]
 
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
@@ -942,14 +942,14 @@ func handleCrashes(input *handleData) bool {
 			}
 			/* Bad zip file */
 			if strings.Contains(input.noTimecode, "(Bad zip file)") {
-				if input.numWords > 6 {
-					if strings.HasSuffix(input.words[7], ".zip") || strings.HasSuffix(input.words[7], ".tmp.zip") {
-						err := os.Remove(input.words[7])
+				if input.trimmedWordsLen > 6 {
+					if strings.HasSuffix(input.trimmedWords[7], ".zip") || strings.HasSuffix(input.trimmedWords[7], ".tmp.zip") {
+						err := os.Remove(input.trimmedWords[7])
 						if err != nil {
-							cwlog.DoLogCW("Unable to remove bad zip file: " + input.words[7])
+							cwlog.DoLogCW("Unable to remove bad zip file: " + input.trimmedWords[7])
 							fact.FactAutoStart = false
 						} else {
-							cwlog.DoLogCW("Removed bad zip file: " + input.words[7])
+							cwlog.DoLogCW("Removed bad zip file: " + input.trimmedWords[7])
 						}
 						return true
 					}
