@@ -15,7 +15,7 @@ type funcList struct {
 	function func(input *handleData) bool
 }
 
-var nonChatHandles = []funcList{
+var noChatHandles = []funcList{
 	{function: handleDisconnect},
 	{function: handleGameTime},
 	{function: handleOnlinePlayers},
@@ -42,8 +42,6 @@ var softModHandles = []funcList{
 	{function: handleSoftModMsg},
 	{function: handlePlayerReport},
 	{function: handlePlayerRegister},
-	{function: handleIdiots},
-	{function: handleChatMsg},
 }
 
 var chatHandles = []funcList{
@@ -86,45 +84,7 @@ func HandleChat() {
 				/* We have input, server is alive */
 				fact.SetFactRunning(true)
 
-				/*
-				 * Timecode removal, split into words, save lengths
-				 */
-
-				trimmed := strings.TrimLeft(line, " ")
-				words := strings.Split(trimmed, " ")
-				numwords := len(words)
-				NoTC := constants.Unknown
-				NoDS := constants.Unknown
-				if numwords > 1 {
-					NoTC = strings.Join(words[1:], " ")
-				}
-				if numwords > 2 {
-					NoDS = strings.Join(words[2:], " ")
-				}
-
-				/* Separate args -- for use with script output */
-				lineList := strings.Split(line, " ")
-				lineListlen := len(lineList)
-
-				/* Separate args, notc -- for use with Factorio subsystem output */
-				NoTClist := strings.Split(NoTC, " ")
-				NoTClistlen := len(NoTClist)
-
-				/* Separate args, nods -- for use with normal Factorio log output */
-				NoDSlist := strings.Split(NoDS, " ")
-				NoDSlistlen := len(NoDSlist)
-
-				/* Lowercase converted */
-				lowerCaseLine := strings.ToLower(line)
-				lowerCaseList := strings.Split(lowerCaseLine, " ")
-				lowerCaseListlen := len(lowerCaseList)
-
-				//We pass this via pointer to all the handler functions
-				input := &handleData{
-					line, lowerCaseLine, NoTC, NoDS,
-					lineList, lowerCaseList, NoTClist, NoDSlist, words,
-					numwords, NoDSlistlen, lowerCaseListlen, NoTClistlen, lineListlen,
-				}
+				input := preProcessFactorioOutput(line)
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
@@ -140,19 +100,19 @@ func HandleChat() {
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(NoDS, "[CHAT]") && !strings.HasPrefix(NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
+					if !strings.HasPrefix(input.NoDS, "[CHAT]") && !strings.HasPrefix(input.NoDS, "[SHOUT]") && !strings.HasPrefix(line, "[CMD]") {
 
 						/*
-						 * Standard handles
+						 * No-chat handles
 						 */
-						for _, handle := range nonChatHandles {
+						for _, handle := range noChatHandles {
 							if handle.function(input) {
 								continue
 							}
 						}
 
 						/*
-						 * Softmod only
+						 * Soft-mod only
 						 */
 						if glob.SoftModVersion != constants.Unknown {
 							for _, handle := range softModHandles {
@@ -165,7 +125,7 @@ func HandleChat() {
 					} else {
 
 						/*
-						 * Non-chat only
+						 * Chat only
 						 */
 						for _, handle := range chatHandles {
 							if handle.function(input) {
@@ -176,5 +136,46 @@ func HandleChat() {
 				}
 			}
 		}
+	}
+}
+
+func preProcessFactorioOutput(line string) *handleData {
+	/*
+	 * Timecode removal, split into words, save lengths
+	 */
+
+	trimmed := strings.TrimLeft(line, " ")
+	words := strings.Split(trimmed, " ")
+	numwords := len(words)
+	NoTC := constants.Unknown
+	NoDS := constants.Unknown
+	if numwords > 1 {
+		NoTC = strings.Join(words[1:], " ")
+	}
+	if numwords > 2 {
+		NoDS = strings.Join(words[2:], " ")
+	}
+
+	/* Separate args -- for use with script output */
+	lineList := strings.Split(line, " ")
+	lineListlen := len(lineList)
+
+	/* Separate args, notc -- for use with Factorio subsystem output */
+	NoTClist := strings.Split(NoTC, " ")
+	NoTClistlen := len(NoTClist)
+
+	/* Separate args, nods -- for use with normal Factorio log output */
+	NoDSlist := strings.Split(NoDS, " ")
+	NoDSlistlen := len(NoDSlist)
+
+	/* Lowercase converted */
+	lowerCaseLine := strings.ToLower(line)
+	lowerCaseList := strings.Split(lowerCaseLine, " ")
+	lowerCaseListlen := len(lowerCaseList)
+
+	return &handleData{
+		line, lowerCaseLine, NoTC, NoDS,
+		lineList, lowerCaseList, NoTClist, NoDSlist, words,
+		numwords, NoDSlistlen, lowerCaseListlen, NoTClistlen, lineListlen,
 	}
 }
