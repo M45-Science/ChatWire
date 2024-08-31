@@ -3,13 +3,14 @@ package moderator
 import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
+	"ChatWire/glob"
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func ConfigHours(i *discordgo.InteractionCreate) {
+func ConfigHours(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	buf := ""

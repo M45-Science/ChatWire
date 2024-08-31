@@ -74,7 +74,7 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	commands.ClearCommands()
+	commands.DeregisterCommands()
 
 	_ = os.Remove("cw.lock")
 	fact.FactAutoStart = false

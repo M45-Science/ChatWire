@@ -24,48 +24,48 @@ import (
 	"ChatWire/support"
 )
 
-func Factorio(i *discordgo.InteractionCreate) {
+func Factorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	for _, o := range a.Options {
 		if o.Type == discordgo.ApplicationCommandOptionString {
 			arg := o.StringValue()
 			if strings.EqualFold(arg, "start") {
-				startFact(i)
+				startFact(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "stop") {
-				stopFact(i)
+				stopFact(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "new-map-preview") {
-				newMapPrev(i)
+				newMapPrev(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "new-map") {
-				makeNewMap(i)
+				makeNewMap(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "update-factorio") {
-				updateFact(i)
+				updateFact(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "update-mods") {
-				updateMods(i)
+				updateMods(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "archive-map") {
-				archiveMap(i)
+				archiveMap(cmd, i)
 				return
 			} else if strings.EqualFold(arg, "install-factorio") {
 				installFactorio(i)
 			} else if strings.EqualFold(arg, "map-schedule") {
-				resetSchedule(i)
+				resetSchedule(cmd, i)
 			}
 		}
 	}
 }
 
-func resetSchedule(i *discordgo.InteractionCreate) {
+func resetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(i, "Status:", "Schedule reset.")
 }
 
 /* RandomMap locks FactorioLaunchLock */
-func newMapPrev(i *discordgo.InteractionCreate) {
+func newMapPrev(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}
@@ -114,9 +114,9 @@ func newMapPrev(i *discordgo.InteractionCreate) {
 
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(args, " "))
 	cwlog.DoLogCW(lbuf)
-	cmd := exec.Command(fact.GetFactorioBinary(), args...)
+	run := exec.Command(fact.GetFactorioBinary(), args...)
 
-	out, aerr := cmd.CombinedOutput()
+	out, aerr := run.CombinedOutput()
 
 	if aerr != nil {
 		buf := fmt.Sprintf("An error occurred when attempting to generate the map preview: %s", aerr)
@@ -166,7 +166,7 @@ func newMapPrev(i *discordgo.InteractionCreate) {
 }
 
 /* Generate map */
-func makeNewMap(i *discordgo.InteractionCreate) {
+func makeNewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently, running. You must stop the game first. See /stop-factorio"
@@ -233,8 +233,8 @@ func makeNewMap(i *discordgo.InteractionCreate) {
 	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
 	cwlog.DoLogCW(lbuf)
 
-	cmd := exec.Command(fact.GetFactorioBinary(), factargs...)
-	out, aerr := cmd.CombinedOutput()
+	run := exec.Command(fact.GetFactorioBinary(), factargs...)
+	out, aerr := run.CombinedOutput()
 
 	if aerr != nil {
 		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
@@ -270,7 +270,7 @@ func makeNewMap(i *discordgo.InteractionCreate) {
 }
 
 /* Archive map */
-func archiveMap(i *discordgo.InteractionCreate) {
+func archiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	version := strings.Split(fact.FactorioVersion, ".")
 	vlen := len(version)
@@ -350,7 +350,7 @@ func archiveMap(i *discordgo.InteractionCreate) {
 }
 
 /* Reboots Factorio only */
-func startFact(i *discordgo.InteractionCreate) {
+func startFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if !support.WithinHours() {
 		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
@@ -370,7 +370,7 @@ func startFact(i *discordgo.InteractionCreate) {
 }
 
 /*  StopServer saves the map and closes Factorio.  */
-func stopFact(i *discordgo.InteractionCreate) {
+func stopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	glob.RelaunchThrottle = 0
 	fact.FactAutoStart = false
 
@@ -387,7 +387,7 @@ func stopFact(i *discordgo.InteractionCreate) {
 }
 
 /* Update Factorio  */
-func updateFact(i *discordgo.InteractionCreate) {
+func updateFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	var args []string = strings.Split("", " ")
 	argnum := len(args)
@@ -409,7 +409,7 @@ func updateFact(i *discordgo.InteractionCreate) {
 	}
 }
 
-func updateMods(i *discordgo.InteractionCreate) {
+func updateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)

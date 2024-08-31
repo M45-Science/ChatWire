@@ -21,34 +21,21 @@ import (
 	"ChatWire/sclean"
 )
 
-type Command struct {
-	Command       func(i *discordgo.InteractionCreate)
-	AppCmd        *discordgo.ApplicationCommand
-	ModeratorOnly bool
-	AdminOnly     bool
+var CL []glob.CommandData
 
-	PrimaryOnly bool
-	Disabled    bool
-}
-
-var CL []Command
-
-// var valOne float64 = 1.0
-var valZero float64 = 0.0
-
-var cmds = []Command{
+var cmds = []glob.CommandData{
 
 	/* Admin Commands */
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "chatwire",
 		Description: "Reboot/reload ChatWire.",
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "action",
 				Description: "DO NOT use these unless you are certain of what you are doing",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "reboot",
 						Value: "reboot",
@@ -69,17 +56,17 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.ChatWire, AdminOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: admin.ChatWire, AdminOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
 		Description: "Set a map reset schedule.",
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "preset",
 				Description: "How often to reset the map.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "three-months",
 						Value: "three months",
@@ -119,7 +106,7 @@ var cmds = []Command{
 				Description: "FOR DAY-OF-WEEK PRESET ONLY",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "monday",
 						Value: "MON",
@@ -158,7 +145,7 @@ var cmds = []Command{
 				Name:        "date",
 				Description: "For two-week or monthly schedules.",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    &valZero,
+				MinValue:    0,
 				MaxValue:    27,
 				Required:    false,
 			},
@@ -166,24 +153,24 @@ var cmds = []Command{
 				Name:        "hour",
 				Description: "Hour to reset. (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    &valZero,
+				MinValue:    0,
 				MaxValue:    23,
 				Required:    false,
 			},
 		},
 	},
-		Command: admin.SetSchedule, ModeratorOnly: true},
+		Function: admin.SetSchedule, ModeratorOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "factorio",
 		Description: "start/stop, install/update.",
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "action",
 				Description: "DO NOT use these unless you are certain of what you are doing!",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "start",
 						Value: "start",
@@ -220,26 +207,26 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: admin.Factorio, AdminOnly: true},
+		Function: admin.Factorio, AdminOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "config-global",
 		Description: "Settings for ALL maps/servers",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
+		Function: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "ftp-load",
 		Description: "(INCOMPLETE) load a map, mod or modpack from the FTP.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "choose-type",
 				Description: "Type of file to load from the FTP.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "load-map",
 						Value: "load-map",
@@ -260,12 +247,12 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.FTPLoad, ModeratorOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: moderator.FTPLoad, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "command",
 				Description: "factorio command to run",
@@ -274,29 +261,29 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.RCONCmd, ModeratorOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: moderator.RCONCmd, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "map-reset",
 		Description: "Force a map reset, will kick players.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: moderator.MapReset, ModeratorOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: moderator.MapReset, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "config-server",
 		Description: "Server settings and options.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: moderator.ConfigServer, ModeratorOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: moderator.ConfigServer, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "config-hours",
 		Description: "Hours map can be played (24-hour UTC)",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "start-hour",
 				Description: "hour to start server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    &valZero,
+				MinValue:    0,
 				MaxValue:    23,
 				Required:    false,
 			},
@@ -304,7 +291,7 @@ var cmds = []Command{
 				Name:        "end-hour",
 				Description: "hour to stop server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    &valZero,
+				MinValue:    0,
 				MaxValue:    23,
 				Required:    false,
 			},
@@ -316,12 +303,12 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.ConfigHours, ModeratorOnly: true},
+		Function: moderator.ConfigHours, ModeratorOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "player-level",
 		Description: "Ban, or sets a player's level.",
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "name",
 				Description: "Factorio name of player",
@@ -333,7 +320,7 @@ var cmds = []Command{
 				Description: "player level",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Required:    true,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "Moderator",
 						Value: 255,
@@ -372,13 +359,13 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.PlayerLevel, ModeratorOnly: true, PrimaryOnly: true},
+		Function: moderator.PlayerLevel, ModeratorOnly: true, PrimaryOnly: true},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "change-map",
 		Description: "Load a save, lists last 25.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "list",
 				Description: "list ALL save files",
@@ -393,14 +380,14 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.ChangeMap, ModeratorOnly: true},
+		Function: moderator.ChangeMap, ModeratorOnly: true},
 
 	/* PLAYER COMMMANDS -------------------- */
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "list-mods",
 		Description: "Show list of mod files",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "list-now",
 				Description: "Press ENTER or RETURN to display the list of mods.",
@@ -409,18 +396,18 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: moderator.ShowMods},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: moderator.ShowMods},
+	{AppCmd: glob.AppCmdData{
 		Name:        "info",
 		Description: "Displays status and settings of the server.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "options",
 				Description: "verbose shows all settings/info.",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "verbose",
 						Value: "verbose",
@@ -429,26 +416,26 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: user.Info},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: user.Info},
+	{AppCmd: glob.AppCmdData{
 		Name:        "modpack",
 		Description: "Creates a download link with all mods.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.ModPack},
+		Function: user.ModPack},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "players",
 		Description: "Lists players currently playing.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Players},
+		Function: user.Players},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "vote-map",
 		Description: "REGULARS/VET ONLY: Vote for a new/previous map. Requires TWO vote points.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "vote-now",
 				Description: "Press ENTER or RETURN to open the voting box.",
@@ -461,7 +448,7 @@ var cmds = []Command{
 				Description: "moderator-only options",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
+				Choices: []glob.ChoiceData{
 					{
 						Name:  "erase-all",
 						Value: "erase-all",
@@ -478,13 +465,13 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: user.VoteMap},
+		Function: user.VoteMap},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "pause-game",
 		Description: "REGULARS/VET ONLY: Use BEFORE connecting, pauses map while you connect.",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "pause-now",
 				Description: "Pauses map while you connect, expires after 3 mins.",
@@ -493,19 +480,19 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: user.PauseConnect},
+		Function: user.PauseConnect},
 
-	{AppCmd: &discordgo.ApplicationCommand{
+	{AppCmd: glob.AppCmdData{
 		Name:        "register",
 		Description: "Get a discord role, get access to commands.",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Register, PrimaryOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: user.Register, PrimaryOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "whois",
 		Description: "Get info about <player>",
 		Type:        discordgo.ChatApplicationCommand,
-		Options: []*discordgo.ApplicationCommandOption{
+		Options: []glob.OptionData{
 			{
 				Name:        "search",
 				Description: "Factorio/Discord name, or any partial match.",
@@ -514,16 +501,16 @@ var cmds = []Command{
 			},
 		},
 	},
-		Command: user.Whois, PrimaryOnly: true},
-	{AppCmd: &discordgo.ApplicationCommand{
+		Function: user.Whois, PrimaryOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "scoreboard",
 		Description: "Top 40 players",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-		Command: user.Scoreboard, PrimaryOnly: true},
+		Function: user.Scoreboard, PrimaryOnly: true},
 }
 
-func ClearCommands() {
+func DeregisterCommands() {
 	if disc.DS == nil {
 		return
 	}
@@ -565,9 +552,6 @@ func RegisterCommands(s *discordgo.Session) {
 			if o.Disabled {
 				continue
 			}
-			if o.AppCmd == nil {
-				continue
-			}
 			if o.AppCmd.Name == "" || o.AppCmd.Description == "" {
 				cwlog.DoLogCW("Command has no name or description, skipping")
 				continue
@@ -592,13 +576,28 @@ func RegisterCommands(s *discordgo.Session) {
 			o.AppCmd.Name = filterName(o.AppCmd.Name)
 			o.AppCmd.Description = filterDesc(o.AppCmd.Description)
 
-			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, o.AppCmd)
+			//Convert local format to discord format
+			tempAppCmd := &discordgo.ApplicationCommand{
+				Name: o.AppCmd.Name, Description: o.AppCmd.Description, Type: o.AppCmd.Type, DefaultMemberPermissions: o.AppCmd.DefaultMemberPermissions,
+				Options: []*discordgo.ApplicationCommandOption{},
+			}
+
+			for _, option := range o.AppCmd.Options {
+				var choiceList []*discordgo.ApplicationCommandOptionChoice
+				for _, choice := range option.Choices {
+					choiceList = append(choiceList, &discordgo.ApplicationCommandOptionChoice{Name: choice.Name, Value: choice.Value})
+				}
+				tempAppCmd.Options = append(tempAppCmd.Options, &discordgo.ApplicationCommandOption{
+					Name: option.Name, Description: option.Description, Type: option.Type, Required: option.Required, MinValue: glob.Ptr(option.MinValue), MaxValue: option.MaxValue, Choices: choiceList})
+			}
+
+			cmd, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
 			if err != nil {
 				log.Println("Failed to create command: ",
 					CL[i].AppCmd.Name, ": ", err)
 				continue
 			}
-			CL[i].AppCmd = cmd
+			CL[i].DiscCmd = cmd
 			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", CL[i].AppCmd.Name))
 		}
 	}
@@ -640,33 +639,33 @@ func LinkConfigData(p int, gconfig bool) {
 		if o.Type == moderator.TYPE_STRING {
 
 			if len(o.ValidStrings) > 0 {
-				choices := []*discordgo.ApplicationCommandOptionChoice{}
+				choices := []glob.ChoiceData{}
 				for _, v := range o.ValidStrings {
-					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+					choices = append(choices, glob.ChoiceData{
 						Name:  filterName(v),
 						Value: filterName(v),
 					})
 				}
 
 				if len(choices) > 0 {
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 						Choices:     choices,
 					})
 				} else {
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 					})
 				}
 			} else if o.ListString != nil {
-				choices := []*discordgo.ApplicationCommandOptionChoice{}
+				choices := []glob.ChoiceData{}
 				list := o.ListString()
 				for _, v := range list {
-					choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
+					choices = append(choices, glob.ChoiceData{
 						Name:  filterName(v),
 						Value: filterName(v),
 					})
@@ -674,21 +673,21 @@ func LinkConfigData(p int, gconfig bool) {
 
 				if len(choices) > 0 {
 
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 						Choices:     choices,
 					})
 				} else {
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 					})
 				}
 			} else {
-				CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+				CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        filterName(o.Name),
 					Description: filterDesc(o.Desc),
@@ -696,37 +695,37 @@ func LinkConfigData(p int, gconfig bool) {
 			}
 
 		} else if o.Type == moderator.TYPE_INT {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
-				MinValue:    glob.Ptr(float64(o.MinInt)),
+				MinValue:    float64(o.MinInt),
 				MaxValue:    float64(o.MaxInt),
 			})
 		} else if o.Type == moderator.TYPE_BOOL {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
 			})
 		} else if o.Type == moderator.TYPE_F32 {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
-				MinValue:    glob.Ptr(float64(o.MinF32)),
+				MinValue:    float64(o.MinF32),
 				MaxValue:    float64(o.MaxF32),
 			})
 		} else if o.Type == moderator.TYPE_F64 {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
-				MinValue:    glob.Ptr(o.MinF64),
+				MinValue:    o.MinF64,
 				MaxValue:    o.MaxF64,
 			})
 		} else if o.Type == moderator.TYPE_CHANNEL {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, &discordgo.ApplicationCommandOption{
+			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionChannel,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
@@ -806,7 +805,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 
 				if c.AdminOnly {
 					if disc.CheckAdmin(i) {
-						c.Command(i)
+						c.Function(&c, i)
 						var options []string
 						for _, o := range c.AppCmd.Options {
 							options = append(options, o.Name)
@@ -821,7 +820,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
-						c.Command(i)
+						c.Function(&c, i)
 						return
 					} else {
 						disc.EphemeralResponse(i, "Error", "You must be a moderator to use this command.")
@@ -830,7 +829,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 				} else {
 					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
-					c.Command(i)
+					c.Function(&c, i)
 					return
 				}
 			}

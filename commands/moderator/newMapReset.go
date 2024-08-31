@@ -6,9 +6,10 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
-func MapReset(i *discordgo.InteractionCreate) {
+func MapReset(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(i, "Status:", "Resetting map...")
 
 	//Turn off skip reset flag

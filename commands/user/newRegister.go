@@ -16,7 +16,7 @@ import (
 
 /* AccessServer locks PasswordListLock
  * This allows players to register, for discord roles and in-game perks */
-func Register(i *discordgo.InteractionCreate) {
+func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if !fact.FactIsRunning {
 		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running."}

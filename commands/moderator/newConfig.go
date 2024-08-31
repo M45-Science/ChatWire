@@ -9,11 +9,12 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"ChatWire/support"
 )
 
 /* Change server settings */
-func ConfigServer(i *discordgo.InteractionCreate) {
+func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 	buf := ""

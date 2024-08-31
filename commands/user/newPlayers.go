@@ -12,7 +12,7 @@ import (
 )
 
 /* executes /online on the server, response handled in chat.go */
-func Players(i *discordgo.InteractionCreate) {
+func Players(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if fact.FactorioBooted && fact.FactIsRunning {
 
 		if fact.NumPlayers == 0 {

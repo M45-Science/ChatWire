@@ -15,7 +15,7 @@ import (
 )
 
 /*  Get info on a specific player */
-func Whois(i *discordgo.InteractionCreate) {
+func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}

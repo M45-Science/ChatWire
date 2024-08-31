@@ -19,7 +19,7 @@ type scoreData struct {
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func Scoreboard(i *discordgo.InteractionCreate) {
+func Scoreboard(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
 	if err != nil {

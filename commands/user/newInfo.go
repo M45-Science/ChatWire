@@ -22,7 +22,7 @@ import (
 /**************************
  * Show useful info about a server and it's settings
  *************************/
-func Info(i *discordgo.InteractionCreate) {
+func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	verbose := false
 	debug := false

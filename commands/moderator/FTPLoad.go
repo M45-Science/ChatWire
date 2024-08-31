@@ -6,6 +6,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"ChatWire/sclean"
 	"archive/zip"
 	"encoding/json"
@@ -73,7 +74,7 @@ func MakeFTPFolders() {
 	}
 }
 
-func FTPLoad(i *discordgo.InteractionCreate) {
+func FTPLoad(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	a := i.ApplicationCommandData()
 
@@ -96,7 +97,7 @@ func FTPLoad(i *discordgo.InteractionCreate) {
 }
 
 /* Load a different save-game */
-func ShowMods(i *discordgo.InteractionCreate) {
+func ShowMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}

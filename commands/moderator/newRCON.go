@@ -15,7 +15,7 @@ import (
 )
 
 /* Set a player's level */
-func RCONCmd(i *discordgo.InteractionCreate) {
+func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	var server, command string
 

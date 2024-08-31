@@ -18,13 +18,14 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/glob"
 )
 
 var modPackLock sync.Mutex
 var lastRun time.Time
 
 /* executes /online on the server, response handled in chat.go */
-func ModPack(i *discordgo.InteractionCreate) {
+func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	modPackLock.Lock()
 	defer modPackLock.Unlock()
 
