@@ -73,12 +73,11 @@ func HandleChat() {
 					break
 				}
 				readLine := reader.Text()
-
 				rawLine := sclean.UnicodeCleanup(readLine)
 
 				/* Reject short lines */
 				ll := len(rawLine)
-				if ll <= 0 {
+				if ll == 0 {
 					continue
 				}
 				/* We have input, server is alive */
