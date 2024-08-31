@@ -50,7 +50,7 @@ var chatHandles = []funcList{
 }
 
 type handleData struct {
-	line, lowerLine, noTimecode, noDatestamp                                   string
+	line, lowerLine, timecode, datestamp                                       string
 	lineList, lowerLineList, noTimecodeList, noDatestampList, words            []string
 	numWords, noDatestampListLen, lowerListLen, noTimecodeListLen, lineListLen int
 }
@@ -99,7 +99,7 @@ func HandleChat() {
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
+					if !strings.HasPrefix(input.datestamp, "[CHAT]") && !strings.HasPrefix(input.datestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
 
 						/*
 						 * No-chat handles
@@ -146,25 +146,26 @@ func preProcessFactorioOutput(line string) *handleData {
 	trimmed := strings.TrimLeft(line, " ")
 	words := strings.Split(trimmed, " ")
 	numWords := len(words)
-	noTimecode := constants.Unknown
-	noDatestamp := constants.Unknown
+	timecode := constants.Unknown
+	datestamp := constants.Unknown
+
 	if numWords > 1 {
-		noTimecode = strings.Join(words[1:], " ")
+		timecode = strings.Join(words[1:], " ")
 	}
 	if numWords > 2 {
-		noDatestamp = strings.Join(words[2:], " ")
+		datestamp = strings.Join(words[2:], " ")
 	}
 
 	/* Separate args -- for use with script output */
 	lineList := strings.Split(line, " ")
 	lineListLen := len(lineList)
 
-	/* Separate args, notc -- for use with Factorio subsystem output */
-	noTimecodeList := strings.Split(noTimecode, " ")
+	/* Separate args, no timecode -- for use with Factorio subsystem output */
+	noTimecodeList := strings.Split(timecode, " ")
 	noTimecodeListLen := len(noTimecodeList)
 
-	/* Separate args, nods -- for use with normal Factorio log output */
-	noDatestampList := strings.Split(noDatestamp, " ")
+	/* Separate args, no datestamp -- for use with normal Factorio log output */
+	noDatestampList := strings.Split(datestamp, " ")
 	noDatestampListLen := len(noDatestampList)
 
 	/* Lowercase converted */
@@ -173,7 +174,7 @@ func preProcessFactorioOutput(line string) *handleData {
 	lowerCaseListlen := len(lowerCaseList)
 
 	return &handleData{
-		line, lowerCaseLine, noTimecode, noDatestamp,
+		line, lowerCaseLine, timecode, datestamp,
 		lineList, lowerCaseList, noTimecodeList, noDatestampList, words,
 		numWords, noDatestampListLen, lowerCaseListlen, noTimecodeListLen, lineListLen,
 	}
