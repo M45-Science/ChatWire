@@ -15,7 +15,7 @@ type funcList struct {
 	function func(input *handleData) bool
 }
 
-var handleList = []funcList{
+var nonChatHandles = []funcList{
 	{function: handleDisconnect},
 	{function: handleGameTime},
 	{function: handleOnlinePlayers},
@@ -35,7 +35,7 @@ var handleList = []funcList{
 	{function: handleCrashes},
 }
 
-var softModHandleList = []funcList{
+var softModHandles = []funcList{
 	{function: handleCmdMsg},
 	{function: handleActMsg},
 	{function: handleOnlineMsg},
@@ -46,7 +46,7 @@ var softModHandleList = []funcList{
 	{function: handleChatMsg},
 }
 
-var nonChatHandleList = []funcList{
+var chatHandles = []funcList{
 	{function: handleIdiots},
 	{function: handleChatMsg},
 }
@@ -145,7 +145,7 @@ func HandleChat() {
 						/*
 						 * Standard handles
 						 */
-						for _, handle := range handleList {
+						for _, handle := range nonChatHandles {
 							if handle.function(input) {
 								continue
 							}
@@ -155,7 +155,7 @@ func HandleChat() {
 						 * Softmod only
 						 */
 						if glob.SoftModVersion != constants.Unknown {
-							for _, handle := range softModHandleList {
+							for _, handle := range softModHandles {
 								if handle.function(input) {
 									continue
 								}
@@ -167,7 +167,7 @@ func HandleChat() {
 						/*
 						 * Non-chat only
 						 */
-						for _, handle := range nonChatHandleList {
+						for _, handle := range chatHandles {
 							if handle.function(input) {
 								continue
 							}
