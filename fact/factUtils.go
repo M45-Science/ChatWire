@@ -175,7 +175,6 @@ func WriteWhitelist() int {
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		glob.PlayerListLock.RLock()
 
-		var count = 0
 		var buf = "[\n"
 		var localPlayerList []*glob.PlayerData
 		localPlayerList = make([]*glob.PlayerData, len(localPlayerList))
@@ -197,24 +196,37 @@ func WriteWhitelist() int {
 			return localPlayerList[i].LastSeen < localPlayerList[j].LastSeen
 		})
 
+		l := len(localPlayerList) - 1
+		var count = 0
+
 		//Add admins
-		for _, player := range glob.PlayerList {
-			if player.Level >= 254 {
+		for x := l; x > 0; x-- {
+			var player = localPlayerList[x]
+			if player.Level >= 255 {
 				buf = buf + "\"" + player.Name + "\",\n"
 				count = count + 1
 			}
 		}
 
-		//Print sorted list
-		l := len(localPlayerList) - 1
+		//Add veterans
+		for x := l; x > 0; x-- {
+			var player = localPlayerList[x]
+			if player.Level == 3 {
+				buf = buf + "\"" + player.Name + "\",\n"
+				count = count + 1
+			}
+		}
+
+		//Everyone else
 		for x := l; x > 0; x-- {
 			if count >= constants.MaxWhitelist {
 				break
 			}
 			var player = localPlayerList[x]
-
-			buf = buf + "\"" + player.Name + "\",\n"
-			count = count + 1
+			if player.Level < 3 {
+				buf = buf + "\"" + player.Name + "\",\n"
+				count = count + 1
+			}
 		}
 
 		if count > 1 {
