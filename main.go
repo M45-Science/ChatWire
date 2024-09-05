@@ -26,7 +26,7 @@ import (
 
 func main() {
 	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register discord commands")
-	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands and quit.")
+	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
@@ -73,8 +73,6 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
-
-	commands.DeregisterCommands()
 
 	_ = os.Remove("cw.lock")
 	fact.FactAutoStart = false
@@ -152,7 +150,11 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	}
 
 	/* Register discord slash commands */
-	go commands.RegisterCommands(s)
+	go func() {
+		commands.DeregisterCommands()
+		commands.RegisterCommands()
+	}()
+
 	/* Message and command hooks */
 	s.AddHandler(handleDiscordMessages)
 	s.AddHandler(commands.SlashCommand)

@@ -12,7 +12,6 @@ import (
 	"ChatWire/support"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -146,9 +145,8 @@ func DeregisterCommands() {
 
 			time.Sleep(constants.ApplicationCommandSleep)
 		}
+		cwlog.DoLogCW("Deregister commands complete.")
 	}
-	_ = os.Remove("cw.lock")
-	os.Exit(0)
 }
 
 //https://discord.com/developers/docs/topics/permissions
@@ -158,7 +156,7 @@ var modPerms int64 = discordgo.PermissionManageRoles         //Manage Roles
 var playerPerms int64 = discordgo.PermissionUseSlashCommands //Use slash comamnds
 
 /*  RegisterCommands registers the commands on start up. */
-func RegisterCommands(s *discordgo.Session) {
+func RegisterCommands() {
 
 	/* Bypasses init loop compile error. */
 	CL = cmds
@@ -222,7 +220,7 @@ func RegisterCommands(s *discordgo.Session) {
 				tempAppCmd.Options = append(tempAppCmd.Options, tmpOption)
 			}
 
-			_, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
+			_, err := disc.DS.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
 			if err != nil {
 				log.Println("Failed to create command: ",
 					CL[i].AppCmd.Name, ": ", err)
@@ -230,6 +228,7 @@ func RegisterCommands(s *discordgo.Session) {
 			}
 			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", CL[i].AppCmd.Name))
 		}
+		cwlog.DoLogCW("Register commands complete.")
 	}
 
 }
