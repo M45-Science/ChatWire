@@ -208,8 +208,18 @@ func RegisterCommands(s *discordgo.Session) {
 				for _, choice := range option.Choices {
 					choiceList = append(choiceList, &discordgo.ApplicationCommandOptionChoice{Name: choice.Name, Value: choice.Value})
 				}
-				tempAppCmd.Options = append(tempAppCmd.Options, &discordgo.ApplicationCommandOption{
-					Name: option.Name, Description: option.Description, Type: option.Type, Required: option.Required, MinValue: glob.Ptr(option.MinValue), MaxValue: option.MaxValue, Choices: choiceList})
+
+				tmpOption := &discordgo.ApplicationCommandOption{
+					Name: option.Name, Description: option.Description, Type: option.Type, Required: option.Required, Choices: choiceList}
+
+				if option.MinValue != nil {
+					tmpOption.MinValue = option.MinValue
+				}
+				if option.MaxValue != nil {
+					tmpOption.MaxValue = *option.MaxValue
+				}
+
+				tempAppCmd.Options = append(tempAppCmd.Options, tmpOption)
 			}
 
 			_, err := s.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
@@ -319,8 +329,8 @@ func LinkConfigData(p int, gconfig bool) {
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
-				MinValue:    float64(o.MinInt),
-				MaxValue:    float64(o.MaxInt),
+				MinValue:    glob.Ptr(float64(o.MinInt)),
+				MaxValue:    glob.Ptr(float64(o.MaxInt)),
 			})
 		} else if o.Type == moderator.TYPE_BOOL {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
@@ -333,16 +343,16 @@ func LinkConfigData(p int, gconfig bool) {
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
-				MinValue:    float64(o.MinF32),
-				MaxValue:    float64(o.MaxF32),
+				MinValue:    glob.Ptr(float64(o.MinF32)),
+				MaxValue:    glob.Ptr(float64(o.MaxF32)),
 			})
 		} else if o.Type == moderator.TYPE_F64 {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
-				MinValue:    o.MinF64,
-				MaxValue:    o.MaxF64,
+				MinValue:    glob.Ptr(o.MinF64),
+				MaxValue:    glob.Ptr(o.MaxF64),
 			})
 		} else if o.Type == moderator.TYPE_CHANNEL {
 			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{

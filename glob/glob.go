@@ -111,8 +111,8 @@ type OptionData struct {
 	Name, Description string
 	Type              discordgo.ApplicationCommandOptionType
 	Required          bool
-	MinValue          float64
-	MaxValue          float64
+	MinValue          *float64
+	MaxValue          *float64
 
 	Choices []ChoiceData
 }
