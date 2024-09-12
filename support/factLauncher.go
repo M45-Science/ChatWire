@@ -321,7 +321,7 @@ func launchFactorio() {
 
 	/* Relaunch Throttling */
 	throt := glob.RelaunchThrottle
-	if throt > 0 {
+	if !*glob.LocalTestMode && throt > 0 {
 
 		delay := throt * throt * 10
 
