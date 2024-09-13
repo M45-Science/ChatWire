@@ -64,7 +64,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
 					disc.EphemeralResponse(i, "Notice:", buf)
 
-					go fact.CheckVote(i, c)
+					fact.CheckVote(i, c)
 
 					break
 				}

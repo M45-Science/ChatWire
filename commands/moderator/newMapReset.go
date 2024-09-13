@@ -16,5 +16,5 @@ func MapReset(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	cfg.Local.Options.SkipReset = false
 	cfg.WriteLCfg()
 
-	go fact.Map_reset(true)
+	fact.Map_reset(true)
 }

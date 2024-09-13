@@ -810,7 +810,7 @@ func DoChangeMap(arg string) {
 		cfg.Local.Options.SkipReset = false
 		cfg.WriteLCfg()
 
-		go Map_reset(false)
+		Map_reset(false)
 		return
 	} else if strings.EqualFold(arg, "skip-reset") {
 		cfg.Local.Options.SkipReset = true
