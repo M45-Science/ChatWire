@@ -10,11 +10,17 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+var MessageHandlerLock sync.Mutex
+
+// Protect against spam
 func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
+	MessageHandlerLock.Lock()
+	defer MessageHandlerLock.Unlock()
 
 	/* Ignore messages from self */
 	if m.Author.ID == s.State.User.ID {
