@@ -22,8 +22,6 @@ import (
 var CommandLock sync.Mutex
 
 func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
-
-	//Protect against generations z and alpha, who will rerun a command if it takes longer than a few hundred milliseconds
 	CommandLock.Lock()
 	defer CommandLock.Unlock()
 
