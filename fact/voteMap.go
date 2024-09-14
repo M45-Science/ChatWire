@@ -22,7 +22,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 
 	if strings.EqualFold(arg, "new-map") ||
 		strings.EqualFold(arg, "skip-reset") {
-		if !cfg.Local.Options.MembersOnly ||
+		if !cfg.Local.Options.MembersOnly &&
 			!cfg.Local.Options.RegularsOnly {
 			return
 		}
