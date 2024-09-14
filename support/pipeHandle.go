@@ -455,7 +455,7 @@ func handleActMsg(input *handleData) bool {
 									if cfg.Global.Discord.SusPingRole != "" {
 										pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
 									}
-									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)", pname)
+									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)\n%v", pname, cfg.GetGameLogURL())
 
 									fact.FactChat("[color=red]" + sbuf + "[/color]")
 									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
