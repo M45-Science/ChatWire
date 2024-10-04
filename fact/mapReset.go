@@ -19,6 +19,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
 )
 
@@ -47,6 +48,9 @@ func GetMapTypeName(num int) string {
 
 /* Generate map */
 func Map_reset(doReport bool) {
+
+	time.Sleep(time.Second)
+	SetupSchedule()
 
 	/* Get Factorio version, for archive folder name */
 	version := strings.Split(FactorioVersion, ".")
@@ -323,6 +327,7 @@ func Map_reset(doReport bool) {
 	VoidAllVotes() /* Void all votes */
 	WriteVotes()
 
-	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, rebooting.")
-	DoExit(false)
+	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
+	fact.FactAutoStart = true
+	//DoExit(false)
 }

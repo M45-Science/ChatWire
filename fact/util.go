@@ -155,7 +155,7 @@ func DoExit(delay bool) {
 	}
 
 	if disc.DS != nil {
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 10)
 		disc.DS.Close()
 	}
 	os.Exit(1)
