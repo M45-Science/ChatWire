@@ -43,7 +43,7 @@ func DoLogGame(text string) {
 
 /* Prep everything for the game log */
 func StartGameLog() {
-	t := time.Now()
+	t := time.Now().UTC()
 
 	/* Create our log file names */
 	glob.GameLogName = fmt.Sprintf("log/game-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
@@ -67,6 +67,11 @@ func StartGameLog() {
 		return
 	}
 
+	if glob.GameLogDesc != nil {
+		DoLogGame("Rotating log.")
+		glob.GameLogDesc.Close()
+	}
+
 	/* Save descriptors, open/closed elsewhere */
 	glob.GameLogDesc = gdesc
 
@@ -74,7 +79,8 @@ func StartGameLog() {
 
 /* Prep everything for the cw log */
 func StartCWLog() {
-	t := time.Now()
+
+	t := time.Now().UTC()
 
 	/* Create our log file names */
 	glob.CWLogName = fmt.Sprintf("log/cw-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
@@ -95,6 +101,28 @@ func StartCWLog() {
 		return
 	}
 
+	if glob.CWLogDesc != nil {
+		DoLogCW("Rotating log.")
+		glob.CWLogDesc.Close()
+	}
+
 	/* Save descriptors, open/closed elsewhere */
 	glob.CWLogDesc = bdesc
+
+}
+
+func AutoRotateLogs() {
+	//Rotate when date changes
+	go func() {
+		startDay := time.Now().UTC().Day()
+		for {
+			currentDay := time.Now().UTC().Day()
+			if currentDay != startDay {
+				startDay = currentDay
+				StartCWLog()
+				StartGameLog()
+			}
+			time.Sleep(time.Second)
+		}
+	}()
 }

@@ -34,6 +34,7 @@ func main() {
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
+	cwlog.AutoRotateLogs()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
 	if *cleanDB {
