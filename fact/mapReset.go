@@ -19,7 +19,6 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
-	"ChatWire/fact"
 	"ChatWire/glob"
 )
 
@@ -328,6 +327,6 @@ func Map_reset(doReport bool) {
 	WriteVotes()
 
 	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
-	fact.FactAutoStart = true
+	FactAutoStart = true
 	//DoExit(false)
 }
