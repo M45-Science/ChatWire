@@ -84,6 +84,9 @@ var cmds = []glob.CommandData{
 						Name: "day-of-week",
 					},
 					{
+						Name: "third-dates",
+					},
+					{
 						Name: "odd-dates",
 					},
 					{

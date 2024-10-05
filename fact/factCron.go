@@ -143,6 +143,12 @@ func InterpSchedule(desc string, test bool) (err bool) {
 		warn5 = fmt.Sprintf("0 %v %v */2 * *", minute+55, hour-1)
 		warn1 = fmt.Sprintf("0 %v %v */2 * *", minute+59, hour-1)
 		reset = fmt.Sprintf("0 %v %v */2 * *", minute, hour)
+	} else if strings.EqualFold(desc, "third-dates") {
+		warn30 = fmt.Sprintf("0 %v %v */3 * *", minute+30, hour-1)
+		warn15 = fmt.Sprintf("0 %v %v */3 * *", minute+45, hour-1)
+		warn5 = fmt.Sprintf("0 %v %v */3 * *", minute+55, hour-1)
+		warn1 = fmt.Sprintf("0 %v %v */3 * *", minute+59, hour-1)
+		reset = fmt.Sprintf("0 %v %v */3 * *", minute, hour)
 	} else if strings.EqualFold(desc, "daily") {
 		warn30 = fmt.Sprintf("0 %v %v * * *", minute+30, hour-1)
 		warn15 = fmt.Sprintf("0 %v %v * * *", minute+45, hour-1)
