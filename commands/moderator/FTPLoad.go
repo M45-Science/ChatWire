@@ -61,6 +61,23 @@ var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MODSETTINGS, Name: "settings", ID: "ftp-settings", Command: "load-settings", Path: ModSettingsFolder},
 }
 
+func HandleFTP(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+
+	for _, arg := range cmd.AppCmd.Options {
+		for _, option := range arg.Choices {
+			for _, ftype := range FTPTypes {
+				if strings.EqualFold(ftype.Command, option.Name) {
+					disc.EphemeralResponse(i, "meep", option.Name)
+					return
+				}
+			}
+
+			disc.EphemeralResponse(i, "meep", "bork bork: "+option.Name)
+		}
+	}
+
+}
+
 func MakeFTPFolders() {
 	pathPrefix := cfg.Global.Paths.Folders.FTP + "/"
 
