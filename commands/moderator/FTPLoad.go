@@ -27,7 +27,7 @@ const (
 	MapFolder         = "maps"
 	ModFolder         = "mods"
 	ModPackFolder     = "modPacks"
-	ModListsFolder    = "modLists"
+	ModListFolder     = "modLists"
 	ModSettingsFolder = "modSettings"
 )
 
@@ -42,11 +42,11 @@ const (
 )
 
 type ftpTypeData struct {
-	fType   int
-	Name    string
-	ID      string
-	Command string
-	Path    string
+	fType    int
+	Name     string
+	Value    string
+	Path     string
+	Function func(ftype ftpTypeData, i *discordgo.InteractionCreate)
 }
 
 type modInfoData struct {
@@ -54,23 +54,25 @@ type modInfoData struct {
 }
 
 var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
-	{fType: TYPE_MAP, Name: "map", ID: "ftp-map", Command: "load-map", Path: MapFolder},
-	{fType: TYPE_MOD, Name: "mod", ID: "ftp-mod", Command: "load-mod", Path: ModFolder},
-	{fType: TYPE_MODPACK, Name: "modpack", ID: "ftp-modpack", Command: "load-modpack", Path: ModPackFolder},
-	{fType: TYPE_MODLIST, Name: "modlist", ID: "ftp-modlist", Command: "load-modlist", Path: ModListsFolder},
-	{fType: TYPE_MODSETTINGS, Name: "settings", ID: "ftp-settings", Command: "load-settings", Path: ModSettingsFolder},
+	{fType: TYPE_MAP, Name: "map", Value: "load-map", Path: MapFolder, Function: ListZips},
+	{fType: TYPE_MOD, Name: "mod", Value: "load-mod", Path: ModFolder, Function: ListMods},
+	{fType: TYPE_MODPACK, Name: "modpack", Value: "load-modpack", Path: ModPackFolder, Function: ListZips},
+	{fType: TYPE_MODLIST, Name: "modlist", Value: "load-modlist", Path: ModListFolder, Function: ListModlists},
+	{fType: TYPE_MODSETTINGS, Name: "settings", Value: "load-settings", Path: ModSettingsFolder, Function: ListModlists},
 }
 
 func HandleFTP(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	a := i.ApplicationCommandData()
 
-	for _, arg := range cmd.AppCmd.Options {
-		for _, option := range arg.Choices {
-			for _, ftype := range FTPTypes {
-				if strings.EqualFold(ftype.Command, option.Name) {
-					//disc.EphemeralResponse(i, "meep", option.Name)
-					ShowZipList(i, ftype)
-					return
-				}
+	for _, arg := range a.Options {
+		if arg.Type != discordgo.ApplicationCommandOptionString {
+			continue
+		}
+		for _, ftype := range FTPTypes {
+			if strings.EqualFold(ftype.Value, arg.StringValue()) {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "meep: "+ftype.Value)
+				ftype.Function(ftype, i)
+				return
 			}
 		}
 	}
@@ -92,8 +94,7 @@ func MakeFTPFolders() {
 	}
 }
 
-/* Load a different save-game */
-func ListMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func ListMods(ftype ftpTypeData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}
@@ -267,7 +268,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType int) {
 
 }
 
-func ShowDatList(i *discordgo.InteractionCreate, fType ftpTypeData) {
+func ListModlists(fType ftpTypeData, i *discordgo.InteractionCreate) {
 	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
 	dir, err := os.ReadDir(pathPrefix)
 	if err != nil {
@@ -343,7 +344,7 @@ func ShowDatList(i *discordgo.InteractionCreate, fType ftpTypeData) {
 						Components: []discordgo.MessageComponent{
 							discordgo.SelectMenu{
 								// Select menu, as other components, must have a customID, so we set it to this value.
-								CustomID:    fType.ID,
+								CustomID:    fType.Value,
 								Placeholder: "Select a " + fType.Name + " file.",
 								Options:     availableFiles,
 							},
@@ -361,8 +362,7 @@ func ShowDatList(i *discordgo.InteractionCreate, fType ftpTypeData) {
 	}
 }
 
-/* Load a different save-game */
-func ShowZipList(i *discordgo.InteractionCreate, fType ftpTypeData) {
+func ListZips(fType ftpTypeData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}
@@ -461,7 +461,7 @@ func ShowZipList(i *discordgo.InteractionCreate, fType ftpTypeData) {
 						Components: []discordgo.MessageComponent{
 							discordgo.SelectMenu{
 								// Select menu, as other components, must have a customID, so we set it to this value.
-								CustomID:    fType.ID,
+								CustomID:    fType.Value,
 								Placeholder: "Select a " + fType.Name,
 								Options:     availableFiles,
 							},

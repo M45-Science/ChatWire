@@ -68,7 +68,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				}
 			}
 			for f, fType := range moderator.FTPTypes {
-				if strings.EqualFold(data.CustomID, fType.ID) {
+				if strings.EqualFold(data.CustomID, fType.Value) {
 					if c == "INVALID" {
 						disc.EphemeralResponse(i, "Error:", "Invalid file!")
 						break
