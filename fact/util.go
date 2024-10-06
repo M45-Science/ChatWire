@@ -103,7 +103,7 @@ func WaitFactQuit() {
 	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && glob.ServerRunning; x++ {
 		time.Sleep(time.Millisecond * 100)
 	}
-
+	time.Sleep(time.Second * 2)
 }
 
 /* Auto generates a steam connect URL */
@@ -124,18 +124,16 @@ func DoExit(delay bool) {
 	}
 
 	//Wait a few seconds for CMS to finish
-	for i := 0; i < 15; i++ {
+	for i := 0; i < 300; i++ {
 		if len(disc.CMSBuffer) > 0 {
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond * 100)
 		}
 	}
 
 	/* This kills all loops! */
 	glob.ServerRunning = false
 
-	time.Sleep(time.Second)
 	cwlog.DoLogCW("CW closing, load/save db.")
-	//LoadPlayers(false)
 	WritePlayers()
 
 	/* File locks */
@@ -155,7 +153,6 @@ func DoExit(delay bool) {
 	}
 
 	if disc.DS != nil {
-		time.Sleep(time.Second * 10)
 		disc.DS.Close()
 	}
 	os.Exit(1)
