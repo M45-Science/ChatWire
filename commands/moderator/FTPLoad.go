@@ -67,19 +67,20 @@ func HandleFTP(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		for _, option := range arg.Choices {
 			for _, ftype := range FTPTypes {
 				if strings.EqualFold(ftype.Command, option.Name) {
-					disc.EphemeralResponse(i, "meep", option.Name)
+					//disc.EphemeralResponse(i, "meep", option.Name)
+					ShowZipList(i, ftype)
 					return
 				}
 			}
-
-			disc.EphemeralResponse(i, "meep", "bork bork: "+option.Name)
 		}
 	}
+
+	disc.EphemeralResponse(i, "Error", "Sorry, you didn't supply any valid options.")
 
 }
 
 func MakeFTPFolders() {
-	pathPrefix := cfg.Global.Paths.Folders.FTP + "/"
+	pathPrefix := cfg.Global.Paths.Folders.FTP
 
 	var err error
 	for _, item := range FTPTypes {
