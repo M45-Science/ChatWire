@@ -73,7 +73,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						disc.EphemeralResponse(i, "Error:", "Invalid file!")
 						break
 					}
-					//disc.EphemeralResponse( i, "Status:", "Loading "+fType.Name+": "+c)
+					disc.EphemeralResponse(i, "Status:", "Loading "+fType.Name+": "+c)
 					moderator.LoadFTPFile(i, c, f)
 					break
 				}
