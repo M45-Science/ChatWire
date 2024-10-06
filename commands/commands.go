@@ -236,7 +236,7 @@ var cmds = []glob.CommandData{
 			},
 		},
 	},
-		ModeratorOnly: true},
+		Function: moderator.HandleFTP, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command.",
