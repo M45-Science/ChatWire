@@ -70,7 +70,6 @@ func HandleFTP(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 		for _, ftype := range FTPTypes {
 			if strings.EqualFold(ftype.Value, arg.StringValue()) {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "meep: "+ftype.Value)
 				ftype.Function(ftype, i)
 				return
 			}
