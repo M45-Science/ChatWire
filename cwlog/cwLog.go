@@ -11,9 +11,16 @@ import (
 )
 
 /* Normal CW log */
-func DoLogCW(text string) {
+func DoLogCW(format string, args ...interface{}) {
 	ctime := time.Now()
 	_, filename, line, _ := runtime.Caller(1)
+
+	var text string
+	if args == nil {
+		text = format
+	} else {
+		text = fmt.Sprintf(format, args...)
+	}
 
 	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())
 	buf := fmt.Sprintf("%v: %15v:%5v: %v\n", date, filepath.Base(filename), line, text)
@@ -27,8 +34,15 @@ func DoLogCW(text string) {
 }
 
 /* Game log */
-func DoLogGame(text string) {
+func DoLogGame(format string, args ...interface{}) {
 	ctime := time.Now()
+
+	var text string
+	if args == nil {
+		text = format
+	} else {
+		text = fmt.Sprintf(format, args...)
+	}
 
 	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())
 	buf := fmt.Sprintf("%v: %v\n", date, text)

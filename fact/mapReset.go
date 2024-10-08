@@ -191,8 +191,7 @@ func Map_reset(doReport bool) {
 	MapPreset := cfg.Local.Settings.MapPreset
 
 	if strings.EqualFold(MapPreset, "error") {
-		buf := "Invalid map preset."
-		cwlog.DoLogCW(buf)
+		cwlog.DoLogCW("Invalid map preset.")
 		return
 	}
 

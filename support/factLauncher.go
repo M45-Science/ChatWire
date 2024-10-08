@@ -383,7 +383,7 @@ func launchFactorio() {
 	if !cfg.Local.Options.CustomWhitelist {
 		count := fact.WriteWhitelist()
 		if count > 0 && (cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly) {
-			cwlog.DoLogCW(fmt.Sprintf("Whitelist of %v players written.", count))
+			cwlog.DoLogCW("Whitelist of %v players written.", count)
 		}
 	}
 	fact.WriteAdminlist()

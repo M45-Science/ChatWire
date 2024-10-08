@@ -314,7 +314,7 @@ func MainLoops() {
 				}
 
 				if err != nil {
-					cwlog.DoLogCW(fmt.Sprintf("Was unable to get guild data from GuildID: %s", err))
+					cwlog.DoLogCW("Was unable to get guild data from GuildID: %s", err)
 
 					break
 				}

@@ -198,7 +198,7 @@ func GenerateFactorioConfig() bool {
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 		if err != nil || remoteConsole == nil {
-			cwlog.DoLogCW(fmt.Sprintf("Error: `%v`\n", err))
+			cwlog.DoLogCW("Error: `%v`\n", err)
 		}
 
 		_, err = remoteConsole.Write(c + " name " + servName)

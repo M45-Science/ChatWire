@@ -306,12 +306,12 @@ func WriteFact(input string) {
 
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input))
+			cwlog.DoLogCW("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input)
 			SetFactRunning(false)
 			return
 		}
 		if buf != "/time" {
-			cwlog.DoLogCW(fmt.Sprintf("CW: %v", buf))
+			cwlog.DoLogCW("CW: %v", buf)
 		}
 
 	} else {
@@ -431,11 +431,11 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 					errrole, regrole := disc.RoleExists(disc.Guild, newrole)
 
 					if !errrole {
-						cwlog.DoLogCW(fmt.Sprintf("Couldn't find role %v.", newrole))
+						cwlog.DoLogCW("Couldn't find role %v.", newrole)
 					} else {
 						errset := disc.SmartRoleAdd(cfg.Global.Discord.Guild, discid, regrole.ID)
 						if errset != nil {
-							cwlog.DoLogCW(fmt.Sprintf("Couldn't set role %v for %v.", newrole, discid))
+							cwlog.DoLogCW("Couldn't set role %v for %v.", newrole, discid)
 						}
 					}
 				}
@@ -526,7 +526,7 @@ func DoUpdateChannelName() {
 		_, aerr = disc.DS.ChannelEditComplex(cfg.Local.Channel.ChatChannel, &discordgo.ChannelEdit{Name: chname, Position: &chPos, Topic: newTopic})
 
 		if aerr != nil {
-			cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr))
+			cwlog.DoLogCW("An error occurred when attempting to rename the Factorio discord channel. Details: %s", aerr)
 			return
 		} else {
 			oldTopic = newTopic

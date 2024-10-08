@@ -93,8 +93,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 
 					if strings.HasPrefix(line, "No updates available") {
 						if logNoUpdate {
-							mess := "fact update check: Factorio is up-to-date."
-							cwlog.DoLogCW(mess)
+							cwlog.DoLogCW("fact update check: Factorio is up-to-date.")
 						}
 						return
 					} else if strings.HasPrefix(line, "Wrote ") {
@@ -114,8 +113,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 								} else {
 									if glob.UpdateZipAttempts < constants.MaxUpdateZipAttempts {
 										glob.UpdateZipAttempts++
-										buf := fmt.Sprintf("Waiting for zipfile to finish...(%v/%v)", glob.UpdateZipAttempts, constants.MaxUpdateZipAttempts)
-										cwlog.DoLogCW(buf)
+										cwlog.DoLogCW("Waiting for zipfile to finish...(%v/%v)", glob.UpdateZipAttempts, constants.MaxUpdateZipAttempts)
 										time.Sleep(constants.UpdateZipInterval) //Wait a bit
 										return
 									}
@@ -178,7 +176,7 @@ func CheckFactUpdate(logNoUpdate bool) {
 			}
 		}
 
-		cwlog.DoLogCW(fmt.Sprintf("fact update dry: update_fact.py:\n%v", out))
+		cwlog.DoLogCW("fact update dry: update_fact.py:\n%v", out)
 	}
 
 }
@@ -231,7 +229,7 @@ func FactUpdate() {
 		} else {
 			os.RemoveAll(GetUpdateCachePath())
 			cwlog.DoLogCW("fact update: (error) Non-zero exit code... purging update cache.")
-			cwlog.DoLogCW(fmt.Sprintf("fact update: (error) update_fact.py:\n%v", out))
+			cwlog.DoLogCW("fact update: (error) update_fact.py:\n%v", out)
 			return
 		}
 

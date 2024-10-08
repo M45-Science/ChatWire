@@ -104,7 +104,7 @@ func startbot() {
 	 * Discord will invalidate the token if there are too many connection attempts.
 	 */
 	if erra != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", erra))
+		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", erra)
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
 		DiscordConnectAttempts++
 
@@ -123,7 +123,7 @@ func startbot() {
 
 	/* This handles error after the inital connection */
 	if errb != nil {
-		cwlog.DoLogCW(fmt.Sprintf("An error occurred when attempting to create the Discord session. Details: %v", errb))
+		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", errb)
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
 		DiscordConnectAttempts++
 
@@ -172,7 +172,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 		chname := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
 		channelid, err := s.GuildChannelCreate(cfg.Global.Discord.Guild, chname, discordgo.ChannelTypeGuildText)
 		if err != nil {
-			cwlog.DoLogCW(fmt.Sprintf("Couldn't create chat channel: %v", err))
+			cwlog.DoLogCW("Couldn't create chat channel: %v", err)
 			return
 		} else if channelid != nil {
 			cwlog.DoLogCW("Created chat channel.")
@@ -201,9 +201,8 @@ func checkLockFile() {
 
 			/* Recent lockfile, probable crash loop */
 			if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
-				msg := fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
 
-				cwlog.DoLogCW(msg)
+				cwlog.DoLogCW("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
 
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
 				_ = os.Remove("cw.lock")

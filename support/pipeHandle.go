@@ -256,7 +256,7 @@ func handlePlayerRegister(input *handleData) bool {
 			} /* End of loop */
 			glob.PasswordListLock.Unlock()
 			if !codefound {
-				cwlog.DoLogCW(fmt.Sprintf("Register: factorio player '%s' tried to use an invalid or expired code.", pname))
+				cwlog.DoLogCW("Register: factorio player '%s' tried to use an invalid or expired code.", pname)
 				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired.", pname))
 				return true
 			}
@@ -567,9 +567,7 @@ func handleMapLoad(input *handleData) bool {
 			fact.GameMapPath = fullpath
 			fact.LastSaveName = filename
 
-			buf := fmt.Sprintf("Loading map %s (%v)...", filename, humanize.Bytes(uint64(sizei)))
-
-			cwlog.DoLogCW(buf)
+			cwlog.DoLogCW("Loading map %s (%v)...", filename, humanize.Bytes(uint64(sizei)))
 		} else { /* Just in case */
 			cwlog.DoLogCW("Loading map...")
 		}
@@ -801,7 +799,7 @@ func handleExitSave(input *handleData) bool {
 			fact.GameMapPath = fullpath
 
 			/* Log actions */
-			cwlog.DoLogCW(fmt.Sprintf("Map saved as: %v, backup: %v", filename, newName))
+			cwlog.DoLogCW("Map saved as: %v, backup: %v", filename, newName)
 			fact.LastSaveName = filename
 
 			/* Open the quit-save */
@@ -827,8 +825,7 @@ func handleExitSave(input *handleData) bool {
 			/* Copy data */
 			_, errc := io.Copy(to, from)
 			if errc != nil {
-				buf := fmt.Sprintf("An error occurred when attempting to write the backup save: %s", errc)
-				cwlog.DoLogCW(buf)
+				cwlog.DoLogCW("An error occurred when attempting to write the backup save: %s", errc)
 				return true
 			}
 
@@ -960,7 +957,7 @@ func handleCrashes(input *handleData) bool {
 				errs := os.Remove(fact.GameMapPath)
 
 				if errs != nil {
-					cwlog.DoLogCW(fmt.Sprintf("Unable to delete corrupt savegame. Details:\nfile: %v\nerr: %v", fact.GameMapPath, errs))
+					cwlog.DoLogCW("Unable to delete corrupt savegame. Details:\nfile: %v\nerr: %v", fact.GameMapPath, errs)
 					fact.FactAutoStart = false
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game.")
 				} else {

@@ -73,8 +73,7 @@ func NewMapPreview(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		args = append(args, MapPreset)
 	}
 
-	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(args, " "))
-	cwlog.DoLogCW(lbuf)
+	cwlog.DoLogCW("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(args, " "))
 	run := exec.Command(fact.GetFactorioBinary(), args...)
 
 	out, aerr := run.CombinedOutput()
@@ -191,8 +190,7 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		factargs = append(factargs, MapPreset)
 	}
 
-	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
-	cwlog.DoLogCW(lbuf)
+	cwlog.DoLogCW("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
 
 	run := exec.Command(fact.GetFactorioBinary(), factargs...)
 	out, aerr := run.CombinedOutput()

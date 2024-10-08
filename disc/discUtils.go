@@ -149,7 +149,7 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
 
 		if err != nil {
 
-			cwlog.DoLogCW(fmt.Sprintf("SmartWriteDiscordEmbed: ERROR: %v", err))
+			cwlog.DoLogCW("SmartWriteDiscordEmbed: ERROR: %v", err)
 		}
 
 		return err
@@ -170,7 +170,7 @@ func SmartWriteDiscord(ch string, text string) {
 
 		if err != nil {
 
-			cwlog.DoLogCW(fmt.Sprintf("SmartWriteDiscord: ERROR: %v", err))
+			cwlog.DoLogCW("SmartWriteDiscord: ERROR: %v", err)
 		}
 	}
 }
@@ -183,7 +183,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 
 		if err != nil {
 			if !strings.ContainsAny("Unknown Member", err.Error()) {
-				cwlog.DoLogCW(fmt.Sprintf("SmartRoleAdd: ERROR: %v", err))
+				cwlog.DoLogCW("SmartRoleAdd: ERROR: %v", err)
 			} else {
 				return nil
 			}

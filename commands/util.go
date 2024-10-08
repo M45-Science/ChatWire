@@ -100,7 +100,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						for _, o := range c.AppCmd.Options {
 							options = append(options, o.Name)
 						}
-						cwlog.DoLogCW(fmt.Sprintf("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", ")))
+						cwlog.DoLogCW("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", "))
 						return
 					} else {
 						disc.EphemeralResponse(i, "Error", "You must be a admin to use this command.")
@@ -109,7 +109,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
-						cwlog.DoLogCW(fmt.Sprintf("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name))
+						cwlog.DoLogCW("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name)
 						RunCommand(&c, i)
 						return
 					} else {
@@ -118,7 +118,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						return
 					}
 				} else {
-					cwlog.DoLogCW(fmt.Sprintf("%s: command: %s", i.Member.User.Username, data.Name))
+					cwlog.DoLogCW("%s: command: %s", i.Member.User.Username, data.Name)
 					RunCommand(&c, i)
 					return
 				}
@@ -142,7 +142,7 @@ func DeregisterCommands() {
 	if *glob.DoDeregisterCommands && disc.DS != nil {
 		cmds, _ := disc.DS.ApplicationCommands(cfg.Global.Discord.Application, cfg.Global.Discord.Guild)
 		for _, v := range cmds {
-			cwlog.DoLogCW(fmt.Sprintf("Deregistered command: %s", v.Name))
+			cwlog.DoLogCW("Deregistered command: %s", v.Name)
 			err := disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.ID)
 			if err != nil {
 				cwlog.DoLogCW(err.Error())
@@ -231,7 +231,7 @@ func RegisterCommands() {
 					CL[i].AppCmd.Name, ": ", err)
 				continue
 			}
-			cwlog.DoLogCW(fmt.Sprintf("Registered command: %s", CL[i].AppCmd.Name))
+			cwlog.DoLogCW("Registered command: %s", CL[i].AppCmd.Name)
 		}
 		cwlog.DoLogCW("Register commands complete.")
 	}
