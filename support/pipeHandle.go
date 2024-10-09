@@ -772,7 +772,8 @@ func handleExitSave(input *handleData) bool {
 
 		/* Strip file path */
 		if input.noTimecodeListLen > 5 {
-			fullpath := input.noTimecodeList[5]
+			//Fix odd filenames with spaces???
+			fullpath := strings.Join(input.noTimecodeList[5:], " ")
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 			filename := regaa.ReplaceAllString(fullpath, "")
 			filename = strings.Replace(filename, ":", "", -1)
