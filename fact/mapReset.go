@@ -94,69 +94,7 @@ func Map_reset(doReport bool) {
 
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
-		shortversion := strings.Join(version[0:2], ".")
-
-		t := time.Now()
-		date := t.Format("2006-01-02")
-		newmapname := fmt.Sprintf("%v-%v.zip", cfg.Local.Callsign+"-"+cfg.Local.Name, date)
-		newmappath := fmt.Sprintf("%v%v%v%v%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, "/", newmapname)
-		newmapurl := fmt.Sprintf("https://%v%v%v%v%v%v",
-			cfg.Global.Paths.URLs.Domain,
-			cfg.Global.Paths.URLs.PathPrefix,
-			cfg.Global.Paths.URLs.ArchivePath,
-			url.PathEscape(shortversion+constants.ArchiveFolderSuffix),
-			"/",
-			url.PathEscape(newmapname))
-
-		from, erra := os.Open(GameMapPath)
-		if erra != nil {
-
-			buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
-			LogCMS(cfg.Local.Channel.ChatChannel, buf)
-			return
-		}
-		defer from.Close()
-
-		/* Attach map, send to chat */
-		dData := &discordgo.MessageSend{Files: []*discordgo.File{
-			{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
-		if disc.DS != nil {
-			_, err := disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
-
-			if err != nil {
-				cwlog.DoLogCW(err.Error())
-			}
-		}
-
-		_, err := from.Seek(0, io.SeekStart)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-
-		/* Make directory if it does not exist */
-		newdir := fmt.Sprintf("%v%v%v/", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix)
-		err = os.MkdirAll(newdir, os.ModePerm)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-
-		to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
-		if errb != nil {
-			buf := fmt.Sprintf("An error occurred when attempting to create the map archive file: %s", errb)
-			LogCMS(cfg.Local.Channel.ChatChannel, buf)
-			return
-		}
-		defer to.Close()
-
-		_, errc := io.Copy(to, from)
-		if errc != nil {
-			buf := fmt.Sprintf("An error occurred when attempting to write the map archive file: %s", errc)
-			LogCMS(cfg.Local.Channel.ChatChannel, buf)
-			return
-		}
-
-		buf := fmt.Sprintf("Map archived as: %s", newmapurl)
-		LogCMS(cfg.Local.Channel.ChatChannel, buf)
+		quickArchive()
 	}
 
 	genpath := cfg.Global.Paths.Folders.ServersRoot +
@@ -328,4 +266,71 @@ func Map_reset(doReport bool) {
 	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
 	FactAutoStart = true
 	//DoExit(false)
+}
+
+func quickArchive() {
+	version := strings.Split(FactorioVersion, ".")
+	shortversion := strings.Join(version[0:2], ".")
+
+	t := time.Now()
+	date := t.Format("2006-01-02")
+	newmapname := fmt.Sprintf("%v-%v.zip", cfg.Local.Callsign+"-"+cfg.Local.Name, date)
+	newmappath := fmt.Sprintf("%v%v%v%v%v", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix, "/", newmapname)
+	newmapurl := fmt.Sprintf("https://%v%v%v%v%v%v",
+		cfg.Global.Paths.URLs.Domain,
+		cfg.Global.Paths.URLs.PathPrefix,
+		cfg.Global.Paths.URLs.ArchivePath,
+		url.PathEscape(shortversion+constants.ArchiveFolderSuffix),
+		"/",
+		url.PathEscape(newmapname))
+
+	from, erra := os.Open(GameMapPath)
+	if erra != nil {
+
+		buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
+		cwlog.DoLogCW(cfg.Local.Channel.ChatChannel, buf)
+		return
+	}
+	defer from.Close()
+
+	/* Attach map, send to chat */
+	dData := &discordgo.MessageSend{Files: []*discordgo.File{
+		{Name: newmapname, Reader: from, ContentType: "application/zip"}}}
+	if disc.DS != nil {
+		_, err := disc.DS.ChannelMessageSendComplex(cfg.Local.Channel.ChatChannel, dData)
+
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
+	}
+
+	_, err := from.Seek(0, io.SeekStart)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+
+	/* Make directory if it does not exist */
+	newdir := fmt.Sprintf("%v%v%v/", cfg.Global.Paths.Folders.MapArchives, shortversion, constants.ArchiveFolderSuffix)
+	err = os.MkdirAll(newdir, os.ModePerm)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+
+	to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
+	if errb != nil {
+		buf := fmt.Sprintf("An error occurred when attempting to create the map archive file: %s", errb)
+		LogCMS(cfg.Local.Channel.ChatChannel, buf)
+		return
+	}
+	defer to.Close()
+
+	_, errc := io.Copy(to, from)
+	if errc != nil {
+		buf := fmt.Sprintf("An error occurred when attempting to write the map archive file: %s", errc)
+		LogCMS(cfg.Local.Channel.ChatChannel, buf)
+		return
+	}
+
+	buf := fmt.Sprintf("Map archived as: %s", newmapurl)
+	LogCMS(cfg.Local.Channel.ChatChannel, buf)
 }
