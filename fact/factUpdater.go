@@ -3,7 +3,6 @@ package fact
 import (
 	"archive/zip"
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -144,22 +143,24 @@ func CheckFactUpdate(logNoUpdate bool) {
 								return
 							}
 
-							if !cfg.Local.Options.ExpUpdates {
-								if newDigits[0] != oldDigits[0] {
-									//Full revision, only manually update.
-									buf := fmt.Sprintf("Factorio update '%v' to '%v' is a full revision, disabling auto-update.", oldversion, newversion)
-									CMS(cfg.Local.Channel.ChatChannel, buf)
-									cfg.Local.Options.AutoUpdate = false
-									return
+							/*
+								if !cfg.Local.Options.ExpUpdates {
+									if newDigits[0] != oldDigits[0] {
+										//Full revision, only manually update.
+										buf := fmt.Sprintf("Factorio update '%v' to '%v' is a full revision, disabling auto-update.", oldversion, newversion)
+										CMS(cfg.Local.Channel.ChatChannel, buf)
+										cfg.Local.Options.AutoUpdate = false
+										return
+									}
+									if newDigits[1] != oldDigits[1] {
+										//Major revision, only manually update.
+										buf := fmt.Sprintf("Factorio update '%v' to '%v' is a major revision, disabling auto-update.", oldversion, newversion)
+										CMS(cfg.Local.Channel.ChatChannel, buf)
+										cfg.Local.Options.AutoUpdate = false
+										return
+									}
 								}
-								if newDigits[1] != oldDigits[1] {
-									//Major revision, only manually update.
-									buf := fmt.Sprintf("Factorio update '%v' to '%v' is a major revision, disabling auto-update.", oldversion, newversion)
-									CMS(cfg.Local.Channel.ChatChannel, buf)
-									cfg.Local.Options.AutoUpdate = false
-									return
-								}
-							}
+							*/
 
 							/* Don't message, unless this is actually a unique new version */
 							if NewVersion != newversion {
