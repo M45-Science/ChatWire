@@ -218,8 +218,7 @@ func FactUpdate() {
 				linelen := len(line)
 
 				if linelen > 0 {
-
-					if strings.HasPrefix(line, "Update applied successfully!") {
+					if strings.HasPrefix(line, "Update applied") {
 						mess := "fact update: Factorio updated successfully!"
 						cwlog.DoLogCW(mess)
 						return
