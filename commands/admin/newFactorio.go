@@ -420,6 +420,13 @@ func InstallFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	dest := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix + cfg.Local.Callsign + "/"
 
+	os.RemoveAll(dest + "factorio/bin")
+	os.RemoveAll(dest + "factorio/config")
+	os.RemoveAll(dest + "factorio/data")
+	os.RemoveAll(dest + "factorio/temp")
+	os.RemoveAll(dest + "factorio/bin")
+	os.RemoveAll(dest + "factorio/config-path.cfg")
+
 	err = untar(dest, data)
 	if err != nil {
 		var elist []*discordgo.MessageEmbed
@@ -431,19 +438,8 @@ func InstallFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	err = os.Mkdir(dest+"factorio/saves", 0755)
-
-	if err == nil {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
-		return
-	} else {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Failure:", Description: "Factorio server install failed: " + err.Error()})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
-	}
-
+	os.Mkdir(dest+"factorio/saves", 0755)
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
+	f = discordgo.WebhookParams{Embeds: elist}
+	disc.FollowupResponse(i, &f)
 }
