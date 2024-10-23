@@ -283,7 +283,7 @@ func MainLoops() {
 				updated = false
 
 				//cwlog.DoLogCW("Database file modified, loading.")
-				fact.LoadPlayers(false, false)
+				fact.LoadPlayers(false, false, false)
 			}
 
 		}
@@ -328,7 +328,7 @@ func MainLoops() {
 					disc.Guild = nguild
 					disc.Guildname = nguild.Name
 					cwlog.DoLogCW("Guild data linked.")
-					fact.LoadPlayers(true, false)
+					fact.LoadPlayers(true, false, false)
 				}
 			}
 

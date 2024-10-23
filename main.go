@@ -30,6 +30,7 @@ func main() {
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
+	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	flag.Parse()
 
 	/* Start cw logs */
@@ -37,20 +38,21 @@ func main() {
 	cwlog.AutoRotateLogs()
 	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
 
-	if *cleanDB {
-		fact.LoadPlayers(true, true)
-		fact.WritePlayers()
-		fmt.Println("Database cleaned.")
-		_ = os.Remove("cw.lock")
-		return
-	}
-
 	initTime()
 	if !*glob.LocalTestMode {
 		checkLockFile()
 	}
 	initMaps()
 	readConfigs()
+
+	if *cleanDB || *cleanBans {
+		fact.LoadPlayers(false, true, *cleanBans)
+		fact.WritePlayers()
+		fmt.Println("Database cleaned.")
+		_ = os.Remove("cw.lock")
+		return
+	}
+
 	moderator.MakeFTPFolders()
 
 	/* Start Discord bot, don't wait for it.
@@ -58,7 +60,7 @@ func main() {
 	go startbot()
 
 	fact.SetupSchedule()
-	fact.LoadPlayers(true, false)
+	fact.LoadPlayers(true, false, false)
 	disc.ReadRoleList()
 	banlist.ReadBanFile()
 	fact.ReadVotes()

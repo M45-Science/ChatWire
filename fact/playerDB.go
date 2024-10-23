@@ -363,15 +363,16 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 }
 
 /* Load database */
-func LoadPlayers(bootMode, minimize bool) {
+func LoadPlayers(bootMode, minimize, clearBans bool) {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
 	didBan := false
+	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-	filedata, err := os.ReadFile(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
+	filedata, err := os.ReadFile(dbPath)
 	if err != nil {
-		cwlog.DoLogCW("Couldn't read db file, skipping...")
+		cwlog.DoLogCW("Couldn't read db file, path: %v", dbPath)
 		return
 	}
 
@@ -397,6 +398,13 @@ func LoadPlayers(bootMode, minimize bool) {
 
 			for pname := range tempData {
 
+				if clearBans {
+					if tempData[pname].Level < 0 {
+						removed++
+						defer delete(tempData, pname)
+						continue
+					}
+				}
 				//DB cleaning
 				if minimize {
 					//Get rid of new/deleted
@@ -448,7 +456,7 @@ func LoadPlayers(bootMode, minimize bool) {
 				}
 			}
 			if removed > 0 {
-				fmt.Printf("Removed: %v entries.\n", removed)
+				cwlog.DoLogCW("Removed: %v entries.\n", removed)
 			}
 			glob.PlayerListLock.Unlock()
 		}
@@ -461,9 +469,10 @@ func WritePlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	fo, err := os.Create(cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile)
+	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
+	fo, err := os.Create(dbPath)
 	if err != nil {
-		cwlog.DoLogCW("Couldn't open db file, skipping...")
+		cwlog.DoLogCW("Couldn't write db file, path: %v", dbPath)
 		return
 	}
 	/*  close fo on exit and check for its returned error */
