@@ -68,7 +68,7 @@ func main() {
 	go support.MainLoops()
 	go support.HandleChat()
 
-	if cfg.Local.Options.AutoStart {
+	if cfg.Local.Options.AutoStart || *glob.LocalTestMode {
 		fact.FactAutoStart = true
 	}
 
