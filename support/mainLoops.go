@@ -522,6 +522,17 @@ func MainLoops() {
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
 					}
 				}
+
+				/* Restart game */
+				if _, err = os.Stat(".rfact"); err == nil {
+					if errb = os.Remove(".rfact"); errb == nil {
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio restarting!")
+						fact.QuitFactorio("Server restarting for maintenance.")
+					} else if !failureReported {
+						failureReported = true
+						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .rfact file, ignoring.")
+					}
+				}
 			} else { /*  Only if game is NOT running */
 				/* Start game */
 				if _, err = os.Stat(".start"); err == nil {
@@ -534,6 +545,7 @@ func MainLoops() {
 					}
 				}
 			}
+
 		}
 	}()
 
