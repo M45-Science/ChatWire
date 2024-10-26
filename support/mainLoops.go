@@ -44,18 +44,20 @@ func MainLoops() {
 			if !fact.FactIsRunning {
 
 				if fact.DoUpdateFactorio {
-					fact.DoUpdateFactorio = false
 
 					fact.FactUpdate()
+					time.Sleep(time.Second)
+					fact.DoUpdateFactorio = false
+
 					if cfg.Local.Options.AutoStart {
 						fact.FactAutoStart = true
 					}
 				} else if fact.QueueFactReboot {
-					fact.QueueFactReboot = false
 
 					if cfg.Local.Options.AutoStart {
 						fact.FactAutoStart = true
 					}
+					fact.QueueFactReboot = false
 
 				} else if fact.QueueReboot || glob.DoRebootCW {
 					fact.DoExit(false)
