@@ -40,17 +40,36 @@ func MainLoops() {
 
 			time.Sleep(constants.WatchdogInterval)
 
-			/* Check for updates, or reboot flags */
-			if !fact.FactIsRunning &&
-				(fact.QueueReload || glob.DoRebootCW || fact.DoUpdateFactorio) {
+			/* Factorio not running */
+			if !fact.FactIsRunning {
+
 				if fact.DoUpdateFactorio {
+					fact.DoUpdateFactorio = false
+
 					fact.FactUpdate()
+					if cfg.Local.Options.AutoStart {
+						fact.FactAutoStart = true
+					}
+				} else if fact.QueueFactReboot {
+					fact.QueueFactReboot = false
+
+					if cfg.Local.Options.AutoStart {
+						fact.FactAutoStart = true
+					}
+
+				} else if fact.QueueReboot || glob.DoRebootCW {
 					fact.DoExit(false)
 					return
-				}
-				fact.DoExit(false)
-				return
 
+				} else if fact.FactAutoStart &&
+					!fact.DoUpdateFactorio &&
+					!*glob.NoAutoLaunch {
+
+					if WithinHours() {
+						time.Sleep(time.Second)
+						launchFactorio()
+					}
+				}
 				/* We are running normally */
 			} else if fact.FactIsRunning && fact.FactorioBooted {
 
@@ -73,18 +92,6 @@ func MainLoops() {
 					fact.WaitFactQuit()
 					fact.FactorioBooted = false
 					fact.SetFactRunning(false)
-				}
-
-				/* We aren't running, but should be! */
-			} else if !fact.FactIsRunning &&
-				fact.FactAutoStart &&
-				!fact.DoUpdateFactorio &&
-				!*glob.NoAutoLaunch {
-				/* Don't relaunch if we are set to auto update */
-
-				if WithinHours() {
-					time.Sleep(time.Second)
-					launchFactorio()
 				}
 			}
 		}
@@ -428,18 +435,23 @@ func MainLoops() {
 		for glob.ServerRunning {
 			time.Sleep(2 * time.Second)
 
-			if fact.QueueReload && fact.NumPlayers == 0 && !fact.DoUpdateFactorio {
-				if fact.FactIsRunning && fact.FactorioBooted {
+			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 {
+
+				if fact.QueueReboot && !fact.DoUpdateFactorio {
 					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
 					fact.QuitFactorio("Server rebooting for maintenance.")
-					break //We don't need to loop anymore
-				}
-			}
-			if fact.DoUpdateFactorio && fact.NumPlayers == 0 {
-				if fact.FactIsRunning && fact.FactorioBooted {
+					break //We don't need to loop anymore, rebooting chat wire.
+
+				} else if fact.QueueFactReboot && !fact.DoUpdateFactorio {
+					cwlog.DoLogCW("Stopping Factorio for reboot.")
+					fact.QuitFactorio("Rebooting factorio.")
+					time.Sleep(time.Minute)
+
+				} else if fact.DoUpdateFactorio {
 					cwlog.DoLogCW("Stopping Factorio for update.")
-					fact.QuitFactorio("")
-					break //We don't need to loop anymore
+					fact.QuitFactorio("Updating factorio.")
+					time.Sleep(time.Minute)
+
 				}
 			}
 		}
@@ -500,8 +512,8 @@ func MainLoops() {
 			/* Queued reboots, regardless of game state */
 			if _, err = os.Stat(".queue"); err == nil {
 				if errb = os.Remove(".queue"); errb == nil {
-					if !fact.QueueReload {
-						fact.QueueReload = true
+					if !fact.QueueReboot {
+						fact.QueueReboot = true
 						cwlog.DoLogCW("Reboot queued!")
 					}
 				} else if !failureReported {
@@ -526,8 +538,7 @@ func MainLoops() {
 				/* Restart game */
 				if _, err = os.Stat(".rfact"); err == nil {
 					if errb = os.Remove(".rfact"); errb == nil {
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio restarting!")
-						fact.QuitFactorio("Server restarting for maintenance.")
+						fact.QueueFactReboot = true
 					} else if !failureReported {
 						failureReported = true
 						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .rfact file, ignoring.")

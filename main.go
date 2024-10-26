@@ -80,7 +80,8 @@ func main() {
 	_ = os.Remove("cw.lock")
 	fact.FactAutoStart = false
 	glob.DoRebootCW = false
-	fact.QueueReload = false
+	fact.QueueReboot = false
+	fact.QueueFactReboot = false
 	fact.QuitFactorio("Server quitting...")
 	fact.WaitFactQuit()
 	fact.DoExit(false)

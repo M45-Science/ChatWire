@@ -90,7 +90,7 @@ func UpdateMods(doReport bool) {
 	}
 	if buf != "" {
 		fact.CMS(cfg.Local.Channel.ChatChannel, "Some Factorio mods were updated, and will take effect on the next reboot (when server is empty)")
-		fact.QueueReload = true
+		fact.QueueFactReboot = true
 	} else if doReport {
 		fact.CMS(cfg.Local.Channel.ChatChannel, "All game mods are up-to-date.")
 	}

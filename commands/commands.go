@@ -53,6 +53,10 @@ var cmds = []glob.CommandData{
 						Name:     "reload-config",
 						Function: admin.ReloadConfig,
 					},
+					{
+						Name:     "queue-fact-reboot",
+						Function: admin.QueFactReboot,
+					},
 				},
 			},
 		},

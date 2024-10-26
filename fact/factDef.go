@@ -52,7 +52,8 @@ var (
 	FactAutoStart = false
 
 	/* Reboot-when-empty */
-	QueueReload = false
+	QueueReboot     = false
+	QueueFactReboot = false
 
 	/*Factorio save game data */
 	GameMapName = ""

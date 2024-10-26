@@ -81,7 +81,8 @@ func Map_reset(doReport bool) {
 		FactChat(msg)
 
 		cfg.Local.Options.SkipReset = false
-		QueueReload = false      //Skip queued reboot
+		QueueReboot = false      //Skip queued reboot
+		QueueFactReboot = false  //Skip queued reboot
 		DoUpdateFactorio = false //Skip queued updates
 		cfg.WriteLCfg()
 
