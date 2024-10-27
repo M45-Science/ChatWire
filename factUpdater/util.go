@@ -51,12 +51,16 @@ func parseVersionString(input string) (versionInts, error) {
 	return versionInts{A: int(a), B: int(b), C: int(c)}, nil
 }
 
-func (input versionInts) intToString() string {
+func (input versionInts) IntToString() string {
 	return fmt.Sprintf("%v.%v.%v", input.A, input.B, input.C)
 }
 
 func isVersionNewerThan(VA, VB versionInts) bool {
 	return VA.A >= VB.A && VA.B >= VB.B && VA.C > VB.C
+}
+
+func isVersionEqual(VA, VB versionInts) bool {
+	return VA.A == VB.A && VA.B == VB.B && VA.C == VB.C
 }
 
 func fileExistsSize(filename string) (bool, int64, error) {
@@ -101,9 +105,7 @@ func untar(dst string, data []byte) error {
 
 		case tar.TypeDir:
 			if _, err := os.Stat(target); err != nil {
-				if err := os.MkdirAll(target, 0755); err != nil {
-					return err
-				}
+				os.MkdirAll(target, 0755)
 			}
 
 		case tar.TypeReg:

@@ -595,12 +595,14 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
+			if cfg.Local.Options.AutoUpdate {
+				_, msg, err := factUpdater.DoQuickLatest(false)
+				if err && msg != "" {
+					cwlog.DoLogCW(msg)
+				}
+			}
 			time.Sleep(time.Minute * 10)
 			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
-
-			if cfg.Local.Options.AutoUpdate {
-				factUpdater.DoQuickLatest()
-			}
 		}
 	}()
 

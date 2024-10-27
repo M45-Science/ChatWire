@@ -14,12 +14,12 @@ import (
 
 var factorioLock sync.Mutex
 
-func getFactorioVersion(info *infoData) error {
+func getFactorioVersion(info *InfoData) error {
 
 	factorioLock.Lock()
 	defer factorioLock.Unlock()
 
-	if info.gVersion != "" {
+	if info.Version != "" {
 		return nil
 	}
 
@@ -134,21 +134,21 @@ func parseFactorioVersion(input string) (versionInts, string, string, error) {
 	return versionInts{}, "", "", fmt.Errorf("unexpected error")
 }
 
-func saveFoundVersion(info *infoData, fversion versionInts, fbuild, fdistro string) {
+func saveFoundVersion(info *InfoData, fversion versionInts, fbuild, fdistro string) {
 	buf := ""
-	if info.gVersion == "" {
-		info.vInt = fversion
-		buf = buf + fmt.Sprintf("factorio version: %v", fversion.intToString())
+	if info.Version == "" {
+		info.VersInt = fversion
+		buf = buf + fmt.Sprintf("factorio version: %v", fversion.IntToString())
 	}
-	if info.gBuild == "" {
-		info.gBuild = fbuild
+	if info.Build == "" {
+		info.Build = fbuild
 		if buf != "" {
 			buf = buf + ", "
 		}
 		buf = buf + fmt.Sprintf("build: %v", fbuild)
 	}
-	if info.gDistro == "" {
-		info.gDistro = fdistro
+	if info.Distro == "" {
+		info.Distro = fdistro
 		if buf != "" {
 			buf = buf + ", "
 		}

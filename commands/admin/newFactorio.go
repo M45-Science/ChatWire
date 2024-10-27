@@ -19,6 +19,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/support"
@@ -345,7 +346,23 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-
 	disc.EphemeralResponse(i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)
+}
+
+func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(i, "Status:", "Checking for factorio updates.")
+
+	_, msg, err := factUpdater.DoQuickLatest(false)
+	if err {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "ERROR:", Description: "Factorio update failed:  " + msg})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(i, &f)
+	} else {
+		var elist []*discordgo.MessageEmbed
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})
+		f := discordgo.WebhookParams{Embeds: elist}
+		disc.FollowupResponse(i, &f)
+	}
 }

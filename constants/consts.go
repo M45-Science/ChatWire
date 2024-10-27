@@ -74,19 +74,6 @@ const (
 	/* Max results to return */
 	WhoisResults = 15
 
-	/* Maximum time to wait for Factorio update download */
-	FactorioUpdateCheckLimit = 30 * time.Minute
-	/*
-	 * Number of times to check a invalid zip file
-	 * before purging the cache folder
-	 * the zip can appear invalid if another server is still downloading it
-	 */
-	MaxUpdateZipAttempts = 5
-	UpdateZipInterval    = time.Minute
-
-	/* Maximum time before giving up on patching */
-	FactorioUpdateProcessLimit = 10 * time.Minute
-
 	/* Maximum time before giving up on mod updater */
 	ModUpdateLimit = 10 * time.Minute
 	ModUpdaterPath = "scripts/mod_updater.py"

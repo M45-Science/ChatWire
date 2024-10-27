@@ -193,8 +193,8 @@ var cmds = []glob.CommandData{
 						Function: admin.ArchiveMap,
 					},
 					{
-						Name: "update-factorio",
-						//Function: admin.UpdateFactorio,
+						Name:     "update-factorio",
+						Function: admin.UpdateFactorio,
 					},
 				},
 			},

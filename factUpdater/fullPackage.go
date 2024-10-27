@@ -1,10 +1,14 @@
 package factUpdater
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"fmt"
 	"strings"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 const (
@@ -13,30 +17,27 @@ const (
 	latestReleaseURL = "https://factorio.com/api/latest-releases"
 )
 
-func fullPackage(info *infoData) error {
+func fullPackage(info *InfoData) error {
 	var filename string
 	var err error
 
 	branch := "latest"
-	if info.xreleases {
+	if info.Xreleases {
 		branch = "experimental"
 	}
-	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.gBuild, info.gDistro)
-	genName := fmt.Sprintf("factorio_%v_%v_%v.cache", info.gBuild, info.gDistro, info.vInt.intToString())
-
-	skipDownload := false
+	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.Build, info.Distro)
 	var data []byte
 
-	if !skipDownload {
-		cwlog.DoLogCW("Downloading: %v", url)
-		data, filename, err = httpGet(url)
-		if err != nil {
-			return fmt.Errorf("failed to get response: %v", err.Error())
-		}
-		cwlog.DoLogCW("Download of %v complete, verifying...", filename)
-	} else {
-		cwlog.DoLogCW("Verifying cached download: %v...", genName)
+	cwlog.DoLogCW("Downloading: %v", url)
+
+	data, filename, err = httpGet(url)
+	if err != nil {
+		embed := &discordgo.MessageEmbed{Title: "ERROR:", Description: "Downloading Factorio failed."}
+		disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, embed)
+		return fmt.Errorf("failed to get response: %v", err.Error())
 	}
+
+	cwlog.DoLogCW("Download of %v complete, verifying...", filename)
 
 	archive, err := checkFullPackage(data)
 	if err != nil {

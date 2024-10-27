@@ -5,10 +5,10 @@ type checkInstallData struct {
 	good bool
 }
 
-type infoData struct {
-	gVersion, gDistro, gBuild string
-	xreleases                 bool
-	vInt                      versionInts
+type InfoData struct {
+	Version, Distro, Build string
+	Xreleases              bool
+	VersInt                versionInts
 }
 
 type getLatestData struct {

@@ -2,34 +2,41 @@ package factUpdater
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/fact"
 	"encoding/json"
 	"fmt"
 )
 
-func DoQuickLatest() error {
-	info := &infoData{xreleases: cfg.Local.Options.ExpUpdates}
+func DoQuickLatest(force bool) (*InfoData, string, bool) {
+	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates}
+
 	err := getFactorioVersion(info)
 	if err != nil {
-		return fmt.Errorf("DoQuickLatest: unable to get factorio version: %v", err.Error())
+		return info, fmt.Sprintf("Unable to get factorio version: %v", err.Error()), true
 	}
+	oldVersion := info.VersInt
 
 	newVersion, err := quickLatest(info)
 	if err != nil {
-		return fmt.Errorf("DoQuickLatest: %v", err.Error())
+		return info, fmt.Sprintf("quickLatest: %v", err.Error()), true
 	}
+	fact.NewVersion = newVersion.IntToString()
 
-	if isVersionNewerThan(*newVersion, info.vInt) {
+	if isVersionNewerThan(*newVersion, oldVersion) || force {
+		info.VersInt = *newVersion
 		err := fullPackage(info)
 		if err != nil {
-			return fmt.Errorf("DoQuickLatest: fullPackage: %v", err.Error())
+			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true
 		}
-
+		return info, fmt.Sprintf("Factorio upgraded from %v to %v.", oldVersion.IntToString(), newVersion.IntToString()), false
+	} else if isVersionEqual(*newVersion, info.VersInt) {
+		return info, "Factorio is up-to-date.", false
+	} else {
+		return info, "Latest version is older, use force option if you want to downgrade.\nWARNING: downgrading will likely break existing maps/saves.", false
 	}
-
-	return nil
 }
 
-func quickLatest(info *infoData) (*versionInts, error) {
+func quickLatest(info *InfoData) (*versionInts, error) {
 
 	FetchLock.Lock()
 	defer FetchLock.Unlock()
@@ -47,7 +54,7 @@ func quickLatest(info *infoData) (*versionInts, error) {
 	}
 
 	parseStringsLatest(tempList)
-	if info.xreleases {
+	if info.Xreleases {
 		return &tempList.Experimental.HeadlessInt, err
 	} else {
 		return &tempList.Stable.HeadlessInt, err
