@@ -196,6 +196,10 @@ var cmds = []glob.CommandData{
 						Name:     "update-factorio",
 						Function: admin.UpdateFactorio,
 					},
+					{
+						Name:     "install-factorio",
+						Function: admin.InstallFactorio,
+					},
 				},
 			},
 		},

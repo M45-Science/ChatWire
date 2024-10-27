@@ -366,3 +366,13 @@ func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		disc.FollowupResponse(i, &f)
 	}
 }
+
+func InstallFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(i, "Info", "Installing Factorio...")
+	_, msg, _ := factUpdater.DoQuickLatest(true)
+
+	var elist []*discordgo.MessageEmbed
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})
+	f := discordgo.WebhookParams{Embeds: elist}
+	disc.FollowupResponse(i, &f)
+}

@@ -54,11 +54,26 @@ func fullPackage(info *InfoData) error {
 	}
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
-	os.RemoveAll(factPath + "factorio/bin")
-	os.RemoveAll(factPath + "factorio/config")
-	os.RemoveAll(factPath + "factorio/data")
-	os.RemoveAll(factPath + "factorio/temp")
-	os.RemoveAll(factPath + "factorio/bin")
+	err = os.RemoveAll(factPath + "factorio/bin")
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	err = os.RemoveAll(factPath + "factorio/config")
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	err = os.RemoveAll(factPath + "factorio/data")
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	err = os.RemoveAll(factPath + "factorio/temp")
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	err = os.RemoveAll(factPath + "factorio/bin")
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
 
 	fact.DoUpdateFactorio = true
 	waitFactQuit()

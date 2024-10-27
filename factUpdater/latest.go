@@ -8,7 +8,20 @@ import (
 )
 
 func DoQuickLatest(force bool) (*InfoData, string, bool) {
-	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates}
+	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
+
+	if force {
+		newVersion, err := quickLatest(info)
+		if err != nil {
+			return info, fmt.Sprintf("quickLatest: %v", err.Error()), true
+		}
+		info.VersInt = *newVersion
+		err = fullPackage(info)
+		if err != nil {
+			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true
+		}
+		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false
+	}
 
 	err := getFactorioVersion(info)
 	if err != nil {
