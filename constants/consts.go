@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2645-1026.2024-0104p"
+	Version            = "2646-1027.2024-0101"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -15,7 +15,6 @@ const (
 	PassExpireSec      = 5 * 60
 
 	/* ChatWire files */
-	FactHeadlessURL     = "https://factorio.com/get-download/stable/headless/linux64"
 	CWGlobalConfig      = "../cw-global-config.json"
 	CWLocalConfig       = "cw-local-config.json"
 	WhitelistName       = "server-whitelist.json"
