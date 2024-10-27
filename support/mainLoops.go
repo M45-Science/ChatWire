@@ -444,7 +444,6 @@ func MainLoops() {
 					cwlog.DoLogCW("Stopping Factorio for update.")
 					fact.QuitFactorio("Updating factorio.")
 					time.Sleep(time.Minute)
-
 				}
 			}
 		}
@@ -458,33 +457,31 @@ func MainLoops() {
 		for glob.ServerRunning {
 			time.Sleep(time.Second * 5)
 
-			if cfg.Local.Options.AutoUpdate {
-				if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
-					if fact.NumPlayers > 0 {
+			if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
+				if fact.NumPlayers > 0 {
 
-						/* Warn players */
-						if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
-							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
-								fact.NewVersion, glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
-							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-							fact.FactChat(fact.AddFactColor("orange", msg))
-						}
-						time.Sleep(2 * time.Minute)
+					/* Warn players */
+					if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
+						msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
+							fact.NewVersion, glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
+						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
+						fact.FactChat(fact.AddFactColor("orange", msg))
+					}
+					time.Sleep(2 * time.Minute)
 
-						/* Reboot anyway */
-						if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
-							msg := "(SYSTEM) Rebooting for Factorio update!"
-							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-							glob.UpdateWarnCounter = 0
-							fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
-							break /* Stop looping */
-						}
-						glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
-					} else {
+					/* Reboot anyway */
+					if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
+						msg := "(SYSTEM) Rebooting for Factorio update!"
+						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 						glob.UpdateWarnCounter = 0
 						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
 						break /* Stop looping */
 					}
+					glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
+				} else {
+					glob.UpdateWarnCounter = 0
+					fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
+					break /* Stop looping */
 				}
 			}
 		}

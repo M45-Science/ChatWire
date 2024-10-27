@@ -54,6 +54,9 @@ func fullPackage(info *InfoData) error {
 	}
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
+	fact.DoUpdateFactorio = true
+	waitFactQuit()
+
 	err = os.RemoveAll(factPath + "/factorio/bin")
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
@@ -75,24 +78,20 @@ func fullPackage(info *InfoData) error {
 		cwlog.DoLogCW(err.Error())
 	}
 
-	fact.DoUpdateFactorio = true
-	waitFactQuit()
-
 	err = untar(factPath, archive)
 	if err != nil {
 		return fmt.Errorf("installing factorio to '%v' failed: %v", factPath, err.Error())
 	}
 
-	fact.DoUpdateFactorio = false
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
+	fact.DoUpdateFactorio = false
 	return nil
 }
 
 func waitFactQuit() {
-	for fact.FactIsRunning && glob.ServerRunning {
-		time.Sleep(time.Millisecond * 100)
+	for (fact.FactIsRunning || fact.FactorioBooted) && glob.ServerRunning {
+		time.Sleep(time.Millisecond * 10)
 	}
-	time.Sleep(time.Second)
 }
 
 func checkFullPackage(data []byte) ([]byte, error) {
