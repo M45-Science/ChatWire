@@ -12,21 +12,6 @@ const (
 	baseUpdateURL   = "https://updater.factorio.com/get-download-link?"
 )
 
-func doFullPackage(info *infoData) error {
-	for att := 1; att < info.numAttempts; att++ {
-		err := fullPackage(info)
-		if err != nil {
-			cwlog.DoLogCW("doFullPackage: attempt: %v failed: %v", att, err.Error())
-
-			attemptThrottle(att)
-		} else {
-			cwlog.DoLogCW("Full package installed to: %v", fact.GetFactorioBinary())
-			return nil
-		}
-	}
-	return fmt.Errorf("doFullPackage: failed after %v attempts", info.numAttempts)
-}
-
 func fullPackage(info *infoData) error {
 	var filename string
 	var err error

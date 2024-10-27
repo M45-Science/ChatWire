@@ -2,7 +2,6 @@ package factUpdater
 
 import (
 	"ChatWire/constants"
-	"ChatWire/cwlog"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,19 +11,6 @@ import (
 )
 
 var FetchLock sync.Mutex
-
-func doHttpGet(info *infoData, url string) ([]byte, string, error) {
-	for att := 1; att < info.numAttempts; att++ {
-		data, filename, err := httpGet(info, url)
-		if err != nil {
-			cwlog.DoLogCW("doHttpGet: attempt: %v failed.", att)
-			attemptThrottle(att)
-		} else {
-			return data, filename, err
-		}
-	}
-	return nil, "", fmt.Errorf("doHttpGet: failed after %v attempts", info.numAttempts)
-}
 
 func httpGet(info *infoData, url string) ([]byte, string, error) {
 	// Set timeout
