@@ -7,7 +7,7 @@ type checkInstallData struct {
 
 type infoData struct {
 	gVersion, gDistro, gBuild string
-	xreleases, verboseMode    bool
+	xreleases                 bool
 	vInt                      versionInts
 }
 

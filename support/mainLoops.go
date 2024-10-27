@@ -17,6 +17,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 )
@@ -468,7 +469,7 @@ func MainLoops() {
 			time.Sleep(time.Second * 5)
 
 			if cfg.Local.Options.AutoUpdate {
-				if fact.FactIsRunning && fact.FactorioBooted && fact.NewVersion != constants.Unknown {
+				if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
 					if fact.NumPlayers > 0 {
 
 						/* Warn players */
@@ -592,18 +593,14 @@ func MainLoops() {
 	* Check for Factorio updates
 	****************************/
 	go func() {
-		time.Sleep(time.Minute)
-		if !cfg.Local.Options.AutoUpdate {
-			return
-		}
 
 		for glob.ServerRunning {
+			time.Sleep(time.Minute * 10)
 			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
-			if !cfg.Local.Options.AutoUpdate {
-				return
+
+			if cfg.Local.Options.AutoUpdate {
+				factUpdater.DoQuickLatest()
 			}
-			time.Sleep(time.Minute * 30)
-			//fact.CheckFactUpdate(false)
 		}
 	}()
 

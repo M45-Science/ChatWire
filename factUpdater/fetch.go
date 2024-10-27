@@ -12,7 +12,7 @@ import (
 
 var FetchLock sync.Mutex
 
-func httpGet(info *infoData, url string) ([]byte, string, error) {
+func httpGet(url string) ([]byte, string, error) {
 	// Set timeout
 	hClient := http.Client{
 		Timeout: time.Second * time.Duration(30),

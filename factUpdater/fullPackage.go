@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	baseDownloadURL = "https://www.factorio.com/get-download/"
-	baseUpdateURL   = "https://updater.factorio.com/get-download-link?"
+	baseDownloadURL  = "https://www.factorio.com/get-download/"
+	baseUpdateURL    = "https://updater.factorio.com/get-download-link?"
+	latestReleaseURL = "https://factorio.com/api/latest-releases"
 )
 
 func fullPackage(info *infoData) error {
@@ -28,7 +29,7 @@ func fullPackage(info *infoData) error {
 
 	if !skipDownload {
 		cwlog.DoLogCW("Downloading: %v", url)
-		data, filename, err = httpGet(info, url)
+		data, filename, err = httpGet(url)
 		if err != nil {
 			return fmt.Errorf("failed to get response: %v", err.Error())
 		}
@@ -37,7 +38,7 @@ func fullPackage(info *infoData) error {
 		cwlog.DoLogCW("Verifying cached download: %v...", genName)
 	}
 
-	archive, err := checkFullPackage(info, data)
+	archive, err := checkFullPackage(data)
 	if err != nil {
 		return fmt.Errorf("checking full package failed: %v", err.Error())
 	}
@@ -55,10 +56,11 @@ func fullPackage(info *infoData) error {
 	}
 
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
+	fact.DoUpdateFactorio = true
 	return nil
 }
 
-func checkFullPackage(info *infoData, data []byte) ([]byte, error) {
+func checkFullPackage(data []byte) ([]byte, error) {
 	archive, err := unXZData(data)
 	if err != nil {
 		return nil, fmt.Errorf("checkFullPackage: xz failed to decompress: %v", err.Error())

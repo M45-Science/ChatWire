@@ -1,9 +1,7 @@
 package factUpdater
 
 import (
-	"ChatWire/cwlog"
 	"archive/tar"
-	"archive/zip"
 	"bytes"
 	"fmt"
 	"io"
@@ -11,20 +9,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ulikunitz/xz"
 )
-
-func readZipFile(zf *zip.File) ([]byte, error) {
-
-	f, err := zf.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return io.ReadAll(f)
-}
 
 func parseStringsLatest(entry *getLatestData) error {
 	sInt, err := parseVersionString(entry.Stable.Headless)
@@ -70,10 +57,6 @@ func (input versionInts) intToString() string {
 
 func isVersionNewerThan(VA, VB versionInts) bool {
 	return VA.A >= VB.A && VA.B >= VB.B && VA.C > VB.C
-}
-
-func isVersionEqual(VA, VB versionInts) bool {
-	return VA.A == VB.A && VA.B == VB.B && VA.C == VB.C
 }
 
 func fileExistsSize(filename string) (bool, int64, error) {
@@ -136,25 +119,4 @@ func untar(dst string, data []byte) error {
 			f.Close()
 		}
 	}
-}
-
-func combinedPackageName(info *infoData) string {
-
-	dlen := len(info.gDistro)
-	getBits := info.gDistro
-	buf := fmt.Sprintf("core-%v_%v%v", getBits[:dlen-2], info.gBuild, getBits[dlen-2:dlen])
-	return buf
-}
-
-func attemptThrottle(att int) {
-	if att > 0 {
-		delay := att * att * 10
-		if delay > 0 {
-			cwlog.DoLogCW("Will attempt again in %v sec.", int((delay*11)/10.0))
-			for i := 0; i < delay*11 && att > 0; i++ {
-				time.Sleep(100 * time.Millisecond)
-			}
-		}
-	}
-	att++
 }

@@ -178,7 +178,7 @@ var (
 
 	/* Update warning */
 	UpdateWarnCounter  = 0
-	UpdateGraceMinutes = 15
+	UpdateGraceMinutes = 5
 	UpdateZipAttempts  = 0
 
 	ChatterLock      sync.Mutex

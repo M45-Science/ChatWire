@@ -23,7 +23,7 @@ func getFactorioVersion(info *infoData) error {
 		return nil
 	}
 
-	if err := factBinExist(info); err != nil {
+	if err := factBinExist(); err != nil {
 		return err
 	}
 
@@ -50,7 +50,7 @@ func getFactorioVersion(info *infoData) error {
 	return nil
 }
 
-func factBinExist(info *infoData) error {
+func factBinExist() error {
 
 	//Check if factorio binary exists
 	found, _, err := fileExistsSize(fact.GetFactorioBinary())
