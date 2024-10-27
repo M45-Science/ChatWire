@@ -93,7 +93,6 @@ type folderPaths struct {
 
 type binaryPaths struct {
 	FactBinary   string
-	FactUpdater  string
 	UpdaterShell string
 	Shell        string
 }

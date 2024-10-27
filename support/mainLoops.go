@@ -45,7 +45,7 @@ func MainLoops() {
 
 				if fact.DoUpdateFactorio {
 
-					fact.FactUpdate()
+					//fact.FactUpdate()
 					time.Sleep(time.Second)
 					fact.DoUpdateFactorio = false
 
@@ -603,7 +603,7 @@ func MainLoops() {
 				return
 			}
 			time.Sleep(time.Minute * 30)
-			fact.CheckFactUpdate(false)
+			//fact.CheckFactUpdate(false)
 		}
 	}()
 

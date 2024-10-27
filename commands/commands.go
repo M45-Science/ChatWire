@@ -185,10 +185,6 @@ var cmds = []glob.CommandData{
 						Function: admin.NewMap,
 					},
 					{
-						Name:     "update-factorio",
-						Function: admin.UpdateFactorio,
-					},
-					{
 						Name:     "update-mods",
 						Function: admin.UpdateMods,
 					},
@@ -197,8 +193,8 @@ var cmds = []glob.CommandData{
 						Function: admin.ArchiveMap,
 					},
 					{
-						Name:     "install-factorio",
-						Function: admin.InstallFact,
+						Name: "update-factorio",
+						//Function: admin.UpdateFactorio,
 					},
 				},
 			},
