@@ -375,8 +375,7 @@ var cmds = []glob.CommandData{
 		Description: "Show list of mod files",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-	//Function: moderator.ListMods},
-	},
+		Function: moderator.ListGameMods},
 	{AppCmd: glob.AppCmdData{
 		Name:        "info",
 		Description: "Displays status and settings of the server.",

@@ -7,10 +7,8 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-	"ChatWire/sclean"
 	"archive/zip"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -55,7 +53,7 @@ type modInfoData struct {
 
 var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MAP, Name: "map", Value: "load-map", Path: MapFolder, Function: ListZips},
-	{fType: TYPE_MOD, Name: "mod", Value: "load-mod", Path: ModFolder, Function: ListMods},
+	{fType: TYPE_MOD, Name: "mod", Value: "load-mod", Path: ModFolder, Function: ListZips},
 	{fType: TYPE_MODPACK, Name: "modpack", Value: "load-modpack", Path: ModPackFolder, Function: ListZips},
 	{fType: TYPE_MODLIST, Name: "modlist", Value: "load-modlist", Path: ModListFolder, Function: ListModlists},
 	{fType: TYPE_MODSETTINGS, Name: "settings", Value: "load-settings", Path: ModSettingsFolder, Function: ListModlists},
@@ -93,86 +91,12 @@ func MakeFTPFolders() {
 	}
 }
 
-func ListMods(ftype ftpTypeData, i *discordgo.InteractionCreate) {
-	if disc.DS == nil {
-		return
-	}
-	pathPrefix := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/"
+func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData) {
 
-	files, err := os.ReadDir(pathPrefix)
-
-	if err != nil {
-		cwlog.DoLogCW(err.Error())
-		disc.EphemeralResponse(i, "Error:", "Unable to read the FTP directory.")
-		return
-	}
-
-	var tempf []fs.DirEntry
-	for _, f := range files {
-		if strings.HasSuffix(f.Name(), ".zip") {
-			tempf = append(tempf, f)
-		}
-	}
-
-	sort.Slice(tempf, func(i, j int) bool {
-		return strings.ToLower(tempf[i].Name()) < strings.ToLower(tempf[j].Name())
-	})
-
-	numFiles := len(tempf)
-	//Limit results
-	if numFiles > constants.MaxMapResults-1 {
-		numFiles = constants.MaxMapResults - 1
-	}
-
-	units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
-	if err != nil {
-		panic(err)
-	}
-
-	buf := ""
-	for i := 0; i < numFiles; i++ {
-
-		f := tempf[i]
-		fName := f.Name()
-
-		if strings.HasSuffix(fName, ".zip") {
-			saveName := strings.TrimSuffix(fName, ".zip")
-
-			/* Get mod date */
-			info, err := f.Info()
-			if err != nil {
-				continue
-			}
-			modDate := time.Since(info.ModTime())
-			modDate = modDate.Round(time.Second)
-			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
-
-			zip, err := zip.OpenReader(pathPrefix + "/" + fName)
-			if err == nil && zip != nil {
-				buf = buf + fmt.Sprintf("%-32v (%v)\n",
-					sclean.TruncateStringEllipsis(saveName, 32),
-					modStr)
-			}
-		}
-	}
-
-	if buf == "" {
-		disc.EphemeralResponse(i, "Info", "No mods were found!")
-	} else {
-		disc.EphemeralResponse(i, "Mod list:", buf)
-	}
-}
-
-func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType int) {
-
-	pathPrefix := cfg.Global.Paths.Folders.FTP + FTPTypes[fType].Path + "/"
+	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
 	zipPath := pathPrefix + file + ".zip"
 
-	if fType == TYPE_MAP {
+	if fType.fType == TYPE_MAP {
 		if fact.HasZipBomb(zipPath) {
 			fact.ReportZipBomb(i, zipPath)
 			return
@@ -184,7 +108,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType int) {
 		} else {
 			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Map appears to be invalid!"})
 		}
-	} else if fType == TYPE_MODSETTINGS {
+	} else if fType.fType == TYPE_MODSETTINGS {
 
 	} else { //mod or modpack
 		if fact.HasZipBomb(zipPath) {
@@ -199,7 +123,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType int) {
 		}
 		defer zip.Close()
 
-		if fType == TYPE_MODPACK {
+		if fType.fType == TYPE_MODPACK {
 			for _, file := range zip.File {
 				if !strings.HasSuffix(file.Name, ".zip") {
 					if strings.EqualFold(file.Name, "mod-list.json") {
@@ -211,7 +135,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType int) {
 			}
 			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Would load modpack here."})
 
-		} else if fType == TYPE_MOD {
+		} else if fType.fType == TYPE_MOD {
 			for _, file := range zip.File {
 				if path.Base(file.Name) == "info.json" {
 					fc, err := file.Open()
@@ -367,7 +291,8 @@ func ListZips(fType ftpTypeData, i *discordgo.InteractionCreate) {
 	sort.Slice(tempf, func(i, j int) bool {
 		iInfo, _ := tempf[i].Info()
 		jInfo, _ := tempf[j].Info()
-		return iInfo.ModTime().After(jInfo.ModTime())
+
+		return iInfo.ModTime().UnixNano() >= jInfo.ModTime().UnixNano()
 	})
 
 	var availableFiles []discordgo.SelectMenuOption
@@ -396,6 +321,7 @@ func ListZips(fType ftpTypeData, i *discordgo.InteractionCreate) {
 			if err != nil {
 				continue
 			}
+
 			modDate := time.Since(info.ModTime())
 			modDate = modDate.Round(time.Second)
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units) + " ago"
@@ -436,7 +362,7 @@ func ListZips(fType ftpTypeData, i *discordgo.InteractionCreate) {
 		response := &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Choose a map to load from the FTP:",
+				Content: "Choose a " + fType.Name + " to load from the FTP:",
 				Flags:   1 << 6,
 				Components: []discordgo.MessageComponent{
 					discordgo.ActionsRow{
