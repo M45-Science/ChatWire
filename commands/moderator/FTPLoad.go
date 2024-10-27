@@ -161,17 +161,9 @@ func ListMods(ftype ftpTypeData, i *discordgo.InteractionCreate) {
 	}
 
 	if buf == "" {
-		disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "No mods were found."})
+		disc.EphemeralResponse(i, "Info", "No mods were found!")
 	} else {
-
-		response := &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{Content: "```Mod List:\n" + buf + "```"},
-		}
-		err := disc.DS.InteractionRespond(i.Interaction, response)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
+		disc.EphemeralResponse(i, "Mod list:", buf)
 	}
 }
 
@@ -194,7 +186,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType int) {
 		}
 	} else if fType == TYPE_MODSETTINGS {
 
-	} else { //modpack
+	} else { //mod or modpack
 		if fact.HasZipBomb(zipPath) {
 			fact.ReportZipBomb(i, zipPath)
 			return
