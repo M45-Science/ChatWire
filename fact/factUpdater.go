@@ -6,16 +6,6 @@ import (
 	"ChatWire/cwlog"
 )
 
-func CheckIfNewer(ca, cb, cc int) bool {
-
-	if FactorioVersionA > ca &&
-		FactorioVersionB > cb &&
-		FactorioVersionC > cc {
-		return true
-	}
-	return false
-}
-
 /* Check if Factorio update zip is valid */
 func CheckZip(filename string) bool {
 	read, err := zip.OpenReader(filename)

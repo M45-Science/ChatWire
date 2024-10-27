@@ -18,10 +18,7 @@ var (
 	GameBuffer *bytes.Buffer
 
 	/* Factorio patch info */
-	FactorioVersion  = constants.Unknown
-	FactorioVersionA = 0
-	FactorioVersionB = 0
-	FactorioVersionC = 0
+	FactorioVersion = constants.Unknown
 
 	NewVersion   = constants.Unknown
 	NewPatchName = constants.Unknown

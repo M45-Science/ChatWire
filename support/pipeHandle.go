@@ -721,21 +721,6 @@ func handleFactVersion(input *handleData) bool {
 		cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
 			fact.FactorioVersion = input.noTimecodeList[3]
-
-			fv := strings.Split(fact.FactorioVersion, ".")
-			fvl := len(fv)
-
-			var a, b, c int
-
-			if fvl == 3 {
-				a, _ = strconv.Atoi(fv[0])
-				b, _ = strconv.Atoi(fv[1])
-				c, _ = strconv.Atoi(fv[2])
-			}
-
-			fact.FactorioVersionA = a
-			fact.FactorioVersionB = b
-			fact.FactorioVersionC = c
 		}
 	}
 	return false
