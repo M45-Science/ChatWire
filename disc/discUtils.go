@@ -318,9 +318,9 @@ func InteractionResponse(i *discordgo.InteractionCreate, embed *discordgo.Messag
 	}
 }
 
-func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
+func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams) *discordgo.Message {
 	if DS == nil {
-		return
+		return nil
 	}
 	if f.Embeds != nil {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
@@ -332,12 +332,14 @@ func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams
 	} else if f.Content != "" {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Content)
 
-		_, err := DS.FollowupMessageCreate(i.Interaction, false, f)
+		msg, err := DS.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
+		return msg
 	}
 
+	return nil
 }
 
 func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) {
@@ -356,4 +358,19 @@ func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) {
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
+}
+
+func SendMSG(channel string, embed *discordgo.MessageEmbed) *discordgo.Message {
+	msg, _ := DS.ChannelMessageSendEmbed(channel, embed)
+	return msg
+}
+
+func EditMSG(msg *discordgo.Message, embed *discordgo.MessageEmbed, doAppend bool) *discordgo.Message {
+	var newMsg *discordgo.Message
+	if doAppend {
+		newMsg, _ = DS.ChannelMessageEditEmbeds(msg.ChannelID, msg.ID, append(msg.Embeds, embed))
+	} else {
+		newMsg, _ = DS.ChannelMessageEditEmbeds(msg.ChannelID, msg.ID, []*discordgo.MessageEmbed{embed})
+	}
+	return newMsg
 }
