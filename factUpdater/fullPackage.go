@@ -5,11 +5,9 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
-	"ChatWire/glob"
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -55,7 +53,7 @@ func fullPackage(info *InfoData) error {
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
 	fact.DoUpdateFactorio = true
-	waitFactQuit()
+	fact.WaitFactQuit()
 
 	err = os.RemoveAll(factPath + "/factorio/bin")
 	if err != nil {
@@ -86,12 +84,6 @@ func fullPackage(info *InfoData) error {
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
 	fact.DoUpdateFactorio = false
 	return nil
-}
-
-func waitFactQuit() {
-	for (fact.FactIsRunning || fact.FactorioBooted) && glob.ServerRunning {
-		time.Sleep(time.Millisecond * 10)
-	}
 }
 
 func checkFullPackage(data []byte) ([]byte, error) {
