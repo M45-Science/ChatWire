@@ -3,6 +3,7 @@ package constants
 import "time"
 
 const (
+	ProgName           = "ChatWire"
 	Version            = "2645-1026.2024-0104p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
