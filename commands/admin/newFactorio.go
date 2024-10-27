@@ -353,7 +353,7 @@ func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(i, "Status:", "Checking for factorio updates.")
 
-	_, msg, err := factUpdater.DoQuickLatest(false)
+	_, msg, err, _ := factUpdater.DoQuickLatest(false)
 	if err {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "ERROR:", Description: "Factorio update failed:  " + msg})
@@ -369,7 +369,7 @@ func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 func InstallFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(i, "Info", "Installing Factorio...")
-	_, msg, _ := factUpdater.DoQuickLatest(true)
+	_, msg, _, _ := factUpdater.DoQuickLatest(true)
 
 	var elist []*discordgo.MessageEmbed
 	elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})

@@ -7,31 +7,31 @@ import (
 	"fmt"
 )
 
-func DoQuickLatest(force bool) (*InfoData, string, bool) {
+func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 
 	if force {
 		newVersion, err := quickLatest(info)
 		if err != nil {
-			return info, fmt.Sprintf("quickLatest: %v", err.Error()), true
+			return info, fmt.Sprintf("quickLatest: %v", err.Error()), true, false
 		}
 		info.VersInt = *newVersion
 		err = fullPackage(info)
 		if err != nil {
-			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true
+			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
-		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false
+		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false, false
 	}
 
 	err := getFactorioVersion(info)
 	if err != nil {
-		return info, fmt.Sprintf("Unable to get factorio version: %v", err.Error()), true
+		return info, fmt.Sprintf("Unable to get factorio version: %v", err.Error()), true, false
 	}
 	oldVersion := info.VersInt
 
 	newVersion, err := quickLatest(info)
 	if err != nil {
-		return info, fmt.Sprintf("quickLatest: %v", err.Error()), true
+		return info, fmt.Sprintf("quickLatest: %v", err.Error()), true, false
 	}
 	fact.NewVersion = newVersion.IntToString()
 
@@ -39,13 +39,13 @@ func DoQuickLatest(force bool) (*InfoData, string, bool) {
 		info.VersInt = *newVersion
 		err := fullPackage(info)
 		if err != nil {
-			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true
+			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
-		return info, fmt.Sprintf("Factorio upgraded from %v to %v.", oldVersion.IntToString(), newVersion.IntToString()), false
+		return info, fmt.Sprintf("Factorio upgraded from %v to %v.", oldVersion.IntToString(), newVersion.IntToString()), false, false
 	} else if isVersionEqual(*newVersion, info.VersInt) {
-		return info, "Factorio is up-to-date.", false
+		return info, "Factorio is up-to-date.", false, true
 	} else {
-		return info, "Latest version is older, use force option if you want to downgrade.\nWARNING: downgrading will likely break existing maps/saves.", false
+		return info, "Latest version is older, use force option if you want to downgrade.\nWARNING: downgrading will likely break existing maps/saves.", false, true
 	}
 }
 

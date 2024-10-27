@@ -43,19 +43,9 @@ func MainLoops() {
 			time.Sleep(constants.WatchdogInterval)
 
 			/* Factorio not running */
-			if !fact.FactIsRunning {
+			if !fact.FactIsRunning && !fact.DoUpdateFactorio {
 
-				if fact.DoUpdateFactorio {
-
-					//fact.FactUpdate()
-					time.Sleep(time.Second)
-					fact.DoUpdateFactorio = false
-
-					if cfg.Local.Options.AutoStart {
-						fact.FactAutoStart = true
-					}
-				} else if fact.QueueFactReboot {
-
+				if fact.QueueFactReboot {
 					if cfg.Local.Options.AutoStart {
 						fact.FactAutoStart = true
 					}
@@ -66,7 +56,6 @@ func MainLoops() {
 					return
 
 				} else if fact.FactAutoStart &&
-					!fact.DoUpdateFactorio &&
 					!*glob.NoAutoLaunch {
 
 					if WithinHours() {
@@ -599,10 +588,10 @@ func MainLoops() {
 		time.Sleep(time.Second * 10)
 		for glob.ServerRunning {
 			if cfg.Local.Options.AutoUpdate {
-				_, msg, err := factUpdater.DoQuickLatest(false)
+				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
 				if msg != "" {
 					cwlog.DoLogCW(msg)
-					if !err {
+					if !err && !upToDate {
 						myembed := embed.NewEmbed().
 							SetTitle("Info").
 							SetDescription(msg).
