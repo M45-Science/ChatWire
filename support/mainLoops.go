@@ -595,13 +595,16 @@ func MainLoops() {
 			if cfg.Local.Options.AutoUpdate {
 				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
 				if msg != "" {
-					cwlog.DoLogCW(msg)
 					if !err && !upToDate {
+						cwlog.DoLogCW(msg)
+
 						myembed := embed.NewEmbed().
 							SetTitle("Info").
 							SetDescription(msg).
 							SetColor(0xff0000).MessageEmbed
 						disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
+					} else if err && !upToDate {
+						cwlog.DoLogCW(msg)
 					}
 				}
 				time.Sleep(time.Minute * 10)

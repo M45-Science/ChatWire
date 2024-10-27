@@ -32,7 +32,7 @@ func getFactorioVersion(info *InfoData) error {
 
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
-	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
+	//cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 
 	// Run the command and capture its output
 	output, err := cmd.Output()
@@ -135,26 +135,13 @@ func parseFactorioVersion(input string) (versionInts, string, string, error) {
 }
 
 func saveFoundVersion(info *InfoData, fversion versionInts, fbuild, fdistro string) {
-	buf := ""
 	if info.Version == "" {
 		info.VersInt = fversion
-		buf = buf + fmt.Sprintf("factorio version: %v", fversion.IntToString())
 	}
 	if info.Build == "" {
 		info.Build = fbuild
-		if buf != "" {
-			buf = buf + ", "
-		}
-		buf = buf + fmt.Sprintf("build: %v", fbuild)
 	}
 	if info.Distro == "" {
 		info.Distro = fdistro
-		if buf != "" {
-			buf = buf + ", "
-		}
-		buf = buf + fmt.Sprintf("distro: %v", fdistro)
-	}
-	if buf != "" {
-		cwlog.DoLogCW(buf)
 	}
 }
