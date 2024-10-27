@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	embed "github.com/Clinet/discordgo-embed"
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/banlist"
@@ -474,7 +475,8 @@ func MainLoops() {
 
 						/* Warn players */
 						if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
-							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
+							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
+								fact.NewVersion, glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							fact.FactChat(fact.AddFactColor("orange", msg))
 						}
@@ -485,13 +487,13 @@ func MainLoops() {
 							msg := "(SYSTEM) Rebooting for Factorio update!"
 							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 							glob.UpdateWarnCounter = 0
-							fact.QuitFactorio("Rebooting for Factorio update!")
+							fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
 							break /* Stop looping */
 						}
 						glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
 					} else {
 						glob.UpdateWarnCounter = 0
-						fact.QuitFactorio("Rebooting for Factorio update!")
+						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
 						break /* Stop looping */
 					}
 				}
@@ -594,15 +596,25 @@ func MainLoops() {
 	****************************/
 	go func() {
 
+		time.Sleep(time.Second * 10)
 		for glob.ServerRunning {
 			if cfg.Local.Options.AutoUpdate {
 				_, msg, err := factUpdater.DoQuickLatest(false)
-				if err && msg != "" {
+				if msg != "" {
 					cwlog.DoLogCW(msg)
+					if !err {
+						myembed := embed.NewEmbed().
+							SetTitle("Info").
+							SetDescription(msg).
+							SetColor(0xff0000).MessageEmbed
+						disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
+					}
 				}
+				time.Sleep(time.Minute * 10)
+				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
+			} else {
+				time.Sleep(time.Minute)
 			}
-			time.Sleep(time.Minute * 10)
-			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
 		}
 	}()
 
