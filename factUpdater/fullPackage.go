@@ -5,8 +5,11 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -51,6 +54,15 @@ func fullPackage(info *InfoData) error {
 	}
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
+	os.RemoveAll(factPath + "factorio/bin")
+	os.RemoveAll(factPath + "factorio/config")
+	os.RemoveAll(factPath + "factorio/data")
+	os.RemoveAll(factPath + "factorio/temp")
+	os.RemoveAll(factPath + "factorio/bin")
+
+	fact.DoUpdateFactorio = true
+	waitFactQuit()
+
 	err = untar(factPath, archive)
 	if err != nil {
 		return fmt.Errorf("installing factorio to '%v' failed: %v", factPath, err.Error())
@@ -59,6 +71,12 @@ func fullPackage(info *InfoData) error {
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
 	fact.DoUpdateFactorio = true
 	return nil
+}
+
+func waitFactQuit() {
+	for fact.FactIsRunning && glob.ServerRunning {
+		time.Sleep(time.Second)
+	}
 }
 
 func checkFullPackage(data []byte) ([]byte, error) {
