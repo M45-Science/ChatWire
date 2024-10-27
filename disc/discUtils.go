@@ -138,41 +138,40 @@ func CheckNew(i *discordgo.InteractionCreate) bool {
 }
 
 /* Send embedded message */
-func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
+func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) *discordgo.Message {
 
 	if ch == "" || embed == nil {
 		return nil
 	}
 
 	if DS != nil {
-		_, err := DS.ChannelMessageSendEmbed(ch, embed)
+		msg, err := DS.ChannelMessageSendEmbed(ch, embed)
 
 		if err != nil {
-
 			cwlog.DoLogCW("SmartWriteDiscordEmbed: ERROR: %v", err)
 		}
-
-		return err
+		return msg
 	}
 
-	return fmt.Errorf("error")
+	return nil
 }
 
 /*Send normal message to a channel*/
-func SmartWriteDiscord(ch string, text string) {
+func SmartWriteDiscord(ch string, text string) *discordgo.Message {
 
 	if ch == "" || text == "" {
-		return
+		return nil
 	}
 
 	if DS != nil {
-		_, err := DS.ChannelMessageSend(ch, text)
+		msg, err := DS.ChannelMessageSend(ch, text)
 
 		if err != nil {
-
 			cwlog.DoLogCW("SmartWriteDiscord: ERROR: %v", err)
 		}
+		return msg
 	}
+	return nil
 }
 
 /* Give a player a role */
@@ -325,10 +324,11 @@ func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams
 	if f.Embeds != nil {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
 
-		_, err := DS.FollowupMessageCreate(i.Interaction, false, f)
+		msg, err := DS.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
+		return msg
 	} else if f.Content != "" {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Content)
 

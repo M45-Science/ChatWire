@@ -24,8 +24,8 @@ func ReportZipBomb(i *discordgo.InteractionCreate, file string) {
 	if cfg.Global.Discord.SusPingRole != "" {
 		susRole = fmt.Sprintf("<@&%v> ", cfg.Global.Discord.SusPingRole)
 	}
-	buf := fmt.Sprintf("%vFile '%v' contains a zip-bomb!\n", susRole, file)
-	buf = buf + fmt.Sprintf("FTP command from: <@%v>", i.Member.User.ID)
+	buf := fmt.Sprintf("%v\nFile '%v' contains a zip-bomb!\n", susRole, file)
+	buf = buf + fmt.Sprintf("FTP command from: <@%v>!", i.Member.User.ID)
 	LogCMS(cfg.Global.Discord.ReportChannel, buf)
 }
 
