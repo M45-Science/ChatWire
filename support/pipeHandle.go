@@ -1116,7 +1116,7 @@ func handleCmdMsg(input *handleData) bool {
 	/******************
 	 * COMMAND REPORTING
 	 ******************/
-	if strings.HasPrefix(input.line, "[CMD]") {
+	if strings.HasPrefix(input.line, "[CMD]") && !strings.Contains(input.line, "/cchat") {
 		cwlog.DoLogGame(input.line)
 		return true
 	}
@@ -1138,7 +1138,7 @@ func handleOnlineMsg(input *handleData) bool {
 		newPlayerList := []glob.OnlinePlayerData{}
 		count := 0
 
-		cwlog.DoLogCW(input.line)
+		//cwlog.DoLogCW(input.line)
 		line := strings.TrimPrefix(input.line, tag)
 
 		players := strings.Split(line, ";")

@@ -59,7 +59,7 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		 *  Don't bother if Factorio isn't running...
 		 */
 		if fact.FactorioBooted && fact.FactIsRunning {
-			cwlog.DoLogCW("[" + m.Author.Username + "] " + message)
+			cwlog.DoLogGame("[Discord] " + m.Author.Username + ": " + message)
 
 			/* Used for name matching */
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
