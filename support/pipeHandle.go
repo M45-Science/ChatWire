@@ -794,7 +794,7 @@ func handleExitSave(input *handleData) bool {
 
 				buf := fmt.Sprintf("An error occurred when attempting to read the save to backup: %s", erra)
 				cwlog.DoLogCW(buf)
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				//fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 				return true
 			}
 			defer from.Close()
