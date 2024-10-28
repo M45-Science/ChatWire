@@ -386,7 +386,7 @@ var SettingList = []SettingListData{
 	{
 		Name:      "scenario",
 		ShortDesc: "Scenario",
-		Desc:      "Specify a scenario to use for new maps",
+		Desc:      "Specify a scenario to use for new maps, NONE for none.",
 		Type:      TYPE_STRING,
 
 		MaxStrLen: 64,

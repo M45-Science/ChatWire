@@ -259,7 +259,7 @@ func GenNewMap() string {
 		factargs = append(factargs, MapPreset)
 	}
 
-	if cfg.Local.Settings.Scenario != "" {
+	if cfg.Local.Settings.Scenario != "" || strings.EqualFold(cfg.Local.Settings.Scenario, "none") {
 		cfg.Local.Settings.NewMap = true
 	}
 
