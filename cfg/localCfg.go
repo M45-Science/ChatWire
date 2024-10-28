@@ -36,6 +36,8 @@ type ModPackData struct {
 }
 
 type settings struct {
+	NewMap         bool `json:"-"`
+	Scenario       string
 	MapGenerator   string
 	MapPreset      string
 	Seed           int

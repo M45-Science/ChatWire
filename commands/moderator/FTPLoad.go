@@ -52,15 +52,6 @@ type modInfoData struct {
 	Name, Version, Author, Factorio_version string
 }
 
-type modListData struct {
-	Name    string
-	Enabled bool
-}
-
-type modsListData struct {
-	Mods []modListData
-}
-
 var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MAP, Name: "map", Value: "load-map", Path: MapFolder, Function: ListZips},
 	{fType: TYPE_MOD, Name: "mod", Value: "load-mod", Path: ModFolder, Function: ListZips},

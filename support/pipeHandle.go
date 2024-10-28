@@ -899,6 +899,14 @@ func handleCrashes(input *handleData) bool {
 				return true
 			}
 		}
+		if strings.Contains(input.noTimecode, "Scenario") && strings.HasSuffix(input.noTimecode, "not found") {
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid scenario specified, clearing scenario setting.")
+			cfg.Local.Settings.Scenario = ""
+			fact.FactAutoStart = false
+			fact.FactorioBooted = false
+			fact.SetFactRunning(false)
+			return true
+		}
 		/* Multiplayer manger */
 		if strings.Contains(input.noTimecode, "MultiplayerManager failed:") {
 			if strings.Contains(input.noTimecode, "cannot be loaded because it is higher than the game version") {

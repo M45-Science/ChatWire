@@ -85,7 +85,6 @@ type folderPaths struct {
 	Saves         string
 	Mods          string
 	MapGenerators string
-	MapPreviews   string
 	MapArchives   string
 	ModPack       string
 	FTP           string
@@ -119,13 +118,6 @@ type globalOptions struct {
 	RconOffset         int
 	ShutupSusWarn      bool
 	DisableSpamProtect bool
-	PreviewSettings    prevSettings
-}
-
-type prevSettings struct {
-	Arguments string
-	PNGRes    string
-	PNGScale  string
 }
 
 func WriteGCfg() bool {
@@ -211,9 +203,6 @@ func setGlobalDefaults() {
 	if Global.Paths.Folders.Mods == "" {
 		Global.Paths.Folders.Mods = "mods"
 	}
-	if Global.Paths.Folders.MapPreviews == "" {
-		Global.Paths.Folders.MapPreviews = Global.Paths.Folders.ServersRoot + "map-preview/"
-	}
 	if Global.Paths.Folders.MapArchives == "" {
 		Global.Paths.Folders.MapArchives = Global.Paths.Folders.ServersRoot + "www/public_html/archive/"
 	}
@@ -276,12 +265,6 @@ func setGlobalDefaults() {
 	}
 	if Global.Options.AutosaveMax == 0 {
 		Global.Options.AutosaveMax = 250
-	}
-	if Global.Options.PreviewSettings.PNGRes == "" {
-		Global.Options.PreviewSettings.PNGRes = "256"
-	}
-	if Global.Options.PreviewSettings.PNGScale == "" {
-		Global.Options.PreviewSettings.PNGScale = "1"
 	}
 	if Global.PrimaryServer == "" {
 		Global.PrimaryServer = "a"

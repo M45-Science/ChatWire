@@ -1,14 +1,10 @@
 package admin
 
 import (
-	"bytes"
-	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -25,106 +21,6 @@ import (
 	"ChatWire/support"
 )
 
-/* RandomMap locks FactorioLaunchLock */
-func NewMapPreview(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	if disc.DS == nil {
-		return
-	}
-	if fact.FactorioBooted || fact.FactIsRunning {
-		buf := "Factorio is currently running. You must stop factorio first."
-		disc.EphemeralResponse(i, "Error:", buf)
-		return
-	}
-
-	/* Make directory if it does not exist */
-	newdir := fmt.Sprintf("%s/", cfg.Global.Paths.Folders.MapPreviews)
-	err := os.MkdirAll(newdir, os.ModePerm)
-	if err != nil {
-		buf := fmt.Sprintf("Unable to create map preview directory: %v", err.Error())
-		cwlog.DoLogCW(buf)
-		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(i, &elist)
-		return
-	}
-
-	var preview_made = false
-	t := time.Now()
-	ourseed := int(t.UnixNano() - constants.CWEpoch)
-
-	buf := new(bytes.Buffer)
-	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
-	fact.LastMapSeed = ourseed
-	MapPreset := cfg.Local.Settings.MapPreset
-	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(cfg.Local.Settings.MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	fact.LastMapCode = ourcode
-
-	path := fmt.Sprintf("%s%s.png", cfg.Global.Paths.Folders.MapPreviews, ourcode)
-	args := []string{"--generate-map-preview", path, "--map-preview-size=" + cfg.Global.Options.PreviewSettings.PNGRes, "--map-preview-scale=" + cfg.Global.Options.PreviewSettings.PNGScale, "--map-gen-seed", fmt.Sprintf("%v", ourseed), cfg.Global.Options.PreviewSettings.Arguments}
-
-	/* Append map gen if set */
-	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
-		args = append(args, "--map-gen-settings")
-		args = append(args, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
-
-		args = append(args, "--map-settings")
-		args = append(args, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
-	} else {
-		args = append(args, "--preset")
-		args = append(args, MapPreset)
-	}
-
-	cwlog.DoLogCW("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(args, " "))
-	run := exec.Command(fact.GetFactorioBinary(), args...)
-
-	out, aerr := run.CombinedOutput()
-
-	if aerr != nil {
-		buf := fmt.Sprintf("An error occurred when attempting to generate the map preview: %s", aerr)
-		cwlog.DoLogCW(buf)
-		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(i, &elist)
-	}
-
-	lines := strings.Split(string(out), "\n")
-
-	for _, l := range lines {
-		if strings.Contains(l, "Wrote map preview image file:") {
-			preview_made = true
-		}
-	}
-	if !preview_made {
-		buf := "The game did not generate a map preview."
-		cwlog.DoLogCW(buf)
-		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(i, &elist)
-		return
-	}
-
-	//Attempt to attach a map preview
-	to, errb := os.OpenFile(path, os.O_RDONLY, 0666)
-	if errb != nil {
-		buf := fmt.Sprintf("Unable to read png file: %v", errb)
-		cwlog.DoLogCW(buf)
-
-		elist := discordgo.MessageEmbed{Title: "Error:", Description: buf}
-		disc.InteractionResponse(i, &elist)
-		return
-	}
-	defer to.Close()
-
-	/* Delete PNG, we don't need it now */
-	if err := os.Remove(path); err != nil {
-		cwlog.DoLogCW("png preview file not found...")
-	}
-
-	respData := &discordgo.InteractionResponseData{Files: []*discordgo.File{{Name: path, Reader: to}}}
-	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err = disc.DS.InteractionRespond(i.Interaction, resp)
-	if err != nil {
-		cwlog.DoLogCW(err.Error())
-	}
-}
-
 /* Generate map */
 func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
@@ -134,98 +30,9 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	t := time.Now()
-	ourseed := int(t.UnixNano() - constants.CWEpoch)
-	MapPreset := cfg.Local.Settings.MapPreset
-
-	if fact.LastMapSeed > 0 {
-		ourseed = fact.LastMapSeed
-	}
-
-	//Use seed if specified, then clear it
-	if cfg.Local.Settings.Seed > 0 {
-		ourseed = cfg.Local.Settings.Seed
-		cfg.WriteLCfg()
-	}
-
-	if ourseed <= 0 {
-		buf := "Invalid seed data. (internal error)"
-		cwlog.DoLogCW(buf)
-		disc.EphemeralResponse(i, "Error:", buf)
-		return
-	}
-
-	if strings.EqualFold(MapPreset, "error") {
-		buf := "Invalid map preset."
-		cwlog.DoLogCW(buf)
-		disc.EphemeralResponse(i, "Error:", buf)
-		return
-	}
-
-	disc.EphemeralResponse(i, "Status:", "Generating map...")
-
-	/* Generate code to make filename */
-	buf := new(bytes.Buffer)
-
-	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
-	ourcode := fmt.Sprintf("%02d%v", fact.GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves +
-		"/gen-" + ourcode + ".zip"
-
-	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
-
-	/* Append map gen if set */
-	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
-		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
-
-		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
-	} else {
-		factargs = append(factargs, "--preset")
-		factargs = append(factargs, MapPreset)
-	}
-
-	cwlog.DoLogCW("EXEC: %v ARGS: %v", fact.GetFactorioBinary(), strings.Join(factargs, " "))
-
-	run := exec.Command(fact.GetFactorioBinary(), factargs...)
-	out, aerr := run.CombinedOutput()
-
-	if aerr != nil {
-		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
-		cwlog.DoLogCW(buf)
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
-		return
-	}
-
-	glob.VoteBox.LastMapChange = time.Now()
-	fact.VoidAllVotes() /* Void all votes */
-	fact.WriteVotes()
-
-	lines := strings.Split(string(out), "\n")
-
-	for _, l := range lines {
-		if strings.Contains(l, "Creating new map") {
-			buf := fmt.Sprintf("New map saved as: %v", ourcode+".zip")
-			var elist []*discordgo.MessageEmbed
-			elist = append(elist, &discordgo.MessageEmbed{Title: "Complete:", Description: buf})
-			f := discordgo.WebhookParams{Embeds: elist}
-			disc.FollowupResponse(i, &f)
-			return
-		}
-	}
-
-	var elist []*discordgo.MessageEmbed
-	elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unknown error."})
-	f := discordgo.WebhookParams{Embeds: elist}
-	disc.FollowupResponse(i, &f)
+	disc.EphemeralResponse(i, "Status:", "Generating new map.")
+	fileName := fact.GenNewMap()
+	disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Map generator: " + fileName})
 }
 
 /* Archive map */

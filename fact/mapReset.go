@@ -98,82 +98,7 @@ func Map_reset(doReport bool) {
 		quickArchive()
 	}
 
-	genpath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
-
-	flist, err := filepath.Glob(genpath + "/gen-*.zip")
-	if err != nil {
-		panic(err)
-	}
-	for _, f := range flist {
-		if err := os.Remove(f); err != nil {
-			cwlog.DoLogCW("Failed to delete: " + f)
-		}
-	}
-
-	t := time.Now()
-	ourseed := int(t.UnixNano() - constants.CWEpoch)
-
-	//Use seed if specified, then clear it
-	if cfg.Local.Settings.Seed > 0 {
-		ourseed = cfg.Local.Settings.Seed
-		cfg.Local.Settings.Seed = 0
-		cfg.WriteLCfg()
-
-		msg := fmt.Sprintf("Using custom map seed: %v", cfg.Local.Settings.Seed)
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-	}
-
-	MapPreset := cfg.Local.Settings.MapPreset
-
-	if strings.EqualFold(MapPreset, "error") {
-		cwlog.DoLogCW("Invalid map preset.")
-		return
-	}
-
-	LogCMS(cfg.Local.Channel.ChatChannel, "Generating map...")
-
-	/* Generate code to make filename */
-	buf := new(bytes.Buffer)
-
-	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
-	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
-	filename := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves +
-		"/gen-" + ourcode + ".zip"
-
-	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
-
-	/* Append map gen if set */
-	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
-		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
-
-		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
-	} else {
-		factargs = append(factargs, "--preset")
-		factargs = append(factargs, MapPreset)
-	}
-
-	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", GetFactorioBinary(), strings.Join(factargs, " "))
-	cwlog.DoLogCW(lbuf)
-
-	cmd := exec.Command(GetFactorioBinary(), factargs...)
-	_, aerr := cmd.CombinedOutput()
-
-	if aerr != nil {
-		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
-		cwlog.DoLogCW(buf)
-		CMS(cfg.Local.Channel.ChatChannel, buf)
-		return
-	}
+	GenNewMap()
 
 	/* If available, use per-server ping setting... otherwise use global */
 	pingstr := ""
@@ -266,7 +191,92 @@ func Map_reset(doReport bool) {
 
 	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
 	FactAutoStart = true
-	//DoExit(false)
+}
+
+func GenNewMap() string {
+	genpath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
+
+	flist, err := filepath.Glob(genpath + "/gen-*.zip")
+	if err != nil {
+		panic(err)
+	}
+	for _, f := range flist {
+		if err := os.Remove(f); err != nil {
+			cwlog.DoLogCW("Failed to delete: " + f)
+		}
+	}
+
+	t := time.Now()
+	ourseed := int(t.UnixNano() - constants.CWEpoch)
+
+	//Use seed if specified, then clear it
+	if cfg.Local.Settings.Seed > 0 {
+		ourseed = cfg.Local.Settings.Seed
+		cfg.Local.Settings.Seed = 0
+		cfg.WriteLCfg()
+
+		msg := fmt.Sprintf("Using custom map seed: %v", cfg.Local.Settings.Seed)
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+	}
+
+	MapPreset := cfg.Local.Settings.MapPreset
+
+	if strings.EqualFold(MapPreset, "error") {
+		cwlog.DoLogCW("Invalid map preset.")
+		return "Invalid map preset"
+	}
+
+	//LogCMS(cfg.Local.Channel.ChatChannel, "Generating map...")
+
+	/* Generate code to make filename */
+	buf := new(bytes.Buffer)
+
+	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
+	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	sName := "gen-" + ourcode + ".zip"
+
+	filename := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves +
+		"/" + sName
+	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
+
+	/* Append map gen if set */
+	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
+		factargs = append(factargs, "--map-gen-settings")
+		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
+
+		factargs = append(factargs, "--map-settings")
+		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
+	} else {
+		factargs = append(factargs, "--preset")
+		factargs = append(factargs, MapPreset)
+	}
+
+	if cfg.Local.Settings.Scenario != "" {
+		cfg.Local.Settings.NewMap = true
+	}
+
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", GetFactorioBinary(), strings.Join(factargs, " "))
+	cwlog.DoLogCW(lbuf)
+
+	cmd := exec.Command(GetFactorioBinary(), factargs...)
+	_, aerr := cmd.CombinedOutput()
+
+	if aerr != nil {
+		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
+		cwlog.DoLogCW(buf)
+		CMS(cfg.Local.Channel.ChatChannel, buf)
+		return aerr.Error()
+	}
+
+	return sName
 }
 
 func quickArchive() {

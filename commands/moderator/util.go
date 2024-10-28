@@ -127,16 +127,6 @@ var GSettingList = []SettingListData{
 		IData:  &cfg.Global.Options.AutosaveMax,
 	},
 	{
-		Name:      "preview-size",
-		ShortDesc: "Preview Size",
-		Desc:      "Pixel size of map previews.",
-		Type:      TYPE_STRING,
-
-		MaxStrLen: 4,
-		MinStrLen: 2,
-		SData:     &cfg.Global.Options.PreviewSettings.PNGRes,
-	},
-	{
 		Name:      "sus-shutup",
 		ShortDesc: "Sus Shutup",
 		Desc:      "Disable new-player suspicious activity warning.",
@@ -246,17 +236,6 @@ var SettingList = []SettingListData{
 
 		BData:             &cfg.Local.Options.SoftModOptions.DisableBlueprints,
 		FactUpdateCommand: "/blueprints",
-	},
-	{
-		Name:      "enable-cheats",
-		ShortDesc: "Sandbox Mode",
-		Desc:      "Cheats enabled (sandbox mode, softmod)",
-		Type:      TYPE_BOOL,
-
-		DefBool: false,
-
-		BData:             &cfg.Local.Options.SoftModOptions.Cheats,
-		FactUpdateCommand: "/cheats",
 	},
 	{
 		Name:      "hide-autosaves",
@@ -403,6 +382,17 @@ var SettingList = []SettingListData{
 
 		FData32:           &cfg.Local.Options.Speed,
 		FactUpdateCommand: "/gspeed",
+	},
+	{
+		Name:      "scenario",
+		ShortDesc: "Scenario",
+		Desc:      "Specify a scenario to use for new maps",
+		Type:      TYPE_STRING,
+
+		MaxStrLen: 64,
+		MinStrLen: 1,
+
+		SData: &cfg.Local.Settings.Scenario,
 	},
 }
 

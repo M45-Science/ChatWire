@@ -177,10 +177,6 @@ var cmds = []glob.CommandData{
 						Function: admin.StopFact,
 					},
 					{
-						Name:     "new-map-preview",
-						Function: admin.NewMapPreview,
-					},
-					{
 						Name:     "new-map",
 						Function: admin.NewMap,
 					},

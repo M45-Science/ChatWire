@@ -309,7 +309,11 @@ func launchFactorio() {
 
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
-		injectSoftMod(fileName, folderName)
+		if cfg.Local.Settings.Scenario == "" {
+			injectSoftMod(fileName, folderName)
+		} else {
+			cwlog.DoLogCW("Softmod disabled for scenario.")
+		}
 	}
 
 	/* Generate config file for Factorio server, if it fails stop everything.*/
@@ -354,8 +358,15 @@ func launchFactorio() {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
-	tempargs = append(tempargs, "--start-server")
-	tempargs = append(tempargs, fileName)
+	if cfg.Local.Settings.NewMap {
+		cfg.Local.Settings.NewMap = false
+		tempargs = append(tempargs, "--start-server-load-scenario")
+		tempargs = append(tempargs, cfg.Local.Settings.Scenario)
+	} else {
+		tempargs = append(tempargs, "--start-server")
+		tempargs = append(tempargs, fileName)
+	}
+
 	tempargs = append(tempargs, "--rcon-port")
 	tempargs = append(tempargs, rconportStr)
 
