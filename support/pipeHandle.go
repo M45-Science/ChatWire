@@ -398,7 +398,7 @@ func handleActMsg(input *handleData) bool {
 	 * Used for logs, and to attempt to warn of potential griefing
 	 ******************/
 
-	if strings.HasPrefix(input.line, "[ACT]") {
+	if strings.HasPrefix(input.line, "[ACT]") || strings.HasPrefix(input.line, "[TODO]") || strings.HasPrefix(input.line, "[ERROR]") {
 
 		cwlog.DoLogGame(input.line)
 		if input.wordListLen > 2 {
