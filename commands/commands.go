@@ -185,10 +185,6 @@ var cmds = []glob.CommandData{
 						Function: admin.NewMap,
 					},
 					{
-						Name:     "update-factorio",
-						Function: admin.UpdateFactorio,
-					},
-					{
 						Name:     "update-mods",
 						Function: admin.UpdateMods,
 					},
@@ -197,8 +193,12 @@ var cmds = []glob.CommandData{
 						Function: admin.ArchiveMap,
 					},
 					{
+						Name:     "update-factorio",
+						Function: admin.UpdateFactorio,
+					},
+					{
 						Name:     "install-factorio",
-						Function: admin.InstallFact,
+						Function: admin.InstallFactorio,
 					},
 				},
 			},
@@ -375,8 +375,7 @@ var cmds = []glob.CommandData{
 		Description: "Show list of mod files",
 		Type:        discordgo.ChatApplicationCommand,
 	},
-	//Function: moderator.ListMods},
-	},
+		Function: moderator.ListGameMods},
 	{AppCmd: glob.AppCmdData{
 		Name:        "info",
 		Description: "Displays status and settings of the server.",

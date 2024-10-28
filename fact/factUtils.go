@@ -44,7 +44,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 			if err != nil {
 				defer fc.Close()
 
-				buf := fmt.Sprintf("Save '%v' contains corrupt data: '%v', trying next save.", name, err.Error())
+				buf := fmt.Sprintf("Save '%v' is corrupted or invalid: '%v'.", name, err.Error())
 				if showError {
 					CMS(cfg.Local.Channel.ChatChannel, buf)
 				}
@@ -61,7 +61,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 				}
 			}
 		}
-		buf := fmt.Sprintf("Save '%v' did not contain a level.dat0 file.", name)
+		buf := fmt.Sprintf("Save '%v' did not contain any save data.", name)
 		if showError {
 			CMS(cfg.Local.Channel.ChatChannel, buf)
 		}

@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -20,6 +19,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/support"
@@ -345,101 +345,34 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 }
 
-/* Update Factorio  */
-func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-
-	var args []string = strings.Split("", " ")
-	argnum := len(args)
-
-	if cfg.Global.Paths.Binaries.FactUpdater != "" {
-		if argnum > 0 && strings.EqualFold(args[0], "cancel") {
-			fact.DoUpdateFactorio = false
-			cfg.Local.Options.AutoUpdate = false
-
-			buf := "Update canceled, and auto-update disabled."
-			disc.EphemeralResponse(i, "Status:", buf)
-			return
-		}
-		fact.CheckFactUpdate(true)
-		disc.EphemeralResponse(i, "Status:", "Checking for Factorio updates.")
-	} else {
-		buf := "The Factorio updater isn't configured."
-		disc.EphemeralResponse(i, "Error:", buf)
-	}
-}
-
 func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-
 	disc.EphemeralResponse(i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)
 }
 
-func InstallFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(i, "Status:", "Checking for factorio updates.")
 
-	disc.EphemeralResponse(i, "Status:", "Downloading Factorio server...")
-	resp, err := http.Get(constants.FactHeadlessURL)
-
-	if err != nil {
+	_, msg, err, _ := factUpdater.DoQuickLatest(false)
+	if err {
 		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to download Factorio server."})
-		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		elist = append(elist, &discordgo.MessageEmbed{Title: "ERROR:", Description: "Factorio update failed:  " + msg})
+		f := discordgo.WebhookParams{Embeds: elist}
 		disc.FollowupResponse(i, &f)
-
-		cwlog.DoLogCW(err.Error())
-		return
-	}
-	defer resp.Body.Close()
-
-	gzdata, err := io.ReadAll(resp.Body)
-	if err != nil {
+	} else {
 		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to read the http response."})
-		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
+		elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})
+		f := discordgo.WebhookParams{Embeds: elist}
 		disc.FollowupResponse(i, &f)
-
-		cwlog.DoLogCW(err.Error())
-		return
 	}
+}
+
+func InstallFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	disc.EphemeralResponse(i, "Info", "Installing Factorio...")
+	_, msg, _, _ := factUpdater.DoQuickLatest(true)
 
 	var elist []*discordgo.MessageEmbed
-	elist = append(elist, &discordgo.MessageEmbed{Title: "Status:", Description: "Downloaded, decompressing..."})
-	f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-	disc.FollowupResponse(i, &f)
-
-	data, err := unXZData(gzdata)
-	if err != nil {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "The gzip data appears to be invalid."})
-		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(i, &f)
-
-		cwlog.DoLogCW(err.Error())
-		return
-	}
-
-	dest := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix + cfg.Local.Callsign + "/"
-
-	os.RemoveAll(dest + "factorio/bin")
-	os.RemoveAll(dest + "factorio/config")
-	os.RemoveAll(dest + "factorio/data")
-	os.RemoveAll(dest + "factorio/temp")
-	os.RemoveAll(dest + "factorio/bin")
-	os.RemoveAll(dest + "factorio/config-path.cfg")
-
-	err = untar(dest, data)
-	if err != nil {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: "Unable to open tar archive."})
-		f := discordgo.WebhookParams{Embeds: elist, Flags: 1 << 6}
-		disc.FollowupResponse(i, &f)
-
-		cwlog.DoLogCW(err.Error())
-		return
-	}
-
-	os.Mkdir(dest+"factorio/saves", 0755)
-	elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: "Factorio server installed!"})
-	f = discordgo.WebhookParams{Embeds: elist}
+	elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})
+	f := discordgo.WebhookParams{Embeds: elist}
 	disc.FollowupResponse(i, &f)
 }

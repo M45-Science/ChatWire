@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	embed "github.com/Clinet/discordgo-embed"
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/banlist"
@@ -17,6 +18,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 )
@@ -41,19 +43,9 @@ func MainLoops() {
 			time.Sleep(constants.WatchdogInterval)
 
 			/* Factorio not running */
-			if !fact.FactIsRunning {
+			if !fact.FactIsRunning && !fact.DoUpdateFactorio {
 
-				if fact.DoUpdateFactorio {
-
-					fact.FactUpdate()
-					time.Sleep(time.Second)
-					fact.DoUpdateFactorio = false
-
-					if cfg.Local.Options.AutoStart {
-						fact.FactAutoStart = true
-					}
-				} else if fact.QueueFactReboot {
-
+				if fact.QueueFactReboot {
 					if cfg.Local.Options.AutoStart {
 						fact.FactAutoStart = true
 					}
@@ -64,7 +56,6 @@ func MainLoops() {
 					return
 
 				} else if fact.FactAutoStart &&
-					!fact.DoUpdateFactorio &&
 					!*glob.NoAutoLaunch {
 
 					if WithinHours() {
@@ -453,7 +444,6 @@ func MainLoops() {
 					cwlog.DoLogCW("Stopping Factorio for update.")
 					fact.QuitFactorio("Updating factorio.")
 					time.Sleep(time.Minute)
-
 				}
 			}
 		}
@@ -467,32 +457,39 @@ func MainLoops() {
 		for glob.ServerRunning {
 			time.Sleep(time.Second * 5)
 
-			if cfg.Local.Options.AutoUpdate {
-				if fact.FactIsRunning && fact.FactorioBooted && fact.NewVersion != constants.Unknown {
-					if fact.NumPlayers > 0 {
+			if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
+				if fact.NumPlayers > 0 {
 
-						/* Warn players */
-						if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
-							msg := fmt.Sprintf("(SYSTEM) Factorio update waiting. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!", glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
-							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-							fact.FactChat(fact.AddFactColor("orange", msg))
-						}
-						time.Sleep(2 * time.Minute)
+					/* Warn players */
+					if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
+						msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
+							fact.NewVersion, glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
 
-						/* Reboot anyway */
-						if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
-							msg := "(SYSTEM) Rebooting for Factorio update!"
-							fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-							glob.UpdateWarnCounter = 0
-							fact.QuitFactorio("Rebooting for Factorio update!")
-							break /* Stop looping */
+						if fact.NewVersion == constants.Unknown {
+							msg = fmt.Sprintf("(SYSTEM) Factorio update waiting. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
+								glob.UpdateGraceMinutes-glob.UpdateWarnCounter)
 						}
-						glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
-					} else {
+						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
+						fact.FactChat(fact.AddFactColor("red", msg))
+						fact.FactChat(fact.AddFactColor("green", msg))
+						fact.FactChat(fact.AddFactColor("black", msg))
+						fact.FactChat(fact.AddFactColor("white", msg))
+					}
+					time.Sleep(2 * time.Minute)
+
+					/* Reboot anyway */
+					if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
+						msg := "(SYSTEM) Rebooting for Factorio update!"
+						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 						glob.UpdateWarnCounter = 0
-						fact.QuitFactorio("Rebooting for Factorio update!")
+						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
 						break /* Stop looping */
 					}
+					glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
+				} else {
+					glob.UpdateWarnCounter = 0
+					fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
+					break /* Stop looping */
 				}
 			}
 		}
@@ -592,18 +589,29 @@ func MainLoops() {
 	* Check for Factorio updates
 	****************************/
 	go func() {
-		time.Sleep(time.Minute)
-		if !cfg.Local.Options.AutoUpdate {
-			return
-		}
 
+		time.Sleep(time.Second * 10)
 		for glob.ServerRunning {
-			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
-			if !cfg.Local.Options.AutoUpdate {
-				return
+			if cfg.Local.Options.AutoUpdate {
+				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
+				if msg != "" {
+					if !err && !upToDate {
+						cwlog.DoLogCW(msg)
+
+						myembed := embed.NewEmbed().
+							SetTitle("Info").
+							SetDescription(msg).
+							SetColor(0xff0000).MessageEmbed
+						disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
+					} else if err && !upToDate {
+						cwlog.DoLogCW(msg)
+					}
+				}
+				time.Sleep(time.Minute * 10)
+				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
+			} else {
+				time.Sleep(time.Minute)
 			}
-			time.Sleep(time.Minute * 30)
-			fact.CheckFactUpdate(false)
 		}
 	}()
 

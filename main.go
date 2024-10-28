@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -36,7 +38,7 @@ func main() {
 	/* Start cw logs */
 	cwlog.StartCWLog()
 	cwlog.AutoRotateLogs()
-	cwlog.DoLogCW("\n Starting ChatWire Version: " + constants.Version)
+	cwlog.DoLogCW("\n Starting %v Version: %v", constants.ProgName, constants.Version)
 
 	initTime()
 	if !*glob.LocalTestMode {
@@ -277,4 +279,16 @@ func readConfigs() {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		os.Exit(1)
 	}
+}
+
+func getBinaryPath() string {
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("Unable to executable info.")
+	}
+	exePath, err = filepath.Abs(exePath)
+	if err != nil {
+		log.Fatal("Unable to detect binary path.")
+	}
+	return filepath.Dir(exePath) + "/"
 }

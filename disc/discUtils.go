@@ -138,41 +138,40 @@ func CheckNew(i *discordgo.InteractionCreate) bool {
 }
 
 /* Send embedded message */
-func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) error {
+func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) *discordgo.Message {
 
 	if ch == "" || embed == nil {
 		return nil
 	}
 
 	if DS != nil {
-		_, err := DS.ChannelMessageSendEmbed(ch, embed)
+		msg, err := DS.ChannelMessageSendEmbed(ch, embed)
 
 		if err != nil {
-
 			cwlog.DoLogCW("SmartWriteDiscordEmbed: ERROR: %v", err)
 		}
-
-		return err
+		return msg
 	}
 
-	return fmt.Errorf("error")
+	return nil
 }
 
 /*Send normal message to a channel*/
-func SmartWriteDiscord(ch string, text string) {
+func SmartWriteDiscord(ch string, text string) *discordgo.Message {
 
 	if ch == "" || text == "" {
-		return
+		return nil
 	}
 
 	if DS != nil {
-		_, err := DS.ChannelMessageSend(ch, text)
+		msg, err := DS.ChannelMessageSend(ch, text)
 
 		if err != nil {
-
 			cwlog.DoLogCW("SmartWriteDiscord: ERROR: %v", err)
 		}
+		return msg
 	}
+	return nil
 }
 
 /* Give a player a role */
@@ -318,26 +317,29 @@ func InteractionResponse(i *discordgo.InteractionCreate, embed *discordgo.Messag
 	}
 }
 
-func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams) {
+func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams) *discordgo.Message {
 	if DS == nil {
-		return
+		return nil
 	}
 	if f.Embeds != nil {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
 
-		_, err := DS.FollowupMessageCreate(i.Interaction, false, f)
+		msg, err := DS.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
+		return msg
 	} else if f.Content != "" {
 		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Content)
 
-		_, err := DS.FollowupMessageCreate(i.Interaction, false, f)
+		msg, err := DS.FollowupMessageCreate(i.Interaction, false, f)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
+		return msg
 	}
 
+	return nil
 }
 
 func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) {
@@ -356,4 +358,19 @@ func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) {
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
+}
+
+func SendMSG(channel string, embed *discordgo.MessageEmbed) *discordgo.Message {
+	msg, _ := DS.ChannelMessageSendEmbed(channel, embed)
+	return msg
+}
+
+func EditMSG(msg *discordgo.Message, embed *discordgo.MessageEmbed, doAppend bool) *discordgo.Message {
+	var newMsg *discordgo.Message
+	if doAppend {
+		newMsg, _ = DS.ChannelMessageEditEmbeds(msg.ChannelID, msg.ID, append(msg.Embeds, embed))
+	} else {
+		newMsg, _ = DS.ChannelMessageEditEmbeds(msg.ChannelID, msg.ID, []*discordgo.MessageEmbed{embed})
+	}
+	return newMsg
 }

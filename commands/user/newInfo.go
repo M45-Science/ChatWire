@@ -41,7 +41,7 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	/* STATS */
 	if verbose {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "ChatWire version", constants.Version)
+		buf = buf + fmt.Sprintf("%17v: %v\n", constants.ProgName+" version", constants.Version)
 		if glob.SoftModVersion != constants.Unknown {
 			buf = buf + fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
 		}

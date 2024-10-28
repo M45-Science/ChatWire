@@ -398,7 +398,7 @@ func handleActMsg(input *handleData) bool {
 	 * Used for logs, and to attempt to warn of potential griefing
 	 ******************/
 
-	if strings.HasPrefix(input.line, "[ACT]") {
+	if strings.HasPrefix(input.line, "[ACT]") || strings.HasPrefix(input.line, "[TODO]") || strings.HasPrefix(input.line, "[ERROR]") {
 
 		cwlog.DoLogGame(input.line)
 		if input.wordListLen > 2 {
@@ -721,21 +721,6 @@ func handleFactVersion(input *handleData) bool {
 		cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
 			fact.FactorioVersion = input.noTimecodeList[3]
-
-			fv := strings.Split(fact.FactorioVersion, ".")
-			fvl := len(fv)
-
-			var a, b, c int
-
-			if fvl == 3 {
-				a, _ = strconv.Atoi(fv[0])
-				b, _ = strconv.Atoi(fv[1])
-				c, _ = strconv.Atoi(fv[2])
-			}
-
-			fact.FactorioVersionA = a
-			fact.FactorioVersionB = b
-			fact.FactorioVersionC = c
 		}
 	}
 	return false
