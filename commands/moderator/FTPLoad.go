@@ -9,6 +9,7 @@ import (
 	"ChatWire/glob"
 	"archive/zip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -51,6 +52,15 @@ type modInfoData struct {
 	Name, Version, Author, Factorio_version string
 }
 
+type modListData struct {
+	Name    string
+	Enabled bool
+}
+
+type modsListData struct {
+	Mods []modListData
+}
+
 var FTPTypes [TYPE_MAX]ftpTypeData = [TYPE_MAX]ftpTypeData{
 	{fType: TYPE_MAP, Name: "map", Value: "load-map", Path: MapFolder, Function: ListZips},
 	{fType: TYPE_MOD, Name: "mod", Value: "load-mod", Path: ModFolder, Function: ListZips},
@@ -91,6 +101,27 @@ func MakeFTPFolders() {
 	}
 }
 
+func checkModSettings(path string) error {
+
+	if !strings.HasSuffix(path, ".dat") {
+		return fmt.Errorf("the mod settings file does not end with .dat")
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	dlen := len(data)
+	if dlen < 10 {
+		return fmt.Errorf("the mod settings file is too small")
+	} else if dlen > (1024 * 1024) { //1MB
+		return fmt.Errorf("the mod settings file is too large")
+	}
+
+	return nil
+}
+
 func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData) {
 
 	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
@@ -108,7 +139,14 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 		} else {
 			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Map appears to be invalid!"})
 		}
-	} else if fType.fType == TYPE_MODSETTINGS {
+	} else if fType.fType == TYPE_MODSETTINGS { //Mod settings here
+		err := checkModSettings(pathPrefix + file)
+		if err != nil {
+			cwlog.DoLogCW("checkModSettings: Error: " + err.Error())
+			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod settings file appears to be invalid: " + err.Error()})
+			return
+		}
+		disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Would load mod-settings here."})
 
 	} else { //mod or modpack
 		if fact.HasZipBomb(zipPath) {
