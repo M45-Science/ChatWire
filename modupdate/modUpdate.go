@@ -78,7 +78,6 @@ func UpdateMods(doReport bool) {
 	if err != nil {
 		buf := fmt.Sprintf("Error while attempting to update game mods: %v", err.Error())
 		cwlog.DoLogCW(buf)
-		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 	}
 
 	lines := strings.Split(out, "\n")

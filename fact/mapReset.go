@@ -51,16 +51,6 @@ func Map_reset(doReport bool) {
 	time.Sleep(time.Second)
 	SetupSchedule()
 
-	/* Get Factorio version, for archive folder name */
-	version := strings.Split(FactorioVersion, ".")
-	vlen := len(version)
-	if vlen < 3 {
-		msg := "Unable to determine Factorio version, not resetting map."
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
-		return
-	}
-
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
@@ -77,8 +67,7 @@ func Map_reset(doReport bool) {
 		}
 
 		msg := "Stopping server for map reset!"
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
+		LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 
 		cfg.Local.Options.SkipReset = false
 		QueueReboot = false      //Skip queued reboot
@@ -88,6 +77,8 @@ func Map_reset(doReport bool) {
 
 		FactAutoStart = false
 		QuitFactorio("Server rebooting for map reset!!!")
+	} else {
+		return
 	}
 
 	/* Wait for server to stop if running */
@@ -107,7 +98,7 @@ func Map_reset(doReport bool) {
 	} else if cfg.Global.Options.ResetPingRole != "" {
 		pingstr = fmt.Sprintf("<@&%v>", cfg.Global.Options.ResetPingRole)
 	}
-	CMS(cfg.Global.Discord.AnnounceChannel, pingstr+" Map "+cfg.Local.Callsign+"-"+cfg.Local.Name+" auto-reset.")
+	LogGameCMS(false, cfg.Global.Discord.AnnounceChannel, pingstr+" Map "+cfg.Local.Callsign+"-"+cfg.Local.Name+" auto-reset.")
 
 	/* Mods queue folder */
 	qPath := cfg.Global.Paths.Folders.ServersRoot +
@@ -142,7 +133,7 @@ func Map_reset(doReport bool) {
 					cwlog.DoLogCW(err.Error())
 				} else {
 					buf := "Installed new mod-settings.dat"
-					LogCMS(cfg.Local.Channel.ChatChannel, buf)
+					LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 				}
 			}
 
@@ -162,7 +153,7 @@ func Map_reset(doReport bool) {
 							LogCMS(cfg.Local.Channel.ChatChannel, buf)
 						} else {
 							buf := fmt.Sprintf("Removed mod: %v", modName)
-							LogCMS(cfg.Local.Channel.ChatChannel, buf)
+							LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 						}
 					} else {
 						buf := "Mod queue: incorrect file permissions."
@@ -178,7 +169,7 @@ func Map_reset(doReport bool) {
 
 					} else {
 						buf := fmt.Sprintf("Installed mod: %v", f.Name())
-						LogCMS(cfg.Local.Channel.ChatChannel, buf)
+						LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 					}
 				}
 			}
@@ -189,7 +180,7 @@ func Map_reset(doReport bool) {
 	VoidAllVotes() /* Void all votes */
 	WriteVotes()
 
-	LogCMS(cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
+	LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
 	FactAutoStart = true
 }
 
@@ -220,7 +211,7 @@ func GenNewMap() string {
 		cfg.WriteLCfg()
 
 		msg := fmt.Sprintf("Using custom map seed: %v", cfg.Local.Settings.Seed)
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
 	}
 
 	MapPreset := cfg.Local.Settings.MapPreset
@@ -229,8 +220,6 @@ func GenNewMap() string {
 		cwlog.DoLogCW("Invalid map preset.")
 		return "Invalid map preset"
 	}
-
-	//LogCMS(cfg.Local.Channel.ChatChannel, "Generating map...")
 
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
@@ -272,7 +261,7 @@ func GenNewMap() string {
 	if aerr != nil {
 		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
 		cwlog.DoLogCW(buf)
-		CMS(cfg.Local.Channel.ChatChannel, buf)
+		LogCMS(cfg.Local.Channel.ChatChannel, buf)
 		return aerr.Error()
 	}
 
@@ -343,5 +332,5 @@ func quickArchive() {
 	}
 
 	buf := fmt.Sprintf("Map archived as: %s", newmapurl)
-	LogCMS(cfg.Local.Channel.ChatChannel, buf)
+	LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 }

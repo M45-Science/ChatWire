@@ -817,8 +817,7 @@ func DoChangeMap(arg string) {
 		cfg.WriteLCfg()
 
 		msg := "VOTE: The next map reset will be skipped."
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
+		LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 		return
 	}
 
@@ -880,8 +879,7 @@ func DoChangeMap(arg string) {
 	}
 
 	msg := fmt.Sprintf("Loading save: %v", arg)
-	LogCMS(cfg.Local.Channel.ChatChannel, msg)
-	FactChat(msg)
+	LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
 	glob.RelaunchThrottle = 0
 	FactAutoStart = true
 

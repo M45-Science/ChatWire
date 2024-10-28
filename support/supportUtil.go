@@ -33,7 +33,7 @@ func checkHours() {
 				fact.FactChat(buf)
 				fact.FactChat(buf)
 				fact.FactChat(buf)
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 
 				shutTime := time.Now()
 				shutTime = shutTime.Add(time.Minute * 10)
@@ -47,8 +47,7 @@ func checkHours() {
 							cfg.Local.Options.PlayStartHour,
 							cfg.Local.Options.PlayEndHour)
 
-						fact.FactChat(buf)
-						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+						fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 						break
 					}
 				}
@@ -63,7 +62,7 @@ func checkHours() {
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)
 
-				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 				fact.FactAutoStart = true
 			}
 		}

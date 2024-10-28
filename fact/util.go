@@ -223,3 +223,12 @@ func LogCMS(channel string, text string) {
 	cwlog.DoLogCW(text)
 	CMS(channel, text)
 }
+
+/* Log AND send this message to Discord  and Factorio chat */
+func LogGameCMS(chat bool, channel string, text string) {
+	cwlog.DoLogGame(text)
+	CMS(channel, text)
+	if chat {
+		FactChat(text)
+	}
+}

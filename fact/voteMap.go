@@ -117,7 +117,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 
 				buf = fmt.Sprintf("%v has changed their vote to: %v", i.Member.User.Username, arg)
 
-				CMS(cfg.Local.Channel.ChatChannel, buf)
+				LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 				break
 			} else if v.NumChanges >= constants.MaxVoteChanges {
 				buf := "You can not change your vote anymore until it expires."
@@ -170,14 +170,14 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		disc.FollowupResponse(i, &f)
 
 		buf = fmt.Sprintf("%v has voted for: %v", i.Member.User.Username, arg)
-		CMS(cfg.Local.Channel.ChatChannel, buf)
+		LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 
 	}
 
 	/* Count and show votes */
 	str, count := TallyMapVotes()
 	if count > 0 {
-		CMS(cfg.Local.Channel.ChatChannel, str)
+		LogCMS(cfg.Local.Channel.ChatChannel, str)
 	}
 
 	found := false
@@ -186,7 +186,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		if t.Count >= constants.VotesNeeded {
 			msg := fmt.Sprintf("%v-%v: Players voted for: %v", cfg.Local.Callsign, cfg.Local.Name, t.Selection)
 
-			CMS(cfg.Global.Discord.ReportChannel, msg)
+			LogGameCMS(true, cfg.Global.Discord.ReportChannel, msg)
 			found = true
 			chosenMap = t.Selection
 			break
@@ -206,7 +206,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 	VoidAllVotes()
 	WriteVotes()
 
-	CMS(cfg.Local.Channel.ChatChannel, "VOTE MAP: "+chosenMap)
+	LogGameCMS(true, cfg.Local.Channel.ChatChannel, "VOTE MAP: "+chosenMap)
 	FactorioBootedAt = time.Time{}
 	DoChangeMap(chosenMap)
 }

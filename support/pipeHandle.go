@@ -26,8 +26,7 @@ import (
 func handleIdiots(input *handleData) bool {
 	if ProtectIdiots(input.line) {
 		buf := "You did not enter that as a command!\nYou have posted your registration code publicly.\nTo protect you, the code has been invalidated.\nPlease try again, and read the directions more carefully."
-		fact.FactChat(buf)
-		fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 		return true
 	}
 
@@ -40,7 +39,7 @@ func handleDisconnect(input *handleData) bool {
 
 		if glob.SoftModVersion == constants.Unknown {
 			if strings.Contains(input.line, "removing peer") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "A player has disconnected.")
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "A player has disconnected.")
 				fact.WriteFact(glob.OnlineCommand)
 			}
 		}
@@ -136,7 +135,7 @@ func handlePlayerReport(input *handleData) bool {
 				buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
 					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), cfg.GetGameLogURL(), pingStr)
 			}
-			fact.CMS(cfg.Global.Discord.ReportChannel, buf)
+			fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, buf)
 		}
 		return true
 	}
@@ -243,7 +242,7 @@ func handlePlayerRegister(input *handleData) bool {
 								continue
 							}
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
-							fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Registered player: %v", pname))
+							fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, fmt.Sprintf("Registered player: %v", pname))
 							continue
 						} else {
 							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, I couldn't find the discord guild info! The moderators will be informed of the issue.", pname))
@@ -457,8 +456,7 @@ func handleActMsg(input *handleData) bool {
 									}
 									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)\n%v", pname, cfg.GetGameLogURL())
 
-									fact.FactChat("[color=red]" + sbuf + "[/color]")
-									fact.CMS(cfg.Local.Channel.ChatChannel, sbuf)
+									fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, sbuf)
 
 									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
 
@@ -601,7 +599,7 @@ func handleBan(input *handleData) bool {
 				}
 			}
 
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
 			fact.WriteFact(glob.OnlineCommand)
 		}
 		return true
@@ -643,7 +641,7 @@ func handleUnBan(input *handleData) bool {
 				}
 			}
 
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
 		}
 		return true
 	}
@@ -657,7 +655,7 @@ func handleFactGoodbye(input *handleData) bool {
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
 		cwlog.DoLogGame(input.noTimecode)
 
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
+		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.FactorioBooted = false
 		fact.FactorioBootedAt = time.Time{}
 		fact.SetFactRunning(false)
@@ -676,7 +674,7 @@ func handleFactReady(input *handleData) bool {
 		fact.FactorioBooted = true
 		fact.FactorioBootedAt = time.Now()
 		fact.SetFactRunning(true)
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
+		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio "+fact.FactorioVersion+" is now online.")
 		fact.WriteFact("/sversion")
 		fact.WriteFact(glob.OnlineCommand)
 	}
@@ -694,7 +692,7 @@ func handleIncomingAnnounce(input *handleData) bool {
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			fact.FactChat(fmsg)
-			fact.CMS(cfg.Local.Channel.ChatChannel, dmsg)
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, dmsg)
 
 			glob.PausedLock.Lock()
 			if glob.PausedForConnect {
@@ -702,8 +700,7 @@ func handleIncomingAnnounce(input *handleData) bool {
 					glob.PausedConnectAttempt = true
 					fact.WriteFact("/gspeed 0.1")
 					msg := "Pausing game, requested by " + pName
-					fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-					fact.FactChat(msg)
+					fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 				}
 			}
 			glob.PausedLock.Unlock()
@@ -850,7 +847,7 @@ func handleCrashes(input *handleData) bool {
 
 		/* Lock error */
 		if strings.Contains(input.noTimecode, "Couldn't acquire exclusive lock") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
@@ -858,7 +855,7 @@ func handleCrashes(input *handleData) bool {
 		}
 		/* Mod Errors */
 		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and will reboot.")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and will reboot.")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
@@ -866,9 +863,9 @@ func handleCrashes(input *handleData) bool {
 		/* Stack traces */
 		if strings.Contains(input.noTimecode, "Hosting multiplayer game failed") {
 			if strings.Contains(input.noTimecode, "directory iterator cannot open directory") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio didn't find any save-games.")
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio didn't find any save-games.")
 			} else {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to load a multiplayer game.")
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to load a multiplayer game.")
 			}
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
@@ -877,7 +874,7 @@ func handleCrashes(input *handleData) bool {
 		}
 		/* level.dat */
 		if strings.Contains(input.noTimecode, "level.dat not found.") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
@@ -885,7 +882,7 @@ func handleCrashes(input *handleData) bool {
 		}
 		/* Stack traces */
 		if strings.Contains(input.noTimecode, "Unexpected error occurred.") {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true

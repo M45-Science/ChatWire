@@ -104,7 +104,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						return
 					} else {
 						disc.EphemeralResponse(i, "Error", "You must be a admin to use this command.")
-						fact.CMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord admin permissions, and attempted to run the command: "+c.AppCmd.Name+")")
+						fact.LogCMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord admin permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
 				} else if c.ModeratorOnly {
@@ -114,7 +114,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						return
 					} else {
 						disc.EphemeralResponse(i, "Error", "You must be a moderator to use this command.")
-						fact.CMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord moderator permissions, and attempted to run the command: "+c.AppCmd.Name+")")
+						fact.LogCMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord moderator permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
 				} else {

@@ -207,7 +207,7 @@ func checkLockFile() {
 			/* Recent lockfile, probable crash loop */
 			if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
 
-				cwlog.DoLogCW("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes)
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes))
 
 				time.Sleep(constants.RestartLimitMinutes * time.Minute)
 				_ = os.Remove("cw.lock")

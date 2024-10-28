@@ -45,7 +45,8 @@ func CheckBanList(name string) {
 	if fact.PlayerLevelGet(pname, false) == -1 {
 		glob.PlayerListLock.Lock()
 		if glob.PlayerList[pname] != nil {
-			fact.WriteFact("/ban " + pname + " " + glob.PlayerList[pname].BanReason)
+			//fact.WriteFact("/ban " + pname + " " + glob.PlayerList[pname].BanReason)
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Warning: [FCL] ban "+pname+": "+glob.PlayerList[pname].BanReason)
 		}
 		glob.PlayerListLock.Unlock()
 	}

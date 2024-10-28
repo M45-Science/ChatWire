@@ -480,7 +480,7 @@ func MainLoops() {
 					/* Reboot anyway */
 					if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
 						msg := "(SYSTEM) Rebooting for Factorio update!"
-						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
+						fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 						glob.UpdateWarnCounter = 0
 						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
 						break /* Stop looping */
@@ -517,7 +517,7 @@ func MainLoops() {
 					}
 				} else if !failureReported {
 					failureReported = true
-					fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .queue file, ignoring.")
+					cwlog.DoLogCW("Failed to remove .queue file, ignoring.")
 				}
 			}
 			/* Only if game is running */
@@ -525,12 +525,12 @@ func MainLoops() {
 				/* Stop game */
 				if _, err = os.Stat(".stop"); err == nil {
 					if errb = os.Remove(".stop"); errb == nil {
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio stopping!")
+						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio stopping!")
 						fact.FactAutoStart = false
 						fact.QuitFactorio("Server stopping for maintenance.")
 					} else if !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .stop file, ignoring.")
+						cwlog.DoLogCW("Failed to remove .stop file, ignoring.")
 					}
 				}
 
@@ -540,7 +540,7 @@ func MainLoops() {
 						fact.QueueFactReboot = true
 					} else if !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .rfact file, ignoring.")
+						cwlog.DoLogCW("Failed to remove .rfact file, ignoring.")
 					}
 				}
 			} else { /*  Only if game is NOT running */
@@ -548,10 +548,10 @@ func MainLoops() {
 				if _, err = os.Stat(".start"); err == nil {
 					if errb = os.Remove(".start"); errb == nil {
 						fact.FactAutoStart = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio starting!")
+						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio starting!")
 					} else if !failureReported {
 						failureReported = true
-						fact.LogCMS(cfg.Local.Channel.ChatChannel, "Failed to remove .start file, ignoring.")
+						cwlog.DoLogCW("Failed to remove .start file, ignoring.")
 					}
 				}
 			}
@@ -644,8 +644,7 @@ func MainLoops() {
 
 					if glob.PausedConnectAttempt {
 						msg := "Unpausing, " + glob.PausedFor + " did not finish joining within the time limit."
-						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
-						fact.FactChat(msg)
+						fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 					}
 
 					glob.PausedForConnect = false

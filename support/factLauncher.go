@@ -58,7 +58,7 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 
 	numSaves := len(tempf)
 	if numSaves <= 0 {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "No saves found, stopping.")
+		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "No saves found, stopping.")
 		return false, "", ""
 	}
 
@@ -96,7 +96,7 @@ func readFolder(path string, sdir string) []zipFilesData {
 	/* Get all softmod files */
 	sFiles, err := os.ReadDir(path)
 	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read softmod folder.")
+		cwlog.DoLogCW("Unable to read softmod folder.")
 		return nil
 	}
 
@@ -292,7 +292,7 @@ func launchFactorio() {
 	if errm == nil {
 		for _, mod := range modList {
 			if strings.HasSuffix(mod.Name(), ".zip") {
-				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Reading mod files...")
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Reading mod files...")
 				break
 			}
 		}
