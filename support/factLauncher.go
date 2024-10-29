@@ -355,26 +355,6 @@ func launchFactorio() {
 		return
 	}
 
-	// Check for zip bombs in mod files
-	modPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
-
-	modList, errm := os.ReadDir(modPath)
-
-	if errm == nil {
-		for _, mod := range modList {
-			if strings.HasSuffix(mod.Name(), ".zip") {
-				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Reading mod files...")
-				break
-			}
-		}
-	} else {
-		cwlog.DoLogCW("Unable to read mod dir.")
-	}
-
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
 		if cfg.Local.Settings.Scenario == "" {
@@ -466,6 +446,11 @@ func launchFactorio() {
 		}
 	}
 	fact.WriteAdminlist()
+
+	modFiles := GetModFiles()
+	if len(modFiles) > 0 {
+		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Loading mods...")
+	}
 
 	/* Run Factorio */
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
@@ -568,4 +553,27 @@ func ConfigSoftMod() {
 	}
 
 	fact.WriteFact(fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+}
+
+func GetModFiles() []string {
+	// Check for zip bombs in mod files
+	modPath := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		constants.ModsFolder + "/"
+
+	modList, errm := os.ReadDir(modPath)
+	modStrings := []string{}
+
+	if errm == nil {
+		for _, mod := range modList {
+			if strings.HasSuffix(mod.Name(), ".zip") {
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Reading mod files...")
+				modStrings = append(modStrings, mod.Name())
+			}
+		}
+	}
+
+	return modStrings
 }

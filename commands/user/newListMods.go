@@ -30,5 +30,9 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	if buf == "" {
+		buf = strings.Join(support.GetModFiles(), ", ")
+	}
+
 	disc.EphemeralResponse(i, "Mod files:", buf)
 }
