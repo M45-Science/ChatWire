@@ -28,7 +28,6 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		}
 	}
 
-	time.Sleep(time.Second)
 	glob.VoteBoxLock.Lock()
 	defer glob.VoteBoxLock.Unlock()
 

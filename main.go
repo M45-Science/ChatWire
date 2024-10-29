@@ -265,16 +265,14 @@ func initTime() {
 
 func readConfigs() {
 
-	/* Read global and local configs, then write them back if they read correctly. */
-	/* This cleans up formatting if manually edited, and verifies we can write the config */
 	if cfg.ReadGCfg() {
-		cfg.WriteGCfg()
+		//cfg.WriteGCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		os.Exit(1)
 	}
 	if cfg.ReadLCfg() {
-		cfg.WriteLCfg()
+		//cfg.WriteLCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		os.Exit(1)

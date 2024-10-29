@@ -59,7 +59,6 @@ func MainLoops() {
 					!*glob.NoAutoLaunch {
 
 					if WithinHours() {
-						time.Sleep(time.Second)
 						launchFactorio()
 					}
 				}
@@ -590,7 +589,7 @@ func MainLoops() {
 	****************************/
 	go func() {
 
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			if cfg.Local.Options.AutoUpdate {
 				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)

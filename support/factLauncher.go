@@ -3,6 +3,7 @@ package support
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -20,6 +21,81 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 )
+
+var dlcNames = []string{"elevated-rails", "quality", "space-age"}
+
+type modListData struct {
+	Mods []modData
+}
+type modData struct {
+	Name    string
+	Enabled bool
+}
+
+func GetGameMods() (*modListData, error) {
+	return configGameMods(nil, false)
+}
+
+func SyncMods() {
+	_, fileName, _ := GetSaveGame(true)
+	var tempargs []string = []string{"--sync-mods", fileName}
+
+	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+	data, err := cmd.Output()
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	} else {
+		if strings.Contains(string(data), "Mods synced") {
+			cwlog.DoLogCW("Mods synced.")
+		}
+	}
+}
+
+func configGameMods(controlList []string, setState bool) (*modListData, error) {
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Mods + "/" + "mod-list.json"
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	serverMods := modListData{}
+	err = json.Unmarshal(data, &serverMods)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(controlList) > 0 {
+		for s, serverMod := range serverMods.Mods {
+			if strings.EqualFold(serverMod.Name, "base") {
+				continue
+			}
+			for _, controlMod := range controlList {
+				if strings.EqualFold(serverMod.Name, controlMod) {
+					serverMods.Mods[s].Enabled = setState
+
+					cwlog.DoLogCW(BoolToString(setState) + " " + serverMod.Name)
+				}
+			}
+		}
+
+		outbuf := new(bytes.Buffer)
+		enc := json.NewEncoder(outbuf)
+		enc.SetIndent("", "\t")
+
+		if err := enc.Encode(serverMods); err != nil {
+			return nil, err
+		}
+
+		err = os.WriteFile(path, outbuf.Bytes(), 0644)
+		cwlog.DoLogCW("Wrote mod-list.json")
+	}
+	return &serverMods, err
+}
 
 /* Find the newest save game */
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
@@ -109,7 +185,6 @@ func readFolder(path string, sdir string) []zipFilesData {
 			}
 
 			zipFiles = append(zipFiles, zipFilesData{Name: sdir + "/" + file.Name(), Data: dat})
-			//cwlog.DoLogCW("Added from softmod: " + sdir + "/" + file.Name())
 		} else {
 			tfiles := readFolder(path+"/"+file.Name(), sdir+"/"+file.Name())
 			zipFiles = append(zipFiles, tfiles...)
@@ -280,7 +355,7 @@ func launchFactorio() {
 		return
 	}
 
-	//Check for zip bombs in mod files
+	// Check for zip bombs in mod files
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -294,13 +369,6 @@ func launchFactorio() {
 			if strings.HasSuffix(mod.Name(), ".zip") {
 				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Reading mod files...")
 				break
-			}
-		}
-
-		for _, mod := range modList {
-			if strings.HasSuffix(mod.Name(), ".zip") && fact.HasZipBomb(mod.Name()) {
-				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Mod '"+mod.Name()+"' may contain a zip-bomb, aborting.")
-				return
 			}
 		}
 	} else {
@@ -398,9 +466,6 @@ func launchFactorio() {
 		}
 	}
 	fact.WriteAdminlist()
-
-	//Clear mod load string
-	fact.ModList = []string{}
 
 	/* Run Factorio */
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)

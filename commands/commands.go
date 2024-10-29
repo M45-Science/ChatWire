@@ -364,14 +364,6 @@ var cmds = []glob.CommandData{
 		},
 	},
 		Function: moderator.ChangeMap, ModeratorOnly: true},
-
-	/* PLAYER COMMMANDS -------------------- */
-	{AppCmd: glob.AppCmdData{
-		Name:        "list-mods",
-		Description: "Show list of mod files",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-		Function: moderator.ListGameMods},
 	{AppCmd: glob.AppCmdData{
 		Name:        "info",
 		Description: "Displays status and settings of the server.",
@@ -470,4 +462,11 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: user.Scoreboard, PrimaryOnly: true},
+	/* PLAYER COMMMANDS -------------------- */
+	{AppCmd: glob.AppCmdData{
+		Name:        "list-mods",
+		Description: "Show list of mod files",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Function: user.ListGameMods},
 }

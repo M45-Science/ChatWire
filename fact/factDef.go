@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bwmarrin/discordgo"
-
 	"ChatWire/constants"
 )
 
@@ -23,10 +21,6 @@ var (
 	NewVersion   = constants.Unknown
 	NewPatchName = constants.Unknown
 	LastSaveName = constants.Unknown
-
-	/* Factorio game mod data*/
-	ModLoadMessage *discordgo.Message
-	ModList        []string
 
 	/* Factorio in-game time data */
 	LastGametime   = ""

@@ -16,7 +16,7 @@ import (
 
 func checkHours() {
 	for glob.ServerRunning {
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 15)
 
 		if cfg.Local.Options.PlayHourEnable {
 

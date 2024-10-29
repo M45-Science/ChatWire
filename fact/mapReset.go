@@ -48,7 +48,6 @@ func GetMapTypeName(num int) string {
 /* Generate map */
 func Map_reset(doReport bool) {
 
-	time.Sleep(time.Second)
 	SetupSchedule()
 
 	/* If Factorio is running, and there is a argument... echo it
