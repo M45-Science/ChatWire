@@ -569,7 +569,6 @@ func GetModFiles() []string {
 	if errm == nil {
 		for _, mod := range modList {
 			if strings.HasSuffix(mod.Name(), ".zip") {
-				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Reading mod files...")
 				modStrings = append(modStrings, mod.Name())
 			}
 		}
