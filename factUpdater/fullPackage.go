@@ -13,18 +13,18 @@ import (
 )
 
 const (
-	baseDownloadURL  = "https://www.factorio.com/get-download/"
-	baseUpdateURL    = "https://updater.factorio.com/get-download-link?"
-	latestReleaseURL = "https://factorio.com/api/latest-releases"
+	baseDownloadURL = "https://www.factorio.com/get-download/"
+	baseUpdateURL   = "https://updater.factorio.com/get-download-link?"
+	releaseURL      = "https://factorio.com/api/latest-releases"
 )
 
 func fullPackage(info *InfoData) error {
 	var filename string
 	var err error
 
-	branch := "latest"
+	branch := "stable"
 	if info.Xreleases {
-		branch = "experimental"
+		branch = "latest"
 	}
 	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.Build, info.Distro)
 	var data []byte
