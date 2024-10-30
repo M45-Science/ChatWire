@@ -22,9 +22,11 @@ func getFactorioVersion(info *InfoData) error {
 		return err
 	}
 
-	if fact.FactIsRunning {
-		return fmt.Errorf("Factorio is already running.")
-	}
+	/*
+		if fact.FactIsRunning {
+			return fmt.Errorf("Factorio is already running.")
+		}
+	*/
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
