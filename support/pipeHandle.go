@@ -653,8 +653,7 @@ func handleFactGoodbye(input *handleData) bool {
 	 * GOODBYE
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
-		cwlog.DoLogGame(input.noTimecode)
-
+		cwlog.DoLogCW("Factorio has closed.")
 		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.FactorioBooted = false
 		fact.FactorioBootedAt = time.Time{}
@@ -827,7 +826,10 @@ func handleDesync(input *handleData) bool {
 	 * CAPTURE DESYNC
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Info") {
-
+		if strings.Contains(input.noTimecode, "New RCON connection from") {
+			cwlog.DoLogCW(input.noTimecode)
+			return true
+		}
 		if strings.Contains(input.noTimecode, "DesyncedWaitingForMap") {
 			cwlog.DoLogGame(input.noTimecode)
 			cwlog.DoLogCW("desync: " + input.noTimecode)
@@ -842,6 +844,9 @@ func handleCrashes(input *handleData) bool {
 	/* *****************
 	 * CAPTURE CRASHES
 	 ******************/
+	if strings.HasPrefix(input.line, "__level__/") {
+		cwlog.DoLogCW(input.line)
+	}
 	if strings.HasPrefix(input.noTimecode, "Error") {
 		cwlog.DoLogCW(input.noTimecode)
 
@@ -855,7 +860,7 @@ func handleCrashes(input *handleData) bool {
 		}
 		/* Mod Errors */
 		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua error and will reboot.")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua error and will reboot.**")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
@@ -882,7 +887,7 @@ func handleCrashes(input *handleData) bool {
 		}
 		/* Stack traces */
 		if strings.Contains(input.noTimecode, "Unexpected error occurred.") {
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio crashed.")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
 			fact.FactorioBooted = false
 			fact.SetFactRunning(false)
 			return true
@@ -904,21 +909,30 @@ func handleCrashes(input *handleData) bool {
 			fact.SetFactRunning(false)
 			return true
 		}
+
 		/* Multiplayer manger */
+		if strings.HasPrefix(input.noTimecode, "Error ServerMultiplayerManager") {
+			fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
+		}
 		if strings.Contains(input.noTimecode, "MultiplayerManager failed:") {
+
 			if strings.Contains(input.noTimecode, "cannot be loaded because it is higher than the game version") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio version is too old for the save game.")
+				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio version is too old for the save game.**")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
 				return true
 			}
 			if strings.Contains(input.noTimecode, "syntax error") || strings.Contains(input.noTimecode, "unexpected symbol") ||
-				strings.Contains(input.noTimecode, "expected") || strings.Contains(input.noTimecode, ".lua:") {
-				fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio encountered a lua syntax error and will stop.")
+				strings.Contains(input.noTimecode, "expected") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua syntax error and will stop.**")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
+				return true
+			}
+			if strings.Contains(input.noTimecode, "Error while running command") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua command error.**")
 				return true
 			}
 			if strings.Contains(input.noTimecode, "info.json not found") {
@@ -958,6 +972,11 @@ func handleCrashes(input *handleData) bool {
 
 				fact.FactorioBooted = false
 				fact.SetFactRunning(false)
+				return true
+			}
+
+			if strings.Contains(input.noTimecode, "Exception at tick") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
 				return true
 			}
 		}
@@ -1012,13 +1031,7 @@ func handleChatMsg(input *handleData) bool {
 					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
 							if cfg.Global.Paths.URLs.LogPath != "" {
-								newmapurl := fmt.Sprintf("https://%v%v%v%v",
-									cfg.Global.Paths.URLs.Domain,
-									cfg.Global.Paths.URLs.PathPrefix,
-									cfg.Global.Paths.URLs.LogPath,
-									strings.TrimPrefix(glob.GameLogName, "log/"))
-
-								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban) %v", pname, newmapurl)
+								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban) %v", pname, cfg.GetGameLogURL())
 							} else {
 								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban)", pname)
 							}
