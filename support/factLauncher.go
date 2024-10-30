@@ -382,7 +382,7 @@ func launchFactorio() {
 
 		if delay > 0 {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Rate limiting: Automatically rebooting Factorio in %d seconds.", delay))
-			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning; i++ {
+			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning && glob.RelaunchThrottle > 0; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
