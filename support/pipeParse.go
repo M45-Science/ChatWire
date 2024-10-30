@@ -67,26 +67,23 @@ func HandleChat() {
 			reader := bufio.NewScanner(fact.GameBuffer)
 
 			for reader.Scan() {
-				if !fact.FactIsRunning {
-					break
-				}
 				readLine := reader.Text()
 				rawLine := sclean.UnicodeCleanup(readLine)
 
-				/* Reject short lines */
-				ll := len(rawLine)
-				if ll == 0 {
-					continue
-				}
 				/* We have input, server is alive */
 				fact.SetFactRunning(true)
-
-				input := preProcessFactorioOutput(rawLine)
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
 					fact.PausedTicks--
 				}
+
+				/* Reject short lines */
+				if rawLine == "" {
+					continue
+				}
+
+				input := preProcessFactorioOutput(rawLine)
 
 				/*********************************
 				 * FILTERED AREA
