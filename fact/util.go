@@ -103,7 +103,6 @@ func WaitFactQuit() {
 	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && FactorioBooted && glob.ServerRunning; x++ {
 		time.Sleep(time.Millisecond * 100)
 	}
-	time.Sleep(time.Second * 2)
 }
 
 /* Auto generates a steam connect URL */

@@ -3,6 +3,7 @@ package support
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -455,8 +456,14 @@ func launchFactorio() {
 		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Loading mods...")
 	}
 
+	if glob.FactorioCancel != nil {
+		cwlog.DoLogCW("Killing previous factorio context!!!")
+		glob.FactorioCancel()
+	}
+	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
+
 	/* Run Factorio */
-	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+	cmd := exec.Command(fact.GetFactorioBinary(), tempargs...)
 
 	/* Hide RCON password and port */
 	for i, targ := range tempargs {

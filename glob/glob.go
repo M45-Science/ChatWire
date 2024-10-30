@@ -1,6 +1,7 @@
 package glob
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"math"
@@ -124,6 +125,9 @@ type ChoiceData struct {
 }
 
 var (
+	FactorioContext context.Context
+	FactorioCancel  context.CancelFunc
+
 	AlphaValue    map[string]int
 	RCONPass      string
 	OnlineCommand = constants.OnlineCommand

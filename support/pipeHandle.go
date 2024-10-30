@@ -653,6 +653,9 @@ func handleFactGoodbye(input *handleData) bool {
 	 * GOODBYE
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
+		glob.FactorioCancel()
+		glob.FactorioCancel = nil
+
 		cwlog.DoLogCW("Factorio has closed.")
 		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio is now offline.")
 		fact.FactorioBooted = false

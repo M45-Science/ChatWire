@@ -279,8 +279,13 @@ func QuitFactorio(message string) {
 		FactChat("[color=white]" + message + "[/color]")
 		FactChat("[color=black]" + message + "[/color]")
 		time.Sleep(time.Second * 3)
-	} else {
-		WriteFact("/quit")
+	}
+
+	WriteFact("/quit")
+	WaitFactQuit()
+	if FactIsRunning && glob.FactorioCancel != nil {
+		cwlog.DoLogCW("Forcing factorio to close!!!")
+		glob.FactorioCancel()
 	}
 }
 
@@ -309,6 +314,9 @@ func WriteFact(input string) {
 		if err != nil {
 			cwlog.DoLogCW("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input)
 			SetFactRunning(false)
+			if glob.FactorioCancel != nil {
+				glob.FactorioCancel()
+			}
 			return
 		}
 		if buf != "/time" {
@@ -318,6 +326,7 @@ func WriteFact(input string) {
 	} else {
 		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
 		SetFactRunning(false)
+		FactorioBooted = false
 		return
 	}
 }
