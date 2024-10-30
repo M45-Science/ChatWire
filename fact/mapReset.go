@@ -184,6 +184,9 @@ func Map_reset(doReport bool) {
 }
 
 func GenNewMap() string {
+	glob.FactorioLock.Lock()
+	defer glob.FactorioLock.Unlock()
+
 	genpath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +

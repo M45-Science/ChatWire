@@ -38,6 +38,9 @@ func GetGameMods() (*modListData, error) {
 }
 
 func SyncMods() {
+	glob.FactorioLock.Lock()
+	defer glob.FactorioLock.Unlock()
+
 	_, fileName, _ := GetSaveGame(true)
 	var tempargs []string = []string{"--sync-mods", fileName}
 
@@ -327,6 +330,9 @@ func launchFactorio() {
 		cwlog.DoLogCW("launchFactorio: Factorio is already running.")
 		return
 	}
+
+	glob.FactorioLock.Lock()
+	defer glob.FactorioLock.Unlock()
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}

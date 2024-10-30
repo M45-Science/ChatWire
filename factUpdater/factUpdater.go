@@ -3,21 +3,16 @@ package factUpdater
 import (
 	"ChatWire/cwlog"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"archive/tar"
 	"bytes"
 	"fmt"
 	"io"
 	"os/exec"
 	"strings"
-	"sync"
 )
 
-var factorioLock sync.Mutex
-
 func getFactorioVersion(info *InfoData) error {
-
-	factorioLock.Lock()
-	defer factorioLock.Unlock()
 
 	if info.Version != "" {
 		return nil
@@ -26,6 +21,13 @@ func getFactorioVersion(info *InfoData) error {
 	if err := factBinExist(); err != nil {
 		return err
 	}
+
+	if fact.FactIsRunning {
+		return fmt.Errorf("Factorio is already running.")
+	}
+
+	glob.FactorioLock.Lock()
+	defer glob.FactorioLock.Unlock()
 
 	var tempargs []string
 	tempargs = append(tempargs, "--version")

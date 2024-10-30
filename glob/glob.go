@@ -14,6 +14,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+var FactorioLock sync.Mutex
+
 func Ptr[T any](v T) *T {
 	return &v
 }
