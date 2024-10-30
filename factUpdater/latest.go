@@ -45,7 +45,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 	} else if isVersionEqual(*newVersion, info.VersInt) {
 		return info, "Factorio is up-to-date.", false, true
 	} else {
-		return info, "Latest version is older, use force option if you want to downgrade.\nWARNING: downgrading will likely break existing maps/saves.", false, true
+		return info, "Current version is older, use install-factorio option if you want to downgrade.\nWARNING: downgrading will likely break existing maps/saves.", false, true
 	}
 }
 
