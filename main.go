@@ -85,7 +85,7 @@ func main() {
 	fact.QueueReboot = false
 	fact.QueueFactReboot = false
 	fact.QuitFactorio("Server quitting...")
-	fact.WaitFactQuit()
+	fact.WaitFactQuit(false)
 	fact.DoExit(false)
 }
 

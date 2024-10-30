@@ -99,9 +99,15 @@ func FactChat(input string) {
 	}
 }
 
-func WaitFactQuit() {
-	for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && FactorioBooted && glob.ServerRunning; x++ {
-		time.Sleep(time.Millisecond * 100)
+func WaitFactQuit(waiting bool) {
+	if waiting {
+		for FactIsRunning && FactorioBooted && glob.ServerRunning {
+			time.Sleep(time.Millisecond * 100)
+		}
+	} else {
+		for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && FactorioBooted && glob.ServerRunning; x++ {
+			time.Sleep(time.Millisecond * 100)
+		}
 	}
 }
 

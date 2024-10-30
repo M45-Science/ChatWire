@@ -416,7 +416,7 @@ func launchFactorio() {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
-	if cfg.Local.Settings.NewMap {
+	if cfg.Local.Settings.NewMap && cfg.Local.Settings.Scenario != "none" && cfg.Local.Settings.Scenario != "" {
 		cfg.Local.Settings.NewMap = false
 		tempargs = append(tempargs, "--start-server-load-scenario")
 		tempargs = append(tempargs, cfg.Local.Settings.Scenario)

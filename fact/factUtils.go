@@ -282,7 +282,7 @@ func QuitFactorio(message string) {
 	}
 
 	WriteFact("/quit")
-	WaitFactQuit()
+	WaitFactQuit(false)
 	if FactIsRunning && glob.FactorioCancel != nil {
 		cwlog.DoLogCW("Forcing factorio to close!!!")
 		glob.FactorioCancel()
@@ -849,7 +849,7 @@ func DoChangeMap(arg string) {
 
 	FactAutoStart = false
 	QuitFactorio("Server rebooting for map vote!")
-	WaitFactQuit()
+	WaitFactQuit(false)
 	selSaveName := path + "/" + saveStr
 	from, erra := os.Open(selSaveName)
 	if erra != nil {

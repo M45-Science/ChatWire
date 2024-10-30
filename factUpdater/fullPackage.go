@@ -53,7 +53,7 @@ func fullPackage(info *InfoData) error {
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
 	fact.DoUpdateFactorio = true
-	fact.WaitFactQuit()
+	fact.WaitFactQuit(true)
 
 	err = os.RemoveAll(factPath + "/factorio/bin")
 	if err != nil {

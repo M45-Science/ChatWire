@@ -81,7 +81,7 @@ func Map_reset(doReport bool) {
 	}
 
 	/* Wait for server to stop if running */
-	WaitFactQuit()
+	WaitFactQuit(false)
 
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {

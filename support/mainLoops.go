@@ -81,7 +81,7 @@ func MainLoops() {
 					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
 
-					fact.WaitFactQuit()
+					fact.WaitFactQuit(false)
 					fact.FactorioBooted = false
 					fact.SetFactRunning(false)
 				}
