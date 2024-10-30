@@ -82,6 +82,7 @@ type localOptions struct {
 type softmodOptions struct {
 	Restrict          bool
 	FriendlyFire      bool
+	OneLife           bool
 	DisableBlueprints bool
 	Cheats            bool
 	InjectSoftMod     bool

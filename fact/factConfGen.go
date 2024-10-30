@@ -98,6 +98,11 @@ func GenerateFactorioConfig() bool {
 	if cfg.Local.Options.SoftModOptions.FriendlyFire {
 		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
 	}
+	if cfg.Local.Options.SoftModOptions.OneLife {
+		descrLines = append(descrLines, AddFactColor("red", "PERMADEATH"))
+		descrLines = append(descrLines, AddFactColor("red", "ONE-LIFE"))
+		descrLines = append(descrLines, AddFactColor("red", "NO-RESPAWN"))
+	}
 	if cfg.Local.Options.SoftModOptions.Cheats {
 		descrLines = append(descrLines, AddFactColor("yellow", "SANDBOX"))
 	}

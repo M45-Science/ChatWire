@@ -302,6 +302,18 @@ var SettingList = []SettingListData{
 		FactUpdateCommand: "/friendlyfire",
 	},
 	{
+		Name:      "one-life",
+		ShortDesc: "One-Life",
+		Desc:      "Enable onelife mode, cannot be undone.",
+		Type:      TYPE_BOOL,
+
+		BData: &cfg.Local.Options.SoftModOptions.OneLife,
+
+		DefBool: false,
+
+		FactUpdateCommand: "/onelife",
+	},
+	{
 		Name:      "afk-kick-mins",
 		ShortDesc: "AFK Mins",
 		Desc:      "If idle/afk, kick after this amount of time (game time, at 60UPS).",

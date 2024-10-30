@@ -528,6 +528,13 @@ func ConfigSoftMod() {
 		fact.WriteFact("/friendlyfire off")
 	}
 
+	/* Config friendly fire */
+	if cfg.Local.Options.SoftModOptions.OneLife {
+		fact.WriteFact("/onelife on")
+	} else {
+		fact.WriteFact("/onelife off")
+	}
+
 	/* Config reset-interval */
 	if fact.NextReset != "" {
 		fact.WriteFact("/resetint " + fact.NextReset)
