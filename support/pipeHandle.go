@@ -912,7 +912,10 @@ func handleCrashes(input *handleData) bool {
 
 		/* Multiplayer manger */
 		if strings.HasPrefix(input.noTimecode, "Error ServerMultiplayerManager") {
-			fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
+			if time.Since(glob.LastCrashReport) > constants.CrashReportInterval*time.Second {
+				glob.LastCrashReport = time.Now()
+				fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
+			}
 		}
 		if strings.Contains(input.noTimecode, "MultiplayerManager failed:") {
 

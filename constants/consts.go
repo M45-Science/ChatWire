@@ -31,6 +31,7 @@ const (
 	TempSaveName        = "softmod.tmp"
 	BootUpdateDelayMin  = 2
 	SusWarningInterval  = 2
+	CrashReportInterval = 300
 	MaxSaveBackups      = 10
 	ModPackLifeMins     = 180
 	ModPackCooldownMin  = 5

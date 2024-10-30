@@ -124,7 +124,6 @@ type ChoiceData struct {
 }
 
 var (
-	NoAutoLaunch  *bool
 	AlphaValue    map[string]int
 	RCONPass      string
 	OnlineCommand = constants.OnlineCommand
@@ -134,6 +133,7 @@ var (
 	DoRegisterCommands   *bool
 	DoDeregisterCommands *bool
 	LocalTestMode        *bool
+	NoAutoLaunch         *bool
 
 	/* Vote map */
 	VoteBox     VoteContainerData
@@ -181,12 +181,16 @@ var (
 	UpdateGraceMinutes = 5
 	UpdateZipAttempts  = 0
 
+	/* Chat spam */
 	ChatterLock      sync.Mutex
 	ChatterList      map[string]time.Time
 	ChatterSpamScore map[string]int
 
-	LastSusWarning time.Time
+	//Message throttles
+	LastSusWarning  time.Time
+	LastCrashReport time.Time
 
+	/* Pause command */
 	PausedForConnect     bool
 	PausedCount          int
 	PausedAt             time.Time
