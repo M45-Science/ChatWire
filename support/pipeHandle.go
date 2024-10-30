@@ -936,6 +936,8 @@ func handleCrashes(input *handleData) bool {
 			}
 			if strings.Contains(input.noTimecode, "Error while running command") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua command error.**")
+				fact.FactorioBooted = false
+				fact.SetFactRunning(false)
 				return true
 			}
 			if strings.Contains(input.noTimecode, "info.json not found") {
