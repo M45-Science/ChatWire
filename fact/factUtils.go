@@ -279,6 +279,7 @@ func QuitFactorio(message string) {
 		FactChat("[color=white]" + message + "[/color]")
 		FactChat("[color=black]" + message + "[/color]")
 		time.Sleep(time.Second * 3)
+	} else {
 		WriteFact("/quit")
 	}
 }
