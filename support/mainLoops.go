@@ -473,7 +473,6 @@ func MainLoops() {
 						fact.FactChat(fact.AddFactColor("green", msg))
 						fact.FactChat(fact.AddFactColor("black", msg))
 						fact.FactChat(fact.AddFactColor("white", msg))
-						time.Sleep(time.Minute)
 					}
 
 					/* Reboot anyway */
@@ -482,13 +481,15 @@ func MainLoops() {
 						fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 						glob.UpdateWarnCounter = 0
 						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
-						break /* Stop looping */
+						time.Sleep(time.Minute * 10)
 					}
 					glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
+
+					time.Sleep(time.Minute)
 				} else {
 					glob.UpdateWarnCounter = 0
 					fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
-					break /* Stop looping */
+					time.Sleep(time.Minute * 10)
 				}
 			}
 		}
