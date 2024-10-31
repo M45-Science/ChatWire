@@ -282,6 +282,7 @@ func ReadGCfg() bool {
 		Global = newcfg
 
 		setGlobalDefaults()
+		WriteGCfg()
 		return true
 	} else { /* Otherwise just read in the config */
 		file, err := os.ReadFile(constants.CWGlobalConfig)
