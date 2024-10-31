@@ -473,8 +473,8 @@ func MainLoops() {
 						fact.FactChat(fact.AddFactColor("green", msg))
 						fact.FactChat(fact.AddFactColor("black", msg))
 						fact.FactChat(fact.AddFactColor("white", msg))
+						time.Sleep(time.Minute)
 					}
-					time.Sleep(2 * time.Minute)
 
 					/* Reboot anyway */
 					if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
