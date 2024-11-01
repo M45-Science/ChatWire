@@ -488,7 +488,7 @@ func handleSoftModMsg(input *handleData) bool {
 	 * MSG AREA
 	 ******************/
 	if strings.HasPrefix(input.line, "[MSG]") {
-		cwlog.DoLogCW(input.line)
+		cwlog.DoLogGame(input.line)
 
 		if input.wordListLen > 0 {
 			ctext := strings.Join(input.wordList[1:], " ")
