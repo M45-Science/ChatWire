@@ -1036,7 +1036,8 @@ func handleChatMsg(input *handleData) bool {
 							bbuf = fmt.Sprintf("/whisper %v [color=red]*** SPAMMING / FLOODING WARNING! (slow down) ***[/color]\n", pname)
 							fact.WriteFact(bbuf)
 						}
-					} else if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
+					}
+					if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
 							if cfg.Global.Paths.URLs.LogPath != "" {
 								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban) %v", pname, cfg.GetGameLogURL())
