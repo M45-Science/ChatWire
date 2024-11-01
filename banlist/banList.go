@@ -36,9 +36,9 @@ func CheckBanList(name string) {
 	for _, ban := range BanList {
 		if strings.EqualFold(ban.UserName, pname) {
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
-				fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Warning: [FCL] ban detected "+pname+": "+ban.Reason)
+				fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Warning: [FCL] ban detected for "+pname+": "+ban.Reason)
 			}
-			return
+			break
 		}
 	}
 
