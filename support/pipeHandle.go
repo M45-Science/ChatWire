@@ -1033,7 +1033,7 @@ func handleChatMsg(input *handleData) bool {
 
 					if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
 						if !cfg.Global.Options.DisableSpamProtect {
-							bbuf = fmt.Sprintf("/whisper %v [color=red]*** SPAMMING / FLOODING WARNING! (slow down) ***[/color]\n", pname)
+							bbuf = fmt.Sprintf("/whisper %v [color=red]*** SPAMMING / FLOODING WARNING! ***[/color]\n", pname)
 							fact.WriteFact(bbuf)
 						}
 					}
