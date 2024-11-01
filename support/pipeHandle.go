@@ -1188,7 +1188,7 @@ func handleOnlineMsg(input *handleData) bool {
 						go fact.UpdateSeen(pname)
 
 						/* Check if user is banned */
-						banlist.CheckBanList(pname)
+						//banlist.CheckBanList(pname)
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)
