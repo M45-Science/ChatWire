@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2648-1101.2024-1228"
+	Version            = "2648-1101.2024-0358p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -85,11 +85,10 @@ const (
 	WatchdogInterval = time.Second
 
 	/* Throttle Discord chat */
-	CMSRate                 = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
-	CMSRestTime             = 2000 * time.Millisecond //Time to sleep after sending a message
-	CMSPollRate             = 100 * time.Millisecond  //Time between polls
-	MaxDiscordAttempts      = 95
-	ApplicationCommandSleep = time.Second * 3
+	CMSRate            = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
+	CMSRestTime        = 2000 * time.Millisecond //Time to sleep after sending a message
+	CMSPollRate        = 100 * time.Millisecond  //Time between polls
+	MaxDiscordAttempts = 95
 )
 
 /* Factorio map preset names */

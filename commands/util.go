@@ -3,7 +3,6 @@ package commands
 import (
 	"ChatWire/cfg"
 	"ChatWire/commands/moderator"
-	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -11,7 +10,7 @@ import (
 	"ChatWire/sclean"
 	"ChatWire/support"
 	"fmt"
-	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -140,17 +139,15 @@ func DeregisterCommands() {
 		return
 	}
 	if *glob.DoDeregisterCommands && disc.DS != nil {
-		cmds, _ := disc.DS.ApplicationCommands(cfg.Global.Discord.Application, cfg.Global.Discord.Guild)
-		for _, v := range cmds {
-			cwlog.DoLogCW("Deregistered command: %s", v.Name)
-			err := disc.DS.ApplicationCommandDelete(disc.DS.State.User.ID, cfg.Global.Discord.Guild, v.ID)
-			if err != nil {
-				cwlog.DoLogCW(err.Error())
-			}
-
-			time.Sleep(constants.ApplicationCommandSleep)
+		cwlog.DoLogCW("Bulk deregistering commands!")
+		_, err := disc.DS.ApplicationCommandBulkOverwrite(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, []*discordgo.ApplicationCommand{})
+		if err != nil {
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Deregister commands failed: "+err.Error())
+			return
 		}
-		cwlog.DoLogCW("Deregister commands complete.")
+		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Deregister commands complete.")
+		time.Sleep(time.Second * 5)
+		os.Exit(0)
 	}
 }
 
@@ -166,11 +163,10 @@ func RegisterCommands() {
 	/* Bypasses init loop compile error. */
 	CL = cmds
 
-	//Bypass register, very slow
-	//TODO: Cache info and correct for changes when needed
-
 	if *glob.DoRegisterCommands {
+		cwlog.DoLogCW("Bulk registering commands!")
 
+		cmdList := []*discordgo.ApplicationCommand{}
 		for i, o := range CL {
 
 			if o.Disabled {
@@ -180,7 +176,6 @@ func RegisterCommands() {
 				cwlog.DoLogCW("Command has no name or description, skipping")
 				continue
 			}
-			time.Sleep(constants.ApplicationCommandSleep)
 
 			if strings.EqualFold(o.AppCmd.Name, "config-server") {
 				LinkConfigData(i, false)
@@ -224,16 +219,21 @@ func RegisterCommands() {
 
 				tempAppCmd.Options = append(tempAppCmd.Options, tmpOption)
 			}
-
-			_, err := disc.DS.ApplicationCommandCreate(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, tempAppCmd)
-			if err != nil {
-				log.Println("Failed to create command: ",
-					CL[i].AppCmd.Name, ": ", err)
-				continue
-			}
-			cwlog.DoLogCW("Registered command: %s", CL[i].AppCmd.Name)
+			cmdList = append(cmdList, tempAppCmd)
 		}
-		cwlog.DoLogCW("Register commands complete.")
+		created, err := disc.DS.ApplicationCommandBulkOverwrite(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, cmdList)
+		if err != nil {
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Register commands failed: "+err.Error())
+			return
+		}
+		cList := ""
+		for _, ctmp := range created {
+			if cList != "" {
+				cList = cList + ", "
+			}
+			cList = cList + ctmp.Name
+		}
+		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Register commands complete: "+cList)
 	}
 
 }
