@@ -42,7 +42,6 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 			fc, err := file.Open()
 
 			if err != nil {
-				defer fc.Close()
 
 				buf := fmt.Sprintf("Save '%v' is corrupted or invalid: '%v'.", name, err.Error())
 				if showError {
@@ -51,6 +50,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 				cwlog.DoLogCW(buf)
 				break
 			} else {
+				defer fc.Close()
 				if strings.HasSuffix(file.Name, "level.dat0") {
 					content, err := io.ReadAll(fc)
 					if len(content) > (50*1024) && err == nil {
@@ -808,8 +808,7 @@ func DoFTPLoad(i *discordgo.InteractionCreate, arg string) {
 	}
 	defer z.Close()
 
-	f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-	disc.FollowupResponse(i, &f)
+	disc.EphemeralResponse(i, "Status", buf)
 }
 
 func DoChangeMap(arg string) {

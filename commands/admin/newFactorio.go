@@ -32,7 +32,8 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	disc.EphemeralResponse(i, "Status:", "Generating new map.")
 	fileName := fact.GenNewMap()
-	disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Map generator: " + fileName})
+
+	disc.EphemeralResponse(i, "Map generator", fileName)
 }
 
 /* Archive map */
@@ -162,15 +163,9 @@ func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	_, msg, err, _ := factUpdater.DoQuickLatest(false)
 	if err {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "ERROR:", Description: "Factorio update failed:  " + msg})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Error", "Factorio update failed:  "+msg)
 	} else {
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Info", msg)
 	}
 }
 
@@ -178,8 +173,5 @@ func InstallFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.EphemeralResponse(i, "Info", "Installing Factorio...")
 	_, msg, _, _ := factUpdater.DoQuickLatest(true)
 
-	var elist []*discordgo.MessageEmbed
-	elist = append(elist, &discordgo.MessageEmbed{Title: "Info:", Description: msg})
-	f := discordgo.WebhookParams{Embeds: elist}
-	disc.FollowupResponse(i, &f)
+	disc.EphemeralResponse(i, "Info", msg)
 }

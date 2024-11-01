@@ -101,10 +101,7 @@ func makeModPack(i *discordgo.InteractionCreate, modsList []string) {
 	err := makeZipFromFileList(modsList, cfg.Global.Paths.Folders.ModPack+packName)
 	if err {
 		buf := "Could not read/write the files, please inform moderators."
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Error:", Description: buf})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Error", buf)
 		return
 	} else {
 
@@ -123,10 +120,7 @@ func makeModPack(i *discordgo.InteractionCreate, modsList []string) {
 			xTime.Unix(),
 		)
 
-		var elist []*discordgo.MessageEmbed
-		elist = append(elist, &discordgo.MessageEmbed{Title: "Success:", Description: buf})
-		f := discordgo.WebhookParams{Embeds: elist}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Success", buf)
 	}
 
 }

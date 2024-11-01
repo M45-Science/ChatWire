@@ -126,18 +126,18 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 		pass, _ := fact.CheckSave(pathPrefix, file+".zip", false)
 
 		if pass {
-			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Map appears to be valid!"})
+			disc.EphemeralResponse(i, "Status", "Map appears to be valid!")
 		} else {
-			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Map appears to be invalid!"})
+			disc.EphemeralResponse(i, "Status", "Map appears to be invalid!")
 		}
 	} else if fType.fType == TYPE_MODSETTINGS { //Mod settings here
 		err := checkModSettings(pathPrefix + file)
 		if err != nil {
 			cwlog.DoLogCW("checkModSettings: Error: " + err.Error())
-			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod settings file appears to be invalid: " + err.Error()})
+			disc.EphemeralResponse(i, "Error", "The mod settings file appears to be invalid: "+err.Error())
 			return
 		}
-		disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Would load mod-settings here."})
+		disc.EphemeralResponse(i, "Status", "Would load mod-settings here.")
 
 	} else { //mod or modpack
 		if fact.HasZipBomb(zipPath) {
@@ -147,7 +147,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 
 		zip, err := zip.OpenReader(zipPath)
 		if err != nil || zip == nil {
-			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The zip file is invalid!"})
+			disc.EphemeralResponse(i, "Error", "The zip file is invalid!")
 			return
 		}
 		defer zip.Close()
@@ -162,42 +162,42 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 					}
 				}
 			}
-			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Would load modpack here."})
+			disc.EphemeralResponse(i, "Error", "Would load modpack here.")
 
 		} else if fType.fType == TYPE_MOD {
 			for _, file := range zip.File {
 				if path.Base(file.Name) == "info.json" {
 					fc, err := file.Open()
 					if err != nil {
-						disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod data could not be opened."})
+						disc.EphemeralResponse(i, "Error", "The mod data could not be opened.")
 						return
 					}
 					defer fc.Close()
 
 					content, err := io.ReadAll(fc)
 					if err != nil {
-						disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod data could not be read."})
+						disc.EphemeralResponse(i, "Error", "The mod data could not be read.")
 						return
 					}
 
 					jsonData := modInfoData{}
 					err = json.Unmarshal(content, &jsonData)
 					if err != nil {
-						disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod info could not be parsed."})
+						disc.EphemeralResponse(i, "Error", "The mod info could not be parsed.")
 						return
 					}
 
 					if len(jsonData.Author) < 2 || len(jsonData.Factorio_version) < 3 ||
 						len(jsonData.Name) < 3 || len(jsonData.Version) < 3 {
-						disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod data contains invalid data."})
+						disc.EphemeralResponse(i, "Error", "The mod data contains invalid data.")
 						return
 					}
 
-					disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "Would load the mod here."})
+					disc.EphemeralResponse(i, "Error", "Would load the mod here.")
 					return
 				}
 			}
-			disc.FollowupResponse(i, &discordgo.WebhookParams{Content: "The mod appears to be invalid or corrupted."})
+			disc.EphemeralResponse(i, "Error", "The mod appears to be invalid or corrupted.")
 		}
 	}
 

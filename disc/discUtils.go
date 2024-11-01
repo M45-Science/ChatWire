@@ -317,47 +317,34 @@ func InteractionResponse(i *discordgo.InteractionCreate, embed *discordgo.Messag
 	}
 }
 
-func FollowupResponse(i *discordgo.InteractionCreate, f *discordgo.WebhookParams) *discordgo.Message {
+func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) *discordgo.Message {
+	return EphemeralResponseColor(i, title, message, 0)
+}
+
+func EphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
 	if DS == nil {
 		return nil
 	}
-	if f.Embeds != nil {
-		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Embeds[0].Title + "\n" + f.Embeds[0].Description)
-
-		msg, err := DS.FollowupMessageCreate(i.Interaction, false, f)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		return msg
-	} else if f.Content != "" {
-		cwlog.DoLogCW("FollowupResponse:\n" + i.Member.User.Username + "\n" + f.Content)
-
-		msg, err := DS.FollowupMessageCreate(i.Interaction, false, f)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		return msg
-	}
-
-	return nil
-}
-
-func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) {
-	if DS == nil {
-		return
-	}
 	cwlog.DoLogCW("EphemeralResponse:\n" + i.Member.User.Username + "\n" + title + "\n" + message)
 
-	var elist []*discordgo.MessageEmbed
-	elist = append(elist, &discordgo.MessageEmbed{Title: title, Description: message})
-
-	//1 << 6 is ephemeral/private
-	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
-	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err := DS.InteractionRespond(i.Interaction, resp)
+	embed := []*discordgo.MessageEmbed{{Title: title, Description: message, Color: 0x00ff00}}
+	if i.Interaction != nil {
+		resp := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{Embeds: embed},
+		}
+		err := DS.InteractionRespond(i.Interaction, resp)
+		if err != nil {
+			newResp := &discordgo.WebhookEdit{Embeds: &embed}
+			DS.InteractionResponseEdit(i.Interaction, newResp)
+		}
+		return nil
+	}
+	msg, err := DS.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{Embeds: embed, Flags: discordgo.MessageFlagsEphemeral})
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
+	return msg
 }
 
 func SendMSG(channel string, embed *discordgo.MessageEmbed) *discordgo.Message {

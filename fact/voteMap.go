@@ -33,16 +33,14 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 
 	if !FactorioBooted || !FactIsRunning {
 		buf := "Factorio is not running."
-		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Status", buf)
 		return
 	}
 
 	/* Only if allowed */
 	if !disc.CheckRegular(i) && !disc.CheckModerator(i) && !disc.CheckAdmin(i) {
 		buf := "You must have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role to use this command. See /register and the read-this-first channel for more info."
-		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Status", buf)
 		return
 	}
 
@@ -67,16 +65,14 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		if notfound {
 
 			buf := "That save doesn't exist."
-			f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-			disc.FollowupResponse(i, &f)
+			disc.EphemeralResponse(i, "Status", buf)
 			return
 		}
 
 		good, _ := CheckSave(path, autoSaveStr, false)
 		if !good {
 			buf := fmt.Sprintf("The save game '%v' does not appear to be valid.", autoSaveStr)
-			f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-			disc.FollowupResponse(i, &f)
+			disc.EphemeralResponse(i, "Status", buf)
 			return
 		}
 	}
@@ -85,8 +81,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 	if !glob.VoteBox.LastMapChange.IsZero() && time.Since(glob.VoteBox.LastMapChange) < constants.MapCooldownMins*time.Minute {
 		left := (constants.MapCooldownMins * time.Minute).Round(time.Second) - time.Since(glob.VoteBox.LastMapChange)
 		buf := fmt.Sprintf("The map can not be changed for another %v.", left.Round(time.Second).String())
-		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Status", buf)
 		return
 	}
 
@@ -110,8 +105,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 				var buf string
 				buf = fmt.Sprintf("You have changed your vote to: %v", arg)
 
-				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-				disc.FollowupResponse(i, &f)
+				disc.EphemeralResponse(i, "Status", buf)
 				changedVote = true
 
 				buf = fmt.Sprintf("%v has changed their vote to: %v", i.Member.User.Username, arg)
@@ -120,16 +114,14 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 				break
 			} else if v.NumChanges >= constants.MaxVoteChanges {
 				buf := "You can not change your vote anymore until it expires."
-				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-				disc.FollowupResponse(i, &f)
+				disc.EphemeralResponse(i, "Status", buf)
 				return
 			}
 
 			/* If they didn't change a already valid vote, then check cooldown */
 			if left > 0 && !changedVote {
 				buf := "You can not vote again yet, you must wait " + left.Round(time.Second).String() + "."
-				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-				disc.FollowupResponse(i, &f)
+				disc.EphemeralResponse(i, "Status", buf)
 				return
 			}
 
@@ -152,8 +144,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		if foundVote && len(glob.VoteBox.Votes) >= vpos { /* sanity check */
 			if !disc.CheckModerator(i) && glob.VoteBox.Votes[vpos].TotalVotes >= constants.MaxVotesPerMap {
 				buf := "You have used all of your allotted votes for this cycle."
-				f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-				disc.FollowupResponse(i, &f)
+				disc.EphemeralResponse(i, "Status", buf)
 				return
 			} else {
 				glob.VoteBox.Votes[vpos] = newVote
@@ -165,8 +156,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		var buf string
 
 		buf = fmt.Sprintf("You have voted for: %v", arg)
-		f := discordgo.WebhookParams{Content: buf, Flags: 1 << 6}
-		disc.FollowupResponse(i, &f)
+		disc.EphemeralResponse(i, "Status", buf)
 
 		buf = fmt.Sprintf("%v has voted for: %v", i.Member.User.Username, arg)
 		LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
