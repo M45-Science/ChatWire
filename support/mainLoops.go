@@ -599,9 +599,9 @@ func MainLoops() {
 						cwlog.DoLogCW(msg)
 
 						myembed := embed.NewEmbed().
-							SetTitle("Info").
+							SetTitle("Factorio Updated").
 							SetDescription(msg).
-							SetColor(0xff0000).MessageEmbed
+							SetColor(0x00ffff).MessageEmbed
 						disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
 					} else if err && !upToDate {
 						cwlog.DoLogCW(msg)
