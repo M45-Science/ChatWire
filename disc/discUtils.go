@@ -333,6 +333,9 @@ func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message
 }
 
 func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
+	glob.BootMessage = nil
+	glob.UpdateMessage = nil
+
 	if DS == nil {
 		return nil
 	}
