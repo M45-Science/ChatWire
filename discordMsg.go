@@ -43,13 +43,10 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
 		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
 		embed := &discordgo.MessageEmbed{Title: "WARNING!!!", Description: m.Author.Username + ": " + buf, Color: glob.COLOR_RED}
-		_, err := s.ChannelMessageSendEmbed(replyChan, embed)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
+		disc.SmartWriteDiscordEmbed(replyChan, embed)
 
 		/* Delete message if possible */
-		err = s.ChannelMessageDelete(replyChan, m.ID)
+		err := s.ChannelMessageDelete(replyChan, m.ID)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
