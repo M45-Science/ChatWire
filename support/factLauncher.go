@@ -339,7 +339,7 @@ func launchFactorio() {
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
-	msg := disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Notice", Description: "Launch Factorio...", Color: 0x00FF00})
+	msg := disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Notice", Description: "Launching Factorio...", Color: 0x00FF00})
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
