@@ -128,7 +128,6 @@ type ChoiceData struct {
 
 var (
 	BootMessage   *discordgo.Message
-	QuitMessage   *discordgo.Message
 	UpdateMessage *discordgo.Message
 
 	FactorioContext context.Context

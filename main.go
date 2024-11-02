@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -39,6 +41,14 @@ func main() {
 	cwlog.StartCWLog()
 	cwlog.AutoRotateLogs()
 	cwlog.DoLogCW("\n Starting %v Version: %v", constants.ProgName, constants.Version)
+
+	data, err := os.ReadFile(constants.BootMsgIDFile)
+	if err == nil && data != nil {
+		err = json.Unmarshal([]byte(data), &glob.BootMessage)
+		if err == nil && len(glob.BootMessage.Embeds) > 0 {
+			glob.BootMessage.Embeds[0].Description = glob.BootMessage.Embeds[0].Description + "\n"
+		}
+	}
 
 	initTime()
 	if !*glob.LocalTestMode {
@@ -86,6 +96,18 @@ func main() {
 	fact.QueueFactReboot = false
 	fact.QuitFactorio("Server quitting...")
 	fact.WaitFactQuit(false)
+
+	if glob.BootMessage != nil {
+		outbuf := new(bytes.Buffer)
+		enc := json.NewEncoder(outbuf)
+		enc.SetIndent("", "\t")
+
+		err := enc.Encode(glob.BootMessage)
+		if err == nil {
+			os.WriteFile(constants.BootMsgIDFile, outbuf.Bytes(), 0644)
+		}
+	}
+
 	time.Sleep(time.Second * 2)
 	fact.DoExit(false)
 }

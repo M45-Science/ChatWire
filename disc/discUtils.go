@@ -3,12 +3,10 @@ package disc
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
-	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
 )
@@ -166,21 +164,17 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 	}
 
 	if DS != nil {
-		if msg != nil && msg.ID != "" {
+		if msg != nil && msg.ID != "" && len(msg.Embeds) > 0 {
 			embed := msg.Embeds[0]
 			embed.Title = title
 			embed.Description = embed.Description + "\n" + description
 			embed.Color = color
 
-			if time.Since(msg.Timestamp) <= (time.Second * constants.EditEmbedLimit) {
-				msg, err := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
-				if err != nil {
-					msg = SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
-				}
-				return msg
-			} else {
-				return SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
+			msg, err := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
+			if err != nil {
+				msg = SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
 			}
+			return msg
 		} else {
 			return SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
 		}
