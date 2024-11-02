@@ -661,7 +661,7 @@ func handleFactGoodbye(input *handleData) bool {
 		fact.SetFactRunning(false)
 
 		cwlog.DoLogCW("Factorio has closed.")
-		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.QuitMessage, "Notice", "Factorio is now offline.", 0xFF0000)
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.QuitMessage, "Offline", "Factorio is now offline.", 0xFF0000)
 
 		glob.BootMessage = nil
 		glob.QuitMessage = nil
@@ -680,7 +680,7 @@ func handleFactReady(input *handleData) bool {
 		fact.FactorioBootedAt = time.Now()
 		fact.SetFactRunning(true)
 		cwlog.DoLogGame("Factorio " + fact.FactorioVersion + " is now online.")
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Complete", "Factorio "+fact.FactorioVersion+" is now online.", 0x00ff00)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" is now online.", 0x00ff00)
 		fact.WriteFact("/sversion")
 		fact.WriteFact(glob.OnlineCommand)
 	}
