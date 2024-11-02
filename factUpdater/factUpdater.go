@@ -62,7 +62,7 @@ func factBinExist() error {
 		return err
 	}
 	if !found {
-		return fmt.Errorf("factorio binary was not found at: %v", fact.GetFactorioBinary())
+		return fmt.Errorf("Factorio binary was not found at: %v", fact.GetFactorioBinary())
 	}
 
 	return nil

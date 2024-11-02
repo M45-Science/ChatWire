@@ -51,7 +51,7 @@ func fullPackage(info *InfoData) error {
 	pathParts := strings.Split(fact.GetFactorioBinary(), "/")
 	numParts := len(pathParts)
 	if numParts < 4 {
-		return fmt.Errorf("factorio's binary path does not seem valid. Make sure to include factorio/bin/x64/factorio")
+		return fmt.Errorf("Factorio's binary path does not seem valid. Make sure to include factorio/bin/x64/factorio")
 	}
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
@@ -81,7 +81,7 @@ func fullPackage(info *InfoData) error {
 
 	err = untar(factPath, archive)
 	if err != nil {
-		return fmt.Errorf("installing factorio to '%v' failed: %v", factPath, err.Error())
+		return fmt.Errorf("Installing Factorio to '%v' failed: %v", factPath, err.Error())
 	}
 
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)

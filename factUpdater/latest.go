@@ -31,7 +31,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 
 	err := getFactorioVersion(info)
 	if err != nil {
-		return info, fmt.Sprintf("Unable to get factorio version: %v", err.Error()), true, false
+		return info, fmt.Sprintf("Unable to get Factorio version: %v", err.Error()), true, false
 	}
 	oldVersion := info.VersInt
 

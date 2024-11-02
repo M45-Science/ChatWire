@@ -285,7 +285,7 @@ func QuitFactorio(message string) {
 	WriteFact("/quit")
 	WaitFactQuit(false)
 	if FactIsRunning && glob.FactorioCancel != nil {
-		cwlog.DoLogCW("Forcing factorio to close!!!")
+		cwlog.DoLogCW("Forcing Factorio to close!!!")
 		glob.FactorioCancel()
 	}
 

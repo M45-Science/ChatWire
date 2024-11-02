@@ -206,17 +206,17 @@ func handlePlayerRegister(input *handleData) bool {
 
 					if strings.EqualFold(discid, pid) && strings.EqualFold(factname, pname) {
 						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', wants to register a few times... just to be sure.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This factorio user, and discord user are already connected! You do not need to re-register...", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user, and discord user are already connected! You do not need to re-register...", pname))
 						codegood = true
 						/* Do not break, process */
 					} else if discid != "" && discid != "0" {
-						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a discord user that is already registered to different factorio player.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different factorio user... Unable to complete registration.", pname))
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a discord user that is already registered to different Factorio player.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user... Unable to complete registration.", pname))
 						codegood = false
 						continue
 					} else if factname != "" {
-						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a factorio user that is already registered to a different discord user.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This factorio user is already connected to a different discord user... Unable to complete registration.", pname))
+						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a Factorio user that is already registered to a different discord user.", pname))
+						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user... Unable to complete registration.", pname))
 						codegood = false
 						continue
 					}
@@ -255,7 +255,7 @@ func handlePlayerRegister(input *handleData) bool {
 			} /* End of loop */
 			glob.PasswordListLock.Unlock()
 			if !codefound {
-				cwlog.DoLogCW("Register: factorio player '%s' tried to use an invalid or expired code.", pname)
+				cwlog.DoLogCW("Register: Factorio player '%s' tried to use an invalid or expired code.", pname)
 				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired.", pname))
 				return true
 			}

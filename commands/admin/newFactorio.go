@@ -25,7 +25,7 @@ import (
 func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
-		buf := "Factorio is currently running. You must stop factorio first."
+		buf := "Factorio is currently running. You must stop Factorio first."
 		disc.InteractionEphemeralResponse(i, "Error:", buf)
 		return
 	}
@@ -159,7 +159,7 @@ func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	disc.InteractionEphemeralResponse(i, "Status:", "Checking for factorio updates.")
+	disc.InteractionEphemeralResponse(i, "Status:", "Checking for Factorio updates.")
 
 	_, msg, err, _ := factUpdater.DoQuickLatest(false)
 	if err {

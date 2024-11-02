@@ -435,12 +435,12 @@ func MainLoops() {
 
 				} else if fact.QueueFactReboot && !fact.DoUpdateFactorio {
 					cwlog.DoLogCW("Stopping Factorio for reboot.")
-					fact.QuitFactorio("Rebooting factorio.")
+					fact.QuitFactorio("Rebooting Factorio.")
 					time.Sleep(time.Minute)
 
 				} else if fact.DoUpdateFactorio {
 					cwlog.DoLogCW("Stopping Factorio for update.")
-					fact.QuitFactorio("Updating factorio.")
+					fact.QuitFactorio("Updating Factorio.")
 					time.Sleep(time.Minute)
 				}
 			}
