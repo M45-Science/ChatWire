@@ -39,7 +39,7 @@ func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if err != nil || remoteConsole == nil {
 			msg := "RCON was unable to connect to Factorio."
 			cwlog.DoLogCW(msg)
-			disc.EphemeralResponse(i, "Error:", msg)
+			disc.InteractionEphemeralResponse(i, "Error:", msg)
 			return
 		}
 
@@ -48,33 +48,33 @@ func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if err != nil {
 			msg := "Was unable to write to RCON."
 			cwlog.DoLogCW(msg)
-			disc.EphemeralResponse(i, "Error:", msg)
+			disc.InteractionEphemeralResponse(i, "Error:", msg)
 			return
 		}
 		resp, respReqID, err := remoteConsole.Read()
 		if err != nil {
 			msg := "Was unable to read from RCON."
 			cwlog.DoLogCW(msg)
-			disc.EphemeralResponse(i, "Error:", msg)
+			disc.InteractionEphemeralResponse(i, "Error:", msg)
 			return
 		}
 
 		if reqID != respReqID {
 			msg := "RCON responded with an invalid ID."
 			cwlog.DoLogCW(msg)
-			disc.EphemeralResponse(i, "Error:", msg)
+			disc.InteractionEphemeralResponse(i, "Error:", msg)
 			return
 		}
 
 		if resp == "" {
 			resp = "(Empty response)"
 		}
-		disc.EphemeralResponse(i, "Result:", resp)
+		disc.InteractionEphemeralResponse(i, "Result:", resp)
 		cwlog.DoLogCW("RCON: " + resp)
 	} else {
 		msg := "You must supply a command to run."
 		cwlog.DoLogCW(msg)
-		disc.EphemeralResponse(i, "Error:", msg)
+		disc.InteractionEphemeralResponse(i, "Error:", msg)
 	}
 
 }

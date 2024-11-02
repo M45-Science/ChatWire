@@ -301,33 +301,17 @@ func GetPlayerDataFromName(input string) *glob.PlayerData {
 	return p
 }
 
-func InteractionResponse(i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
-	if DS == nil {
-		return
-	}
-	cwlog.DoLogCW("InteractionResponse:\n" + i.Member.User.Username + "\n" + embed.Title + "\n" + embed.Description)
-
-	var embedList []*discordgo.MessageEmbed
-	embedList = append(embedList, embed)
-	respData := &discordgo.InteractionResponseData{Embeds: embedList}
-	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
-	err := DS.InteractionRespond(i.Interaction, resp)
-	if err != nil {
-		cwlog.DoLogCW(err.Error())
-	}
+func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message string) *discordgo.Message {
+	return InteractionEphemeralResponseColor(i, title, message, 0xffffff)
 }
 
-func EphemeralResponse(i *discordgo.InteractionCreate, title, message string) *discordgo.Message {
-	return EphemeralResponseColor(i, title, message, 0)
-}
-
-func EphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
+func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
 	if DS == nil {
 		return nil
 	}
 	cwlog.DoLogCW("EphemeralResponse:\n" + i.Member.User.Username + "\n" + title + "\n" + message)
 
-	embed := []*discordgo.MessageEmbed{{Title: title, Description: message, Color: 0x00ff00}}
+	embed := []*discordgo.MessageEmbed{{Title: title, Description: message, Color: color}}
 	if i.Interaction != nil {
 		resp := &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -345,19 +329,4 @@ func EphemeralResponseColor(i *discordgo.InteractionCreate, title, message strin
 		cwlog.DoLogCW(err.Error())
 	}
 	return msg
-}
-
-func SendMSG(channel string, embed *discordgo.MessageEmbed) *discordgo.Message {
-	msg, _ := DS.ChannelMessageSendEmbed(channel, embed)
-	return msg
-}
-
-func EditMSG(msg *discordgo.Message, embed *discordgo.MessageEmbed, doAppend bool) *discordgo.Message {
-	var newMsg *discordgo.Message
-	if doAppend {
-		newMsg, _ = DS.ChannelMessageEditEmbeds(msg.ChannelID, msg.ID, append(msg.Embeds, embed))
-	} else {
-		newMsg, _ = DS.ChannelMessageEditEmbeds(msg.ChannelID, msg.ID, []*discordgo.MessageEmbed{embed})
-	}
-	return newMsg
 }

@@ -44,11 +44,6 @@ var softModHandles = []funcList{
 	{function: handlePlayerRegister},
 }
 
-var chatHandles = []funcList{
-	{function: handleIdiots},
-	{function: handleChatMsg},
-}
-
 type handleData struct {
 	line, lowerLine, noTimecode, noDatestamp                                          string
 	wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords            []string
@@ -121,10 +116,9 @@ func HandleChat() {
 						/*
 						 * Chat only
 						 */
-						for _, handle := range chatHandles {
-							if handle.function(input) {
-								continue
-							}
+						/* Dont send leaked register codes to chat, warn */
+						if !handleIdiots(input) {
+							handleChatMsg(input)
 						}
 					}
 				}

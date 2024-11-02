@@ -101,6 +101,6 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			return
 		}
 	}
-	disc.EphemeralResponse(i, "Error:", "You must supply a search term.")
+	disc.InteractionEphemeralResponse(i, "Error:", "You must supply a search term.")
 
 }

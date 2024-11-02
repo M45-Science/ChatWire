@@ -36,10 +36,19 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 	/* Protect players from dumb mistakes with registration codes, even on other maps */
 	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
 	if support.ProtectIdiots(message) {
+		replyChan := m.ChannelID
+
 		/* If they manage to post it into chat in Factorio on a different server,
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
 		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
-		_, err := s.ChannelMessageSend(m.ChannelID, buf)
+		embed := &discordgo.MessageEmbed{Title: "WARNING!!!", Description: m.Author.Username + ": " + buf, Color: 0xFF0000}
+		_, err := s.ChannelMessageSendEmbed(replyChan, embed)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
+
+		/* Delete message if possible */
+		err = s.ChannelMessageDelete(replyChan, m.ID)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}

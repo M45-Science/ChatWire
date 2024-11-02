@@ -58,5 +58,5 @@ func Scoreboard(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		count++
 	}
 	buf = buf + "```"
-	disc.EphemeralResponse(i, "Scoreboard:", buf)
+	disc.InteractionEphemeralResponse(i, "Scoreboard:", buf)
 }

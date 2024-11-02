@@ -66,13 +66,13 @@ func PlayerLevel(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			fact.PlayerLevelSet(nplayer.Name, alevel, true)
 			fact.SetPlayerListDirty()
 			buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
-			disc.EphemeralResponse(i, "Complete:", buf)
+			disc.InteractionEphemeralResponse(i, "Complete:", buf)
 			return
 		} else {
-			disc.EphemeralResponse(i, "Error:", "Player not found.")
+			disc.InteractionEphemeralResponse(i, "Error:", "Player not found.")
 		}
 	} else {
-		disc.EphemeralResponse(i, "Error:", "You must specify a player.")
+		disc.InteractionEphemeralResponse(i, "Error:", "You must specify a player.")
 	}
 
 }

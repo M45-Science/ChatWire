@@ -30,7 +30,7 @@ func VoteMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 					glob.VoteBox.Votes = []glob.MapVoteData{}
 					glob.VoteBox.Tally = []glob.VoteTallyData{}
 
-					disc.EphemeralResponse(i, "Status:", "All votes cleared.")
+					disc.InteractionEphemeralResponse(i, "Status:", "All votes cleared.")
 					fact.TallyMapVotes()
 					fact.WriteVotes()
 					return
@@ -39,7 +39,7 @@ func VoteMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 					for vpos := range glob.VoteBox.Votes {
 						glob.VoteBox.Votes[vpos].Voided = true
 					}
-					disc.EphemeralResponse(i, "Status:", "All votes voided.")
+					disc.InteractionEphemeralResponse(i, "Status:", "All votes voided.")
 					fact.TallyMapVotes()
 					fact.WriteVotes()
 					return
@@ -75,7 +75,7 @@ func VoteMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		fact.ShowMapList(i, true)
 	} else {
 		buf := fmt.Sprintf("Sorry, you must have the `%v` role to use this command, see the /register command.", cfg.Global.Discord.Roles.Regular)
-		disc.EphemeralResponse(i, "Error:", buf)
+		disc.InteractionEphemeralResponse(i, "Error:", buf)
 	}
 
 }

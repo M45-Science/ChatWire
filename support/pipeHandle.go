@@ -25,7 +25,7 @@ import (
 /* Protect players from dumb mistakes with registration codes */
 func handleIdiots(input *handleData) bool {
 	if ProtectIdiots(input.line) {
-		buf := "You did not enter that as a command!\nYou have posted your registration code publicly.\nTo protect you, the code has been invalidated.\nPlease try again, and read the directions more carefully."
+		buf := "You did not enter that as a command!\nYou have posted your registration code publicly.\nTo protect you, the code has been invalidated.\nPlease try again, and read the directions more carefully!"
 		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 		return true
 	}
@@ -1132,9 +1132,7 @@ func handleChatMsg(input *handleData) bool {
 				}
 				fact.CMS(cfg.Local.Channel.ChatChannel, fbuf)
 			}
-			return true
 		}
-		return true
 	}
 	return false
 }

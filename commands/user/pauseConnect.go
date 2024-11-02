@@ -28,7 +28,7 @@ func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 
 		if !fact.FactorioBooted || !fact.FactIsRunning {
-			disc.EphemeralResponse(i, "Error:", "Factorio isn't running right now.")
+			disc.InteractionEphemeralResponse(i, "Error:", "Factorio isn't running right now.")
 			return
 		}
 
@@ -41,17 +41,17 @@ func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 				/* Check if user is already online */
 				factname := disc.GetFactorioNameFromDiscordID(i.Member.User.ID)
 				if factname == "" {
-					disc.EphemeralResponse(i, "Error:", "You need to register to use this command!")
+					disc.InteractionEphemeralResponse(i, "Error:", "You need to register to use this command!")
 					return
 				}
 				if fact.IsPlayerOnline(factname) {
-					disc.EphemeralResponse(i, "Error:", "You are already in the game!")
+					disc.InteractionEphemeralResponse(i, "Error:", "You are already in the game!")
 					return
 				}
 
 				/* Otherwise pause game */
 				buf := "If you don't attempt to connect within 3 minutes, the pause-on-connect will be canceled.\nIf you don't finish joining the game within 3 minutes, the game will unpause."
-				disc.EphemeralResponse(i, "Status:", buf)
+				disc.InteractionEphemeralResponse(i, "Status:", buf)
 
 				glob.PausedForConnect = true
 				glob.PausedAt = time.Now()
@@ -66,14 +66,14 @@ func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 					(time.Duration(score)*time.Second)-time.Duration(time.Since(glob.PausedAt).Round(time.Second)),
 					time.Duration(score)*time.Second)
 
-				disc.EphemeralResponse(i, "Error:", buf)
+				disc.InteractionEphemeralResponse(i, "Error:", buf)
 			}
 		} else {
 			buf := fmt.Sprintf("A pause-on-connect is already running, requested by: %v", glob.PausedFor)
-			disc.EphemeralResponse(i, "Error:", buf)
+			disc.InteractionEphemeralResponse(i, "Error:", buf)
 		}
 	} else {
 		buf := fmt.Sprintf("Sorry, you must have the `%v` role to use this command, see the /register command.", cfg.Global.Discord.Roles.Regular)
-		disc.EphemeralResponse(i, "Error:", buf)
+		disc.InteractionEphemeralResponse(i, "Error:", buf)
 	}
 }

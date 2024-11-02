@@ -19,8 +19,7 @@ import (
 func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if !fact.FactIsRunning {
-		embed := &discordgo.MessageEmbed{Title: "Error:", Description: "Factorio isn't currently running, sorry!"}
-		disc.InteractionResponse(i, embed)
+		disc.InteractionEphemeralResponse(i, "Error", "Factorio isn't currently running, sorry!")
 		return
 	}
 	/* Do before lock */

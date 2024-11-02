@@ -16,7 +16,7 @@ func Players(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if fact.FactorioBooted && fact.FactIsRunning {
 
 		if fact.NumPlayers == 0 {
-			disc.EphemeralResponse(i, "Players Online:", "None")
+			disc.InteractionEphemeralResponse(i, "Players Online:", "None")
 		} else {
 			buf := ""
 			fact.OnlinePlayersLock.Lock()
@@ -26,9 +26,9 @@ func Players(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 			}
 			fact.OnlinePlayersLock.Unlock()
-			disc.EphemeralResponse(i, "Players Online:", buf)
+			disc.InteractionEphemeralResponse(i, "Players Online:", buf)
 		}
 	} else {
-		disc.EphemeralResponse(i, "Error:", "Factorio isn't running.")
+		disc.InteractionEphemeralResponse(i, "Error:", "Factorio isn't running.")
 	}
 }

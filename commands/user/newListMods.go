@@ -34,5 +34,5 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		buf = strings.Join(support.GetModFiles(), ", ")
 	}
 
-	disc.EphemeralResponse(i, "Mod files:", buf)
+	disc.InteractionEphemeralResponse(i, "Mod files:", buf)
 }

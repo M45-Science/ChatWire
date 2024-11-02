@@ -37,9 +37,9 @@ func ConfigHours(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
-		disc.EphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponse(i, "Status:", buf)
 		cfg.WriteLCfg()
 	} else {
-		disc.EphemeralResponse(i, "Error:", "Didn't find any valid options!")
+		disc.InteractionEphemeralResponse(i, "Error:", "Didn't find any valid options!")
 	}
 }

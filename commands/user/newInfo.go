@@ -235,7 +235,7 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if debug && disc.CheckAdmin(i) {
 		buf = buf + debugStat(i)
 	}
-	disc.EphemeralResponse(i, "Server Info:", buf)
+	disc.InteractionEphemeralResponse(i, "Server Info:", buf)
 }
 
 func debugStat(i *discordgo.InteractionCreate) string {

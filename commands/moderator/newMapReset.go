@@ -10,7 +10,7 @@ import (
 )
 
 func MapReset(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(i, "Status:", "Resetting map...")
+	disc.InteractionEphemeralResponse(i, "Status:", "Resetting map...")
 
 	//Turn off skip reset flag
 	cfg.Local.Options.SkipReset = false

@@ -30,13 +30,13 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	defer modPackLock.Unlock()
 
 	if !lastRun.IsZero() && time.Since(lastRun) < constants.ModPackCooldownMin*time.Minute {
-		disc.EphemeralResponse(i, "Error", "A modpack was already created recently, please wait a bit.")
+		disc.InteractionEphemeralResponse(i, "Error", "A modpack was already created recently, please wait a bit.")
 		return
 	}
 	lastRun = time.Now()
 
 	if len(cfg.Local.ModPackList) >= constants.MaxModPacks {
-		disc.EphemeralResponse(i, "Error", "Too many existing modpack files already!\nTry again later.")
+		disc.InteractionEphemeralResponse(i, "Error", "Too many existing modpack files already!\nTry again later.")
 		return
 	}
 
@@ -50,7 +50,7 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	files, err := os.ReadDir(modPath)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
-		disc.EphemeralResponse(i, "Error", "Error reading mods folder, please inform mods.")
+		disc.InteractionEphemeralResponse(i, "Error", "Error reading mods folder, please inform mods.")
 		return
 	}
 
@@ -83,12 +83,12 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if modFiles > 0 {
 		msg := fmt.Sprintf("%d mods found, %v total.\nGenerating modpack zip, please wait.", modFiles, humanize.Bytes(uint64(fbytes)))
-		disc.EphemeralResponse(i, "Mods", msg)
+		disc.InteractionEphemeralResponse(i, "Mods", msg)
 
 		makeModPack(i, modsList)
 	} else {
 
-		disc.EphemeralResponse(i, "Error:", "No mods are currently installed.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No mods are currently installed.")
 	}
 }
 
@@ -101,7 +101,7 @@ func makeModPack(i *discordgo.InteractionCreate, modsList []string) {
 	err := makeZipFromFileList(modsList, cfg.Global.Paths.Folders.ModPack+packName)
 	if err {
 		buf := "Could not read/write the files, please inform moderators."
-		disc.EphemeralResponse(i, "Error", buf)
+		disc.InteractionEphemeralResponse(i, "Error", buf)
 		return
 	} else {
 
@@ -120,7 +120,7 @@ func makeModPack(i *discordgo.InteractionCreate, modsList []string) {
 			xTime.Unix(),
 		)
 
-		disc.EphemeralResponse(i, "Success", buf)
+		disc.InteractionEphemeralResponse(i, "Success", buf)
 	}
 
 }

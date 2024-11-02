@@ -35,13 +35,21 @@ Binary:<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 <br>
 Launch params:<br>
-Usage of ./ChatWire:<br>
-  -deregCommands<br>
-        Deregister discord commands<br>
-  -localTest<br>
-        Turn off public/auth mode for testing<br>
-  -noAutoLaunch<br>
-        Turn off Factorio auto-launch<br>
-  -regCommands<br>
-        Register discord commands<br>
+```Usage of ChatWire:
+  -cleanBans
+        Clean/minimize player database, along with bans and exit.
+  -cleanDB
+        Clean/minimize player database and exit.
+  -deregCommands
+        Deregister discord commands and quit.
+  -localTest
+        Turn off public/auth mode for testing
+  -noAutoLaunch
+        Turn off auto-launch
+  -regCommands
+        Register discord commands```
         
+<br>
+## Discord bot perms:
+The bot needs presence intent, server members intent, message content intent
+Perms: view channels, manage channels, Mange roles, send messages, emebed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.

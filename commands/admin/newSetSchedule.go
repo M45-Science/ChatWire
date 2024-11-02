@@ -52,10 +52,10 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 	if buf != "" {
-		disc.EphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponse(i, "Status:", buf)
 		fact.SetupSchedule()
 		cfg.WriteLCfg()
 	} else {
-		disc.EphemeralResponse(i, "Error:", "No valid options were found.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No valid options were found.")
 	}
 }

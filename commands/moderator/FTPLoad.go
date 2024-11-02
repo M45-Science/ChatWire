@@ -75,7 +75,7 @@ func HandleFTP(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	disc.EphemeralResponse(i, "Error", "Sorry, you didn't supply any valid options.")
+	disc.InteractionEphemeralResponse(i, "Error", "Sorry, you didn't supply any valid options.")
 
 }
 
@@ -126,18 +126,18 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 		pass, _ := fact.CheckSave(pathPrefix, file+".zip", false)
 
 		if pass {
-			disc.EphemeralResponse(i, "Status", "Map appears to be valid!")
+			disc.InteractionEphemeralResponse(i, "Status", "Map appears to be valid!")
 		} else {
-			disc.EphemeralResponse(i, "Status", "Map appears to be invalid!")
+			disc.InteractionEphemeralResponse(i, "Status", "Map appears to be invalid!")
 		}
 	} else if fType.fType == TYPE_MODSETTINGS { //Mod settings here
 		err := checkModSettings(pathPrefix + file)
 		if err != nil {
 			cwlog.DoLogCW("checkModSettings: Error: " + err.Error())
-			disc.EphemeralResponse(i, "Error", "The mod settings file appears to be invalid: "+err.Error())
+			disc.InteractionEphemeralResponse(i, "Error", "The mod settings file appears to be invalid: "+err.Error())
 			return
 		}
-		disc.EphemeralResponse(i, "Status", "Would load mod-settings here.")
+		disc.InteractionEphemeralResponse(i, "Status", "Would load mod-settings here.")
 
 	} else { //mod or modpack
 		if fact.HasZipBomb(zipPath) {
@@ -147,7 +147,7 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 
 		zip, err := zip.OpenReader(zipPath)
 		if err != nil || zip == nil {
-			disc.EphemeralResponse(i, "Error", "The zip file is invalid!")
+			disc.InteractionEphemeralResponse(i, "Error", "The zip file is invalid!")
 			return
 		}
 		defer zip.Close()
@@ -162,42 +162,42 @@ func LoadFTPFile(i *discordgo.InteractionCreate, file string, fType ftpTypeData)
 					}
 				}
 			}
-			disc.EphemeralResponse(i, "Error", "Would load modpack here.")
+			disc.InteractionEphemeralResponse(i, "Error", "Would load modpack here.")
 
 		} else if fType.fType == TYPE_MOD {
 			for _, file := range zip.File {
 				if path.Base(file.Name) == "info.json" {
 					fc, err := file.Open()
 					if err != nil {
-						disc.EphemeralResponse(i, "Error", "The mod data could not be opened.")
+						disc.InteractionEphemeralResponse(i, "Error", "The mod data could not be opened.")
 						return
 					}
 					defer fc.Close()
 
 					content, err := io.ReadAll(fc)
 					if err != nil {
-						disc.EphemeralResponse(i, "Error", "The mod data could not be read.")
+						disc.InteractionEphemeralResponse(i, "Error", "The mod data could not be read.")
 						return
 					}
 
 					jsonData := modInfoData{}
 					err = json.Unmarshal(content, &jsonData)
 					if err != nil {
-						disc.EphemeralResponse(i, "Error", "The mod info could not be parsed.")
+						disc.InteractionEphemeralResponse(i, "Error", "The mod info could not be parsed.")
 						return
 					}
 
 					if len(jsonData.Author) < 2 || len(jsonData.Factorio_version) < 3 ||
 						len(jsonData.Name) < 3 || len(jsonData.Version) < 3 {
-						disc.EphemeralResponse(i, "Error", "The mod data contains invalid data.")
+						disc.InteractionEphemeralResponse(i, "Error", "The mod data contains invalid data.")
 						return
 					}
 
-					disc.EphemeralResponse(i, "Error", "Would load the mod here.")
+					disc.InteractionEphemeralResponse(i, "Error", "Would load the mod here.")
 					return
 				}
 			}
-			disc.EphemeralResponse(i, "Error", "The mod appears to be invalid or corrupted.")
+			disc.InteractionEphemeralResponse(i, "Error", "The mod appears to be invalid or corrupted.")
 		}
 	}
 
@@ -207,7 +207,7 @@ func ListModlists(fType ftpTypeData, i *discordgo.InteractionCreate) {
 	pathPrefix := cfg.Global.Paths.Folders.FTP + fType.Path + "/"
 	dir, err := os.ReadDir(pathPrefix)
 	if err != nil {
-		disc.EphemeralResponse(i, "Error:", "Unable to read the mod settings directory.")
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to read the mod settings directory.")
 		return
 	}
 
@@ -293,7 +293,7 @@ func ListModlists(fType ftpTypeData, i *discordgo.InteractionCreate) {
 			cwlog.DoLogCW(err.Error())
 		}
 	} else {
-		disc.EphemeralResponse(i, "Error:", "No settings files were found.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No settings files were found.")
 	}
 }
 
@@ -306,7 +306,7 @@ func ListZips(fType ftpTypeData, i *discordgo.InteractionCreate) {
 
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
-		disc.EphemeralResponse(i, "Error:", "Unable to read the FTP directory.")
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to read the FTP directory.")
 		return
 	}
 
@@ -385,7 +385,7 @@ func ListZips(fType ftpTypeData, i *discordgo.InteractionCreate) {
 	}
 
 	if numFiles <= 0 {
-		disc.EphemeralResponse(i, "Error:", "No files of that type were found.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No files of that type were found.")
 	} else {
 
 		response := &discordgo.InteractionResponse{

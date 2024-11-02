@@ -26,14 +26,14 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Factorio is currently running. You must stop factorio first."
-		disc.EphemeralResponse(i, "Error:", buf)
+		disc.InteractionEphemeralResponse(i, "Error:", buf)
 		return
 	}
 
-	disc.EphemeralResponse(i, "Status:", "Generating new map.")
+	disc.InteractionEphemeralResponse(i, "Status:", "Generating new map.")
 	fileName := fact.GenNewMap()
 
-	disc.EphemeralResponse(i, "Map generator", fileName)
+	disc.InteractionEphemeralResponse(i, "Map generator", fileName)
 }
 
 /* Archive map */
@@ -44,7 +44,7 @@ func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if vlen < 3 {
 		buf := "Unable to determine Factorio version."
-		disc.EphemeralResponse(i, "Error:", buf)
+		disc.InteractionEphemeralResponse(i, "Error:", buf)
 	}
 
 	if fact.GameMapPath != "" && fact.FactorioVersion != constants.Unknown {
@@ -67,7 +67,7 @@ func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if erra != nil {
 			buf := fmt.Sprintf("An error occurred reading the map to archive: %s", erra)
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(i, "Error:", buf)
+			disc.InteractionEphemeralResponse(i, "Error:", buf)
 			return
 		}
 		defer from.Close()
@@ -78,7 +78,7 @@ func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if err != nil {
 			buf := fmt.Sprintf("Unable to create archive directory: %v", err.Error())
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(i, "Error:", buf)
+			disc.InteractionEphemeralResponse(i, "Error:", buf)
 			return
 		}
 
@@ -87,7 +87,7 @@ func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if errb != nil {
 			buf := fmt.Sprintf("Unable to write archive file: %v", errb)
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(i, "Error:", buf)
+			disc.InteractionEphemeralResponse(i, "Error:", buf)
 			return
 		}
 		respData := &discordgo.InteractionResponseData{Content: newmapurl}
@@ -105,13 +105,13 @@ func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if errc != nil {
 			buf := fmt.Sprintf("Unable to write map archive file: %s", errc)
 			cwlog.DoLogCW(buf)
-			disc.EphemeralResponse(i, "Error:", buf)
+			disc.InteractionEphemeralResponse(i, "Error:", buf)
 			return
 		}
 		return
 
 	} else {
-		disc.EphemeralResponse(i, "Error:", "No map has been loaded yet.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No map has been loaded yet.")
 	}
 
 }
@@ -122,14 +122,14 @@ func StartFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if !support.WithinHours() {
 		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
 			cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
-		disc.EphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponse(i, "Status:", buf)
 	} else if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Restarting Factorio..."
-		disc.EphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponse(i, "Status:", buf)
 		fact.QuitFactorio("Server rebooting...")
 	} else {
 		buf := "Starting Factorio..."
-		disc.EphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponse(i, "Status:", buf)
 	}
 
 	fact.FactAutoStart = true
@@ -144,34 +144,34 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if fact.FactorioBooted || fact.FactIsRunning {
 
 		buf := "Stopping Factorio."
-		disc.EphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponse(i, "Status:", buf)
 		fact.QuitFactorio("Server quitting...")
 	} else {
 		buf := "Factorio isn't running, disabling auto-reboot."
-		disc.EphemeralResponse(i, "Warning:", buf)
+		disc.InteractionEphemeralResponse(i, "Warning:", buf)
 	}
 
 }
 
 func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(i, "Status:", "Checking for mod updates.")
+	disc.InteractionEphemeralResponse(i, "Status:", "Checking for mod updates.")
 	modupdate.CheckMods(true, true)
 }
 
 func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(i, "Status:", "Checking for factorio updates.")
+	disc.InteractionEphemeralResponse(i, "Status:", "Checking for factorio updates.")
 
 	_, msg, err, _ := factUpdater.DoQuickLatest(false)
 	if err {
-		disc.EphemeralResponse(i, "Error", "Factorio update failed:  "+msg)
+		disc.InteractionEphemeralResponse(i, "Error", "Factorio update failed:  "+msg)
 	} else {
-		disc.EphemeralResponse(i, "Info", msg)
+		disc.InteractionEphemeralResponse(i, "Info", msg)
 	}
 }
 
 func InstallFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	disc.EphemeralResponse(i, "Info", "Installing Factorio...")
+	disc.InteractionEphemeralResponse(i, "Info", "Installing Factorio...")
 	_, msg, _, _ := factUpdater.DoQuickLatest(true)
 
-	disc.EphemeralResponse(i, "Info", msg)
+	disc.InteractionEphemeralResponse(i, "Info", msg)
 }

@@ -48,9 +48,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Loading: %v, please wait.", c)
-					elist := discordgo.MessageEmbed{Title: "Notice:", Description: buf}
-					disc.InteractionResponse(i, &elist)
-
+					disc.InteractionEphemeralResponse(i, "Notice", buf)
 					fact.DoChangeMap(c)
 
 					break
@@ -59,7 +57,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
-					disc.EphemeralResponse(i, "Notice:", buf)
+					disc.InteractionEphemeralResponse(i, "Notice:", buf)
 
 					fact.CheckVote(i, c)
 
@@ -69,10 +67,10 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 			for _, fType := range moderator.FTPTypes {
 				if strings.EqualFold(data.CustomID, fType.Value) {
 					if c == "INVALID" {
-						disc.EphemeralResponse(i, "Error:", "Invalid file!")
+						disc.InteractionEphemeralResponse(i, "Error:", "Invalid file!")
 						break
 					}
-					disc.EphemeralResponse(i, "Status:", "Loading "+fType.Name+": "+c)
+					disc.InteractionEphemeralResponse(i, "Status:", "Loading "+fType.Name+": "+c)
 					moderator.LoadFTPFile(i, c, fType)
 					break
 				}
@@ -102,7 +100,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						cwlog.DoLogCW("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", "))
 						return
 					} else {
-						disc.EphemeralResponse(i, "Error", "You must be a admin to use this command.")
+						disc.InteractionEphemeralResponse(i, "Error", "You must be a admin to use this command.")
 						fact.LogCMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord admin permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
@@ -112,7 +110,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						RunCommand(&c, i)
 						return
 					} else {
-						disc.EphemeralResponse(i, "Error", "You must be a moderator to use this command.")
+						disc.InteractionEphemeralResponse(i, "Error", "You must be a moderator to use this command.")
 						fact.LogCMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord moderator permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}

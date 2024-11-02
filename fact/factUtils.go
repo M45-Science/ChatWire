@@ -558,7 +558,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
 	if err != nil {
-		disc.EphemeralResponse(i, "Error:", "Unable to read saves directory.")
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to read saves directory.")
 		return
 	}
 
@@ -649,7 +649,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 	}
 
 	if numFiles <= 0 {
-		disc.EphemeralResponse(i, "Error:", "No saves were found.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No saves were found.")
 	} else {
 
 		var response *discordgo.InteractionResponse
@@ -716,7 +716,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 	/* We can't read saves dir */
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
-		disc.EphemeralResponse(i, "Error:", "Unable to read saves directory.")
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to read saves directory.")
 	}
 
 	step := 1
@@ -781,7 +781,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 	}
 
 	if numFiles <= 0 {
-		disc.EphemeralResponse(i, "Error:", "No saves were found.")
+		disc.InteractionEphemeralResponse(i, "Error:", "No saves were found.")
 	} else {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Full map list", Description: mapList})
@@ -808,7 +808,7 @@ func DoFTPLoad(i *discordgo.InteractionCreate, arg string) {
 	}
 	defer z.Close()
 
-	disc.EphemeralResponse(i, "Status", buf)
+	disc.InteractionEphemeralResponse(i, "Status", buf)
 }
 
 func DoChangeMap(arg string) {

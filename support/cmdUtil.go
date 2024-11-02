@@ -11,7 +11,7 @@ func RunCommandOptions(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	a := i.ApplicationCommandData()
 
 	if len(a.Options) > 1 {
-		disc.EphemeralResponse(i, "Error", "Sorry, supply one option only!")
+		disc.InteractionEphemeralResponse(i, "Error", "Sorry, supply one option only!")
 		return
 	}
 	for _, input := range a.Options {
@@ -29,5 +29,5 @@ func RunCommandOptions(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	disc.EphemeralResponse(i, "Error", "Sorry, you didn't supply any valid options!")
+	disc.InteractionEphemeralResponse(i, "Error", "Sorry, you didn't supply any valid options!")
 }
