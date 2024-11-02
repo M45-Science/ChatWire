@@ -169,15 +169,14 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 			embed.Title = title
 			embed.Description = embed.Description + "\n" + description
 			embed.Color = color
-			msg, _ := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
-			return msg
-		} else {
-			msg, err := DS.ChannelMessageSendEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
 
+			msg, err := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
 			if err != nil {
-				cwlog.DoLogCW("SmartWriteDiscordEmbed: ERROR: %v", err)
+				msg = SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
 			}
 			return msg
+		} else {
+			return SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
 		}
 	}
 
