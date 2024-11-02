@@ -921,7 +921,11 @@ func handleCrashes(input *handleData) bool {
 		if strings.HasPrefix(input.noTimecode, "Error ServerMultiplayerManager") {
 			if time.Since(glob.LastCrashReport) > constants.CrashReportInterval*time.Second {
 				glob.LastCrashReport = time.Now()
-				fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
+
+				/* Supress connection error messages, except primary server */
+				if strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) || !strings.Contains(input.noTimecode, "Matching server connection failed") {
+					fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
+				}
 			}
 		}
 		if strings.Contains(input.noTimecode, "MultiplayerManager failed:") {
