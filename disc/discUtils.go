@@ -345,7 +345,7 @@ func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, me
 	if i.Interaction != nil {
 		resp := &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{Embeds: embed},
+			Data: &discordgo.InteractionResponseData{Embeds: embed, Flags: discordgo.MessageFlagsEphemeral},
 		}
 		err := DS.InteractionRespond(i.Interaction, resp)
 		if err != nil {
