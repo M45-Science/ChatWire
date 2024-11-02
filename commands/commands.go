@@ -185,6 +185,10 @@ var cmds = []glob.CommandData{
 						Function: admin.UpdateMods,
 					},
 					{
+						Name:     "sync-mods",
+						Function: admin.SyncMods,
+					},
+					{
 						Name:     "archive-map",
 						Function: admin.ArchiveMap,
 					},

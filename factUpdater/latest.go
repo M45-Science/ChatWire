@@ -42,7 +42,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 	fact.NewVersion = newVersion.IntToString()
 
 	if isVersionNewerThan(*newVersion, oldVersion) || force {
-		glob.UpdateMessage = disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Updating Factorio", Description: "Found Factorio update: " + newVersion.IntToString(), Color: 0x0099ff})
+		glob.UpdateMessage = disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Updating Factorio", Description: "Found Factorio update: " + newVersion.IntToString(), Color: glob.COLOR_CYAN})
 
 		info.VersInt = *newVersion
 		err := fullPackage(info)

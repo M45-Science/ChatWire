@@ -600,10 +600,10 @@ func MainLoops() {
 				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
 				if msg != "" {
 					if !err && !upToDate {
-						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, 0x0099ff)
+						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
 						cwlog.DoLogCW(msg)
 					} else if err && !upToDate {
-						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, 0xFF0000)
+						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
 						cwlog.DoLogCW(msg)
 					}
 				}

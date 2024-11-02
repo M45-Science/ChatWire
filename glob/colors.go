@@ -1,0 +1,9 @@
+package glob
+
+const (
+	COLOR_RED    = 0xFF0000
+	COLOR_ORANGE = 0xFF9900
+	COLOR_GREEN  = 0x00FF00
+	COLOR_CYAN   = 0x0099FF
+	COLOR_WHITE  = 0xFFFFFF
+)

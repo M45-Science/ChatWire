@@ -329,7 +329,7 @@ func GetPlayerDataFromName(input string) *glob.PlayerData {
 }
 
 func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message string) *discordgo.Message {
-	return InteractionEphemeralResponseColor(i, title, message, 0xffffff)
+	return InteractionEphemeralResponseColor(i, title, message, glob.COLOR_WHITE)
 }
 
 func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {

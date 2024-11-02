@@ -122,7 +122,7 @@ func StartFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if !support.WithinHours() {
 		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
 			cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
-		disc.InteractionEphemeralResponse(i, "Status:", buf)
+		disc.InteractionEphemeralResponseColor(i, "Status:", buf, glob.COLOR_RED)
 	} else if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Restarting Factorio..."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
@@ -148,7 +148,7 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		fact.QuitFactorio("Server quitting...")
 	} else {
 		buf := "Factorio isn't running, disabling auto-reboot."
-		disc.InteractionEphemeralResponse(i, "Warning:", buf)
+		disc.InteractionEphemeralResponseColor(i, "Warning:", buf, glob.COLOR_RED)
 	}
 
 }
@@ -158,12 +158,28 @@ func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	modupdate.CheckMods(true, true)
 }
 
+func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	disc.InteractionEphemeralResponse(i, "Status:", "Syncing mods.")
+
+	if fact.FactorioBooted || fact.FactIsRunning {
+		disc.InteractionEphemeralResponseColor(i, "ERROR", "Factorio is already running, stop factorio first.", glob.COLOR_RED)
+		return
+	}
+
+	if support.SyncMods() {
+		disc.InteractionEphemeralResponseColor(i, "Complete", "Mods synced with save file.", glob.COLOR_GREEN)
+	} else {
+		disc.InteractionEphemeralResponseColor(i, "ERROR", "Syncing mods failed", glob.COLOR_RED)
+	}
+
+}
+
 func UpdateFactorio(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Checking for Factorio updates.")
 
 	_, msg, err, _ := factUpdater.DoQuickLatest(false)
 	if err {
-		disc.InteractionEphemeralResponse(i, "Error", "Factorio update failed:  "+msg)
+		disc.InteractionEphemeralResponseColor(i, "Error", "Factorio update failed:  "+msg, glob.COLOR_RED)
 	} else {
 		disc.InteractionEphemeralResponse(i, "Info", msg)
 	}

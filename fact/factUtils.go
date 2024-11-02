@@ -259,7 +259,7 @@ func WriteWhitelist() int {
 
 /* Quit Factorio */
 func QuitFactorio(message string) {
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Quitting Factorio: "+message, 0xffff00)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Quitting Factorio: "+message, glob.COLOR_ORANGE)
 
 	if message == "" {
 		message = "Server quitting."

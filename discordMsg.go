@@ -5,6 +5,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"ChatWire/sclean"
 	"ChatWire/support"
 	"fmt"
@@ -41,7 +42,7 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		/* If they manage to post it into chat in Factorio on a different server,
 		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
 		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
-		embed := &discordgo.MessageEmbed{Title: "WARNING!!!", Description: m.Author.Username + ": " + buf, Color: 0xFF0000}
+		embed := &discordgo.MessageEmbed{Title: "WARNING!!!", Description: m.Author.Username + ": " + buf, Color: glob.COLOR_RED}
 		_, err := s.ChannelMessageSendEmbed(replyChan, embed)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
