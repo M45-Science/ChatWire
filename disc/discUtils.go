@@ -164,7 +164,7 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 	}
 
 	if DS != nil {
-		if msg != nil && len(msg.Embeds) > 0 {
+		if msg != nil && len(msg.Embeds) > 0 && msg.MessageReference != nil {
 			embed := msg.Embeds[0]
 			embed.Title = title
 			embed.Description = embed.Description + "\n" + description
