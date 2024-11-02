@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	embed "github.com/Clinet/discordgo-embed"
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/banlist"
@@ -478,10 +477,10 @@ func MainLoops() {
 					/* Reboot anyway */
 					if glob.UpdateWarnCounter > glob.UpdateGraceMinutes {
 						msg := "(SYSTEM) Rebooting for Factorio update!"
-						fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
+						fact.FactChat(msg)
 						glob.UpdateWarnCounter = 0
 						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
-						time.Sleep(time.Minute * 10)
+						time.Sleep(time.Minute * 15)
 					}
 					glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
 
@@ -593,20 +592,18 @@ func MainLoops() {
 		time.Sleep(time.Second * 15)
 		for glob.ServerRunning {
 			if cfg.Local.Options.AutoUpdate {
+				glob.UpdateMessage = nil
 				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
 				if msg != "" {
 					if !err && !upToDate {
+						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, 0x0099ff)
 						cwlog.DoLogCW(msg)
-
-						myembed := embed.NewEmbed().
-							SetTitle("Factorio Updated").
-							SetDescription(msg).
-							SetColor(0x00ffff).MessageEmbed
-						disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
 					} else if err && !upToDate {
+						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, 0xFF0000)
 						cwlog.DoLogCW(msg)
 					}
 				}
+				glob.UpdateMessage = nil
 				time.Sleep(time.Minute * 10)
 				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
 			} else {

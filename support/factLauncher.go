@@ -115,7 +115,7 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 
 	/* We can't read saves dir */
 	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to read saves folder, stopping.")
+		cwlog.DoLogCW("Unable to read saves folder, stopping.")
 		return false, "", ""
 	}
 
@@ -369,7 +369,6 @@ func launchFactorio() {
 	found, fileName, folderName := GetSaveGame(true)
 	if !found {
 		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "ERROR", "Unable to access save-games.", 0xff0000)
-
 		fact.FactAutoStart = false
 		return
 	}

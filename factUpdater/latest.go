@@ -2,12 +2,18 @@ package factUpdater
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"encoding/json"
 	"fmt"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
+	glob.UpdateMessage = nil
+
 	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 
 	if force {
@@ -36,11 +42,14 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 	fact.NewVersion = newVersion.IntToString()
 
 	if isVersionNewerThan(*newVersion, oldVersion) || force {
+		glob.UpdateMessage = disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Updating Factorio", Description: "Found Factorio update: " + newVersion.IntToString(), Color: 0x0099ff})
+
 		info.VersInt = *newVersion
 		err := fullPackage(info)
 		if err != nil {
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
+
 		return info, fmt.Sprintf("Factorio upgraded from %v to %v.", oldVersion.IntToString(), newVersion.IntToString()), false, false
 	} else if isVersionEqual(*newVersion, info.VersInt) {
 		return info, "Factorio is up-to-date.", false, true

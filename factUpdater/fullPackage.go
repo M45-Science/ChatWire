@@ -5,6 +5,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/glob"
 	"fmt"
 	"os"
 	"strings"
@@ -29,6 +30,7 @@ func fullPackage(info *InfoData) error {
 	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.Build, info.Distro)
 	var data []byte
 
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updating Factorio", "Downloading...", 0x0099ff)
 	cwlog.DoLogCW("Downloading: %v", url)
 
 	data, filename, err = httpGet(url)
@@ -39,6 +41,7 @@ func fullPackage(info *InfoData) error {
 	}
 
 	cwlog.DoLogCW("Download of %v complete, verifying...", filename)
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updating Factorio", "Verifying update.", 0x0099ff)
 
 	archive, err := checkFullPackage(data)
 	if err != nil {
