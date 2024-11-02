@@ -172,7 +172,7 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 			embed.Description = embed.Description + "\n" + description
 			embed.Color = color
 
-			if time.Since(*msg.EditedTimestamp) <= time.Second*constants.EditEmbedLimit {
+			if time.Since(msg.Timestamp) <= (time.Second * constants.EditEmbedLimit) {
 				msg, err := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
 				if err != nil {
 					msg = SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
