@@ -13,6 +13,7 @@ const (
 	MaxNameLength      = 64
 	MaxBanReasonLength = 1024
 	PassExpireSec      = 5 * 60
+	EditEmbedLimit     = 30
 
 	/* ChatWire files */
 	CWGlobalConfig      = "../cw-global-config.json"
