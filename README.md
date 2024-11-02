@@ -35,7 +35,7 @@ Binary:<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 <br>
 Launch params:<br>
-```Usage of ChatWire:
+`Usage of ChatWire:
   -cleanBans
         Clean/minimize player database, along with bans and exit.
   -cleanDB
@@ -47,9 +47,10 @@ Launch params:<br>
   -noAutoLaunch
         Turn off auto-launch
   -regCommands
-        Register discord commands```
+        Register discord commands`
         
 <br>
-## Discord bot perms:
+
+### Discord bot perms:
 The bot needs presence intent, server members intent, message content intent
 Perms: view channels, manage channels, Mange roles, send messages, emebed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.
