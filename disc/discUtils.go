@@ -156,6 +156,34 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) *discordgo
 	return nil
 }
 
+/* Send embedded message */
+func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description string, color int) *discordgo.Message {
+
+	if ch == "" {
+		return nil
+	}
+
+	if DS != nil {
+		if msg != nil && len(msg.Embeds) > 0 {
+			embed := msg.Embeds[0]
+			embed.Title = title
+			embed.Description = embed.Description + "\n" + description
+			embed.Color = color
+			msg, _ := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
+			return msg
+		} else {
+			msg, err := DS.ChannelMessageSendEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
+
+			if err != nil {
+				cwlog.DoLogCW("SmartWriteDiscordEmbed: ERROR: %v", err)
+			}
+			return msg
+		}
+	}
+
+	return nil
+}
+
 /*Send normal message to a channel*/
 func SmartWriteDiscord(ch string, text string) *discordgo.Message {
 

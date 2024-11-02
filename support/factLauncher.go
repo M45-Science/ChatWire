@@ -21,6 +21,8 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 var dlcNames = []string{"elevated-rails", "quality", "space-age"}
@@ -326,6 +328,9 @@ func injectSoftMod(fileName, folderName string) {
 /* Create config files, launch factorio */
 func launchFactorio() {
 
+	glob.BootMessage = nil
+	glob.QuitMessage = nil
+
 	if fact.FactIsRunning {
 		cwlog.DoLogCW("launchFactorio: Factorio is already running.")
 		return
@@ -333,6 +338,8 @@ func launchFactorio() {
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
+
+	msg := disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Notice", Description: "Launch Factorio...", Color: 0x00FF00})
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
@@ -351,7 +358,8 @@ func launchFactorio() {
 		cfg.Global.Paths.Folders.FactorioDir
 
 	if _, err := os.Stat(checkFactPath); os.IsNotExist(err) {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio does not appear to be installed. Use /factorio install-factorio to install it.")
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "ERROR", "Factorio is not installed. Use `/factorio install-factorio` to install it.", 0xff0000)
+
 		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
 		fact.FactAutoStart = false
 		return
@@ -360,7 +368,8 @@ func launchFactorio() {
 	/* Find, test and load newest save game available */
 	found, fileName, folderName := GetSaveGame(true)
 	if !found {
-		cwlog.DoLogCW("Unable to load any saves.")
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "ERROR", "Unable to access save-games.", 0xff0000)
+
 		fact.FactAutoStart = false
 		return
 	}
@@ -377,7 +386,9 @@ func launchFactorio() {
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
 		fact.FactAutoStart = false
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to generate config file for Factorio server.")
+
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "ERROR", "Unable to write a config file for Fatorio.", 0xff0000)
+
 		return
 	}
 
@@ -388,7 +399,9 @@ func launchFactorio() {
 		delay := throt * throt * 10
 
 		if delay > 0 {
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Rate limiting: Automatically rebooting Factorio in %d seconds.", delay))
+			buf := fmt.Sprintf("Rate limiting: Waiting for %v seconds before launching Factorio.", delay)
+			disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "Warning", buf, 0xffff00)
+
 			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning && glob.RelaunchThrottle > 0; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}
@@ -459,7 +472,7 @@ func launchFactorio() {
 
 	modFiles := GetModFiles()
 	if len(modFiles) > 0 {
-		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Loading mods...")
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "Status", "Loading mods...", 0x00ff00)
 	}
 
 	if glob.FactorioCancel != nil {
@@ -503,6 +516,8 @@ func launchFactorio() {
 	/* Factorio is not happy. */
 	if errp != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "ERROR", "Launching Factorio failed!", 0xff0000)
+
 		/* close lock  */
 		fact.DoExit(true)
 		return
@@ -519,9 +534,13 @@ func launchFactorio() {
 	err = cmd.Start()
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
+		disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "ERROR", "Launching Factorio failed!", 0xff0000)
 		fact.DoExit(true)
 		return
 	}
+
+	//msg = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, msg, "Status", "Factorio loading.", 0x00ff00)
+	glob.BootMessage = msg
 }
 
 func ConfigSoftMod() {
