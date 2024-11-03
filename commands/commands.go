@@ -39,23 +39,23 @@ var cmds = []glob.CommandData{
 				Choices: []glob.ChoiceData{
 					{
 						Name:     "reboot",
-						Function: admin.RebootCW,
+						Function: moderator.RebootCW,
 					},
 					{
 						Name:     "queue-reboot",
-						Function: admin.QueReboot,
+						Function: moderator.QueReboot,
 					},
 					{
 						Name:     "force-reboot",
-						Function: admin.ForceReboot,
+						Function: moderator.ForceReboot,
 					},
 					{
 						Name:     "reload-config",
-						Function: admin.ReloadConfig,
+						Function: moderator.ReloadConfig,
 					},
 					{
 						Name:     "queue-fact-reboot",
-						Function: admin.QueFactReboot,
+						Function: moderator.QueFactReboot,
 					},
 				},
 			},
@@ -156,7 +156,7 @@ var cmds = []glob.CommandData{
 			},
 		},
 	},
-		Function: admin.SetSchedule, ModeratorOnly: true},
+		Function: moderator.SetSchedule, ModeratorOnly: true},
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "factorio",
@@ -170,35 +170,35 @@ var cmds = []glob.CommandData{
 				Choices: []glob.ChoiceData{
 					{
 						Name:     "start",
-						Function: admin.StartFact,
+						Function: moderator.StartFact,
 					},
 					{
 						Name:     "stop",
-						Function: admin.StopFact,
+						Function: moderator.StopFact,
 					},
 					{
 						Name:     "new-map",
-						Function: admin.NewMap,
+						Function: moderator.NewMap,
 					},
 					{
 						Name:     "update-mods",
-						Function: admin.UpdateMods,
+						Function: moderator.UpdateMods,
 					},
 					{
 						Name:     "sync-mods",
-						Function: admin.SyncMods,
+						Function: moderator.SyncMods,
 					},
 					{
 						Name:     "archive-map",
-						Function: admin.ArchiveMap,
+						Function: moderator.ArchiveMap,
 					},
 					{
 						Name:     "update-factorio",
-						Function: admin.UpdateFactorio,
+						Function: moderator.UpdateFactorio,
 					},
 					{
 						Name:     "install-factorio",
-						Function: admin.InstallFactorio,
+						Function: moderator.InstallFactorio,
 					},
 				},
 			},
