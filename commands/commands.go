@@ -61,7 +61,7 @@ var cmds = []glob.CommandData{
 			},
 		},
 	},
-		AdminOnly: true},
+		AdminOnly: false},
 	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
 		Description: "Change the automatic map reset schedule.",
@@ -204,7 +204,7 @@ var cmds = []glob.CommandData{
 			},
 		},
 	},
-		AdminOnly: true},
+		AdminOnly: false},
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "config-global",
