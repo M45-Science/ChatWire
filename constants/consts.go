@@ -29,7 +29,6 @@ const (
 	RegularsPrefix      = "R"
 	ArchiveFolderSuffix = " maps"
 	TempSaveName        = "softmod.tmp"
-	BootMsgIDFile       = "bootMsgID.dat"
 	BootUpdateDelayMin  = 2
 	SusWarningInterval  = 2
 	CrashReportInterval = 300
