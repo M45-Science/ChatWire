@@ -58,9 +58,7 @@ func doWarn(mins int) {
 	if FactorioBooted && FactIsRunning && !cfg.Local.Options.SkipReset {
 		buf := fmt.Sprintf("WARNING: MAP WILL RESET IN %v MINUTES!", mins)
 		FactChat(AddFactColor("red", buf))
-		FactChat(AddFactColor("green", buf))
-		FactChat(AddFactColor("blue", buf))
-		FactChat(AddFactColor("white", buf))
+		FactChat(AddFactColor("cyan", buf))
 		FactChat(AddFactColor("black", buf))
 
 		CMS(cfg.Local.Channel.ChatChannel, buf)

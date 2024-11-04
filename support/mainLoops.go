@@ -473,9 +473,8 @@ func MainLoops() {
 						}
 						fact.CMS(cfg.Local.Channel.ChatChannel, msg)
 						fact.FactChat(fact.AddFactColor("red", msg))
-						fact.FactChat(fact.AddFactColor("green", msg))
+						fact.FactChat(fact.AddFactColor("cyan", msg))
 						fact.FactChat(fact.AddFactColor("black", msg))
-						fact.FactChat(fact.AddFactColor("white", msg))
 					}
 
 					/* Reboot anyway */
