@@ -146,6 +146,7 @@ func GenerateFactorioConfig() bool {
 		tags = append(tags, "PUBLIC")
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
+	tags = append(tags, "ChatWire")
 
 	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Supporters: " + strings.Join(disc.RoleList.Patreons, ", ") + ", " + strings.Join(disc.RoleList.Supporters, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
 
