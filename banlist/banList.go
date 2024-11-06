@@ -24,21 +24,26 @@ type banDataType struct {
 	Reason   string `json:"reason,omitempty"`
 }
 
-func CheckBanList(name string) {
+func CheckBanList(name string) bool {
 	pname := strings.ToLower(name)
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
-	if cfg.Global.Paths.DataFiles.Bans == "" {
-		return
-	}
-
 	for _, ban := range BanList {
 		if strings.EqualFold(ban.UserName, pname) {
+			warn := "Warning: [FCL] ban found for '" + pname + "': " + ban.Reason
+
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
-				fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Warning: [FCL] ban detected for "+pname+": "+ban.Reason)
+				if cfg.Global.Options.FCLWarnOnly {
+					fact.CMS(cfg.Local.Channel.ChatChannel, warn)
+				} else {
+					fact.WriteFact("/ban " + pname + " [FCL] " + ban.Reason)
+				}
+			} else if cfg.Global.Options.FCLWarnRegulars {
+				fact.CMS(cfg.Local.Channel.ChatChannel, warn)
 			}
-			break
+
+			return true
 		}
 	}
 
@@ -46,9 +51,12 @@ func CheckBanList(name string) {
 		glob.PlayerListLock.Lock()
 		if glob.PlayerList[pname] != nil {
 			fact.WriteFact("/ban " + pname + " " + glob.PlayerList[pname].BanReason)
+			return true
 		}
 		glob.PlayerListLock.Unlock()
 	}
+
+	return false
 }
 
 func WatchBanFile() {

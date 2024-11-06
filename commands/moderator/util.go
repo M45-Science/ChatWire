@@ -142,6 +142,22 @@ var GSettingList = []SettingListData{
 
 		BData: &cfg.Global.Options.DisableSpamProtect,
 	},
+	{
+		Name:      "fcl-warn-only",
+		ShortDesc: "FCL-Warn-Only",
+		Desc:      "Disable FCL auto-ban, only warn on login.",
+		Type:      TYPE_BOOL,
+
+		BData: &cfg.Global.Options.FCLWarnOnly,
+	},
+	{
+		Name:      "fcl-warn-regulars",
+		ShortDesc: "FCL-warn-regulars",
+		Desc:      "Show FCL ban warning on login for regulars and veterans.",
+		Type:      TYPE_BOOL,
+
+		BData: &cfg.Global.Options.FCLWarnRegulars,
+	},
 }
 
 /* Local Settings */

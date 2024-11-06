@@ -118,6 +118,8 @@ type globalOptions struct {
 	RconOffset         int
 	ShutupSusWarn      bool
 	DisableSpamProtect bool
+	FCLWarnOnly        bool
+	FCLWarnRegulars    bool
 }
 
 func WriteGCfg() bool {
