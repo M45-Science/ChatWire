@@ -1000,6 +1000,30 @@ func handleCrashes(input *handleData) bool {
 	return false
 }
 
+var slurList []string = []string{
+	"nigger",
+	"faggot",
+	"kike",
+	"kyke",
+}
+
+func slurFilter(name string, input *handleData) bool {
+
+	for _, word := range input.lowerWordList {
+		for _, slur := range slurList {
+			if strings.HasPrefix(word, slur) {
+				fact.BanWhoTimeLog(name, "Use of extreme slurs", "[Auto-Ban]")
+				return true
+			} else if strings.HasSuffix(word, slur) {
+				fact.BanWhoTimeLog(name, "Use of extreme slurs", "[Auto-Ban]")
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func handleChatMsg(input *handleData) bool {
 	/************************
 	 * FACTORIO CHAT MESSAGES
@@ -1046,23 +1070,21 @@ func handleChatMsg(input *handleData) bool {
 					}
 					if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
-							if cfg.Global.Paths.URLs.LogPath != "" {
-								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban) %v", pname, cfg.GetGameLogURL())
-							} else {
-								bbuf = fmt.Sprintf("/ban %v Spamming / flooding (auto-ban)", pname)
-							}
-
+							fact.BanWhoTimeLog(pname, "Spamming/Flooding", "[Auto-Ban]")
 							glob.PlayerListLock.Lock()
 							if glob.PlayerList[pname] != nil &&
 								!glob.PlayerList[pname].AlreadyBanned {
 								glob.PlayerList[pname].AlreadyBanned = true
 								fact.WriteFact(bbuf)
 							}
-							fact.WriteFact("/purge " + pname)
 							glob.PlayerListLock.Unlock()
 
 						}
 						glob.ChatterSpamScore[pname] = 0
+					}
+
+					if slurFilter(pname, input) {
+						return true
 					}
 				} else {
 					/* Lower score if server isn't responding */
@@ -1138,6 +1160,7 @@ func handleChatMsg(input *handleData) bool {
 					}
 				}
 				fact.CMS(cfg.Local.Channel.ChatChannel, fbuf)
+				return true
 			}
 		}
 	}
@@ -1193,7 +1216,7 @@ func handleOnlineMsg(input *handleData) bool {
 						go fact.UpdateSeen(pname)
 
 						/* Check if user is banned */
-						//banlist.CheckBanList(pname)
+						banlist.CheckBanList(pname)
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)

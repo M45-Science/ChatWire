@@ -50,8 +50,7 @@ func CheckBanList(name string) bool {
 	if fact.PlayerLevelGet(pname, false) == -1 {
 		glob.PlayerListLock.Lock()
 		if glob.PlayerList[pname] != nil {
-			fact.WriteFact("/ban " + pname + " " + glob.PlayerList[pname].BanReason)
-			return true
+			fact.BanFact(pname, glob.PlayerList[pname].BanReason)
 		}
 		glob.PlayerListLock.Unlock()
 	}

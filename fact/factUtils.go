@@ -22,6 +22,19 @@ import (
 	"ChatWire/sclean"
 )
 
+func BanWhoTimeLog(name, reason, banBy string) {
+	tNow := time.Now()
+	banTimeFormat := "01-02-2006"
+
+	WriteFact(fmt.Sprintf("/ban %v %v -- %v %v %v", name, reason, banBy, tNow.Format(banTimeFormat), cfg.GetGameLogURL()))
+	WriteFact("/purge " + name)
+}
+
+func BanFact(name, reason string) {
+	WriteFact(fmt.Sprintf("/ban %v %v", name, reason))
+	WriteFact("/purge " + name)
+}
+
 func CheckSave(path, name string, showError bool) (good bool, folder string) {
 
 	if HasZipBomb(path + "/" + name) {
@@ -395,7 +408,7 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 					name := strings.ToLower(pname)
 					glob.PlayerListLock.Lock()
 					if glob.PlayerList[name] != nil {
-						WriteFact("/ban " + name + " " + glob.PlayerList[name].BanReason)
+						BanFact(name, glob.PlayerList[name].BanReason)
 					}
 					glob.PlayerListLock.Unlock()
 				}
