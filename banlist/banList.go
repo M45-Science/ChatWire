@@ -37,7 +37,7 @@ func CheckBanList(name string) bool {
 				if cfg.Global.Options.FCLWarnOnly {
 					fact.CMS(cfg.Local.Channel.ChatChannel, warn)
 				} else {
-					fact.WriteFact("/ban " + pname + " [FCL] " + ban.Reason)
+					fact.WriteBan(pname, "[FCL] "+ban.Reason)
 				}
 			} else if cfg.Global.Options.FCLWarnRegulars {
 				fact.CMS(cfg.Local.Channel.ChatChannel, warn)
@@ -50,9 +50,10 @@ func CheckBanList(name string) bool {
 	if fact.PlayerLevelGet(pname, false) == -1 {
 		glob.PlayerListLock.Lock()
 		if glob.PlayerList[pname] != nil {
-			fact.BanFact(pname, glob.PlayerList[pname].BanReason)
+			fact.WriteBan(pname, glob.PlayerList[pname].BanReason)
 		}
 		glob.PlayerListLock.Unlock()
+		return true
 	}
 
 	return false

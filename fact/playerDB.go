@@ -107,7 +107,7 @@ func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 	if glob.PlayerList[pname] != nil {
 
 		if doban && !glob.PlayerList[pname].AlreadyBanned {
-			BanFact(pname, reason)
+			WriteBan(pname, reason)
 		}
 
 		glob.PlayerList[pname].Level = -1
@@ -136,7 +136,7 @@ func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 	glob.PlayerList[pname] = &newplayer
 
 	if doban {
-		BanFact(pname, reason)
+		WriteBan(pname, reason)
 	}
 
 	SetPlayerListDirty()
@@ -262,10 +262,10 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 			/*Clear discord ID on delete*/
 			glob.PlayerList[pname].ID = "0"
 		} else if level == -1 && glob.PlayerList[pname].Level >= 0 && doBan { //Banned
-			BanFact(pname, reason)
+			WriteBan(pname, reason)
 			didBan = true
 		} else if level >= 0 && glob.PlayerList[pname].Level == -1 { //Unbanned
-			WriteFact("/unban " + pname)
+			WriteUnban(pname)
 		}
 
 		if level != glob.PlayerList[pname].Level {
@@ -308,7 +308,7 @@ func AddPlayer(iname string, level int, id string, creation int64, seen int64, r
 	glob.PlayerList[pname] = &newplayer
 
 	if level == -1 && doBan {
-		BanFact(pname, reason)
+		WriteBan(pname, reason)
 		didBan = true
 	}
 	WhitelistPlayer(pname, level)

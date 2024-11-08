@@ -336,6 +336,8 @@ func launchFactorio() {
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
+	fact.SetLastBan("")
+
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
 
 	/* Allow crash reports right away */

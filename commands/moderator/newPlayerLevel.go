@@ -53,12 +53,12 @@ func PlayerLevel(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 			/* Unban automatically */
 			if alevel >= 0 && oldLevel == -1 {
-				fact.WriteFact("/unban " + aname)
+				fact.WriteUnban(aname)
 			}
 			/* Ban automatically */
 			if alevel == -1 && oldLevel != -1 {
 				reasonString := fmt.Sprintf("%v -- %v %v", reason, banBy, tNow.Format(banTimeFormat))
-				fact.WriteFact("/ban " + aname + " " + reasonString)
+				fact.WriteBan(aname, reasonString)
 				nplayer.BanReason = reasonString
 			}
 

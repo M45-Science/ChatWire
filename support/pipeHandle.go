@@ -589,6 +589,7 @@ func handleBan(input *handleData) bool {
 
 		if input.noDatestampListLen > 1 {
 			trustname := input.noDatestampList[1]
+			fact.SetLastBan(trustname)
 
 			if strings.Contains(input.noDatestamp, "was banned by") {
 
@@ -636,6 +637,7 @@ func handleUnBan(input *handleData) bool {
 
 		if input.noDatestampListLen > 1 {
 			trustname := input.noDatestampList[1]
+			fact.SetLastBan("")
 
 			if strings.Contains(input.noDatestamp, "was unbanned by") {
 				if fact.PlayerLevelGet(trustname, true) < 0 {
@@ -655,6 +657,8 @@ func handleFactGoodbye(input *handleData) bool {
 	 * GOODBYE
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
+		fact.SetLastBan("")
+
 		glob.FactorioCancel()
 		glob.FactorioCancel = nil
 
@@ -1012,10 +1016,10 @@ func slurFilter(name string, input *handleData) bool {
 	for _, word := range input.lowerWordList {
 		for _, slur := range slurList {
 			if strings.HasPrefix(word, slur) {
-				fact.BanWhoTimeLog(name, "Use of extreme slurs", "[Auto-Ban]")
+				fact.WriteBanBy(name, "Use of extreme slurs", "[Auto-Ban]")
 				return true
 			} else if strings.HasSuffix(word, slur) {
-				fact.BanWhoTimeLog(name, "Use of extreme slurs", "[Auto-Ban]")
+				fact.WriteBanBy(name, "Use of extreme slurs", "[Auto-Ban]")
 				return true
 			}
 		}
@@ -1070,7 +1074,7 @@ func handleChatMsg(input *handleData) bool {
 					}
 					if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 						if !cfg.Global.Options.DisableSpamProtect {
-							fact.BanWhoTimeLog(pname, "Spamming/Flooding", "[Auto-Ban]")
+							fact.WriteBanBy(pname, "Spamming/Flooding", "[Auto-Ban]")
 							glob.PlayerListLock.Lock()
 							if glob.PlayerList[pname] != nil &&
 								!glob.PlayerList[pname].AlreadyBanned {

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -22,17 +23,52 @@ import (
 	"ChatWire/sclean"
 )
 
-func BanWhoTimeLog(name, reason, banBy string) {
+var (
+	lastBanName string
+	banLock     sync.Mutex
+)
+
+func WriteBanBy(name, reason, banBy string) {
 	tNow := time.Now()
 	banTimeFormat := "01-02-2006"
 
-	WriteFact(fmt.Sprintf("/ban %v %v -- %v %v %v", name, reason, banBy, tNow.Format(banTimeFormat), cfg.GetGameLogURL()))
+	outString := fmt.Sprintf("%v %v -- %v %v %v", name, reason, banBy, tNow.Format(banTimeFormat), cfg.GetGameLogURL())
+	doBan(name, outString)
+}
+
+func WriteBan(name, reason string) {
+	outString := fmt.Sprintf("%v %v", name, reason)
+	doBan(name, outString)
+}
+
+func doBan(name, outString string) {
+	banLock.Lock()
+	defer banLock.Unlock()
+
+	if name == lastBanName {
+		return
+	}
+
+	lastBanName = name
+	WriteFact("/ban " + outString)
 	WriteFact("/purge " + name)
 }
 
-func BanFact(name, reason string) {
-	WriteFact(fmt.Sprintf("/ban %v %v", name, reason))
-	WriteFact("/purge " + name)
+func WriteUnban(name string) {
+	banLock.Lock()
+	defer banLock.Unlock()
+
+	if strings.EqualFold(lastBanName, name) {
+		lastBanName = ""
+	}
+	WriteFact("/unban " + name)
+}
+
+func SetLastBan(name string) {
+	banLock.Lock()
+	defer banLock.Unlock()
+
+	lastBanName = name
 }
 
 func CheckSave(path, name string, showError bool) (good bool, folder string) {
@@ -408,7 +444,7 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 					name := strings.ToLower(pname)
 					glob.PlayerListLock.Lock()
 					if glob.PlayerList[name] != nil {
-						BanFact(name, glob.PlayerList[name].BanReason)
+						WriteBan(name, glob.PlayerList[name].BanReason)
 					}
 					glob.PlayerListLock.Unlock()
 				}
