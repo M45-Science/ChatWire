@@ -133,7 +133,7 @@ func WriteGCfg() bool {
 	Global.Discord.Comment = "RoleID to ping for suspicious activity, if any."
 	Global.Discord.Roles.Comment = "These are role names, ChatWire will auto-resolve the IDs and cache them."
 	Global.Discord.Roles.RoleCache.Comment = "Cached Role IDs, in case lookup is slow or fails."
-	Global.Options.Comment = "RoleID to ping on map resets."
+	Global.Options.Comment = "RoleID to ping on map resets, if any."
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
@@ -182,7 +182,6 @@ func setGlobalDefaults() {
 		err := os.MkdirAll(Global.Paths.Folders.ServersRoot+"/"+Global.Paths.Folders.MapGenerators, os.ModePerm)
 		if err != nil {
 			cwlog.DoLogCW("Could not create map-gen-json directory.")
-			//return false
 		}
 	}
 	if Global.Paths.URLs.Domain == "" {
