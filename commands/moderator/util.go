@@ -250,8 +250,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		BData:             &cfg.Local.Options.SoftModOptions.DisableBlueprints,
-		FactUpdateCommand: "/blueprints",
+		BData: &cfg.Local.Options.SoftModOptions.DisableBlueprints,
 	},
 	{
 		Name:      "hide-autosaves",
