@@ -35,10 +35,12 @@ type discord struct {
 	ReportChannel   string
 	AnnounceChannel string
 	Roles           roles
+	Comment         string
 	SusPingRole     string
 }
 
 type roles struct {
+	Comment   string
 	Admin     string
 	Moderator string
 	Regular   string
@@ -54,6 +56,7 @@ type roles struct {
 }
 
 type roleCache struct {
+	Comment   string
 	Admin     string
 	Moderator string
 	Regular   string
@@ -112,6 +115,7 @@ type dataFiles struct {
 
 type globalOptions struct {
 	Description        string
+	Comment            string
 	ResetPingRole      string
 	UseAuthserver      bool
 	AutosaveMax        int
@@ -125,6 +129,11 @@ type globalOptions struct {
 func WriteGCfg() bool {
 	tempPath := constants.CWGlobalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWGlobalConfig
+
+	Global.Discord.Comment = "RoleID to ping for suspicious activity, if any."
+	Global.Discord.Roles.Comment = "These are role names, ChatWire will auto-resolve the IDs and cache them."
+	Global.Discord.Roles.RoleCache.Comment = "Cached Role IDs, in case lookup is slow or fails."
+	Global.Options.Comment = "RoleID to ping on map resets."
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
