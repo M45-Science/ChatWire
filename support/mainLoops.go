@@ -76,13 +76,22 @@ func MainLoops() {
 				/* Just in case factorio hangs, bogs down or is flooded */
 				if nores == 120 {
 					msg := "Factorio unresponsive for over two minutes... rebooting."
-					fact.LogCMS(cfg.Local.Channel.ChatChannel, msg)
+					cwlog.DoLogCW(msg)
 					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
-
-					fact.WaitFactQuit(false)
 					fact.FactorioBooted = false
 					fact.SetFactRunning(false)
+
+					if glob.FactorioCmd != nil {
+						cwlog.DoLogCW("Killing previous factorio process!!!")
+						glob.FactorioCmd.Process.Kill()
+						glob.FactorioCmd = nil
+					}
+					if glob.FactorioCancel != nil {
+						cwlog.DoLogCW("Killing previous factorio context!!!")
+						glob.FactorioCancel()
+						glob.FactorioCancel = nil
+					}
 				}
 			}
 		}

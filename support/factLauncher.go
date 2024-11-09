@@ -473,14 +473,22 @@ func launchFactorio() {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Loading mods...", glob.COLOR_GREEN)
 	}
 
+	if glob.FactorioCmd != nil {
+		cwlog.DoLogCW("Killing previous factorio process!!!")
+		glob.FactorioCmd.Process.Kill()
+		glob.FactorioCmd = nil
+		return
+	}
 	if glob.FactorioCancel != nil {
 		cwlog.DoLogCW("Killing previous factorio context!!!")
 		glob.FactorioCancel()
+		glob.FactorioCancel = nil
+		return
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
 
 	/* Run Factorio */
-	cmd := exec.Command(fact.GetFactorioBinary(), tempargs...)
+	glob.FactorioCmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
 	/* Hide RCON password and port */
 	for i, targ := range tempargs {
@@ -503,13 +511,13 @@ func launchFactorio() {
 
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-	LinuxSetProcessGroup(cmd)
+	LinuxSetProcessGroup(glob.FactorioCmd)
 	/* Connect Factorio stdout to a buffer for processing */
 	fact.GameBuffer = new(bytes.Buffer)
 	logwriter := io.MultiWriter(fact.GameBuffer)
-	cmd.Stdout = logwriter
+	glob.FactorioCmd.Stdout = logwriter
 	/* Stdin */
-	tpipe, errp := cmd.StdinPipe()
+	tpipe, errp := glob.FactorioCmd.StdinPipe()
 
 	/* Factorio is not happy. */
 	if errp != nil {
@@ -529,7 +537,7 @@ func launchFactorio() {
 	}
 
 	/* Handle launch errors */
-	err = cmd.Start()
+	err = glob.FactorioCmd.Start()
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)

@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"math"
 	"os"
+	"os/exec"
 	"sync"
 	"time"
 
@@ -130,6 +131,7 @@ var (
 	BootMessage   *discordgo.Message
 	UpdateMessage *discordgo.Message
 
+	FactorioCmd     *exec.Cmd
 	FactorioContext context.Context
 	FactorioCancel  context.CancelFunc
 
