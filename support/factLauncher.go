@@ -406,7 +406,7 @@ func launchFactorio() {
 		}
 	}
 	/* Timer gets longer each reboot */
-	glob.RelaunchThrottle = (throt + 1)
+	glob.RelaunchThrottle = (glob.RelaunchThrottle + 1)
 
 	var err error
 	var tempargs []string
@@ -477,13 +477,11 @@ func launchFactorio() {
 		cwlog.DoLogCW("Killing previous factorio process!!!")
 		glob.FactorioCmd.Process.Kill()
 		glob.FactorioCmd = nil
-		return
 	}
 	if glob.FactorioCancel != nil {
 		cwlog.DoLogCW("Killing previous factorio context!!!")
 		glob.FactorioCancel()
 		glob.FactorioCancel = nil
-		return
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
 
