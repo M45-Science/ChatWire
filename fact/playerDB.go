@@ -12,7 +12,6 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
-	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -384,10 +383,6 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			glob.PlayerListLock.Lock()
 			var removed int
 
-			if disc.Guild != nil && strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) {
-				cwlog.DoLogCW("Updating Discord roles...")
-			}
-
 			for pname := range tempData {
 
 				if clearBans {
@@ -433,12 +428,6 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 					tempData[pname].Level = 3
 				}
 				if bootMode {
-					//If primary server, update discord roles
-					/*
-						if strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) {
-							go AutoPromote(pname, true, false)
-						}
-					*/
 					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
 				} else if !bootMode {
 					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
