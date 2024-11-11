@@ -75,7 +75,7 @@ func generateForm(v interface{}) string {
 			}
 			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="checkbox" id="`+escapedFieldName+`" name="`+escapedFieldName+`" `+checked+`><br>`)
 		case reflect.Struct:
-			formFields = append(formFields, `<h2>`+escapedFieldName+`</h2>\n`+generateForm(field.Interface()))
+			formFields = append(formFields, `<h2>`+escapedFieldName+`</h2>`+generateForm(field.Interface()))
 		}
 	}
 	return strings.Join(formFields, "\n")
