@@ -325,6 +325,7 @@ func injectSoftMod(fileName, folderName string) {
 	}
 }
 
+// Wait for a momoment, so we don't loose factorio booting message on first connect.
 var BotIsReady bool
 
 func waitForDiscord() {
