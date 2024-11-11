@@ -20,10 +20,10 @@
         }
 
         .form-container {
-            background-color: #1e1e1e;
+            background: linear-gradient(145deg, #1e1e1e, #333);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
             max-width: 1000px;
             width: 100%;
             max-height: 90vh;
@@ -39,13 +39,16 @@
             justify-content: space-between;
             padding-bottom: 20px;
             border-bottom: 2px solid #444;
+            margin-bottom: 20px;
         }
 
         .header h1 {
             font-size: 36px;
             color: #00bcd4; /* Teal color for M45 Science */
             margin: 0;
-            font-family: 'Courier New', Courier, monospace; /* Techy look */
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 10px #00bcd4;
+            transition: text-shadow 0.3s ease-in-out;
         }
 
         .header h2 {
@@ -55,6 +58,10 @@
             font-family: Arial, sans-serif;
         }
 
+        .header h1:hover {
+            text-shadow: 0 0 30px #00bcd4, 0 0 40px #f44336;
+        }
+
         .logo-placeholder {
             width: 60px;
             height: 60px;
@@ -62,6 +69,8 @@
             justify-content: center;
             align-items: center;
             color: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
         }
 
         .logo-placeholder img {
@@ -86,6 +95,8 @@
             display: inline-block;
             width: 150px;
             margin-bottom: 10px;
+            color: #ffffff;
+            font-size: 16px;
         }
 
         input[type="text"],
@@ -93,11 +104,19 @@
         input[type="checkbox"],
         span {
             margin-bottom: 10px;
-            padding: 5px;
+            padding: 10px;
             background-color: #2b2b2b;
             color: #ffffff;
             border: 1px solid #444;
             border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="checkbox"]:focus {
+            border-color: #00bcd4;
+            box-shadow: 0 0 8px #00bcd4;
         }
 
         input[type="checkbox"] {
@@ -118,7 +137,7 @@
             border: none;
             padding: 10px 15px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
             width: 48%;
             border-radius: 4px;
             font-size: 16px;
@@ -126,6 +145,11 @@
 
         button[type="submit"]:hover {
             background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        button[type="submit"]:active {
+            transform: scale(1.02);
         }
 
         /* Scrollbar styling */
@@ -144,6 +168,21 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        /* Smooth animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-container {
+            animation: fadeIn 1s ease-out;
+        }
+
     </style>
 </head>
 <body>
@@ -154,7 +193,7 @@
                 <h1>M45 Science</h1>
                 <h2>Server Settings Control Panel</h2>
             </div>
-            <!-- Logo placeholder with image -->
+            <!-- Logo image -->
             <div class="logo-placeholder">
                 <img src="https://m45sci.xyz/m45-2024b-128.png" alt="M45 Science Logo">
             </div>
