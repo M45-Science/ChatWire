@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Form</title>
+    <title>M45 Science - Server Settings Control Panel</title>
     <style>
-        /* Dark mode styling */
+        /* Dark mode and modern color styling */
         body {
             background-color: #121212;
             color: #e0e0e0;
@@ -14,11 +14,11 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Aligns form at the top */
+            align-items: flex-start;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Container for the overall form */
         .form-container {
             background-color: #1e1e1e;
             padding: 20px;
@@ -26,32 +26,60 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
             max-width: 1000px;
             width: 100%;
-            max-height: 90vh; /* Restrict height */
+            max-height: 90vh;
             display: flex;
-            flex-direction: column; /* Stack content vertically */
+            flex-direction: column;
+            gap: 30px;
         }
 
-        /* Scrollable section for the form */
+        /* Header styles */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #444;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            color: #00bcd4; /* Teal color for M45 Science */
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace; /* Techy look */
+        }
+
+        .header h2 {
+            font-size: 20px;
+            color: #f44336; /* Red for subtitle */
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .logo-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 50%;
+        }
+
         .form-content {
-            display: flex; /* Flex container to place sections side by side */
+            display: flex;
             gap: 20px;
             flex: 1;
-            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-y: auto;
         }
 
-        /* Section styling for local and global forms */
         .form-section {
-            flex: 1; /* Each section takes up equal space */
-            min-width: 400px; /* Minimum width to ensure readability */
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            text-align: center;
+            flex: 1;
+            min-width: 400px;
         }
 
         label {
@@ -63,7 +91,6 @@
         input[type="text"],
         input[type="number"],
         input[type="checkbox"],
-        input[type="submit"],
         span {
             margin-bottom: 10px;
             padding: 5px;
@@ -78,7 +105,6 @@
             margin-left: 10px;
         }
 
-        /* Button container below the form */
         .button-container {
             padding-top: 10px;
             display: flex;
@@ -102,7 +128,7 @@
             background-color: #0056b3;
         }
 
-        /* Scrollbar styling (optional for better aesthetics) */
+        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -122,7 +148,17 @@
 </head>
 <body>
     <div class="form-container">
-        <h1>Server Configuration</h1>
+        <!-- Header with title, subtitle, and logo -->
+        <div class="header">
+            <div>
+                <h1>M45 Science</h1>
+                <h2>Server Settings Control Panel</h2>
+            </div>
+            <!-- Logo placeholder with image -->
+            <div class="logo-placeholder">
+                <img src="https://m45sci.xyz/m45-2024b-128.png" alt="M45 Science Logo">
+            </div>
+        </div>
 
         <!-- Scrollable form content (local and global side by side) -->
         <div class="form-content">
