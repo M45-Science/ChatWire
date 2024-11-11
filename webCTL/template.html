@@ -4,12 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Form</title>
+    <style>
+        /* Dark mode styling */
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Aligns form at the top */
+            height: 100vh;
+        }
+
+        /* Container for the overall form */
+        .form-container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh; /* Restrict height */
+            display: flex;
+            flex-direction: column; /* Stack content vertically */
+        }
+
+        /* Scrollable section for the form */
+        .form-content {
+            display: flex; /* Flex container to place sections side by side */
+            gap: 20px;
+            flex: 1;
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        /* Section styling for local and global forms */
+        .form-section {
+            flex: 1; /* Each section takes up equal space */
+            min-width: 400px; /* Minimum width to ensure readability */
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: inline-block;
+            width: 150px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="checkbox"],
+        input[type="submit"],
+        span {
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: #2b2b2b;
+            color: #ffffff;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-left: 10px;
+        }
+
+        /* Button container below the form */
+        .button-container {
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 48%;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Scrollbar styling (optional for better aesthetics) */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2b2b2b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
 </head>
 <body>
-    <h1>Local Server Configuration</h1>
-    <form id="local-config" method="POST">
-        {{.}}
-        <button type="submit">Submit</button>
-    </form>
+    <div class="form-container">
+        <h1>Server Configuration</h1>
+
+        <!-- Scrollable form content (local and global side by side) -->
+        <div class="form-content">
+            <!-- Local form section -->
+            <div class="form-section">
+                <h2>Local Server Configuration</h2>
+                <form id="local-config" method="POST" action="/">
+                    {{.LocalForm}} <!-- Dynamically generated local form fields -->
+                </form>
+            </div>
+
+            <!-- Global form section -->
+            <div class="form-section">
+                <h2>Global Server Configuration</h2>
+                <form id="global-config" method="POST" action="/">
+                    {{.GlobalForm}} <!-- Dynamically generated global form fields -->
+                </form>
+            </div>
+        </div>
+
+        <!-- Button container directly below the form sections -->
+        <div class="button-container">
+            <button type="submit" form="local-config">Submit Local</button>
+            <button type="submit" form="global-config">Submit Global</button>
+        </div>
+    </div>
 </body>
 </html>

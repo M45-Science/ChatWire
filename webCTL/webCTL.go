@@ -82,8 +82,46 @@ func generateForm(v interface{}) string {
 }
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
-	// Generate form from struct
-	form := generateForm(cfg.WebInterface)
-	// Pass form as template.HTML to avoid escaping
-	tmpl.Execute(w, template.HTML(form))
+	if r.Method == http.MethodPost {
+		// Handle form submission here...
+	}
+
+	// Generate separate forms for local and global settings
+	localForm := generateForm(cfg.WebInterface.LocalSettings)
+	globalForm := generateForm(cfg.WebInterface.GlobalSettings)
+
+	// Pass the forms as data to the template
+	tmpl.Execute(w, map[string]interface{}{
+		"LocalForm":  template.HTML(localForm),
+		"GlobalForm": template.HTML(globalForm),
+	})
+}
+
+func updateStructFromForm(v interface{}, form map[string][]string) {
+	val := reflect.ValueOf(v).Elem() // Get the struct value
+	typ := reflect.TypeOf(v).Elem()  // Get the struct type
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		fieldType := typ.Field(i)
+		fieldName := fieldType.Name
+
+		// Check if the field is present in the form
+		if formValue, ok := form[fieldName]; ok {
+			switch field.Kind() {
+			case reflect.String:
+				field.SetString(formValue[0])
+			case reflect.Int, reflect.Int32, reflect.Int64:
+				if intValue, err := strconv.Atoi(formValue[0]); err == nil {
+					field.SetInt(int64(intValue))
+				}
+			case reflect.Float32, reflect.Float64:
+				if floatValue, err := strconv.ParseFloat(formValue[0], 64); err == nil {
+					field.SetFloat(floatValue)
+				}
+			case reflect.Bool:
+				field.SetBool(len(formValue) > 0) // Checkbox is present if it's checked
+			}
+		}
+	}
 }
