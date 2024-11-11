@@ -28,19 +28,19 @@ type global struct {
 }
 
 type discord struct {
-	Token       string
+	Token       string `form:"-"`
 	Guild       string
 	Application string
 
 	ReportChannel   string
 	AnnounceChannel string
 	Roles           roles
-	Comment         string
+	Comment         string `form:"-"`
 	SusPingRole     string
 }
 
 type roles struct {
-	Comment   string
+	Comment   string `form:"-"`
 	Admin     string
 	Moderator string
 	Regular   string
@@ -52,11 +52,11 @@ type roles struct {
 	Supporter string
 	Nitro     string
 
-	RoleCache roleCache
+	RoleCache roleCache `form:"-"`
 }
 
 type roleCache struct {
-	Comment   string
+	Comment   string `form:"-"`
 	Admin     string
 	Moderator string
 	Regular   string
@@ -71,7 +71,7 @@ type roleCache struct {
 
 type factData struct {
 	Username string
-	Token    string
+	Token    string `form:"-"`
 }
 
 type dataPaths struct {
@@ -115,8 +115,8 @@ type dataFiles struct {
 
 type globalOptions struct {
 	Description        string
-	Comment            string
-	ResetPingRole      string
+	Comment            string `form:"-"`
+	ResetPingRole      string `form:"-"`
 	UseAuthserver      bool
 	AutosaveMax        int
 	RconOffset         int

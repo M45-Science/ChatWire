@@ -20,15 +20,15 @@ type local struct {
 	Callsign       string
 	Name           string
 	Port           int
-	Comment        string
-	RCONPass       string
+	Comment        string `form:"-"`
+	RCONPass       string `form:"-"`
 	LastSaveBackup int
 
 	Settings settings
 
 	Channel     channel
 	Options     localOptions
-	ModPackList []ModPackData
+	ModPackList []ModPackData `form:"-"`
 }
 
 type ModPackData struct {
@@ -49,7 +49,7 @@ type settings struct {
 }
 
 type channel struct {
-	Comment     string
+	Comment     string `form:"-"`
 	ChatChannel string
 }
 
@@ -59,7 +59,7 @@ type localOptions struct {
 	ResetDay         string
 	ResetDate        int
 	ResetHour        int
-	ResetPingRole    string
+	ResetPingRole    string `form:"-"`
 	PlayHourEnable   bool
 	PlayStartHour    int
 	PlayEndHour      int

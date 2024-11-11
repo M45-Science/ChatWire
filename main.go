@@ -24,6 +24,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
+	"ChatWire/webCTL"
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
+	htmlTest := flag.Bool("test", false, "(do not use) run dev-test code.")
 	flag.Parse()
 
 	/* Start cw logs */
@@ -72,6 +74,10 @@ func main() {
 
 	if cfg.Local.Options.AutoStart {
 		fact.FactAutoStart = true
+	}
+
+	if *htmlTest {
+		webCTL.Init()
 	}
 
 	/* Wait here for process signals */
