@@ -197,6 +197,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 
 	//Reset attempt count, we are fully connected.
 	DiscordConnectAttempts = 0
+	support.BotIsReady = true
 }
 
 func checkLockFile() {

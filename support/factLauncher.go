@@ -325,6 +325,18 @@ func injectSoftMod(fileName, folderName string) {
 	}
 }
 
+var BotIsReady bool
+
+func waitForDiscord() {
+	if BotIsReady {
+		return
+	}
+	for x := 0; x < 5 && !BotIsReady; x++ {
+		cwlog.DoLogCW("Waiting for Discord...")
+		time.Sleep(time.Second)
+	}
+}
+
 /* Create config files, launch factorio */
 func launchFactorio() {
 
@@ -338,6 +350,7 @@ func launchFactorio() {
 
 	fact.SetLastBan("")
 
+	waitForDiscord()
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
 
 	/* Allow crash reports right away */
