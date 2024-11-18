@@ -18,31 +18,31 @@ var Global global
 
 /* GLOBAL CONFIG */
 type global struct {
-	GroupName     string
-	PrimaryServer string
+	GroupName     string `form:"RO" web:"Group Name"`
+	PrimaryServer string `form:"RO" web:"Primary Server"`
 	Discord       discord
 	Factorio      factData
 
-	Paths   dataPaths
+	Paths   dataPaths `form:"-"`
 	Options globalOptions
 }
 
 type discord struct {
-	Token       string `form:"-"`
-	Guild       string
-	Application string
+	Token       string `form:"hidden"`
+	Guild       string `form:"RO"`
+	Application string `form:"hidden"`
 
-	ReportChannel   string
-	AnnounceChannel string
+	ReportChannel   string `form:"RO" web:"Report Channel ID"`
+	AnnounceChannel string `form:"RO" web:"Announce Channel ID"`
 	Roles           roles
 	Comment         string `form:"-"`
-	SusPingRole     string
+	SusPingRole     string `web:"Suspicious Ping RoleID"`
 }
 
 type roles struct {
 	Comment   string `form:"-"`
-	Admin     string
-	Moderator string
+	Admin     string `form:"RO"`
+	Moderator string `form:"RO"`
 	Regular   string
 	Veteran   string
 	Member    string
@@ -70,8 +70,8 @@ type roleCache struct {
 }
 
 type factData struct {
-	Username string
-	Token    string `form:"-"`
+	Username string `form:"RO"`
+	Token    string `form:"hidden"`
 }
 
 type dataPaths struct {
@@ -100,30 +100,30 @@ type binaryPaths struct {
 }
 
 type urlPaths struct {
-	Domain      string
-	PathPrefix  string
-	LogPath     string
-	LogsPathWeb string
-	ArchivePath string
-	ModPackPath string
+	Domain      string `form:"RO" web:"Domain Name"`
+	PathPrefix  string `form:"RO"`
+	LogPath     string `form:"RO"`
+	LogsPathWeb string `form:"RO"`
+	ArchivePath string `form:"RO"`
+	ModPackPath string `form:"RO"`
 }
 
 type dataFiles struct {
-	DBFile string
-	Bans   string
+	DBFile string `form:"-"`
+	Bans   string `form:"-"`
 }
 
 type globalOptions struct {
-	Description        string
+	Description        string `web:"Factorio Description"`
 	Comment            string `form:"-"`
 	ResetPingRole      string `form:"-"`
-	UseAuthserver      bool
-	AutosaveMax        int
-	RconOffset         int
-	ShutupSusWarn      bool
-	DisableSpamProtect bool
-	FCLWarnOnly        bool
-	FCLWarnRegulars    bool
+	UseAuthserver      bool   `form:"RO" web:"Use Authserver Bans"`
+	AutosaveMax        int    `form:"RO" web:"Max Autosaves"`
+	RconOffset         int    `form:"RO" web:"Rcon Port Offset"`
+	ShutupSusWarn      bool   `web:"Suspicious Warning Mute"`
+	DisableSpamProtect bool   `form:"RO" web:"Disable Chat Spam AutoBan"`
+	FCLWarnOnly        bool   `web:"FCL-Ban Warn-Only"`
+	FCLWarnRegulars    bool   `web:"FCL-Ban Warning For Regulars"`
 }
 
 func WriteGCfg() bool {

@@ -2,7 +2,6 @@ package webCTL
 
 import (
 	"ChatWire/cfg"
-	"fmt"
 	"html"
 	"html/template"
 	"net/http"
@@ -19,6 +18,13 @@ func Init() {
 	cfg.WebInterface.GlobalSettings = cfg.Global
 	http.HandleFunc("/", serveTemplate)
 	http.ListenAndServe(":8080", nil)
+}
+
+func CensorString(s string) string {
+	// Convert the string to a slice of runes to handle Unicode characters correctly
+	runes := []rune(s)
+	asterisks := strings.Repeat("*", len(runes))
+	return asterisks
 }
 
 func generateForm(v interface{}) string {
@@ -44,36 +50,48 @@ func generateForm(v interface{}) string {
 			continue
 		}
 
+		// Skip fields with json:"-" tag
+		if tag := fieldType.Tag.Get("web"); tag != "" {
+			escapedFieldName = html.EscapeString(tag)
+		}
+
 		// Check if field is read-only
+		extraTag := ""
 		if tag := fieldType.Tag.Get("form"); tag == "RO" {
-			escapedValue := html.EscapeString(fmt.Sprintf("%v", field.Interface()))
-			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><span>`+escapedValue+`</span><br>`)
-			continue
+			if tag := fieldType.Tag.Get("form"); tag == "RO" {
+				extraTag = " disable; readonly"
+			}
 		}
 
 		// Check if field is hidden (mask the value with ***)
+		hide := false
 		if tag := fieldType.Tag.Get("form"); tag == "hidden" {
-			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><span>**********</span><br>`)
-			continue
+			hide = true
 		}
 
 		// Handle different field types for input generation
 		switch field.Kind() {
 		case reflect.String:
 			escapedValue := html.EscapeString(field.String())
-			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="text" id="`+escapedFieldName+`" name="`+escapedFieldName+`" value="`+escapedValue+`"><br>`)
+			if hide {
+				escapedValue = CensorString(escapedValue)
+			}
+			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="text" id="`+escapedFieldName+`" name="`+escapedFieldName+`" value="`+escapedValue+`"`+extraTag+`><br>`)
 		case reflect.Int, reflect.Int32, reflect.Int64:
 			escapedValue := strconv.Itoa(int(field.Int()))
-			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="number" id="`+escapedFieldName+`" name="`+escapedFieldName+`" value="`+escapedValue+`"><br>`)
+			if hide {
+				escapedValue = CensorString(escapedValue)
+			}
+			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="number" id="`+escapedFieldName+`" name="`+escapedFieldName+`" value="`+escapedValue+`"`+extraTag+`><br>`)
 		case reflect.Float32, reflect.Float64:
 			escapedValue := strconv.FormatFloat(field.Float(), 'f', 2, 64)
 			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="number" step="0.01" id="`+escapedFieldName+`" name="`+escapedFieldName+`" value="`+escapedValue+`"><br>`)
 		case reflect.Bool:
 			checked := ""
-			if field.Bool() {
+			if field.Bool() && !hide {
 				checked = "checked"
 			}
-			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="checkbox" id="`+escapedFieldName+`" name="`+escapedFieldName+`" `+checked+`><br>`)
+			formFields = append(formFields, `<label for="`+escapedFieldName+`">`+escapedFieldName+`:</label><input type="checkbox" id="`+escapedFieldName+`" name="`+escapedFieldName+`" `+checked+``+extraTag+`><br>`)
 		case reflect.Struct:
 			formFields = append(formFields, `<h2>`+escapedFieldName+`</h2>`+generateForm(field.Interface()))
 		}

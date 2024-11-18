@@ -183,6 +183,20 @@
             animation: fadeIn 1s ease-out;
         }
 
+        /* Styles for read-only input fields */
+        input[type="text"][readonly],
+        input[type="number"][readonly] {
+            background-color: #1a1a1a; /* Darker background */
+            color: #888888;            /* Gray text color */
+            border: 1px solid #333333; /* Darker border */
+            cursor: default;           /* Default cursor to indicate non-editable */
+        }
+
+        input[type="text"][readonly]:focus,
+        input[type="number"][readonly]:focus {
+            border-color: #333333;     /* No change on focus */
+            box-shadow: none;          /* Remove focus shadow */
+        }
     </style>
 </head>
 <body>
@@ -205,7 +219,7 @@
             <div class="form-section">
                 <h2>Local Server Configuration</h2>
                 <form id="local-config" method="POST" action="/">
-                    {{.LocalForm}} <!-- Dynamically generated local form fields -->
+                    {{.LocalForm}}
                 </form>
             </div>
 
@@ -213,7 +227,7 @@
             <div class="form-section">
                 <h2>Global Server Configuration</h2>
                 <form id="global-config" method="POST" action="/">
-                    {{.GlobalForm}} <!-- Dynamically generated global form fields -->
+                    {{.GlobalForm}}
                 </form>
             </div>
         </div>
