@@ -332,7 +332,7 @@ func waitForDiscord() {
 	if BotIsReady {
 		return
 	}
-	for x := 0; x < 5 && !BotIsReady; x++ {
+	for x := 0; x <= 60 && !BotIsReady; x++ {
 		cwlog.DoLogCW("Waiting for Discord...")
 		time.Sleep(time.Second)
 	}
@@ -383,24 +383,6 @@ func launchFactorio() {
 	if !found {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to access save-games.", glob.COLOR_RED)
 		fact.FactAutoStart = false
-		return
-	}
-
-	/* Inject softmod */
-	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
-		if cfg.Local.Settings.Scenario == "" || cfg.Local.Settings.Scenario == "none" {
-			injectSoftMod(fileName, folderName)
-		} else {
-			cwlog.DoLogCW("Softmod disabled for scenario.")
-		}
-	}
-
-	/* Generate config file for Factorio server, if it fails stop everything.*/
-	if !fact.GenerateFactorioConfig() {
-		fact.FactAutoStart = false
-
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to write a config file for Fatorio.", glob.COLOR_RED)
-
 		return
 	}
 
@@ -473,15 +455,6 @@ func launchFactorio() {
 		tempargs = append(tempargs, "true")
 	}
 
-	/* Write or delete whitelist */
-	if !cfg.Local.Options.CustomWhitelist {
-		count := fact.WriteWhitelist()
-		if count > 0 && (cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly) {
-			cwlog.DoLogCW("Whitelist of %v players written.", count)
-		}
-	}
-	fact.WriteAdminlist()
-
 	modFiles := GetModFiles()
 	if len(modFiles) > 0 {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Loading mods...", glob.COLOR_GREEN)
@@ -498,6 +471,32 @@ func launchFactorio() {
 		glob.FactorioCancel = nil
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
+
+	/* Inject softmod */
+	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
+		if cfg.Local.Settings.Scenario == "" || cfg.Local.Settings.Scenario == "none" {
+			injectSoftMod(fileName, folderName)
+		} else {
+			cwlog.DoLogCW("Softmod disabled for scenario.")
+		}
+	}
+
+	/* Generate config file for Factorio server, if it fails stop everything.*/
+	if !fact.GenerateFactorioConfig() {
+		fact.FactAutoStart = false
+
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to write a config file for Fatorio.", glob.COLOR_RED)
+
+		return
+	}
+
+	/* Write or delete whitelist */
+	if !cfg.Local.Options.CustomWhitelist {
+		count := fact.WriteWhitelist()
+		if count > 0 && (cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly) {
+			cwlog.DoLogCW("Whitelist of %v players written.", count)
+		}
+	}
 
 	/* Run Factorio */
 	glob.FactorioCmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
@@ -556,7 +555,6 @@ func launchFactorio() {
 		fact.DoExit(true)
 		return
 	}
-
 }
 
 func ConfigSoftMod() {
