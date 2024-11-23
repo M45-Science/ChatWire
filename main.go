@@ -173,10 +173,12 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	s.AddHandler(handleDiscordMessages)
 	s.AddHandler(commands.SlashCommand)
 
-	/* Update the string for the channel name and topic */
-	fact.UpdateChannelName()
-	/* Send the new string to discord */
-	fact.DoUpdateChannelName()
+	go func() {
+		/* Update the string for the channel name and topic */
+		fact.UpdateChannelName()
+		/* Send the new string to discord */
+		fact.DoUpdateChannelName()
+	}()
 
 	cwlog.DoLogCW("Discord bot ready.")
 
