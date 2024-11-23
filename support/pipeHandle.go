@@ -666,6 +666,9 @@ func handleFactGoodbye(input *handleData) bool {
 		fact.FactorioBootedAt = time.Time{}
 		fact.SetFactRunning(false)
 
+		glob.FactorioCmd = nil
+		glob.FactorioCancel = nil
+
 		cwlog.DoLogCW("Factorio has closed.")
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Offline", "Factorio is now offline.", glob.COLOR_RED)
 		return true
