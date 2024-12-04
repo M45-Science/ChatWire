@@ -1157,14 +1157,8 @@ func handleChatMsg(input *handleData) bool {
 						MessageEmbed
 
 						/* Send it off! */
-					err := disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
-					if err != nil {
-						/* On failure, send normal message */
-						cwlog.DoLogCW("Failed to send chat embed.")
-					} else {
-						/* Stop if succeeds */
-						return true
-					}
+					disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, myembed)
+					return true
 				}
 				fact.CMS(cfg.Local.Channel.ChatChannel, fbuf)
 				return true
