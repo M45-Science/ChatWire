@@ -30,17 +30,21 @@ func CheckBanList(name string, doWarn bool) bool {
 	defer BanListLock.Unlock()
 
 	for _, ban := range BanList {
-		if doWarn && strings.EqualFold(ban.UserName, pname) {
+		if strings.EqualFold(ban.UserName, pname) {
 			warn := "Warning: [FCL] ban found for '" + pname + "': " + ban.Reason
 
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
 				if cfg.Global.Options.FCLWarnOnly {
-					fact.CMS(cfg.Local.Channel.ChatChannel, warn)
+					if doWarn {
+						fact.CMS(cfg.Local.Channel.ChatChannel, warn)
+					}
 				} else {
 					fact.WriteBan(pname, "[FCL] "+ban.Reason)
 				}
 			} else if cfg.Global.Options.FCLWarnRegulars {
-				fact.CMS(cfg.Local.Channel.ChatChannel, warn)
+				if doWarn {
+					fact.CMS(cfg.Local.Channel.ChatChannel, warn)
+				}
 			}
 
 			return true
