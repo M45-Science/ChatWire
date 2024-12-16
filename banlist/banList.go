@@ -24,13 +24,13 @@ type banDataType struct {
 	Reason   string `json:"reason,omitempty"`
 }
 
-func CheckBanList(name string) bool {
+func CheckBanList(name string, doWarn bool) bool {
 	pname := strings.ToLower(name)
 	BanListLock.Lock()
 	defer BanListLock.Unlock()
 
 	for _, ban := range BanList {
-		if strings.EqualFold(ban.UserName, pname) {
+		if doWarn && strings.EqualFold(ban.UserName, pname) {
 			warn := "Warning: [FCL] ban found for '" + pname + "': " + ban.Reason
 
 			if fact.PlayerLevelGet(ban.UserName, true) < 2 {

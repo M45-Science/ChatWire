@@ -301,7 +301,7 @@ func handlePlayerJoin(input *handleData) bool {
 
 		if input.noDatestampListLen > 1 {
 			pname := sclean.UnicodeCleanup(input.noDatestampList[1])
-			if banlist.CheckBanList(pname) {
+			if banlist.CheckBanList(pname, true) {
 				return true
 			}
 			plevelname := fact.AutoPromote(pname, false, true)
@@ -1217,7 +1217,7 @@ func handleOnlineMsg(input *handleData) bool {
 						go fact.UpdateSeen(pname)
 
 						/* Check if user is banned */
-						banlist.CheckBanList(pname)
+						banlist.CheckBanList(pname, false)
 
 						timeInt, _ := strconv.Atoi(ptime)
 						scoreInt, _ := strconv.Atoi(pscore)
