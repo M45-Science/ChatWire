@@ -11,3 +11,5 @@ server-banlist.json
 cpufile.prof
 playerdb.json
 factorio.tar
+.VSCodeCounter
+.vscode
