@@ -321,7 +321,7 @@ func QuitFactorio(message string) {
 	if (FactorioBooted && FactIsRunning) && NumPlayers <= 0 {
 		cwlog.DoLogCW("Quitting Factorio...")
 		cwlog.DoLogGame("Quitting Factorio...")
-		//WriteFact("/quit")
+		WriteFact("/quit")
 		WaitFactQuit(false)
 
 		/* Running, but players connected... Give them quick feedback. */
@@ -335,7 +335,7 @@ func QuitFactorio(message string) {
 
 		cwlog.DoLogCW("Quitting Factorio...")
 		cwlog.DoLogGame("Quitting Factorio...")
-		//WriteFact("/quit")
+		WriteFact("/quit")
 		WaitFactQuit(false)
 	}
 
