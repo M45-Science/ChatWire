@@ -13,6 +13,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"ChatWire/cfg"
@@ -338,6 +339,22 @@ func waitForDiscord() {
 	}
 }
 
+func isProcessRunning(cmd *exec.Cmd) bool {
+	// Check if the process state is nil (still running)
+	if cmd.ProcessState == nil {
+		return true
+	}
+
+	// Check if the process has exited
+	return !cmd.ProcessState.Exited()
+}
+
+func isProcessAlive(pid int) bool {
+	// Send signal 0 to the process
+	err := syscall.Kill(pid, 0)
+	return err == nil
+}
+
 /* Create config files, launch factorio */
 func launchFactorio() {
 
@@ -461,14 +478,11 @@ func launchFactorio() {
 	}
 
 	if glob.FactorioCmd != nil {
-		cwlog.DoLogCW("Killing previous factorio process!!!")
-		glob.FactorioCmd.Process.Kill()
-		glob.FactorioCmd = nil
-	}
-	if glob.FactorioCancel != nil {
-		cwlog.DoLogCW("Killing previous factorio context!!!")
-		glob.FactorioCancel()
-		glob.FactorioCancel = nil
+		if isProcessRunning(glob.FactorioCmd) || isProcessAlive(glob.FactorioCmd.Process.Pid) {
+			cwlog.DoLogCW("Previous Factorio process appears to be hard locked, killing process.")
+			glob.FactorioCmd.Process.Kill()
+			glob.FactorioCmd.Wait()
+		}
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
 
@@ -500,6 +514,7 @@ func launchFactorio() {
 
 	/* Run Factorio */
 	glob.FactorioCmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+	glob.FactorioCmd.WaitDelay = time.Minute
 
 	/* Hide RCON password and port */
 	for i, targ := range tempargs {

@@ -659,15 +659,9 @@ func handleFactGoodbye(input *handleData) bool {
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
 		fact.SetLastBan("")
 
-		glob.FactorioCancel()
-		glob.FactorioCancel = nil
-
 		fact.FactorioBooted = false
 		fact.FactorioBootedAt = time.Time{}
 		fact.SetFactRunning(false)
-
-		glob.FactorioCmd = nil
-		glob.FactorioCancel = nil
 
 		cwlog.DoLogCW("Factorio has closed.")
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Offline", "Factorio is now offline.", glob.COLOR_RED)

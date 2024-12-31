@@ -79,19 +79,6 @@ func MainLoops() {
 					cwlog.DoLogCW(msg)
 					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
-					fact.FactorioBooted = false
-					fact.SetFactRunning(false)
-
-					if glob.FactorioCmd != nil {
-						cwlog.DoLogCW("Killing previous factorio process!!!")
-						glob.FactorioCmd.Process.Kill()
-						glob.FactorioCmd = nil
-					}
-					if glob.FactorioCancel != nil {
-						cwlog.DoLogCW("Killing previous factorio context!!!")
-						glob.FactorioCancel()
-						glob.FactorioCancel = nil
-					}
 				}
 			}
 		}

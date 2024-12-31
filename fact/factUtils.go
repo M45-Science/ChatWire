@@ -319,7 +319,10 @@ func QuitFactorio(message string) {
 
 	/* Running but no players, just quit */
 	if (FactorioBooted && FactIsRunning) && NumPlayers <= 0 {
-		WriteFact("/quit")
+		cwlog.DoLogCW("Quitting Factorio...")
+		cwlog.DoLogGame("Quitting Factorio...")
+		//WriteFact("/quit")
+		WaitFactQuit(false)
 
 		/* Running, but players connected... Give them quick feedback. */
 	} else if FactorioBooted && FactIsRunning && NumPlayers > 0 {
@@ -329,15 +332,19 @@ func QuitFactorio(message string) {
 		FactChat("[color=white]" + message + "[/color]")
 		FactChat("[color=black]" + message + "[/color]")
 		time.Sleep(time.Second * 3)
+
+		cwlog.DoLogCW("Quitting Factorio...")
+		cwlog.DoLogGame("Quitting Factorio...")
+		//WriteFact("/quit")
+		WaitFactQuit(false)
 	}
 
-	WriteFact("/quit")
-	WaitFactQuit(false)
-	if FactIsRunning && glob.FactorioCancel != nil {
-		cwlog.DoLogCW("Forcing Factorio to close!!!")
-		glob.FactorioCancel()
+	if (FactorioBooted || FactIsRunning) && glob.FactorioCmd != nil {
+		cwlog.DoLogCW("Factorio still has not closed, sending interrupt.")
+		glob.FactorioCmd.Process.Signal(os.Interrupt)
+		glob.FactorioCmd.Wait()
+		SetFactRunning(false)
 	}
-
 }
 
 /* Send a string to Factorio, via stdin */
