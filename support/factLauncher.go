@@ -477,9 +477,14 @@ func launchFactorio() {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Loading mods...", glob.COLOR_GREEN)
 	}
 
+	if glob.FactorioCancel != nil {
+		cwlog.DoLogCW("Canceling existing context.")
+		glob.FactorioCancel()
+	}
 	if glob.FactorioCmd != nil {
 		if isProcessRunning(glob.FactorioCmd) || isProcessAlive(glob.FactorioCmd.Process.Pid) {
-			cwlog.DoLogCW("Previous Factorio process appears to be hard locked, killing process.")
+			cwlog.DoLogCW("Killing Previous Factorio process.")
+
 			glob.FactorioCmd.Process.Kill()
 			glob.FactorioCmd.Wait()
 		}
