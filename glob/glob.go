@@ -107,6 +107,7 @@ type CommandData struct {
 	AdminOnly     bool
 
 	PrimaryOnly bool
+	Global      bool
 	Disabled    bool
 	AppCmd      AppCmdData
 }

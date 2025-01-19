@@ -256,6 +256,20 @@ var cmds = []glob.CommandData{
 	},
 		Function: moderator.RCONCmd, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
+		Name:        "rconall",
+		Description: "Remotely run a factorio command on all servers.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []glob.OptionData{
+			{
+				Name:        "command",
+				Description: "factorio command to run",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+		},
+	},
+		Function: moderator.RCONCmd, ModeratorOnly: true, Global: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "map-reset",
 		Description: "Force a map reset, will kick players.",
 		Type:        discordgo.ChatApplicationCommand,
