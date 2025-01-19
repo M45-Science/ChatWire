@@ -89,7 +89,7 @@ func HandleChat() {
 					/*********************************
 					 * NO CHAT OR COMMAND LOG AREA
 					 *********************************/
-					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") && !strings.HasPrefix(input.line, "[CMD]") {
+					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") {
 
 						/*
 						 * No-chat handles
