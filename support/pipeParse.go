@@ -67,6 +67,7 @@ func HandleChat() {
 
 				/* We have input, server is alive */
 				//fact.SetFactRunning(true, false)
+				glob.NoResponseCount = 0
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
