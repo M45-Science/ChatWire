@@ -38,8 +38,8 @@ const (
 	MaxModPacks         = 4
 
 	/* Spam auto-ban settings */
-	SpamScoreLimit   = 12
-	SpamScoreWarning = 9
+	SpamScoreLimit   = 24
+	SpamScoreWarning = 8
 
 	SpamSlowThres = time.Second * 2
 	SpamFastThres = time.Millisecond * 1250
