@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"ChatWire/cfg"
@@ -76,24 +77,39 @@ func UpdateMods(doReport bool) {
 	out := string(o)
 
 	if err != nil {
-		buf := fmt.Sprintf("Error while attempting to update game mods: %v", err.Error())
+		buf := fmt.Sprintf("Error while attempting to update game mods: %v: %v", err.Error(), out)
 		cwlog.DoLogCW(buf)
 		return
 	}
 
 	lines := strings.Split(out, "\n")
-	buf := ""
+	updated := 0
+	updateResult := ""
 	for _, line := range lines {
 		if strings.Contains(line, "Download") {
-			buf = buf + line + "\n"
-			cwlog.DoLogCW(line)
+			cwlog.DoLogCW("mod updater: " + line)
+
+			cLine := regexp.MustCompile(`\s+`).ReplaceAllString(line, " ")
+			words := strings.Split(cLine, " ")
+
+			if len(words) >= 7 {
+				if updateResult != "" {
+					updateResult = updateResult + ", "
+				}
+				if strings.EqualFold(words[2], "Download") && strings.EqualFold(words[3], "Success") {
+					updateResult = updateResult + fmt.Sprintf("%v (%v)", words[0], words[1])
+					updated++
+				}
+			}
 		}
 	}
-	if buf != "" {
+	if updated > 0 {
 		if fact.NumPlayers > 0 {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio mods were updated, and will take effect on the next reboot (when server is empty)")
+			buf := fmt.Sprintf("**Factorio mods updated:** %v\nThis will take effect on the next reboot (when server is empty)", updateResult)
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 		} else {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio mods were updated, rebooting.")
+			buf := fmt.Sprintf("**Factorio mods updated:** %v\nRebooting.", updateResult)
+			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 		}
 		fact.QueueFactReboot = true
 	} else if doReport {
