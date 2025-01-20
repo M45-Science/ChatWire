@@ -120,7 +120,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 	return false, ""
 }
 
-func SetFactRunning(run bool) {
+func SetFactRunning(run, report bool) {
 	wasrun := FactIsRunning
 	FactIsRunning = run
 
@@ -131,6 +131,15 @@ func SetFactRunning(run bool) {
 	glob.NoResponseCount = 0
 
 	if wasrun != run {
+		if report {
+			if run {
+				cwlog.DoLogGame("Factorio " + FactorioVersion + " is now online.")
+				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+FactorioVersion+" is now online.", glob.COLOR_GREEN)
+			} else {
+				cwlog.DoLogCW("Factorio has closed.")
+				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Offline", "Factorio is now offline.", glob.COLOR_RED)
+			}
+		}
 		UpdateChannelName()
 		return
 	}
@@ -308,7 +317,9 @@ func WriteWhitelist() int {
 
 /* Quit Factorio */
 func QuitFactorio(message string) {
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Quitting Factorio: "+message, glob.COLOR_ORANGE)
+	if FactIsRunning {
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Quitting Factorio: "+message, glob.COLOR_ORANGE)
+	}
 
 	if message == "" {
 		message = "Server quitting."
@@ -343,7 +354,7 @@ func QuitFactorio(message string) {
 		cwlog.DoLogCW("Factorio still has not closed, sending interrupt.")
 		glob.FactorioCmd.Process.Signal(os.Interrupt)
 		glob.FactorioCmd.Wait()
-		SetFactRunning(false)
+		SetFactRunning(false, false)
 	}
 }
 
@@ -371,7 +382,7 @@ func WriteFact(input string) {
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
 			cwlog.DoLogCW("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input)
-			SetFactRunning(false)
+			SetFactRunning(false, true)
 			if glob.FactorioCancel != nil {
 				glob.FactorioCancel()
 			}
@@ -383,7 +394,7 @@ func WriteFact(input string) {
 
 	} else {
 		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
-		SetFactRunning(false)
+		SetFactRunning(false, true)
 		FactorioBooted = false
 		return
 	}
