@@ -1163,7 +1163,10 @@ func handleCmdMsg(input *handleData) bool {
 	/******************
 	 * COMMAND REPORTING
 	 ******************/
-	if strings.HasPrefix(input.line, "[CMD]") && !strings.Contains(input.line, "/cchat") {
+	if strings.HasPrefix(input.line, "[CMD]") &&
+		!strings.Contains(input.line, "/cchat") &&
+		!strings.Contains(input.line, "/whitelist") &&
+		!strings.Contains(input.line, "/online") {
 		cwlog.DoLogGame(input.line)
 		return true
 	}
