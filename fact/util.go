@@ -174,6 +174,8 @@ func DoExit(delay bool) {
 		CronVar.Stop()
 	}
 
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" shutting down.", glob.COLOR_RED)
+
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {
 		if len(disc.CMSBuffer) > 0 {

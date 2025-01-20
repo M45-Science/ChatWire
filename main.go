@@ -199,6 +199,8 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	//Reset attempt count, we are fully connected.
 	DiscordConnectAttempts = 0
 	support.BotIsReady = true
+
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
 }
 
 func checkLockFile() {
