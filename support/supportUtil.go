@@ -53,7 +53,7 @@ func checkHours() {
 				}
 
 				if !WithinHours() {
-					fact.FactAutoStart = false
+					fact.SetAutolaunch(false, false)
 					fact.QuitFactorio("Time is up...")
 				}
 
@@ -63,7 +63,7 @@ func checkHours() {
 					cfg.Local.Options.PlayEndHour)
 
 				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
-				fact.FactAutoStart = true
+				fact.SetAutolaunch(true, false)
 			}
 		}
 

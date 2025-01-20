@@ -120,7 +120,34 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 	return false, ""
 }
 
+var AutoLaunchLock sync.Mutex
+
+func SetAutolaunch(autolaunch, report bool) {
+	AutoLaunchLock.Lock()
+	defer AutoLaunchLock.Unlock()
+
+	if !autolaunch && FactAutoStart {
+		FactAutoStart = false
+		if report {
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Warning", "Auto-reboot has been turned OFF.", glob.COLOR_RED)
+		}
+		cwlog.DoLogCW("Autolaunch disabled.")
+	} else if autolaunch && !FactAutoStart {
+		FactAutoStart = true
+		cwlog.DoLogCW("Autolaunch enabled.")
+		if report {
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Warning", "Auto-reboot has been ENABLED.", glob.COLOR_RED)
+		}
+	}
+
+}
+
+var FactRunningLock sync.Mutex
+
 func SetFactRunning(run, report bool) {
+	FactRunningLock.Lock()
+	defer FactRunningLock.Unlock()
+
 	wasrun := FactIsRunning
 	FactIsRunning = run
 
@@ -131,6 +158,9 @@ func SetFactRunning(run, report bool) {
 	glob.NoResponseCount = 0
 
 	if wasrun != run {
+		if !run {
+			FactorioBooted = false
+		}
 		if report {
 			if run {
 				cwlog.DoLogGame("Factorio " + FactorioVersion + " is now online.")
@@ -395,7 +425,6 @@ func WriteFact(input string) {
 	} else {
 		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
 		SetFactRunning(false, true)
-		FactorioBooted = false
 		return
 	}
 }
@@ -915,7 +944,7 @@ func DoChangeMap(arg string) {
 		return
 	}
 
-	FactAutoStart = false
+	SetAutolaunch(false, false)
 	QuitFactorio("Server rebooting for map vote!")
 	WaitFactQuit(false)
 	selSaveName := path + "/" + saveStr
@@ -959,6 +988,6 @@ func DoChangeMap(arg string) {
 	msg := fmt.Sprintf("Loading save: %v", arg)
 	LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
 	glob.RelaunchThrottle = 0
-	FactAutoStart = true
+	SetAutolaunch(true, false)
 
 }

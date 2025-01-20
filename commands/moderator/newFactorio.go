@@ -132,14 +132,14 @@ func StartFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
 	}
 
-	fact.FactAutoStart = true
+	fact.SetAutolaunch(true, false)
 	glob.RelaunchThrottle = 0
 }
 
 /*  StopServer saves the map and closes Factorio.  */
 func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	glob.RelaunchThrottle = 0
-	fact.FactAutoStart = false
+	fact.SetAutolaunch(false, false)
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 

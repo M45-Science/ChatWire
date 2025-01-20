@@ -46,7 +46,7 @@ func MainLoops() {
 
 				if fact.QueueFactReboot {
 					if cfg.Local.Options.AutoStart {
-						fact.FactAutoStart = true
+						fact.SetAutolaunch(true, false)
 					}
 					fact.QueueFactReboot = false
 
@@ -524,7 +524,7 @@ func MainLoops() {
 				if _, err = os.Stat(".stop"); err == nil {
 					if errb = os.Remove(".stop"); errb == nil {
 						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio stopping!")
-						fact.FactAutoStart = false
+						fact.SetAutolaunch(false, false)
 						fact.QuitFactorio("Server stopping for maintenance.")
 					} else if !failureReported {
 						failureReported = true
@@ -545,7 +545,7 @@ func MainLoops() {
 				/* Start game */
 				if _, err = os.Stat(".start"); err == nil {
 					if errb = os.Remove(".start"); errb == nil {
-						fact.FactAutoStart = true
+						fact.SetAutolaunch(true, false)
 						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio starting!")
 					} else if !failureReported {
 						failureReported = true

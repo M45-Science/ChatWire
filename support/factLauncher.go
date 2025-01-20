@@ -391,7 +391,7 @@ func launchFactorio() {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Factorio is not installed. Use `/factorio install-factorio` to install it.", glob.COLOR_RED)
 
 		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
-		fact.FactAutoStart = false
+		fact.SetAutolaunch(false, true)
 		return
 	}
 
@@ -399,7 +399,7 @@ func launchFactorio() {
 	found, fileName, folderName := GetSaveGame(true)
 	if !found {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to access save-games.", glob.COLOR_RED)
-		fact.FactAutoStart = false
+		fact.SetAutolaunch(false, true)
 		return
 	}
 
@@ -502,7 +502,7 @@ func launchFactorio() {
 
 	/* Generate config file for Factorio server, if it fails stop everything.*/
 	if !fact.GenerateFactorioConfig() {
-		fact.FactAutoStart = false
+		fact.SetAutolaunch(false, true)
 
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to write a config file for Fatorio.", glob.COLOR_RED)
 

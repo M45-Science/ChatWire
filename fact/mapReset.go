@@ -74,7 +74,7 @@ func Map_reset(doReport bool) {
 		DoUpdateFactorio = false //Skip queued updates
 		cfg.WriteLCfg()
 
-		FactAutoStart = false
+		SetAutolaunch(false, false)
 		QuitFactorio("Server rebooting for map reset!!!")
 	} else {
 		return
@@ -180,7 +180,7 @@ func Map_reset(doReport bool) {
 	WriteVotes()
 
 	LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
-	FactAutoStart = true
+	SetAutolaunch(true, false)
 }
 
 func GenNewMap() string {

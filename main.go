@@ -73,7 +73,7 @@ func main() {
 	go support.HandleChat()
 
 	if cfg.Local.Options.AutoStart {
-		fact.FactAutoStart = true
+		fact.SetAutolaunch(true, false)
 	}
 
 	if *htmlTest {
@@ -86,7 +86,7 @@ func main() {
 	<-sc
 
 	_ = os.Remove("cw.lock")
-	fact.FactAutoStart = false
+	fact.SetAutolaunch(false, false)
 	glob.DoRebootCW = false
 	fact.QueueReboot = false
 	fact.QueueFactReboot = false
