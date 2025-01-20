@@ -80,7 +80,7 @@ func WatchBanFile() {
 		}
 
 		for glob.ServerRunning && initialStat != nil {
-			time.Sleep(30 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			stat, errb := os.Stat(filePath)
 			if errb != nil {
