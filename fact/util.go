@@ -68,7 +68,14 @@ func IsPlayerOnline(who string) bool {
 }
 
 /* Send chat to factorio */
-func FactChat(input string) {
+func FactChat(format string, args ...interface{}) {
+
+	var input string
+	if args == nil {
+		input = format
+	} else {
+		input = fmt.Sprintf(format, args...)
+	}
 
 	/* Limit length, Discord does this... but just in case */
 	input = sclean.TruncateStringEllipsis(input, 2048)
@@ -96,6 +103,45 @@ func FactChat(input string) {
 			input = strings.TrimRight(input, " ")
 		}
 		WriteFact(input)
+	}
+}
+
+/* Send chat to factorio */
+func FactWhisper(player, format string, args ...interface{}) {
+
+	var input string
+	if args == nil {
+		input = format
+	} else {
+		input = fmt.Sprintf(format, args...)
+	}
+
+	/* Limit length, Discord does this... but just in case */
+	input = sclean.TruncateStringEllipsis(input, 2048)
+
+	/*
+		* If we are running our softmod, use the much safer
+		 * /cwhisper command
+	*/
+	if glob.SoftModVersion != constants.Unknown {
+		WriteFact("/cwhisper %v %v", player, input)
+	} else {
+		/*
+		 * Just in case there is no soft-mod,
+		 * filter out potential threats
+		 */
+		input = sclean.UnicodeCleanup(input)
+		input = sclean.RemoveFactorioTags(input)
+		input = sclean.RemoveDiscordMarkdown(input)
+
+		/* Attempt to prevent anyone from running a command. */
+		strlen := len(input)
+		for z := 0; z < strlen; z++ {
+			input = strings.TrimLeft(input, " ")
+			input = strings.TrimLeft(input, "/")
+			input = strings.TrimRight(input, " ")
+		}
+		WriteFact("/whisper %v %v", player, input)
 	}
 }
 

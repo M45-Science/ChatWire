@@ -628,7 +628,7 @@ func ConfigSoftMod() {
 		fact.WriteFact("/nitrolist " + strings.Join(disc.RoleList.NitroBooster, ", "))
 	}
 
-	fact.WriteFact(fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+	fact.WriteFact("/gspeed %0.2f", cfg.Local.Options.Speed)
 }
 
 func GetModFiles() []string {

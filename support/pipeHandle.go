@@ -199,24 +199,24 @@ func handlePlayerRegister(input *handleData) bool {
 					if !strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) {
 						/* Some people just can't be bothered to read two short lines of text. */
 						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register... but can't read the directions.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This is not the correct server for entering registration codes! You need to connect to %v-%v to use that command. Please read the directions more carefully...",
-							pname, cfg.Global.GroupName, cfg.Global.PrimaryServer))
+						fact.FactWhisper(pname, "[SYSTEM] This is not the correct server for entering registration codes! You need to connect to %v-%v to use that command. Please read the directions more carefully...",
+							cfg.Global.GroupName, cfg.Global.PrimaryServer)
 						return true
 					}
 
 					if strings.EqualFold(discid, pid) && strings.EqualFold(factname, pname) {
 						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', wants to register a few times... just to be sure.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user, and discord user are already connected! You do not need to re-register...", pname))
+						fact.FactWhisper(pname, "[SYSTEM] This Factorio user, and discord user are already connected! You do not need to re-register...")
 						codegood = true
 						/* Do not break, process */
 					} else if discid != "" && discid != "0" {
 						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a discord user that is already registered to different Factorio player.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] That discord user is already connected to a different Factorio user... Unable to complete registration.", pname))
+						fact.FactWhisper(pname, "[SYSTEM] That discord user is already connected to a different Factorio user... Unable to complete registration.")
 						codegood = false
 						continue
 					} else if factname != "" {
 						fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Factorio player '%s', tried to register a Factorio user that is already registered to a different discord user.", pname))
-						fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] This Factorio user is already connected to a different discord user... Unable to complete registration.", pname))
+						fact.FactWhisper(pname, "[SYSTEM] This Factorio user is already connected to a different discord user... Unable to complete registration.")
 						codegood = false
 						continue
 					}
@@ -230,7 +230,7 @@ func handlePlayerRegister(input *handleData) bool {
 
 							if !errrole {
 								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Register: Can not find role '%v'. Requested for user '%v'", newrole, pname))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error. I could not find the discord role '%s'. The moderatators will be informed of the issue.", pname, newrole))
+								fact.FactWhisper(pname, "[SYSTEM] Sorry, there was an internal error. I could not find the discord role '%s'. The moderatators will be informed of the issue.", newrole)
 								continue
 							}
 
@@ -238,14 +238,14 @@ func handlePlayerRegister(input *handleData) bool {
 
 							if erradd != nil || disc.DS == nil {
 								fact.LogCMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("Register: Could not assign role '%v'. Requested for user '%v'.", newrole, pname))
-								fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, there was an internal error. I could not assign discord role '%s'. The moderatators will be informed of the issue.", pname, newrole))
+								fact.FactWhisper(pname, "[SYSTEM] Sorry, there was an internal error. I could not assign discord role '%s'. The moderatators will be informed of the issue.", newrole)
 								continue
 							}
-							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Registration complete!", pname))
+							fact.FactWhisper(pname, "[SYSTEM] Registration complete!")
 							fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, fmt.Sprintf("Registered player: %v", pname))
 							continue
 						} else {
-							fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, I couldn't find the discord guild info! The moderators will be informed of the issue.", pname))
+							fact.FactWhisper(pname, "[SYSTEM] Sorry, I couldn't find the discord guild info! The moderators will be informed of the issue.")
 							fact.LogCMS(cfg.Global.Discord.ReportChannel, "Register: Unable to get discord guild info!")
 							continue
 						}
@@ -256,7 +256,7 @@ func handlePlayerRegister(input *handleData) bool {
 			glob.PasswordListLock.Unlock()
 			if !codefound {
 				cwlog.DoLogCW("Register: Factorio player '%s' tried to use an invalid or expired code.", pname)
-				fact.WriteFact(fmt.Sprintf("/cwhisper %s [SYSTEM] Sorry, that code is invalid or expired.", pname))
+				fact.FactWhisper(pname, "[SYSTEM] Sorry, that code is invalid or expired.")
 				return true
 			}
 		} else {
@@ -347,10 +347,10 @@ func handlePlayerJoin(input *handleData) bool {
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				if did != "" {
 					if IsPatreon(did) {
-						fact.WriteFact(fmt.Sprintf("/patreon %s", pname))
+						fact.WriteFact("/patreon %s", pname)
 					}
 					if IsNitro(did) {
-						fact.WriteFact(fmt.Sprintf("/nitro %s", pname))
+						fact.WriteFact("/nitro %s", pname)
 					}
 				}
 			}
@@ -1040,61 +1040,56 @@ func handleChatMsg(input *handleData) bool {
 
 				var nores int = glob.NoResponseCount
 
-				glob.ChatterLock.Lock()
+				if !cfg.Global.Options.DisableSpamProtect {
+					glob.ChatterLock.Lock()
 
-				//Do not ban for chat spam if game is lagging
-				if nores < 5 && fact.PlayerLevelGet(pname, true) != 255 {
-					var bbuf string
+					//Do not ban for chat spam if game is lagging
+					if nores < 5 && fact.PlayerLevelGet(pname, true) != 255 {
 
-					//Automatically ban people for chat spam
-					if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
-						glob.ChatterSpamScore[pname]++
-						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) < constants.SpamFastThres {
-						glob.ChatterSpamScore[pname] += 2
-						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
-						if glob.ChatterSpamScore[pname] > 0 {
-							glob.ChatterSpamScore[pname]--
+						//Automatically ban people for chat spam
+						if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
+							glob.ChatterSpamScore[pname]++
+							glob.ChatterList[pname] = time.Now()
+						} else if time.Since(glob.ChatterList[pname]) < constants.SpamFastThres {
+							glob.ChatterSpamScore[pname] += 2
+							glob.ChatterList[pname] = time.Now()
+						} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
+							if glob.ChatterSpamScore[pname] > 0 {
+								glob.ChatterSpamScore[pname]--
+							}
+							glob.ChatterList[pname] = time.Now()
+						} else if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
+							glob.ChatterSpamScore[pname] = 0
+							glob.ChatterList[pname] = time.Now()
 						}
-						glob.ChatterList[pname] = time.Now()
-					} else if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
-						glob.ChatterSpamScore[pname] = 0
-						glob.ChatterList[pname] = time.Now()
-					}
 
-					if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
-						if !cfg.Global.Options.DisableSpamProtect {
-							bbuf = fmt.Sprintf("/whisper %v [color=red]*** SPAMMING / FLOODING WARNING! ***[/color]\n", pname)
-							fact.WriteFact(bbuf)
+						if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
+							fact.FactWhisper(pname, "*** SPAMMING / FLOODING WARNING! ***")
 						}
-					}
-					if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
-						if !cfg.Global.Options.DisableSpamProtect {
+						if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 							fact.WriteBanBy(pname, "Spamming/Flooding", "[Auto-Ban]")
 							glob.PlayerListLock.Lock()
 							if glob.PlayerList[pname] != nil &&
 								!glob.PlayerList[pname].AlreadyBanned {
 								glob.PlayerList[pname].AlreadyBanned = true
-								fact.WriteFact(bbuf)
 							}
 							glob.PlayerListLock.Unlock()
 
+							glob.ChatterSpamScore[pname] = 0
 						}
-						glob.ChatterSpamScore[pname] = 0
+
+						if slurFilter(pname, input) {
+							return true
+						}
+					} else {
+						/* Lower score if server isn't responding */
+						if glob.ChatterSpamScore[pname] > 0 {
+							glob.ChatterSpamScore[pname]--
+						}
 					}
 
-					if slurFilter(pname, input) {
-						return true
-					}
-				} else {
-					/* Lower score if server isn't responding */
-					if glob.ChatterSpamScore[pname] > 0 {
-						glob.ChatterSpamScore[pname]--
-					}
+					glob.ChatterLock.Unlock()
 				}
-
-				glob.ChatterLock.Unlock()
 
 				cmess := strings.Join(input.noDatestampList[2:], " ")
 				cmess = sclean.UnicodeCleanup(cmess)

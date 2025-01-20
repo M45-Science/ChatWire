@@ -191,12 +191,12 @@ func WhitelistPlayer(pname string, level int) {
 		}
 		if cfg.Local.Options.MembersOnly {
 			if level > 0 {
-				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
+				WriteFact("/whitelist add %s", pname)
 			}
 		}
 		if cfg.Local.Options.RegularsOnly {
 			if level > 1 {
-				WriteFact(fmt.Sprintf("/whitelist add %s", pname))
+				WriteFact("/whitelist add %s", pname)
 			}
 		}
 	}
@@ -221,7 +221,7 @@ func WriteAdminlist() int {
 		if player.Level >= 254 {
 			/* Add admins to whitelist for custom whitelists */
 			if cfg.Local.Options.CustomWhitelist {
-				WriteFact(fmt.Sprintf("/whitelist add %s", player.Name))
+				WriteFact("/whitelist add %s", player.Name)
 			}
 			buf = buf + "\"" + player.Name + "\",\n"
 			count = count + 1
@@ -389,7 +389,15 @@ func QuitFactorio(message string) {
 }
 
 /* Send a string to Factorio, via stdin */
-func WriteFact(input string) {
+func WriteFact(format string, args ...interface{}) {
+
+	var input string
+	if args == nil {
+		input = format
+	} else {
+		input = fmt.Sprintf(format, args...)
+	}
+
 	PipeLock.Lock()
 	defer PipeLock.Unlock()
 
@@ -498,20 +506,20 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 
 			} else if plevel == 1 {
 				playerName = " *(Member)*"
-				WriteFact(fmt.Sprintf("/member %s", pname))
+				WriteFact("/member %s", pname)
 
 			} else if plevel == 2 {
 				playerName = " *(Regular)*"
 
-				WriteFact(fmt.Sprintf("/regular %s", pname))
+				WriteFact("/regular %s", pname)
 			} else if plevel == 3 {
 				playerName = " *(Veteran)*"
 
-				WriteFact(fmt.Sprintf("/veteran %s", pname))
+				WriteFact("/veteran %s", pname)
 			} else if plevel == 255 {
 				playerName = " *(Moderator)*"
 
-				WriteFact(fmt.Sprintf("/promote %s", pname))
+				WriteFact("/promote %s", pname)
 			}
 		}
 
