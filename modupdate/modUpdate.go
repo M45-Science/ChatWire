@@ -78,6 +78,7 @@ func UpdateMods(doReport bool) {
 	if err != nil {
 		buf := fmt.Sprintf("Error while attempting to update game mods: %v", err.Error())
 		cwlog.DoLogCW(buf)
+		return
 	}
 
 	lines := strings.Split(out, "\n")
@@ -85,6 +86,7 @@ func UpdateMods(doReport bool) {
 	for _, line := range lines {
 		if strings.Contains(line, "Download") {
 			buf = buf + line + "\n"
+			cwlog.DoLogCW(line)
 		}
 	}
 	if buf != "" {
