@@ -132,8 +132,12 @@ func DoExit(delay bool) {
 	for i := 0; i < 300; i++ {
 		if len(disc.CMSBuffer) > 0 {
 			time.Sleep(time.Millisecond * 100)
+		} else {
+			break
 		}
 	}
+
+	time.Sleep(time.Second * 2)
 
 	/* This kills all loops! */
 	glob.ServerRunning = false
