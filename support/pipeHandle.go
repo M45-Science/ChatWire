@@ -736,7 +736,9 @@ func handleSaveMsg(input *handleData) bool {
 			if len(savmatch) > 1 {
 				if !cfg.Local.Options.HideAutosaves {
 					buf := fmt.Sprintf("`%v` 💾 %s", fact.Gametime, savmatch[1])
-					fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+					if fact.NumPlayers > 0 {
+						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+					}
 					cwlog.DoLogGame(savmatch[1])
 				}
 				fact.LastSaveName = savmatch[1]
