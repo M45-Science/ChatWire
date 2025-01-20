@@ -160,6 +160,7 @@ func SetFactRunning(run, report bool) {
 	if wasrun != run {
 		if !run {
 			FactorioBooted = false
+			FactorioBootedAt = time.Time{}
 		}
 		if report {
 			if run {

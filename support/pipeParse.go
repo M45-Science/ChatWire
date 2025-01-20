@@ -66,7 +66,7 @@ func HandleChat() {
 				rawLine := sclean.UnicodeCleanup(readLine)
 
 				/* We have input, server is alive */
-				fact.SetFactRunning(true, false)
+				//fact.SetFactRunning(true, false)
 
 				/* Decrement every time we see activity, if we see time not progressing, add two */
 				if fact.PausedTicks > 0 {
