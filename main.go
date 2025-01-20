@@ -93,7 +93,6 @@ func main() {
 	fact.QuitFactorio("Server quitting...")
 	fact.WaitFactQuit(false)
 
-	time.Sleep(time.Second * 2)
 	fact.DoExit(false)
 }
 
