@@ -661,10 +661,7 @@ func handleFactGoodbye(input *handleData) bool {
 
 		fact.FactorioBooted = false
 		fact.FactorioBootedAt = time.Time{}
-		fact.SetFactRunning(false)
-
-		cwlog.DoLogCW("Factorio has closed.")
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Offline", "Factorio is now offline.", glob.COLOR_RED)
+		fact.SetFactRunning(false, true)
 		return true
 	}
 	return false
@@ -678,9 +675,9 @@ func handleFactReady(input *handleData) bool {
 		fact.WriteAdminlist()
 		fact.FactorioBooted = true
 		fact.FactorioBootedAt = time.Now()
-		fact.SetFactRunning(true)
-		cwlog.DoLogGame("Factorio " + fact.FactorioVersion + " is now online.")
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" is now online.", glob.COLOR_GREEN)
+		fact.FactIsRunning = false
+		fact.SetFactRunning(true, true)
+
 		fact.WriteFact("/sversion")
 		fact.WriteFact(glob.OnlineCommand)
 	}
@@ -857,19 +854,32 @@ func handleCrashes(input *handleData) bool {
 	if strings.HasPrefix(input.noTimecode, "Error") {
 		cwlog.DoLogCW(input.noTimecode)
 
+		/* Mod load error */
+		if strings.Contains(input.noTimecode, "Failed to load mod") {
+			if input.wordListLen >= 10 {
+				modName := input.wordList[10]
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio failed loading game mod: "+modName)
+			} else {
+				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio failed loading game mods.")
+			}
+			fact.FactAutoStart = false
+			fact.FactorioBooted = false
+			fact.SetFactRunning(false, true)
+			return true
+		}
 		/* Lock error */
 		if strings.Contains(input.noTimecode, "Couldn't acquire exclusive lock") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
-			fact.SetFactRunning(false)
+			fact.SetFactRunning(false, true)
 			return true
 		}
 		/* Mod Errors */
 		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua error and will reboot.**")
 			fact.FactorioBooted = false
-			fact.SetFactRunning(false)
+			fact.SetFactRunning(false, true)
 			return true
 		}
 		/* Stack traces */
@@ -881,7 +891,7 @@ func handleCrashes(input *handleData) bool {
 			}
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
-			fact.SetFactRunning(false)
+			fact.SetFactRunning(false, true)
 			return true
 		}
 		/* level.dat */
@@ -889,14 +899,14 @@ func handleCrashes(input *handleData) bool {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
-			fact.SetFactRunning(false)
+			fact.SetFactRunning(false, true)
 			return true
 		}
 		/* Stack traces */
 		if strings.Contains(input.noTimecode, "Unexpected error occurred.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
 			fact.FactorioBooted = false
-			fact.SetFactRunning(false)
+			fact.SetFactRunning(false, true)
 			return true
 		}
 		if strings.Contains(input.noTimecode, "CommandLineMultiplayer") {
@@ -904,7 +914,7 @@ func handleCrashes(input *handleData) bool {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "No save-game found.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
-				fact.SetFactRunning(false)
+				fact.SetFactRunning(false, true)
 				return true
 			}
 		}
@@ -913,7 +923,7 @@ func handleCrashes(input *handleData) bool {
 			cfg.Local.Settings.Scenario = ""
 			fact.FactAutoStart = false
 			fact.FactorioBooted = false
-			fact.SetFactRunning(false)
+			fact.SetFactRunning(false, true)
 			return true
 		}
 
@@ -934,7 +944,7 @@ func handleCrashes(input *handleData) bool {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio version is too old for the save game.**")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
-				fact.SetFactRunning(false)
+				fact.SetFactRunning(false, true)
 				return true
 			}
 			if strings.Contains(input.noTimecode, "syntax error") || strings.Contains(input.noTimecode, "unexpected symbol") ||
@@ -942,20 +952,20 @@ func handleCrashes(input *handleData) bool {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua syntax error and will stop.**")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
-				fact.SetFactRunning(false)
+				fact.SetFactRunning(false, true)
 				return true
 			}
 			if strings.Contains(input.noTimecode, "Error while running command") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua command error.**")
 				fact.FactorioBooted = false
-				fact.SetFactRunning(false)
+				fact.SetFactRunning(false, true)
 				return true
 			}
 			if strings.Contains(input.noTimecode, "info.json not found") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 				fact.FactAutoStart = false
 				fact.FactorioBooted = false
-				fact.SetFactRunning(false)
+				fact.SetFactRunning(false, true)
 				return true
 			}
 			/* Bad zip file */
@@ -966,6 +976,9 @@ func handleCrashes(input *handleData) bool {
 						if err != nil {
 							cwlog.DoLogCW("Unable to remove bad zip file: " + input.trimmedWords[7])
 							fact.FactAutoStart = false
+							fact.FactorioBooted = false
+							fact.SetFactRunning(false, true)
+							return true
 						} else {
 							cwlog.DoLogCW("Removed bad zip file: " + input.trimmedWords[7])
 						}
@@ -979,21 +992,25 @@ func handleCrashes(input *handleData) bool {
 
 				if errs != nil {
 					cwlog.DoLogCW("Unable to delete corrupt savegame. Details:\nfile: %v\nerr: %v", fact.GameMapPath, errs)
-					fact.FactAutoStart = false
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game.")
+					fact.FactAutoStart = false
+					fact.FactorioBooted = false
+					fact.SetFactRunning(false, true)
+					return true
 				} else {
 					cwlog.DoLogCW("Deleted corrupted savegame.")
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Save-game corrupted, performing automatic roll-back.")
 				}
 
 				fact.FactorioBooted = false
-				fact.SetFactRunning(false)
+				fact.SetFactRunning(false, true)
 				return true
 			}
 
 			if strings.Contains(input.noTimecode, "Exception at tick") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
-				return true
+				fact.FactorioBooted = false
+				fact.SetFactRunning(false, true)
 			}
 		}
 		return true

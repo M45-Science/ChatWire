@@ -532,7 +532,7 @@ func launchFactorio() {
 	}
 
 	/* Okay, prep for factorio launch */
-	fact.SetFactRunning(true)
+	fact.SetFactRunning(true, false)
 	fact.FactorioBooted = false
 	fact.FactorioBootedAt = time.Time{}
 
