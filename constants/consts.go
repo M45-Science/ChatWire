@@ -85,7 +85,7 @@ const (
 	WatchdogInterval = time.Second
 
 	/* Throttle Discord chat */
-	CMSRate            = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
+	CMSRate            = 1000 * time.Millisecond //Time we spend waiting for buffer to fill up once active
 	CMSRestTime        = 2000 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate        = 100 * time.Millisecond  //Time between polls
 	MaxDiscordAttempts = 95
