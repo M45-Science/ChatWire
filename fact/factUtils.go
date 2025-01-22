@@ -462,8 +462,9 @@ func LevelToString(level int) string {
 	return name
 }
 
-func StringToLevel(input string) int {
+func StringToLevel(in string) int {
 
+	input := strings.ToLower(in)
 	level := 0
 
 	if strings.HasPrefix(input, "new") {
