@@ -37,12 +37,6 @@ const (
 	ModPackCooldownMin  = 5
 	MaxModPacks         = 4
 
-	/* QBX, Quickbar Exchange */
-	QBXMaxSize      = 102400
-	QBXLimitRegular = 3
-	QBXLimitVeteran = 6
-	QBXLimitDonor   = 12
-
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 24
 	SpamScoreWarning = 8
