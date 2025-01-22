@@ -466,17 +466,17 @@ func StringToLevel(input string) int {
 
 	level := 0
 
-	if strings.EqualFold(input, "new") {
+	if strings.HasPrefix(input, "new") {
 		level = 0
-	} else if strings.EqualFold(input, "members") {
+	} else if strings.HasPrefix(input, "members") {
 		level = 1
-	} else if strings.EqualFold(input, "regulars") {
+	} else if strings.HasPrefix(input, "regulars") {
 		level = 2
-	} else if strings.EqualFold(input, "veterans") {
+	} else if strings.HasPrefix(input, "veterans") {
 		level = 3
-	} else if strings.EqualFold(input, "banished") {
+	} else if strings.HasPrefix(input, "banished") {
 		level = 0
-	} else if strings.EqualFold(input, "moderator") {
+	} else if strings.HasPrefix(input, "moderator") {
 		level = 255
 	}
 
