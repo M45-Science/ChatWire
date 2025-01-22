@@ -196,11 +196,14 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 		return
 	}
 
+	//Only on first connect
+	if !support.BotIsReady {
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
+	}
+
 	//Reset attempt count, we are fully connected.
 	DiscordConnectAttempts = 0
 	support.BotIsReady = true
-
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
 }
 
 func checkLockFile() {
