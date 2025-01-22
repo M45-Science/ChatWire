@@ -427,7 +427,8 @@ func WriteFact(format string, args ...interface{}) {
 			}
 			return
 		}
-		if buf != "/time" {
+		if buf != "/time" && !strings.HasPrefix(buf, "/cchat") && !strings.HasPrefix(buf, "/cwhisper") &&
+			!strings.HasPrefix(buf, "/online") && !strings.HasPrefix(buf, "/p o c") {
 			cwlog.DoLogCW("CW: %v", buf)
 		}
 
