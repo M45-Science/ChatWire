@@ -115,10 +115,8 @@ func GenerateFactorioConfig() bool {
 	var tags []string
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
 		descrLines = append(descrLines, "Map generator: "+cfg.Local.Settings.MapGenerator)
-		tags = append(tags, "gen-"+cfg.Local.Settings.MapGenerator)
 	} else if cfg.Local.Settings.MapPreset != "" {
 		descrLines = append(descrLines, "Map preset: "+cfg.Local.Settings.MapPreset)
-		tags = append(tags, "preset-"+cfg.Local.Settings.MapPreset)
 	}
 	/*if cfg.Global.FactorioData.Username != "" {
 		descrLines = append(descrLines, "Server owner: "+cfg.Global.FactorioData.Username)
