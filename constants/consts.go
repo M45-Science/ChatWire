@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2661-01-22.2025-0929"
+	Version            = "2662-01-24.2025-1049p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
