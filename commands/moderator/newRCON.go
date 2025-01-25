@@ -69,11 +69,8 @@ func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if resp == "" {
 			resp = "(Empty response)"
 		}
-		if i.Message != nil && i.Message.Content != "" {
-			disc.InteractionEphemeralResponse(i, "Result:", i.Message.Content+"\nCW-"+strings.ToUpper(cfg.Local.Callsign)+": "+resp)
-		} else {
-			disc.InteractionEphemeralResponse(i, "Result:", cfg.Local.Callsign+": "+resp)
-		}
+
+		disc.InteractionEphemeralResponse(i, "Result:", resp)
 		cwlog.DoLogCW("RCON: " + resp)
 	} else {
 		msg := "You must supply a command to run."
