@@ -56,10 +56,7 @@ func GenerateFactorioConfig() bool {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
-	var servName string
-
-	cfg.ServerPrefix = ""
-	servName = "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
+	servName := "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
 	/* Setup some defaults */
 	heartbeats := 60

@@ -24,9 +24,6 @@ const (
 	ModsFolder          = "mods"
 	RoleListFile        = "../RoleList.dat"
 	VoteFile            = "votes.dat"
-	MembersPrefix       = "M"
-	PrivatePrefix       = "P"
-	RegularsPrefix      = "R"
 	ArchiveFolderSuffix = " maps"
 	TempSaveName        = "softmod.tmp"
 	BootUpdateDelayMin  = 2

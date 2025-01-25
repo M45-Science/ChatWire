@@ -12,7 +12,6 @@ import (
 	"ChatWire/glob"
 )
 
-var ServerPrefix = ""
 var Local local
 var Global global
 

@@ -251,14 +251,6 @@ func ReadLCfg() bool {
 				newcfg.Options.MembersOnly = false
 			}
 
-			if newcfg.Options.RegularsOnly {
-				ServerPrefix = constants.RegularsPrefix
-			} else if newcfg.Options.MembersOnly {
-				ServerPrefix = constants.MembersPrefix
-			} else {
-				ServerPrefix = ""
-			}
-
 			return true
 		} else {
 			cwlog.DoLogCW("ReadLCfg: ReadFile failure")
