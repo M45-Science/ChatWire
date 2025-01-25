@@ -933,6 +933,12 @@ func handleCrashes(input *handleData) bool {
 		}
 		if strings.Contains(input.noTimecode, "MultiplayerManager failed:") {
 
+			if strings.Contains(input.noTimecode, "Host address is already in use") {
+				fact.CMS(cfg.Local.Channel.ChatChannel, "The specified port is already in use: "+strconv.FormatInt(int64(cfg.Local.Port), 10))
+				fact.SetAutolaunch(false, true)
+				fact.SetFactRunning(false, true)
+				return true
+			}
 			if strings.Contains(input.noTimecode, "cannot be loaded because it is higher than the game version") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio version is too old for the save game.**")
 				fact.SetAutolaunch(false, true)
