@@ -221,7 +221,7 @@ func RegisterCommands() {
 		}
 		created, err := disc.DS.ApplicationCommandBulkOverwrite(cfg.Global.Discord.Application, cfg.Global.Discord.Guild, cmdList)
 		if err != nil {
-			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Register commands failed: "+err.Error())
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Register commands failed: "+err.Error())
 			return
 		}
 		cList := ""
@@ -231,7 +231,7 @@ func RegisterCommands() {
 			}
 			cList = cList + ctmp.Name
 		}
-		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Register commands complete: "+cList)
+		fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Register commands complete: "+cList)
 	}
 
 }
