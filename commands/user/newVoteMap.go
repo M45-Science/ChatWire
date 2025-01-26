@@ -64,7 +64,7 @@ func VoteMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 						buf = buf + tags + "\n"
 					}
 					buf = buf + " \n```"
-					fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
+					fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 					return
 				}
 			}
