@@ -106,10 +106,10 @@ func UpdateMods(doReport bool) {
 	if updated > 0 {
 		if fact.NumPlayers > 0 {
 			buf := fmt.Sprintf("**Factorio mods updated:** %v\nThis will take effect on the next reboot (when server is empty)", updateResult)
-			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 		} else {
 			buf := fmt.Sprintf("**Factorio mods updated:** %v\nRebooting.", updateResult)
-			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
 		}
 		fact.QueueFactReboot = true
 	} else if doReport {
