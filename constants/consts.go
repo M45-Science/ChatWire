@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2663-01-31.2025-1148"
+	Version            = "2663-01-31.2025-0409p"
 	CWEpoch            = 1653239822390688174
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -35,14 +35,14 @@ const (
 	MaxModPacks         = 4
 
 	/* Spam auto-ban settings */
-	SpamScoreLimit   = 24
-	SpamScoreWarning = 8
+	SpamScoreLimit   = 30
+	SpamScoreWarning = 15
 
 	SpamSlowThres = time.Second * 2
-	SpamFastThres = time.Millisecond * 1250
+	SpamFastThres = time.Millisecond * 500
 
 	SpamCoolThres  = time.Second * 6
-	SpamResetThres = time.Second * 10
+	SpamResetThres = time.Second * 15
 
 	/* Player suspect settings */
 	SusWarningThresh = 40

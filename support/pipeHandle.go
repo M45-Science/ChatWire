@@ -1054,28 +1054,35 @@ func handleChatMsg(input *handleData) bool {
 					//Do not ban for chat spam if game is lagging
 					if nores < 5 && fact.PlayerLevelGet(pname, true) != 255 {
 
-						//Automatically ban people for chat spam
-						if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
-							glob.ChatterSpamScore[pname]++
-							glob.ChatterList[pname] = time.Now()
-						} else if time.Since(glob.ChatterList[pname]) < constants.SpamFastThres {
-							glob.ChatterSpamScore[pname] += 2
+						//Lower score if they cool off
+						if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
+							glob.ChatterSpamScore[pname] = 0
 							glob.ChatterList[pname] = time.Now()
 						} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
 							if glob.ChatterSpamScore[pname] > 0 {
 								glob.ChatterSpamScore[pname]--
 							}
 							glob.ChatterList[pname] = time.Now()
-						} else if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
-							glob.ChatterSpamScore[pname] = 0
+						}
+
+						//Normal chat, add one point
+						if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
+							glob.ChatterSpamScore[pname]++
+							glob.ChatterList[pname] = time.Now()
+							//Super spammy, add two points
+						} else if time.Since(glob.ChatterList[pname]) < constants.SpamFastThres {
+							glob.ChatterSpamScore[pname] += 2
 							glob.ChatterList[pname] = time.Now()
 						}
 
 						if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {
 							fact.FactWhisper(pname, "*** SPAMMING / FLOODING WARNING! ***")
+							cwlog.DoLogCW("Spam warning: %v: Score: %v", pname, glob.ChatterSpamScore[pname])
 						}
 						if glob.ChatterSpamScore[pname] > constants.SpamScoreLimit {
 							fact.WriteBanBy(pname, "Spamming/Flooding", "[Auto-Ban]")
+							cwlog.DoLogCW("Spam BANNED: %v: Score: %v", pname, glob.ChatterSpamScore[pname])
+
 							glob.PlayerListLock.Lock()
 							if glob.PlayerList[pname] != nil &&
 								!glob.PlayerList[pname].AlreadyBanned {
