@@ -301,7 +301,9 @@ func handlePlayerJoin(input *handleData) bool {
 
 		if input.noDatestampListLen > 1 {
 			pname := sclean.UnicodeCleanup(input.noDatestampList[1])
-			banlist.CheckBanList(pname, true)
+			if banlist.CheckBanList(pname, true) {
+				return true
+			}
 			plevelname := fact.AutoPromote(pname, false, true)
 
 			pname = sclean.EscapeDiscordMarkdown(pname)

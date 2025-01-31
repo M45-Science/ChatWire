@@ -40,6 +40,7 @@ func CheckBanList(name string, doWarn bool) bool {
 					}
 				} else {
 					fact.WriteBan(pname, "[FCL] "+ban.Reason)
+					return true
 				}
 			} else if cfg.Global.Options.FCLWarnRegulars {
 				if doWarn {
@@ -47,7 +48,7 @@ func CheckBanList(name string, doWarn bool) bool {
 				}
 			}
 
-			return true
+			return false
 		}
 	}
 
