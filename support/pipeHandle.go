@@ -520,19 +520,19 @@ func handleSoftModMsg(input *handleData) bool {
 
 				if strings.Contains(input.line, " is now a member!") {
 					fact.PlayerLevelSet(trustname, 1, false)
-					fact.AutoPromote(trustname, false, false)
+					//fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(input.line, " is now a regular!") {
 					fact.PlayerLevelSet(trustname, 2, false)
-					fact.AutoPromote(trustname, false, false)
+					//fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(input.line, " is now reset!") {
 					fact.PlayerLevelSet(trustname, 0, false)
-					fact.AutoPromote(trustname, false, false)
+					//fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(input.line, " moved to moderators group") {
 					fact.PlayerLevelSet(trustname, 255, false)
-					fact.AutoPromote(trustname, false, false)
+					//fact.AutoPromote(trustname, false, false)
 					return true
 				} else if strings.Contains(input.line, " has nil permissions.") {
 					fact.AutoPromote(trustname, false, false)
