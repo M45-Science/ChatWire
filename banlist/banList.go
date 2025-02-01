@@ -70,7 +70,7 @@ func CheckBanList(name string, doWarn bool) bool {
 
 func WatchBanFile() {
 	for glob.ServerRunning {
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 
 		if cfg.Global.Paths.DataFiles.Bans == "" {
 			break
