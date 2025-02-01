@@ -66,7 +66,7 @@ func main() {
 	fact.SetupSchedule()
 	fact.LoadPlayers(true, false, false)
 	disc.ReadRoleList()
-	banlist.ReadBanFile()
+	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
 	go support.MainLoops()
