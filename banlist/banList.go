@@ -163,7 +163,7 @@ func ReadBanFile(firstboot bool) {
 				break
 			}
 		}
-		if !found {
+		if !found && !BanList[o].Revoked {
 			if revBuf != "" {
 				revBuf = revBuf + ", "
 			} else {
