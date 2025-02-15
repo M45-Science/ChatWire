@@ -534,6 +534,11 @@ func launchFactorio() {
 	/* Okay, prep for factorio launch */
 	fact.SetFactRunning(true, false)
 	fact.FactorioBooted = false
+
+	//Reset relaunch throttle
+	if time.Since(fact.FactorioBootedAt) > time.Hour {
+		glob.RelaunchThrottle = 0
+	}
 	fact.FactorioBootedAt = time.Time{}
 
 	fact.Gametime = (constants.Unknown)
@@ -629,6 +634,7 @@ func ConfigSoftMod() {
 	}
 
 	fact.WriteFact("/gspeed %0.2f", cfg.Local.Options.Speed)
+
 }
 
 func GetModFiles() []string {
