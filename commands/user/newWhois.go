@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/hako/durafmt"
 
 	"ChatWire/constants"
 	"ChatWire/disc"
@@ -21,7 +20,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	var slist []glob.PlayerData
-	layoutUS := "01-02-06 3:04 PM"
+	layoutUS := "01-02-06"
 
 	a := i.ApplicationCommandData()
 
@@ -34,11 +33,6 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 	glob.PlayerListLock.RUnlock()
 
-	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
-	if err != nil {
-		panic(err)
-	}
-
 	buf := ""
 	for _, o := range a.Options {
 		if o.Type == discordgo.ApplicationCommandOptionString {
@@ -46,8 +40,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 			/*STANDARD WHOIS SEARCH*/
 			count := 0
-			format := "`%20v : %10v : %20v : %18v : %18v : %10v : %10v : %v`\n"
-			buf = buf + fmt.Sprintf(format, "Factorio Name", "Time", "Discord Name", "Last Seen", "Joined", "Level", "SusScore", "Ban reason")
+			format := "\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n"
 			for _, p := range slist {
 				if count > maxresults {
 					break
@@ -73,16 +66,23 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 						jtime := fact.ExpandTime(p.Creation)
 						joined = jtime.Format(layoutUS)
 					}
-					n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Minutes))
-					timestr := n.LimitFirstN(2).Format(units)
+					timestr := p.Minutes
 					buf = buf + fmt.Sprintf(format,
+						"Name",
 						sclean.TruncateStringEllipsis(p.Name, 20),
+						"Score",
 						timestr,
+						"Discord",
 						sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID), 20),
+						"Seen",
 						lseen,
+						"Joined",
 						joined,
+						"Level",
 						fact.LevelToString(p.Level),
+						"Sus",
 						p.SusScore,
+						"Ban",
 						p.BanReason)
 					count++
 				}
@@ -92,7 +92,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			}
 
 			//1 << 6 is ephemeral/private
-			respData := &discordgo.InteractionResponseData{Content: buf, Flags: 1 << 6}
+			respData := &discordgo.InteractionResponseData{Content: "```" + buf + "```", Flags: 1 << 6}
 			resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 			err := disc.DS.InteractionRespond(i.Interaction, resp)
 			if err != nil {
