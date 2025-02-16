@@ -40,7 +40,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 			/*STANDARD WHOIS SEARCH*/
 			count := 0
-			format := "\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n"
+			format := "\n```%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v```\n"
 			for _, p := range slist {
 				if count > maxresults {
 					break
@@ -92,7 +92,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			}
 
 			//1 << 6 is ephemeral/private
-			respData := &discordgo.InteractionResponseData{Content: "```" + buf + "```", Flags: 1 << 6}
+			respData := &discordgo.InteractionResponseData{Content: buf, Flags: 1 << 6}
 			resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 			err := disc.DS.InteractionRespond(i.Interaction, resp)
 			if err != nil {
