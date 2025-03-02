@@ -709,19 +709,19 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		},
 	)
 	//Skip reset, not allowed for public maps
-	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
-		availableMaps = append(availableMaps,
-			discordgo.SelectMenuOption{
+	//if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
+	availableMaps = append(availableMaps,
+		discordgo.SelectMenuOption{
 
-				Label:       "SKIP-RESET",
-				Description: "Skip the next map reset.",
-				Value:       "SKIP-RESET",
-				Emoji: &discordgo.ComponentEmoji{
-					Name: "🚫",
-				},
+			Label:       "SKIP-RESET",
+			Description: "Skip the next map reset.",
+			Value:       "SKIP-RESET",
+			Emoji: &discordgo.ComponentEmoji{
+				Name: "🚫",
 			},
-		)
-	}
+		},
+	)
+	//}
 
 	for i := 0; i < numFiles; i++ {
 
