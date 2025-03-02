@@ -14,6 +14,8 @@ import (
 	"ChatWire/glob"
 )
 
+var lastRegister time.Time
+
 /* AccessServer locks PasswordListLock
  * This allows players to register, for discord roles and in-game perks */
 func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
@@ -22,6 +24,15 @@ func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		disc.InteractionEphemeralResponse(i, "Error", "Factorio isn't currently running, sorry!")
 		return
 	}
+
+	//Prevent spamming
+	defer func() {
+		lastRegister = time.Now()
+	}()
+	if time.Since(lastRegister) < time.Second*5 {
+		return
+	}
+
 	/* Do before lock */
 	g := xkcdpwgen.NewGenerator()
 	g.SetNumWords(3)
