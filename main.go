@@ -127,7 +127,7 @@ func startbot() {
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
 	/* This is called when the connection is verified */
-	bot.AddHandler(BotReady)
+	bot.AddHandlerOnce(BotReady)
 	errb := bot.Open()
 
 	/* This handles error after the inital connection */
@@ -145,8 +145,6 @@ func startbot() {
 	/* This drastically reduces log spam */
 	bot.LogLevel = discordgo.LogWarning
 }
-
-var handersAdded bool
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	if s != nil {
@@ -168,11 +166,8 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	}()
 
 	/* Message and command hooks */
-	if !handersAdded {
-		handersAdded = true
-		s.AddHandler(handleDiscordMessages)
-		s.AddHandler(commands.SlashCommand)
-	}
+	s.AddHandlerOnce(handleDiscordMessages)
+	s.AddHandlerOnce(commands.SlashCommand)
 
 	go func() {
 		/* Update the string for the channel name and topic */

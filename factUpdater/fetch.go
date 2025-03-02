@@ -12,10 +12,12 @@ import (
 
 var FetchLock sync.Mutex
 
+const httpGetTimeout = time.Minute * 15
+
 func httpGet(url string) ([]byte, string, error) {
 	// Set timeout
 	hClient := http.Client{
-		Timeout: time.Second * time.Duration(30),
+		Timeout: httpGetTimeout,
 	}
 	//HTTP GET
 	req, err := http.NewRequest(http.MethodGet, url, nil)
