@@ -39,8 +39,17 @@ func GetGameMods() (*modListData, error) {
 }
 
 func SyncMods() bool {
+
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
+
+	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
+	RestoreSetting := cfg.Local.Options.ModUpdate
+	cfg.Local.Options.ModUpdate = false
+
+	defer func(rVal bool) {
+		cfg.Local.Options.ModUpdate = rVal
+	}(RestoreSetting)
 
 	_, fileName, _ := GetSaveGame(true)
 	var tempargs []string = []string{"--sync-mods", fileName}
@@ -51,7 +60,7 @@ func SyncMods() bool {
 		cwlog.DoLogCW(string(data) + " : " + err.Error())
 	} else {
 		if strings.Contains(string(data), "Mods synced") {
-			cwlog.DoLogCW("Mods synced.")
+			cwlog.DoLogCW("Factorio mods synced with save-game.")
 			return true
 		}
 	}
