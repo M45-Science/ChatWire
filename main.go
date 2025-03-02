@@ -149,6 +149,8 @@ func startbot() {
 	bot.LogLevel = discordgo.LogWarning
 }
 
+var handersAdded bool
+
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	if s != nil {
 		/* Save Discord descriptor, we need it */
@@ -169,8 +171,11 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	}()
 
 	/* Message and command hooks */
-	s.AddHandler(handleDiscordMessages)
-	s.AddHandler(commands.SlashCommand)
+	if !handersAdded {
+		handersAdded = true
+		s.AddHandler(handleDiscordMessages)
+		s.AddHandler(commands.SlashCommand)
+	}
 
 	go func() {
 		/* Update the string for the channel name and topic */
