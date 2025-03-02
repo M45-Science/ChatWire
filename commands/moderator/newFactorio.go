@@ -167,7 +167,7 @@ func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	if support.SyncMods() {
-		disc.InteractionEphemeralResponseColor(i, "Complete", "Mods synced with save file.", glob.COLOR_GREEN)
+		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio mod sync complete.")
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "ERROR", "Syncing mods failed", glob.COLOR_RED)
 	}
