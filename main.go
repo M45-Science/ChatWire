@@ -17,7 +17,6 @@ import (
 	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands"
-	"ChatWire/commands/moderator"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
@@ -56,8 +55,6 @@ func main() {
 		_ = os.Remove("cw.lock")
 		return
 	}
-
-	moderator.MakeFTPFolders()
 
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */

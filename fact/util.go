@@ -13,21 +13,9 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 const MaxZipSize = 1024 * 1024 * 1024 * 10 //10gb
-
-func ReportZipBomb(i *discordgo.InteractionCreate, file string) {
-	susRole := ""
-	if cfg.Global.Discord.SusPingRole != "" {
-		susRole = fmt.Sprintf("<@&%v> ", cfg.Global.Discord.SusPingRole)
-	}
-	buf := fmt.Sprintf("%v\nFile '%v' contains a zip-bomb!\n", susRole, file)
-	buf = buf + fmt.Sprintf("FTP command from: <@%v>!", i.Member.User.ID)
-	LogCMS(cfg.Global.Discord.ReportChannel, buf)
-}
 
 func HasZipBomb(path string) bool {
 	zip, err := zip.OpenReader(path)

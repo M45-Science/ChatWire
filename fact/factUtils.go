@@ -72,12 +72,6 @@ func SetLastBan(name string) {
 }
 
 func CheckSave(path, name string, showError bool) (good bool, folder string) {
-
-	if HasZipBomb(path + "/" + name) {
-		LogCMS(cfg.Local.Channel.ChatChannel, "Save contains a zip-bomb, aborting.")
-		return false, ""
-	}
-
 	zip, err := zip.OpenReader(path + "/" + name)
 	if err != nil || zip == nil {
 		buf := fmt.Sprintf("Save '%v' is not a valid zip file: '%v', trying next save.", name, err.Error())
@@ -903,21 +897,6 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 			return
 		}
 	}
-}
-
-func DoFTPLoad(i *discordgo.InteractionCreate, arg string) {
-
-	buf := ""
-
-	z, err := zip.OpenReader(cfg.Global.Paths.Folders.FTP + arg)
-	if err != nil {
-		buf = "The file does not appear to be a valid zip file."
-	} else {
-		buf = "The zip file appears to be valid."
-	}
-	defer z.Close()
-
-	disc.InteractionEphemeralResponse(i, "Status", buf)
 }
 
 func DoChangeMap(arg string) {

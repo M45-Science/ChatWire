@@ -64,17 +64,6 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					break
 				}
 			}
-			for _, fType := range moderator.FTPTypes {
-				if strings.EqualFold(data.CustomID, fType.Value) {
-					if c == "INVALID" {
-						disc.InteractionEphemeralResponse(i, "Error:", "Invalid file!")
-						break
-					}
-					disc.InteractionEphemeralResponse(i, "Status:", "Loading "+fType.Name+": "+c)
-					moderator.LoadFTPFile(i, c, fType)
-					break
-				}
-			}
 		}
 	} else if i.Type == discordgo.InteractionApplicationCommand {
 		data := i.ApplicationCommandData()
