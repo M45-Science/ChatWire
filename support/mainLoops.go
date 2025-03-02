@@ -686,11 +686,12 @@ func MainLoops() {
 	go func() {
 		time.Sleep(time.Minute)
 
-		for glob.ServerRunning &&
-			cfg.Local.Options.ModUpdate {
-			modupdate.CheckMods(false, false)
+		for glob.ServerRunning {
+			if cfg.Local.Options.ModUpdate {
+				modupdate.CheckMods(false, false)
+			}
 
-			time.Sleep(time.Hour * 3)
+			time.Sleep(time.Minute * 30)
 		}
 	}()
 
