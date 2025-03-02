@@ -43,6 +43,9 @@ func SyncMods() bool {
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
+	glob.ModLock.Lock()
+	defer glob.ModLock.Unlock()
+
 	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
 	RestoreSetting := cfg.Local.Options.ModUpdate
 	cfg.Local.Options.ModUpdate = false

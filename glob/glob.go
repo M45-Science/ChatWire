@@ -16,6 +16,7 @@ import (
 )
 
 var FactorioLock sync.Mutex
+var ModLock sync.Mutex
 
 func Ptr[T any](v T) *T {
 	return &v

@@ -12,13 +12,18 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
 /* Read entire mod folder */
 func CheckMods(force bool, doReport bool) {
+
 	if !cfg.Local.Options.AutoUpdate && !force {
 		return
 	}
+
+	glob.ModLock.Lock()
+	defer glob.ModLock.Unlock()
 
 	/* Update mods if needed */
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
