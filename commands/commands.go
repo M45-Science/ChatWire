@@ -219,10 +219,22 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
-				Name:        "file",
-				Description: "select a file",
+				Name:        "save-game",
+				Description: "select a save-game zip",
 				Type:        discordgo.ApplicationCommandOptionAttachment,
-				Required:    true,
+				Required:    false,
+			},
+			{
+				Name:        "mod-list",
+				Description: "select a mod-list.json file",
+				Type:        discordgo.ApplicationCommandOptionAttachment,
+				Required:    false,
+			},
+			{
+				Name:        "mod-settings",
+				Description: "select a mod-settings.dat file",
+				Type:        discordgo.ApplicationCommandOptionAttachment,
+				Required:    false,
 			},
 		},
 	},
