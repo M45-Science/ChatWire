@@ -15,7 +15,7 @@ import (
 	"ChatWire/sclean"
 )
 
-const MaxZipSize = 1024 * 1024 * 1 //1gb
+const MaxZipSize = 1024 * 1024 * 1024 //1gb
 
 func HasZipBomb(path string) bool {
 	zip, err := zip.OpenReader(path)
