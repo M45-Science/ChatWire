@@ -31,6 +31,15 @@ func showSyncMods() string {
 			if strings.EqualFold(mod.Name, "base") {
 				continue
 			}
+			if strings.EqualFold(mod.Name, "elevated-rails") {
+				continue
+			}
+			if strings.EqualFold(mod.Name, "quality") {
+				continue
+			}
+			if strings.EqualFold(mod.Name, "space-age") {
+				continue
+			}
 			if !mod.Enabled {
 				continue
 			}
