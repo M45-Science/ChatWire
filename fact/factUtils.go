@@ -976,7 +976,7 @@ func DoChangeMap(arg string) {
 	}
 
 	msg := fmt.Sprintf("Loading save: %v", arg)
-	LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
+	cwlog.DoLogGame(msg)
 	glob.RelaunchThrottle = 0
 	SetAutolaunch(true, false)
 
