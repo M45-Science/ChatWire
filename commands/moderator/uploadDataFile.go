@@ -119,7 +119,7 @@ func insertModSettings(modSettingsData []byte) bool {
 	if len(modSettingsData) > 0 {
 		if verifyModSettings(modSettingsData) {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"Your "+modSettingsName+" contains invalid data.", glob.COLOR_RED)
+				"**Your "+modSettingsName+" contains invalid data, ABORTING.**", glob.COLOR_RED)
 			return true
 		}
 
@@ -139,7 +139,7 @@ func insertModSettings(modSettingsData []byte) bool {
 		}
 
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"Your "+modSettingsName+" has been loaded.", glob.COLOR_RED)
+			"Your "+modSettingsName+" has been loaded.", glob.COLOR_GREEN)
 	}
 	return false
 }
