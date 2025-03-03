@@ -38,7 +38,7 @@ func GetGameMods() (*modListData, error) {
 	return configGameMods(nil, false)
 }
 
-func SyncMods() bool {
+func SyncMods(optionalFileName string) bool {
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
@@ -55,6 +55,9 @@ func SyncMods() bool {
 	}(RestoreSetting)
 
 	_, fileName, _ := GetSaveGame(true)
+	if optionalFileName != "" {
+		fileName = optionalFileName
+	}
 	var tempargs []string = []string{"--sync-mods", fileName}
 
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)

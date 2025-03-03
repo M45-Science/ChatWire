@@ -65,9 +65,6 @@ func Map_reset(doReport bool) {
 			}
 		}
 
-		msg := "Stopping server for map reset!"
-		LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
-
 		cfg.Local.Options.SkipReset = false
 		QueueReboot = false      //Skip queued reboot
 		QueueFactReboot = false  //Skip queued reboot
