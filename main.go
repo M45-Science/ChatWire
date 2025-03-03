@@ -95,6 +95,8 @@ func main() {
 
 var DiscordConnectAttempts int
 
+var botReadyAdded bool
+
 func startbot() {
 
 	/* Check if Discord token is set */
@@ -127,7 +129,10 @@ func startbot() {
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
 	/* This is called when the connection is verified */
-	bot.AddHandlerOnce(BotReady)
+	if !botReadyAdded {
+		botReadyAdded = true
+		bot.AddHandler(BotReady)
+	}
 	errb := bot.Open()
 
 	/* This handles error after the inital connection */
@@ -145,6 +150,8 @@ func startbot() {
 	/* This drastically reduces log spam */
 	bot.LogLevel = discordgo.LogWarning
 }
+
+var hooksAdded bool
 
 func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	if s != nil {
@@ -166,8 +173,11 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	}()
 
 	/* Message and command hooks */
-	s.AddHandlerOnce(handleDiscordMessages)
-	s.AddHandlerOnce(commands.SlashCommand)
+	if !hooksAdded {
+		hooksAdded = true
+		s.AddHandler(handleDiscordMessages)
+		s.AddHandler(commands.SlashCommand)
+	}
 
 	go func() {
 		/* Update the string for the channel name and topic */
