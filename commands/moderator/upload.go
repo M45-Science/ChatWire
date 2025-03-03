@@ -70,10 +70,11 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		switch tName {
 		case "save-game":
-			handleCustomSave(i, attachmentUrl, modSettingsData)
+			handleCustomSave(cmd, i, attachmentUrl, modSettingsData)
 		case "mod-list":
 			if foundModList && foundSave {
-				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "You do not need to include a mod-list.json when uploading a save-game, ignoring.", glob.COLOR_GREEN)
+				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**You do not need to include a mod-list.json when uploading a save-game, ignoring.**", glob.COLOR_ORANGE)
+				time.Sleep(errMsgDelay)
 				continue
 			}
 		case "mod-settings":
@@ -88,7 +89,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 }
 
-func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modSettingsData []byte) {
+func handleCustomSave(cmd *glob.CommandData, i *discordgo.InteractionCreate, attachmentUrl string, modSettingsData []byte) {
 	foundOption = true
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your save-game file is uploading.", glob.COLOR_GREEN)
 
@@ -158,7 +159,10 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your "+modSettingsName+" has been loaded.", glob.COLOR_RED)
 	}
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Downloading any save-game installed mods, PLEASE WAIT...**", glob.COLOR_GREEN)
-
+	modBuf := showSyncMods()
+	if modBuf != "" {
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Installed mods: "+modBuf, glob.COLOR_GREEN)
+	}
 	if !support.SyncMods(saveFileName) {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "mod-sync failed, attempting to continue.", glob.COLOR_RED)
 		time.Sleep(errMsgDelay)
@@ -167,6 +171,33 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	modupdate.CheckMods(true, true)
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Attempting to load your save-game.", glob.COLOR_GREEN)
 	fact.DoChangeMap(strings.TrimSuffix(saveFileName, ".zip"))
+}
+
+func showSyncMods() string {
+	buf := ""
+	modList, mErr := support.GetGameMods()
+	if mErr == nil && modList != nil {
+		for _, mod := range modList.Mods {
+			if strings.EqualFold(mod.Name, "base") {
+				continue
+			}
+			if !mod.Enabled {
+				continue
+			}
+			if buf != "" {
+				buf = buf + ", "
+			}
+			if mod.Enabled {
+				buf = buf + strings.TrimSuffix(mod.Name, ".zip")
+			}
+		}
+	}
+
+	if buf == "" {
+		buf = strings.Join(support.GetModFiles(), ", ")
+	}
+
+	return buf
 }
 
 func handleModSettings(attachmentUrl string) []byte {

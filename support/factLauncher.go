@@ -666,7 +666,7 @@ func GetModFiles() []string {
 	if errm == nil {
 		for _, mod := range modList {
 			if strings.HasSuffix(mod.Name(), ".zip") {
-				modStrings = append(modStrings, mod.Name())
+				modStrings = append(modStrings, strings.TrimSuffix(mod.Name(), ".zip"))
 			}
 		}
 	}
