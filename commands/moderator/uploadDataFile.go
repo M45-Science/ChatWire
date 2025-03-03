@@ -9,6 +9,8 @@ import (
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/support"
+	"bytes"
+	"encoding/binary"
 	"os"
 	"strconv"
 	"strings"
@@ -115,6 +117,10 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 
 func insertModSettings(modSettingsData []byte) bool {
 	if len(modSettingsData) > 0 {
+		if verifyModSettings(modSettingsData) {
+			return true
+		}
+
 		modPath := cfg.Global.Paths.Folders.ServersRoot +
 			cfg.Global.Paths.ChatWirePrefix +
 			cfg.Local.Callsign + "/" +
@@ -133,5 +139,22 @@ func insertModSettings(modSettingsData []byte) bool {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"Your "+modSettingsName+" has been loaded.", glob.COLOR_RED)
 	}
+	return false
+}
+
+func verifyModSettings(data []byte) bool {
+
+	var major, minor, patch, dev uint16
+	reader := bytes.NewReader(data)
+	binary.Read(reader, binary.LittleEndian, &major)
+	binary.Read(reader, binary.LittleEndian, &minor)
+	binary.Read(reader, binary.LittleEndian, &patch)
+	binary.Read(reader, binary.LittleEndian, &dev)
+
+	if dev != 0 || (major == 0 && minor < 12) {
+		cwlog.DoLogCW("verifyModSettings: Invalid header.")
+		return true
+	}
+
 	return false
 }
