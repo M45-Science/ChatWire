@@ -36,7 +36,8 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	UploadLock.Lock()
 	defer UploadLock.Unlock()
 
-	disc.InteractionEphemeralResponse(i, "Status", "Processing, please wait...")
+	disc.InteractionEphemeralResponse(i, "Status",
+		"Processing, please wait...")
 
 	//Just in case
 	factUpdater.FetchLock.Lock()
@@ -75,7 +76,8 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			handleCustomSave(i, attachmentUrl, modSettingsData)
 		case "mod-list":
 			if foundModList && foundSave {
-				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**You do not need to include a mod-list.json when uploading a save-game, ignoring.**", glob.COLOR_ORANGE)
+				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+					"**You do not need to include a mod-list.json when uploading a save-game, ignoring.**", glob.COLOR_ORANGE)
 				time.Sleep(errMsgDelay)
 				continue
 			}
@@ -93,18 +95,21 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modSettingsData []byte) {
 	foundOption = true
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your save-game file is uploading.", glob.COLOR_GREEN)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		"Your save-game file is uploading.", glob.COLOR_GREEN)
 
 	data, name, err := factUpdater.HttpGet(attachmentUrl)
 	if err != nil {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Your save-game file failed while downloading.**", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"**Your save-game file failed while downloading.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: http-get save-game: Error: %v", err)
 		time.Sleep(errMsgDelay)
 		return
 	}
 
 	sBuf := fmt.Sprintf("Downloaded save-game: %v, Size: %v", name, humanize.Bytes(uint64(len(data))))
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", sBuf, glob.COLOR_GREEN)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		sBuf, glob.COLOR_GREEN)
 
 	if fact.FactorioBooted || fact.FactIsRunning {
 
@@ -134,7 +139,8 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	saveFilePath := savePath + saveFileName
 	err = os.WriteFile(saveFilePath, data, 0644)
 	if err != nil {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Your save-game file failed while writing.**", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"**Your save-game file failed while writing.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: Write save-game: Error: %v", err)
 		time.Sleep(errMsgDelay)
 		return
@@ -143,8 +149,11 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	currentTime := time.Now().UTC().Local()
 	_ = os.Chtimes(saveFilePath, currentTime, currentTime)
 
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		"Checking save-game.", glob.COLOR_GREEN)
 	if fact.HasZipBomb(saveFilePath) {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**THE SAVE-GAME MAY CONTAIN A ZIP-BOMB ATTACK, ABORTING.**", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"**THE SAVE-GAME MAY CONTAIN A ZIP-BOMB ATTACK, ABORTING.**", glob.COLOR_RED)
 		os.Remove(saveFilePath)
 		return
 	}
@@ -158,26 +167,33 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 		msPath := modPath + modSettingsName
 		err = os.WriteFile(msPath, modSettingsData, 0644)
 		if err != nil {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Your "+modSettingsName+" file failed while writing.**", glob.COLOR_RED)
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+				"**Your "+modSettingsName+" file failed while writing.**", glob.COLOR_RED)
 			time.Sleep(errMsgDelay)
 			cwlog.DoLogCW("Upload: Write mod-settings: Error: %v", err)
 			return
 		}
 
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your "+modSettingsName+" has been loaded.", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"Your "+modSettingsName+" has been loaded.", glob.COLOR_RED)
 	}
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Downloading any save-game installed mods, PLEASE WAIT...**", glob.COLOR_GREEN)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		"**Downloading any save-game installed mods, PLEASE WAIT...**", glob.COLOR_GREEN)
 	modBuf := showSyncMods()
 	if modBuf != "" {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Installed mods: "+modBuf, glob.COLOR_GREEN)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"Installed mods: "+modBuf, glob.COLOR_GREEN)
 	}
 	if !support.SyncMods(saveFileName) {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "mod-sync failed, attempting to continue.", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"mod-sync failed, attempting to continue.", glob.COLOR_RED)
 		time.Sleep(errMsgDelay)
 	}
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Checking for mod updates.", glob.COLOR_GREEN)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		"Checking for mod updates.", glob.COLOR_GREEN)
 	modupdate.CheckMods(true, true)
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Attempting to load your save-game.", glob.COLOR_GREEN)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		"Attempting to load your save-game.", glob.COLOR_GREEN)
 	fact.DoChangeMap(strings.TrimSuffix(saveFileName, ".zip"))
 }
 
@@ -209,24 +225,28 @@ func showSyncMods() string {
 }
 
 func handleModSettings(attachmentUrl string) []byte {
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your "+modSettingsName+" file is uploading.", glob.COLOR_GREEN)
+	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+		"Your "+modSettingsName+" file is uploading.", glob.COLOR_GREEN)
 
 	//We do this first, as we need it when we restart for the map.
 	data, name, err := factUpdater.HttpGet(attachmentUrl)
 	if err != nil {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Your "+modSettingsName+" file failed while downloading.**", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"**Your "+modSettingsName+" file failed while downloading.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: Write http-get: Error: %v", err)
 		time.Sleep(errMsgDelay)
 		return nil
 	}
 	if name == modSettingsName {
 		if len(data) > MaxModSettingsSize {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**The "+modSettingsName+" is too large, skipping... **", glob.COLOR_RED)
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+				"**The "+modSettingsName+" is too large, skipping... **", glob.COLOR_RED)
 			return nil
 		}
 		return data
 	} else {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Your "+modSettingsName+" file didn't have the correct name.**", glob.COLOR_RED)
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"**Your "+modSettingsName+" file didn't have the correct name.**", glob.COLOR_RED)
 		time.Sleep(errMsgDelay)
 	}
 	return nil
