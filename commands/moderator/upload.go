@@ -70,7 +70,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		switch tName {
 		case "save-game":
-			handleCustomSave(cmd, i, attachmentUrl, modSettingsData)
+			handleCustomSave(i, attachmentUrl, modSettingsData)
 		case "mod-list":
 			if foundModList && foundSave {
 				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**You do not need to include a mod-list.json when uploading a save-game, ignoring.**", glob.COLOR_ORANGE)
@@ -89,7 +89,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 }
 
-func handleCustomSave(cmd *glob.CommandData, i *discordgo.InteractionCreate, attachmentUrl string, modSettingsData []byte) {
+func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modSettingsData []byte) {
 	foundOption = true
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your save-game file is uploading.", glob.COLOR_GREEN)
 
