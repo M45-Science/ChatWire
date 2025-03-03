@@ -14,7 +14,7 @@ var FetchLock sync.Mutex
 
 const httpGetTimeout = time.Minute * 15
 
-func httpGet(url string) ([]byte, string, error) {
+func HttpGet(url string) ([]byte, string, error) {
 	// Set timeout
 	hClient := http.Client{
 		Timeout: httpGetTimeout,

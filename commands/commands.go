@@ -214,6 +214,20 @@ var cmds = []glob.CommandData{
 		Function: admin.GConfigServer, AdminOnly: true, PrimaryOnly: true},
 	/* MODERATOR COMMANDS ---------------- */
 	{AppCmd: glob.AppCmdData{
+		Name:        "upload",
+		Description: "upload a save-game, mod-list or mod-settings file.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []glob.OptionData{
+			{
+				Name:        "file",
+				Description: "select a file",
+				Type:        discordgo.ApplicationCommandOptionAttachment,
+				Required:    true,
+			},
+		},
+	},
+		Function: moderator.UploadFile, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command.",
 		Type:        discordgo.ChatApplicationCommand,
