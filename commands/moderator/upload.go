@@ -151,7 +151,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your "+modSettingsName+" has been loaded.", glob.COLOR_RED)
 			}
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Loading any save-game installed mods, please wait...**", glob.COLOR_GREEN)
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Downloading any save-game installed mods, please wait...**", glob.COLOR_GREEN)
 
 			if !support.SyncMods(saveFileName) {
 				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "mod-sync failed, attempting to continue.", glob.COLOR_RED)
