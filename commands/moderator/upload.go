@@ -21,6 +21,8 @@ import (
 )
 
 const modSettingsName = "mod-settings.dat"
+const MaxModSettingsSize = 1024 * 1024 //1MB
+const MaxModListSize = 1024 * 1024     //1MB
 
 var (
 	UploadLock                           sync.Mutex
@@ -141,6 +143,12 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	currentTime := time.Now().UTC().Local()
 	_ = os.Chtimes(saveFilePath, currentTime, currentTime)
 
+	if fact.HasZipBomb(saveFilePath) {
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**THE SAVE-GAME MAY CONTAIN A ZIP-BOMB ATTACK, ABORTING.**", glob.COLOR_RED)
+		os.Remove(saveFilePath)
+		return
+	}
+
 	if len(modSettingsData) > 0 {
 		modPath := cfg.Global.Paths.Folders.ServersRoot +
 			cfg.Global.Paths.ChatWirePrefix +
@@ -212,6 +220,10 @@ func handleModSettings(attachmentUrl string) []byte {
 		return nil
 	}
 	if name == modSettingsName {
+		if len(data) > MaxModSettingsSize {
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**The "+modSettingsName+" is too large, skipping... **", glob.COLOR_RED)
+			return nil
+		}
 		return data
 	} else {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "**Your "+modSettingsName+" file didn't have the correct name.**", glob.COLOR_RED)
