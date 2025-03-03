@@ -82,6 +82,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		switch tName {
 		case "save-game":
+
 			foundOption = true
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Your "+tName+" file is uploading.", glob.COLOR_GREEN)
 
@@ -95,6 +96,25 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 			sBuf := fmt.Sprintf("Downloaded %v: %v, Size: %v", tName, name, humanize.Bytes(uint64(len(data))))
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", sBuf, glob.COLOR_GREEN)
+
+			if fact.FactorioBooted || fact.FactIsRunning {
+
+				/* Turn off skip reset flag regardless of reset reason */
+				if cfg.Local.Options.SkipReset {
+					cfg.Local.Options.SkipReset = false
+					cfg.WriteLCfg()
+				}
+
+				cfg.Local.Options.SkipReset = false
+				fact.QueueReboot = false      //Skip queued reboot
+				fact.QueueFactReboot = false  //Skip queued reboot
+				fact.DoUpdateFactorio = false //Skip queued updates
+				cfg.WriteLCfg()
+
+				fact.SetAutolaunch(false, false)
+				fact.QuitFactorio("Server rebooting for new custom map.")
+				fact.WaitFactQuit(false)
+			}
 
 			saveFileName := fmt.Sprintf("upload-%v-%v.zip", i.Member.User.ID, time.Now().UnixMilli())
 			savePath := cfg.Global.Paths.Folders.ServersRoot +
@@ -110,7 +130,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 				time.Sleep(msgDelay)
 				continue
 			}
-			//Touch file
+			//Touch save-game
 			currentTime := time.Now().UTC().Local()
 			_ = os.Chtimes(saveFilePath, currentTime, currentTime)
 
@@ -136,24 +156,6 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			if !support.SyncMods(saveFileName) {
 				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "mod-sync failed, attempting to continue.", glob.COLOR_RED)
 				time.Sleep(msgDelay)
-			}
-			if fact.FactorioBooted || fact.FactIsRunning {
-
-				/* Turn off skip reset flag regardless of reset reason */
-				if cfg.Local.Options.SkipReset {
-					cfg.Local.Options.SkipReset = false
-					cfg.WriteLCfg()
-				}
-
-				cfg.Local.Options.SkipReset = false
-				fact.QueueReboot = false      //Skip queued reboot
-				fact.QueueFactReboot = false  //Skip queued reboot
-				fact.DoUpdateFactorio = false //Skip queued updates
-				cfg.WriteLCfg()
-
-				fact.SetAutolaunch(false, false)
-				fact.QuitFactorio("Server rebooting for new custom map.")
-				fact.WaitFactQuit(false)
 			}
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Checking for mod updates.", glob.COLOR_GREEN)
 			modupdate.CheckMods(true, true)
