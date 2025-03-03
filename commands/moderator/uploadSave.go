@@ -39,21 +39,23 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	stopWaitFact("Server rebooting to load a new custom map.")
 
 	saveFileName := fmt.Sprintf("upload-%v-%v.zip", i.Member.User.ID, time.Now().UnixMilli())
-	insertSaveGame(i, saveFileName, saveGameBytes)
+	if insertSaveGame(i, saveFileName, saveGameBytes) {
+		return
+	}
 
 	insertModSettings(modSettingsBytes)
 
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 		"**Downloading any "+saveGameName+" installed mods, PLEASE WAIT...**", glob.COLOR_GREEN)
-	modBuf := showSyncMods()
-	if modBuf != "" {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"Installed mods: "+modBuf, glob.COLOR_GREEN)
-	}
 	if !support.SyncMods(saveFileName) {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"mod-sync failed, attempting to continue.", glob.COLOR_RED)
 		time.Sleep(errMsgDelay)
+	}
+	modBuf := showSyncMods()
+	if modBuf != "" {
+		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+			"Installed mods: "+modBuf, glob.COLOR_GREEN)
 	}
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 		"Checking for mod updates.", glob.COLOR_GREEN)
