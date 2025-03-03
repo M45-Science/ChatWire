@@ -653,7 +653,6 @@ func ConfigSoftMod() {
 }
 
 func GetModFiles() []string {
-	// Check for zip bombs in mod files
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
