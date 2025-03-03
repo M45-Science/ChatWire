@@ -35,7 +35,7 @@ type modData struct {
 }
 
 func GetGameMods() (*modListData, error) {
-	return configGameMods(nil, false)
+	return ConfigGameMods(nil, false)
 }
 
 func SyncMods(optionalFileName string) bool {
@@ -73,7 +73,7 @@ func SyncMods(optionalFileName string) bool {
 	return false
 }
 
-func configGameMods(controlList []string, setState bool) (*modListData, error) {
+func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
