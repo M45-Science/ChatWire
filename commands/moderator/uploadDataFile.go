@@ -118,6 +118,8 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 func insertModSettings(modSettingsData []byte) bool {
 	if len(modSettingsData) > 0 {
 		if verifyModSettings(modSettingsData) {
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+				"Your "+modSettingsName+" contains invalid data.", glob.COLOR_RED)
 			return true
 		}
 
