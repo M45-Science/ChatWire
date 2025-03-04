@@ -91,8 +91,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 				buf = "No results."
 			}
 
-			//1 << 6 is ephemeral/private
-			respData := &discordgo.InteractionResponseData{Content: buf, Flags: 1 << 6}
+			respData := &discordgo.InteractionResponseData{Content: buf, Flags: discordgo.MessageFlagsEphemeral}
 			resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 			err := disc.DS.InteractionRespond(i.Interaction, resp)
 			if err != nil {

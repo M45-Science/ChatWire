@@ -83,8 +83,7 @@ func Register(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	var elist []*discordgo.MessageEmbed
 	elist = append(elist, &discordgo.MessageEmbed{Title: "READ CAREFULLY!", Description: buf})
 
-	//1 << 6 is ephemeral/private, don't use disc.EphemeralResponse (logged)
-	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
+	respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: discordgo.MessageFlagsEphemeral}
 	resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 	err := disc.DS.InteractionRespond(i.Interaction, resp)
 	if err != nil {

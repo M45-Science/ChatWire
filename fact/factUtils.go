@@ -761,7 +761,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Vote for 'new-map', 'skip-reset' or a specific save-game. (two votes needed):",
-					Flags:   1 << 6,
+					Flags:   discordgo.MessageFlagsEphemeral,
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
 							Components: []discordgo.MessageComponent{
@@ -781,7 +781,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Change Map:",
-					Flags:   1 << 6,
+					Flags:   discordgo.MessageFlagsEphemeral,
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
 							Components: []discordgo.MessageComponent{
@@ -889,8 +889,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 		var elist []*discordgo.MessageEmbed
 		elist = append(elist, &discordgo.MessageEmbed{Title: "Full map list", Description: mapList})
 
-		//1 << 6 is ephemeral/private, don't use disc.EphemeralResponse (logged)
-		respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: 1 << 6}
+		respData := &discordgo.InteractionResponseData{Embeds: elist, Flags: discordgo.MessageFlagsEphemeral}
 		resp := &discordgo.InteractionResponse{Type: discordgo.InteractionResponseChannelMessageWithSource, Data: respData}
 		err := disc.DS.InteractionRespond(i.Interaction, resp)
 		if err != nil {

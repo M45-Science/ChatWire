@@ -1,6 +1,8 @@
 module ChatWire
 
-go 1.20
+go 1.23.0
+
+toolchain go1.23.4
 
 require (
 	github.com/Clinet/discordgo-embed v0.0.0-20220113222025-bafe0c917646
@@ -15,6 +17,6 @@ require (
 
 require (
 	github.com/gorilla/websocket v1.5.3 // indirect
-	golang.org/x/crypto v0.32.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 )

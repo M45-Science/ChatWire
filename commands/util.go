@@ -103,7 +103,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 						fact.LogCMS(i.ChannelID, "("+i.Member.User.Username+" does not have Discord moderator permissions, and attempted to run the command: "+c.AppCmd.Name+")")
 						return
 					}
-				} else {
+				} else if !c.AdminOnly && !c.ModeratorOnly {
 					cwlog.DoLogCW("%s: command: %s", i.Member.User.Username, data.Name)
 					RunCommand(&c, i)
 					return
