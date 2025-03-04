@@ -240,6 +240,32 @@ var cmds = []glob.CommandData{
 	},
 		Function: moderator.UploadFile, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
+		Name:        "editmods",
+		Description: "enable/disable or add/remove factorio mods.",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []glob.OptionData{
+			{
+				Name:        "enable",
+				Description: "enable a mod by name",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+				Name:        "disable",
+				Description: "disable a mod by name",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+			{
+				Name:        "add",
+				Description: "add a mod by name",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
+		},
+	},
+		Function: moderator.EditMods, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command.",
 		Type:        discordgo.ChatApplicationCommand,
