@@ -25,7 +25,6 @@ import (
 func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	verbose := false
-	debug := false
 
 	buf := "```"
 
@@ -232,12 +231,5 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		buf = buf + fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", fact.NextResetUnix)
 	}
 
-	if debug && disc.CheckAdmin(i) {
-		buf = buf + debugStat(i)
-	}
 	disc.InteractionEphemeralResponse(i, "Server Info:", buf)
-}
-
-func debugStat(i *discordgo.InteractionCreate) string {
-	return ""
 }

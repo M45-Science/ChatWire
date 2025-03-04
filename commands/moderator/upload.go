@@ -1,6 +1,7 @@
 package moderator
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/factUpdater"
@@ -14,6 +15,17 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	//Just in case
 	UploadLock.Lock()
 	defer UploadLock.Unlock()
+
+	//Just in case
+	glob.ModLock.Lock()
+	defer glob.ModLock.Unlock()
+
+	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
+	RestoreSetting := cfg.Local.Options.ModUpdate
+	cfg.Local.Options.ModUpdate = false
+	defer func(rVal bool) {
+		cfg.Local.Options.ModUpdate = rVal
+	}(RestoreSetting)
 
 	disc.InteractionEphemeralResponse(i, "Status",
 		"Processing, please wait...")

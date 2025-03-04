@@ -3,11 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -23,7 +21,6 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
-	"ChatWire/webCTL"
 )
 
 func main() {
@@ -33,7 +30,6 @@ func main() {
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
-	htmlTest := flag.Bool("test", false, "(do not use) run dev-test code.")
 	flag.Parse()
 
 	/* Start cw logs */
@@ -71,10 +67,6 @@ func main() {
 
 	if cfg.Local.Options.AutoStart {
 		fact.SetAutolaunch(true, false)
-	}
-
-	if *htmlTest {
-		webCTL.Init()
 	}
 
 	/* Wait here for process signals */
@@ -299,16 +291,4 @@ func readConfigs() {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
 		os.Exit(1)
 	}
-}
-
-func getBinaryPath() string {
-	exePath, err := os.Executable()
-	if err != nil {
-		log.Fatal("Unable to executable info.")
-	}
-	exePath, err = filepath.Abs(exePath)
-	if err != nil {
-		log.Fatal("Unable to detect binary path.")
-	}
-	return filepath.Dir(exePath) + "/"
 }

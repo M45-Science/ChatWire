@@ -24,8 +24,6 @@ import (
 	"ChatWire/glob"
 )
 
-var dlcNames = []string{"elevated-rails", "quality", "space-age"}
-
 type modListData struct {
 	Mods []modData
 }
@@ -49,7 +47,6 @@ func SyncMods(optionalFileName string) bool {
 	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
 	RestoreSetting := cfg.Local.Options.ModUpdate
 	cfg.Local.Options.ModUpdate = false
-
 	defer func(rVal bool) {
 		cfg.Local.Options.ModUpdate = rVal
 	}(RestoreSetting)
