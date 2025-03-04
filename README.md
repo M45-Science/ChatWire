@@ -8,7 +8,7 @@
 
 ### Requirements:
 Linux<br>
-Golang 1.19+<br>
+Golang 1.23+<br>
 <br>
 ChatWire is currently approximately 10k lines of go code.
 Launching will create a default auto-config to get you started.<br>
