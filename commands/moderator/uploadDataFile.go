@@ -40,7 +40,7 @@ func handleModList(modListBytes []byte) {
 				"**Your "+constants.ModListName+" file failed while writing.**", glob.COLOR_RED)
 			return
 		}
-		listMods, err := support.ConfigGameMods(nil, false)
+		listMods, err := support.GetGameMods()
 		enabledCount := 0
 		disabledCount := 0
 		enabledModList := ""
