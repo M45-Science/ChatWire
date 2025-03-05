@@ -75,7 +75,7 @@ func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/" + "mod-list.json"
+		cfg.Global.Paths.Folders.Mods + "/" + constants.ModListName
 
 	data, err := os.ReadFile(path)
 	if err != nil {

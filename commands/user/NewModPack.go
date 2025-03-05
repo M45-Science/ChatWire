@@ -66,13 +66,13 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 			i, _ := f.Info()
 			fbytes += i.Size()
-		} else if strings.EqualFold(f.Name(), "mod-list.json") {
+		} else if strings.EqualFold(f.Name(), constants.ModListName) {
 			modsList = append(modsList, modPath+f.Name())
 			totalFiles++
 
 			i, _ := f.Info()
 			fbytes += i.Size()
-		} else if strings.EqualFold(f.Name(), "mod-settings.dat") {
+		} else if strings.EqualFold(f.Name(), constants.ModSettingsName) {
 			modsList = append(modsList, modPath+f.Name())
 			totalFiles++
 

@@ -20,6 +20,8 @@ const (
 	WhitelistName       = "server-whitelist.json"
 	AdminlistName       = "server-adminlist.json"
 	ServSettingsName    = "server-settings.json"
+	ModSettingsName     = "mod-settings.dat"
+	ModListName         = "mod-list.json"
 	ModsQueueFolder     = "mods-queue"
 	ModsFolder          = "mods"
 	RoleListFile        = "../RoleList.dat"

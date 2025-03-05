@@ -22,7 +22,7 @@ const maxModsAllowed = 150
 func handleModList(modListBytes []byte) {
 	if foundModList && foundSave {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"**You do not need to include a "+modListName+" when uploading a "+saveGameName+", ignoring.**", glob.COLOR_ORANGE)
+			"**You do not need to include a "+constants.ModListName+" when uploading a "+saveGameName+", ignoring.**", glob.COLOR_ORANGE)
 		time.Sleep(errMsgDelay)
 		return
 	}
@@ -32,12 +32,12 @@ func handleModList(modListBytes []byte) {
 			cfg.Local.Callsign + "/" +
 			cfg.Global.Paths.Folders.FactorioDir + "/" +
 			cfg.Global.Paths.Folders.Mods + "/"
-		modListPath := savePath + modListName
+		modListPath := savePath + constants.ModListName
 
 		err := os.WriteFile(modListPath, modListBytes, 0655)
 		if err != nil {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+modListName+" file failed while writing.**", glob.COLOR_RED)
+				"**Your "+constants.ModListName+" file failed while writing.**", glob.COLOR_RED)
 			return
 		}
 		listMods, err := support.ConfigGameMods(nil, false)
@@ -63,23 +63,23 @@ func handleModList(modListBytes []byte) {
 		totalCount := enabledCount + disabledCount
 		if err != nil || totalCount == 0 {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+modListName+" file contains invalid data or no mods!**", glob.COLOR_RED)
+				"**Your "+constants.ModListName+" file contains invalid data or no mods!**", glob.COLOR_RED)
 			return
 		}
 		if enabledCount > maxModsAllowed || disabledCount > maxModsAllowed {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+modListName+" file contains too many mods! ("+strconv.FormatInt(maxModsAllowed, 10)+")**", glob.COLOR_RED)
+				"**Your "+constants.ModListName+" file contains too many mods! ("+strconv.FormatInt(maxModsAllowed, 10)+")**", glob.COLOR_RED)
 			return
 		}
 		if enabledCount > 0 {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 				"Downloading: "+enabledModList, glob.COLOR_GREEN)
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Downloading the "+strconv.FormatInt(int64(enabledCount), 10)+" enabled mods in your "+modListName+" file, PLEASE WAIT...**", glob.COLOR_GREEN)
+				"**Downloading the "+strconv.FormatInt(int64(enabledCount), 10)+" enabled mods in your "+constants.ModListName+" file, PLEASE WAIT...**", glob.COLOR_GREEN)
 			modupdate.CheckMods(true, true)
 		} else {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+modListName+" file contains no enabled mods!**", glob.COLOR_RED)
+				"**Your "+constants.ModListName+" file contains no enabled mods!**", glob.COLOR_RED)
 			return
 		}
 	}
@@ -119,7 +119,7 @@ func insertModSettings(modSettingsData []byte) bool {
 	if len(modSettingsData) > 0 {
 		if verifyModSettings(modSettingsData) {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+modSettingsName+" contains invalid data, ABORTING.**", glob.COLOR_RED)
+				"**Your "+constants.ModSettingsName+" contains invalid data, ABORTING.**", glob.COLOR_RED)
 			return true
 		}
 
@@ -128,18 +128,18 @@ func insertModSettings(modSettingsData []byte) bool {
 			cfg.Local.Callsign + "/" +
 			cfg.Global.Paths.Folders.FactorioDir + "/" +
 			constants.ModsFolder + "/"
-		msPath := modPath + modSettingsName
+		msPath := modPath + constants.ModSettingsName
 		err := os.WriteFile(msPath, modSettingsData, 0644)
 		if err != nil {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+modSettingsName+" file failed while writing.**", glob.COLOR_RED)
+				"**Your "+constants.ModSettingsName+" file failed while writing.**", glob.COLOR_RED)
 			time.Sleep(errMsgDelay)
-			cwlog.DoLogCW("Upload: Write "+modSettingsName+": Error: %v", err)
+			cwlog.DoLogCW("Upload: Write "+constants.ModSettingsName+": Error: %v", err)
 			return true
 		}
 
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"Your "+modSettingsName+" has been loaded.", glob.COLOR_GREEN)
+			"Your "+constants.ModSettingsName+" has been loaded.", glob.COLOR_GREEN)
 	}
 	return false
 }

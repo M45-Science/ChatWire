@@ -10,8 +10,6 @@ import (
 )
 
 const (
-	modSettingsName    = "mod-settings.dat"
-	modListName        = "mod-list.json"
 	saveGameName       = "save-game"
 	MaxModSettingsSize = 1024 * 1024 //1MB
 	MaxModListSize     = 1024 * 1024 //1MB

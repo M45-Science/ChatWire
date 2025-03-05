@@ -123,7 +123,7 @@ func Map_reset(doReport bool) {
 		}
 	} else {
 		for _, f := range files {
-			if strings.EqualFold(f.Name(), "mod-settings.dat") {
+			if strings.EqualFold(f.Name(), constants.ModSettingsName) {
 				err := os.Rename(qPath+f.Name(), modPath+f.Name())
 				if err != nil {
 					cwlog.DoLogCW(err.Error())

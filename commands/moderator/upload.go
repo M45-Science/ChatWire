@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/factUpdater"
@@ -48,9 +49,9 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			foundSave = true
 		case "mod-list":
 			foundModList = true
-			modListBytes = handleDataFile(attachmentUrl, modListName)
+			modListBytes = handleDataFile(attachmentUrl, constants.ModListName)
 		case "mod-settings":
-			modSettingsBytes = handleDataFile(attachmentUrl, modSettingsName)
+			modSettingsBytes = handleDataFile(attachmentUrl, constants.ModSettingsName)
 		default:
 			continue
 		}
@@ -70,14 +71,14 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			handleCustomSave(i, attachmentUrl, modSettingsBytes)
 		case "mod-list":
 			if !foundSave {
-				stopWaitFact("Server rebooting to load a new a new " + modListName + " file.")
+				stopWaitFact("Server rebooting to load a new a new " + constants.ModListName + " file.")
 				handleModList(modListBytes)
 
 				doLaunch = true
 			}
 		case "mod-settings":
 			if !foundSave {
-				stopWaitFact("Server rebooting to load new " + modSettingsName + " file.")
+				stopWaitFact("Server rebooting to load new " + constants.ModSettingsName + " file.")
 				insertModSettings(modSettingsBytes)
 
 				doLaunch = true
