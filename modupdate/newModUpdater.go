@@ -51,14 +51,23 @@ func CheckModUpdates() {
 
 	//Check both lists, save any that are enabled so we have the mod version + details
 	var finalModList []modZipInfo
-	for _, jmod := range jsonFileList.Mods {
-		if IsBaseMod(jmod.Name) {
-			continue
-		}
-		for _, fmod := range fileModList {
-			if jmod.Name == fmod.Name && jmod.Enabled {
-				finalModList = append(finalModList, fmod)
+	found := false
+	for _, fmod := range fileModList {
+		//Check if the mod is disabled
+		for _, jmod := range jsonFileList.Mods {
+			if IsBaseMod(jmod.Name) {
+				continue
 			}
+
+			if jmod.Name == fmod.Name && jmod.Enabled {
+				found = true
+				finalModList = append(finalModList, fmod)
+				break
+			}
+		}
+		//Also include mods that are not in the mods-list.json (not disabled)
+		if !found {
+			finalModList = append(finalModList, fmod)
 		}
 	}
 
@@ -141,6 +150,27 @@ func IsBaseMod(modName string) bool {
 	return false
 }
 
+func GetGameMods() (*modListData, error) {
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Mods + "/" + constants.ModListName
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	serverMods := modListData{}
+	err = json.Unmarshal(data, &serverMods)
+	if err != nil {
+		return nil, err
+	}
+
+	return &serverMods, nil
+}
+
 func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -185,25 +215,4 @@ func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
 		cwlog.DoLogCW("Wrote " + constants.ModListName)
 	}
 	return &serverMods, err
-}
-
-func GetGameMods() (*modListData, error) {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/" + constants.ModListName
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	serverMods := modListData{}
-	err = json.Unmarshal(data, &serverMods)
-	if err != nil {
-		return nil, err
-	}
-
-	return &serverMods, nil
 }
