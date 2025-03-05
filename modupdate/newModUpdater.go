@@ -87,19 +87,21 @@ func GetInfoJSONFromZip(zipFilePath string) ([]byte, error) {
 
 	for _, file := range zipReader.File {
 		if strings.HasSuffix(file.Name, "info.json") {
-			f, err := file.Open()
-			if err != nil {
-				return nil, fmt.Errorf("GetInfoJSONFromZip: failed to open file in zip: %w", err)
-			}
-			defer f.Close()
+			if strings.Count(file.Name, "/") < 2 {
+				f, err := file.Open()
+				if err != nil {
+					return nil, fmt.Errorf("GetInfoJSONFromZip: failed to open file in zip: %w", err)
+				}
+				defer f.Close()
 
-			var buf bytes.Buffer
-			_, err = io.Copy(&buf, f)
-			if err != nil {
-				return nil, fmt.Errorf("GetInfoJSONFromZip: failed to read file content: %w", err)
-			}
+				var buf bytes.Buffer
+				_, err = io.Copy(&buf, f)
+				if err != nil {
+					return nil, fmt.Errorf("GetInfoJSONFromZip: failed to read file content: %w", err)
+				}
 
-			return buf.Bytes(), nil
+				return buf.Bytes(), nil
+			}
 		}
 	}
 
