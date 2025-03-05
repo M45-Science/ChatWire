@@ -23,13 +23,12 @@ import (
 	"ChatWire/glob"
 )
 
+const SyncModsTimeout = time.Minute * 15
+
 func SyncMods(optionalFileName string) bool {
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
-
-	glob.ModLock.Lock()
-	defer glob.ModLock.Unlock()
 
 	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
 	RestoreSetting := cfg.Local.Options.ModUpdate
@@ -44,17 +43,35 @@ func SyncMods(optionalFileName string) bool {
 	}
 	var tempargs []string = []string{"--sync-mods", fileName}
 
-	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+	// Create a context with the timeout
+	ctx, cancel := context.WithTimeout(context.Background(), SyncModsTimeout)
+	defer cancel() // Ensure the context is canceled to release resources
+
+	// Initialize the command with the context
+	cmd := exec.CommandContext(ctx, fact.GetFactorioBinary(), tempargs...)
+
+	// Execute the command and get the output
 	data, err := cmd.Output()
-	if err != nil {
-		cwlog.DoLogCW(string(data) + " : " + err.Error())
-	} else {
-		if strings.Contains(string(data), "Mods synced") {
-			cwlog.DoLogCW("Factorio mods synced with save-game.")
-			return true
-		}
+
+	// Check if the context deadline was exceeded (timeout)
+	if ctx.Err() == context.DeadlineExceeded {
+		cwlog.DoLogCW("SyncMods: Took too long, timed out after " + SyncModsTimeout.String() + ".")
+		return false
 	}
-	return false
+
+	// Check for other command errors
+	if err != nil {
+		cwlog.DoLogCW("SyncMods: Failed with error: " + err.Error())
+		return false
+	}
+
+	if strings.Contains(string(data), "Mods synced") {
+		cwlog.DoLogCW("Factorio mods synced with save-game.")
+		return true
+	} else {
+		cwlog.DoLogCW("SyncMods: Error: Unexpected output.")
+		return false
+	}
 }
 
 /* Find the newest save game */
