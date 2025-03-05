@@ -16,10 +16,6 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	UploadLock.Lock()
 	defer UploadLock.Unlock()
 
-	//Just in case
-	glob.ModLock.Lock()
-	defer glob.ModLock.Unlock()
-
 	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
 	RestoreSetting := cfg.Local.Options.ModUpdate
 	cfg.Local.Options.ModUpdate = false
