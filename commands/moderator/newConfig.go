@@ -11,6 +11,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
+	"ChatWire/util"
 )
 
 /* Change server settings */
@@ -31,7 +32,7 @@ func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 					}
 					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.BData)
 					if co.FactUpdateCommand != "" && fact.FactorioBooted {
-						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", support.BoolToString(*co.BData)))
+						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", util.BoolToString(*co.BData)))
 						buf = buf + " (live update)\n"
 					} else {
 						buf = buf + "\n"

@@ -3,6 +3,7 @@ package moderator
 import (
 	"ChatWire/cfg"
 	"ChatWire/fact"
+	"ChatWire/modupdate"
 	"ChatWire/support"
 	"strings"
 	"sync"
@@ -23,19 +24,10 @@ var (
 
 func showSyncMods() string {
 	buf := ""
-	modList, mErr := support.GetGameMods()
+	modList, mErr := modupdate.GetGameMods()
 	if mErr == nil && modList != nil {
 		for _, mod := range modList.Mods {
-			if strings.EqualFold(mod.Name, "base") {
-				continue
-			}
-			if strings.EqualFold(mod.Name, "elevated-rails") {
-				continue
-			}
-			if strings.EqualFold(mod.Name, "quality") {
-				continue
-			}
-			if strings.EqualFold(mod.Name, "space-age") {
+			if modupdate.IsBaseMod(mod.Name) {
 				continue
 			}
 			if !mod.Enabled {

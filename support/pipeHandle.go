@@ -20,6 +20,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/util"
 )
 
 /* Protect players from dumb mistakes with registration codes */
@@ -346,10 +347,10 @@ func handlePlayerJoin(input *handleData) bool {
 				/* Give people patreon/nitro tags in-game. */
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				if did != "" {
-					if IsPatreon(did) {
+					if util.IsPatreon(did) {
 						fact.WriteFact("/patreon %s", pname)
 					}
-					if IsNitro(did) {
+					if util.IsNitro(did) {
 						fact.WriteFact("/nitro %s", pname)
 					}
 				}

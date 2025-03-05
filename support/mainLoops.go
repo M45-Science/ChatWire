@@ -20,6 +20,7 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
+	"ChatWire/util"
 )
 
 func LinuxSetProcessGroup(cmd *exec.Cmd) {
@@ -497,7 +498,7 @@ func MainLoops() {
 	 * Check signal files
 	 *********************/
 	go func() {
-		clearOldSignals()
+		util.ClearOldSignals()
 		failureReported := false
 		for glob.ServerRunning {
 

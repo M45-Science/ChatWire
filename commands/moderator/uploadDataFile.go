@@ -8,12 +8,10 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
-	"ChatWire/support"
 	"bytes"
 	"encoding/binary"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -40,15 +38,12 @@ func handleModList(modListBytes []byte) {
 				"**Your "+constants.ModListName+" file failed while writing.**", glob.COLOR_RED)
 			return
 		}
-		listMods, err := support.GetGameMods()
+		listMods, err := modupdate.GetGameMods()
 		enabledCount := 0
 		disabledCount := 0
 		enabledModList := ""
 		for _, item := range listMods.Mods {
-			if !strings.EqualFold(item.Name, "base") &&
-				!strings.EqualFold(item.Name, "elevated-rails") &&
-				!strings.EqualFold(item.Name, "quality") &&
-				!strings.EqualFold(item.Name, "space-age") {
+			if !modupdate.IsBaseMod(item.Name) {
 				if item.Enabled {
 					enabledCount++
 					if enabledModList != "" {
