@@ -6,6 +6,7 @@ import (
 	"ChatWire/commands/admin"
 	"ChatWire/commands/moderator"
 	"ChatWire/commands/user"
+	"ChatWire/constants"
 	"ChatWire/glob"
 )
 
@@ -226,13 +227,13 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "mod-list",
-				Description: "select a mod-list.json file",
+				Description: "select a " + constants.ModListName + " file",
 				Type:        discordgo.ApplicationCommandOptionAttachment,
 				Required:    false,
 			},
 			{
 				Name:        "mod-settings",
-				Description: "select a mod-settings.dat file",
+				Description: "select a " + constants.ModSettingsName + " file",
 				Type:        discordgo.ApplicationCommandOptionAttachment,
 				Required:    false,
 			},

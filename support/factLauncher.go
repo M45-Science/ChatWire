@@ -32,10 +32,6 @@ type modData struct {
 	Enabled bool
 }
 
-func GetGameMods() (*modListData, error) {
-	return ConfigGameMods(nil, false)
-}
-
 func SyncMods(optionalFileName string) bool {
 
 	glob.FactorioLock.Lock()
@@ -111,9 +107,30 @@ func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
 		}
 
 		err = os.WriteFile(path, outbuf.Bytes(), 0644)
-		cwlog.DoLogCW("Wrote mod-list.json")
+		cwlog.DoLogCW("Wrote " + constants.ModListName)
 	}
 	return &serverMods, err
+}
+
+func GetGameMods() (*modListData, error) {
+	path := cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Mods + "/" + constants.ModListName
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	serverMods := modListData{}
+	err = json.Unmarshal(data, &serverMods)
+	if err != nil {
+		return nil, err
+	}
+
+	return &serverMods, nil
 }
 
 /* Find the newest save game */
