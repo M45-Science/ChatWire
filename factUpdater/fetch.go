@@ -17,7 +17,7 @@ var FetchLock sync.Mutex
 const httpDownloadTimeout = time.Minute * 15
 const httpGetTimeout = time.Second * 30
 
-func HttpGet(input string, quick bool) ([]byte, string, error) {
+func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 
 	timeout := httpDownloadTimeout
 	if quick {
@@ -30,7 +30,7 @@ func HttpGet(input string, quick bool) ([]byte, string, error) {
 	}
 
 	var URL string
-	if *glob.ProxyURL != "" {
+	if *glob.ProxyURL != "" && !noproxy {
 		proxy := strings.TrimSuffix(*glob.ProxyURL, "/")
 		URL = proxy + "/" + url.PathEscape(input)
 	} else {

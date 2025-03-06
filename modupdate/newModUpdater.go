@@ -137,7 +137,7 @@ func CheckModUpdates() (string, string, int) {
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
 		URL := fmt.Sprintf(modPortalURL, item.Name)
-		data, _, err := factUpdater.HttpGet(URL, true)
+		data, _, err := factUpdater.HttpGet(false, URL, true)
 		if err != nil {
 			cwlog.DoLogCW("Mod info request failed: " + err.Error())
 			continue
@@ -236,7 +236,7 @@ func CheckModUpdates() (string, string, int) {
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
 		cwlog.DoLogCW("Downloading: " + dl.Data.DownloadURL)
-		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
+		data, _, err := factUpdater.HttpGet(false, downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
 			continue

@@ -67,7 +67,7 @@ func quickLatest(info *InfoData) (*versionInts, error) {
 	FetchLock.Lock()
 	defer FetchLock.Unlock()
 
-	body, _, err := HttpGet(releaseURL, true)
+	body, _, err := HttpGet(false, releaseURL, true)
 	if err != nil {
 		return nil, errors.New("downloading release list failed: " + err.Error())
 	}

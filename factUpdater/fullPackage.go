@@ -34,7 +34,7 @@ func fullPackage(info *InfoData) error {
 	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updating Factorio", "Downloading...", glob.COLOR_CYAN)
 	cwlog.DoLogCW("Downloading: %v", url)
 
-	data, filename, err = HttpGet(url, false)
+	data, filename, err = HttpGet(false, url, false)
 	if err != nil {
 		return errors.New("Download failed: " + err.Error())
 	}
@@ -106,7 +106,7 @@ func fullPackage(info *InfoData) error {
 }
 
 func GetSHA256(filename string) (string, error) {
-	data, _, err := HttpGet(sha256URL, false)
+	data, _, err := HttpGet(false, sha256URL, false)
 	if err != nil {
 		emsg := "Unable to fetch SHA256 sum data: " + err.Error()
 		cwlog.DoLogCW(emsg)
