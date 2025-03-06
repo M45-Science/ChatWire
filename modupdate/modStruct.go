@@ -5,7 +5,7 @@ import "time"
 type downloadData struct {
 	Name,
 	OldFilename, Filename,
-	URL string
+	URL, Version string
 	Ready bool
 }
 

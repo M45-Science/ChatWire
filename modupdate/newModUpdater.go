@@ -140,7 +140,8 @@ func CheckModUpdates() (string, string, int) {
 							Name:        iItem.Name,
 							Filename:    newestVersionData.FileName,
 							URL:         newestVersionData.DownloadURL,
-							OldFilename: newestVersionData.oldFilename},
+							OldFilename: newestVersionData.oldFilename,
+							Version:     newestVersion},
 						downloadList)
 				}
 			}
@@ -155,16 +156,16 @@ func CheckModUpdates() (string, string, int) {
 		}
 		zipIJ := ModInfoRead("", data)
 		if zipIJ == nil {
-			cwlog.DoLogCW("Mod info invalid: " + err.Error())
+			cwlog.DoLogCW("Mod info invalid.")
 			continue
 		}
-		if zipIJ.Name != dl.Name {
-			cwlog.DoLogCW("Mod info failed verification: " + err.Error())
+		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Version {
+			cwlog.DoLogCW("Mod download failed verification.")
 			continue
 		}
 
 		if fact.BytesHasZipBomb(data) {
-			cwlog.DoLogCW("Download contains zip bomb: " + err.Error())
+			cwlog.DoLogCW("Download contains zip bomb.")
 			continue
 		}
 
