@@ -13,7 +13,7 @@ func CheckMods(force bool, reportNone bool) {
 	}
 
 	sMsg, lMsg, count := CheckModUpdates()
-	if count > 0 {
+	if count > 0 && sMsg != "" {
 		suffix := ""
 		if fact.NumPlayers > 0 {
 			suffix = " (will upgrade on reboot, when no players are online)"
