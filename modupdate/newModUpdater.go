@@ -124,6 +124,13 @@ func CheckModUpdates() (string, string, int) {
 					}
 				}
 				if found {
+					_, err = os.Stat(modPath + newestVersionData.FileName)
+					if !os.IsNotExist(err) {
+						//We don't need to download this, it already exists!
+						cwlog.DoLogCW("The mod update " + newestVersionData.FileName + " already exists, skipping.")
+						continue
+					}
+
 					if updatedCount != 0 {
 						longBuf = longBuf + ", "
 						shortBuf = shortBuf + ", "
