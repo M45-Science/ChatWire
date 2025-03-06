@@ -41,7 +41,8 @@ func fullPackage(info *InfoData) error {
 
 	cwlog.DoLogCW("Download of %v complete, verifying...", filename)
 
-	hash, err := GetSHA256(filename)
+	fakeName := fmt.Sprintf("factorio-%v_%v_%v.tar.xz", info.Build, strings.TrimSuffix(info.Distro, "64"), info.VersInt.IntToString())
+	hash, err := GetSHA256(fakeName)
 	if err != nil {
 		emsg := "unable to get SHA256 data: " + err.Error()
 		cwlog.DoLogCW(emsg)
