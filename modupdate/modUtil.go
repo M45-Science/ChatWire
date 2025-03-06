@@ -97,27 +97,29 @@ func GetModList() (modListData, error) {
 	return serverMods, nil
 }
 
-func ModInfoRead(modName string, rawJson []byte) *modZipInfo {
+func ModInfoRead(modName string, rawData []byte) *modZipInfo {
 	var err error
-	if rawJson == nil {
+	if rawData == nil {
 		path := cfg.Global.Paths.Folders.ServersRoot +
 			cfg.Global.Paths.ChatWirePrefix +
 			cfg.Local.Callsign + "/" +
 			cfg.Global.Paths.Folders.FactorioDir + "/" +
 			cfg.Global.Paths.Folders.Mods + "/" + modName
 
-		data, err := os.ReadFile(path)
+		rawData, err = os.ReadFile(path)
 		if err != nil {
 			cwlog.DoLogCW("ReadModZipInfo: " + err.Error())
 			return nil
 		}
-		rawJson = GetInfoJsonFromZip(data)
 	}
+	jsonData := GetInfoJsonFromZip(rawData)
 
 	modData := modZipInfo{}
-	err = json.Unmarshal(rawJson, &modData)
+	err = json.Unmarshal(jsonData, &modData)
 	if err != nil {
 		cwlog.DoLogCW("ReadModZipInfo: Unmarshal failure: " + err.Error())
+		buf := fmt.Sprintf("%v", modData)
+		cwlog.DoLogCW(buf)
 		return nil
 	}
 

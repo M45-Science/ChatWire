@@ -19,6 +19,7 @@ const (
 	modPortalURL   = "https://mods.factorio.com/api/mods/%v/full"
 	displayURL     = "https://mods.factorio.com/mod/%v/changelog"
 	downloadPrefix = "https://mods.factorio.com"
+	downloadSuffix = "?username=%v&token=%v"
 	OldModsDir     = "old"
 )
 
@@ -150,15 +151,12 @@ func CheckModUpdates() (string, string, int) {
 
 	for d, dl := range downloadList {
 		//Fetch the mod link
-		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.URL, false)
+		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
+		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.URL+dlSuffix, false)
 		if err != nil {
 			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
 			continue
 		}
-
-		/*
-		 * Must implement login with token to get the redirect
-		 */
 
 		//Read the mod info.json
 		zipIJ := ModInfoRead("", data)
