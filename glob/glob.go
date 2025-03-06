@@ -147,6 +147,7 @@ var (
 	DoDeregisterCommands *bool
 	LocalTestMode        *bool
 	NoAutoLaunch         *bool
+	ProxyURL             *string
 
 	/* Vote map */
 	VoteBox     VoteContainerData
