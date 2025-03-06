@@ -4,6 +4,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/fact"
 	"ChatWire/factUpdater"
 	"ChatWire/util"
 	"bytes"
@@ -39,7 +40,7 @@ func CheckModUpdates() (string, string, int) {
 	var fileModList []modZipInfo
 	for _, mod := range modList {
 		if strings.HasSuffix(mod.Name(), ".zip") {
-			modInfo := ReadModZipInfo(mod.Name())
+			modInfo := ModInfoRead(mod.Name(), nil)
 			if modInfo == nil {
 				continue
 			}
@@ -135,6 +136,7 @@ func CheckModUpdates() (string, string, int) {
 
 					downloadList = addDownload(
 						downloadData{
+							Name:        iItem.Name,
 							Filename:    newestVersionData.FileName,
 							URL:         newestVersionData.DownloadURL,
 							OldFilename: newestVersionData.oldFilename},
@@ -144,28 +146,45 @@ func CheckModUpdates() (string, string, int) {
 		}
 	}
 
-	for _, dl := range downloadList {
+	for d, dl := range downloadList {
 		data, _, err := factUpdater.HttpGet(dl.URL, false)
 		if err != nil {
-			//handle download failure here
+			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
 			continue
 		}
+		zipIJ := ModInfoRead("", data)
+		if zipIJ == nil {
+			cwlog.DoLogCW("Mod info invalid: " + err.Error())
+			continue
+		}
+		if zipIJ.Name != dl.Name {
+			cwlog.DoLogCW("Mod info failed verification: " + err.Error())
+			continue
+		}
+
+		if fact.BytesHasZipBomb(data) {
+			cwlog.DoLogCW("Download contains zip bomb: " + err.Error())
+			continue
+		}
+
 		err = os.WriteFile(modPath+dl.Filename+".tmp", data, 0755)
 		if err != nil {
-			cwlog.DoLogCW("Unable to write to mods directory: " + dl.Filename)
+			cwlog.DoLogCW("Unable to write to mods directory: " + err.Error())
 			continue
 		}
 		err = os.Rename(modPath+dl.Filename+".tmp", modPath+dl.Filename)
 		if err != nil {
-			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + dl.Filename)
+			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + err.Error())
 			continue
 		}
 
 		err = os.Rename(modPath+dl.OldFilename, modPath+OldModsDir+"/"+dl.OldFilename)
 		if err != nil {
-			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + dl.Filename)
+			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + err.Error())
 			continue
 		}
+
+		downloadList[d].Ready = true
 	}
 
 	if updatedCount == 0 && len(installedMods) > 0 {

@@ -86,7 +86,7 @@ func insertSaveGame(i *discordgo.InteractionCreate, saveFileName string, saveGam
 
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 		"Checking "+saveGameName+".", glob.COLOR_GREEN)
-	if fact.HasZipBomb(saveFilePath) {
+	if fact.FileHasZipBomb(saveFilePath) {
 		msg := "**THE " + strings.ToUpper(saveGameName) + " MAY CONTAIN A ZIP-BOMB ATTACK, ABORTING. UPLOADED BY: ID: " + i.Member.User.ID + " USERNAME: " + i.Member.User.Username + " INCIDENT LOGGED. **"
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", msg, glob.COLOR_RED)
 		cwlog.DoLogCW(msg)

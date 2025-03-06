@@ -97,21 +97,24 @@ func GetModList() (modListData, error) {
 	return serverMods, nil
 }
 
-func ReadModZipInfo(modName string) *modZipInfo {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/" + modName
+func ModInfoRead(modName string, raw []byte) *modZipInfo {
+	var err error
+	if raw == nil {
+		path := cfg.Global.Paths.Folders.ServersRoot +
+			cfg.Global.Paths.ChatWirePrefix +
+			cfg.Local.Callsign + "/" +
+			cfg.Global.Paths.Folders.FactorioDir + "/" +
+			cfg.Global.Paths.Folders.Mods + "/" + modName
 
-	data, err := GetInfoJSONFromZip(path)
-	if err != nil {
-		cwlog.DoLogCW("ReadModZipInfo: " + err.Error())
-		return nil
+		raw, err = ModInfoReadFile(path)
+		if err != nil {
+			cwlog.DoLogCW("ReadModZipInfo: " + err.Error())
+			return nil
+		}
 	}
 
 	modData := modZipInfo{}
-	err = json.Unmarshal(data, &modData)
+	err = json.Unmarshal(raw, &modData)
 	if err != nil {
 		cwlog.DoLogCW("ReadModZipInfo: Unmarshal failure: " + err.Error())
 		return nil
@@ -119,33 +122,45 @@ func ReadModZipInfo(modName string) *modZipInfo {
 
 	return &modData
 }
-func GetInfoJSONFromZip(zipFilePath string) ([]byte, error) {
-	// Open the zip file
-	zipReader, err := zip.OpenReader(zipFilePath)
+
+func ModInfoReadFile(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("GetInfoJSONFromZip:  to open zip file: %w", err)
+		return nil, err
 	}
-	defer zipReader.Close()
+
+	return GetInfoJsonFromZip(data), nil
+}
+
+func GetInfoJsonFromZip(data []byte) []byte {
+	// Create a reader from the byte array
+	byteReader := bytes.NewReader(data)
+
+	// Create a zip reader
+	zipReader, err := zip.NewReader(byteReader, int64(len(data)))
+	if err != nil {
+		return nil
+	}
 
 	for _, file := range zipReader.File {
 		if strings.HasSuffix(file.Name, "info.json") {
 			if strings.Count(file.Name, "/") < 2 {
 				f, err := file.Open()
 				if err != nil {
-					return nil, fmt.Errorf("GetInfoJSONFromZip: failed to open file in zip: %w", err)
+					return nil
 				}
 				defer f.Close()
 
 				var buf bytes.Buffer
 				_, err = io.Copy(&buf, f)
 				if err != nil {
-					return nil, fmt.Errorf("GetInfoJSONFromZip: failed to read file content: %w", err)
+					return nil
 				}
 
-				return buf.Bytes(), nil
+				return buf.Bytes()
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("GetInfoJSONFromZip: info.json not found in: " + zipFilePath)
+	return nil
 }

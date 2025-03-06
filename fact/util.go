@@ -2,6 +2,7 @@ package fact
 
 import (
 	"archive/zip"
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -18,17 +19,29 @@ import (
 const MaxZipSize = 1024 * 1024 * 1024 //1gb
 const maxDiscordMsgLen = 2000
 
-func HasZipBomb(path string) bool {
-	zip, err := zip.OpenReader(path)
-	if err != nil || zip == nil {
-		cwlog.DoLogCW("ZipBomb: Unable to open zip file: " + path)
+func FileHasZipBomb(path string) bool {
+	//Open file
+	data, err := os.ReadFile(path)
+	if err != nil {
 		return false
 	}
-	defer zip.Close()
+
+	return BytesHasZipBomb(data)
+}
+
+func BytesHasZipBomb(data []byte) bool {
+	// Create a reader from the byte array
+	byteReader := bytes.NewReader(data)
+
+	// Create a zip reader
+	zipReader, err := zip.NewReader(byteReader, int64(len(data)))
+	if err != nil {
+		return false
+	}
 
 	var totalSize uint64
 
-	for _, file := range zip.File {
+	for _, file := range zipReader.File {
 		size := file.UncompressedSize64
 		if size > MaxZipSize {
 			return true
