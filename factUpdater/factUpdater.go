@@ -30,8 +30,6 @@ func GetFactorioVersion(info *InfoData) error {
 
 	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
 
-	//cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-
 	// Run the command and capture its output
 	output, err := cmd.Output()
 	if err != nil {

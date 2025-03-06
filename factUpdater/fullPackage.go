@@ -12,8 +12,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 const (
@@ -38,17 +36,14 @@ func fullPackage(info *InfoData) error {
 
 	data, filename, err = HttpGet(url, false)
 	if err != nil {
-		embed := &discordgo.MessageEmbed{Title: "ERROR:", Description: "Downloading Factorio failed."}
-		disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, embed)
-		return errors.New("failed to get response: " + err.Error())
+		return errors.New("Download failed: " + err.Error())
 	}
 
 	cwlog.DoLogCW("Download of %v complete, verifying...", filename)
-	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updating Factorio", "Verifying update.", glob.COLOR_CYAN)
 
 	hash, err := GetSHA256(filename)
 	if err != nil {
-		emsg := "unable to fetch SHA256 data." + err.Error()
+		emsg := "unable to get SHA256 data: " + err.Error()
 		cwlog.DoLogCW(emsg)
 		return errors.New(emsg)
 	}
@@ -73,6 +68,7 @@ func fullPackage(info *InfoData) error {
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
 	fact.DoUpdateFactorio = true
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Downloading Factorio", "Download verified!", glob.COLOR_CYAN)
 	fact.WaitFactQuit(true)
 
 	err = os.RemoveAll(factPath + "/factorio/bin")
@@ -101,9 +97,8 @@ func fullPackage(info *InfoData) error {
 		return fmt.Errorf("installing Factorio to '%v' failed: %v", factPath, err.Error())
 	}
 
-	fact.FactorioVersion = info.Version
+	fact.FactorioVersion = info.VersInt.IntToString()
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
-	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Complete", "Factorio has been installed!", glob.COLOR_CYAN)
 	fact.DoUpdateFactorio = false
 
 	return nil
