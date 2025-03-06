@@ -2,6 +2,7 @@ package factUpdater
 
 import (
 	"ChatWire/constants"
+	"ChatWire/glob"
 	"errors"
 	"io"
 	"net/http"
@@ -26,6 +27,14 @@ func HttpGet(url string, quick bool) ([]byte, string, error) {
 	hClient := http.Client{
 		Timeout: timeout,
 	}
+
+	if *glob.ProxyURL != "" {
+		stripped := strings.TrimPrefix(url, "https://")
+		stripped = strings.TrimPrefix(stripped, "http://")
+		proxy := strings.TrimSuffix(*glob.ProxyURL, "/")
+		url = proxy + "/" + stripped
+	}
+
 	//HTTP GET
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
