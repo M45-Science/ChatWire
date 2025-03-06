@@ -2,6 +2,10 @@ package modupdate
 
 import "time"
 
+type downloadData struct {
+	OldFilename, Filename, URL string
+}
+
 type modListData struct {
 	Mods []modData
 }
@@ -35,6 +39,9 @@ type modPortalFullData struct {
 	Thumbnail         string        `json:"thumbnail"`
 	Title             string        `json:"title"`
 	UpdatedAt         time.Time     `json:"updated_at"`
+
+	//Local
+	oldFilename string `json:"-"`
 }
 
 type ModImages struct {
@@ -63,6 +70,9 @@ type ModReleases struct {
 	ReleasedAt  time.Time   `json:"released_at"`
 	Sha1        string      `json:"sha1"`
 	Version     string      `json:"version"`
+
+	//Local
+	oldFilename string `json:"-"`
 }
 
 type modZipInfo struct {
@@ -75,4 +85,7 @@ type modZipInfo struct {
 	FactorioVersion     string   `json:"factorio_version"`
 	Dependencies        []string `json:"dependencies"`
 	SpaceTravelRequired bool     `json:"space_travel_required"`
+
+	//Local
+	filename string `json:"-"`
 }

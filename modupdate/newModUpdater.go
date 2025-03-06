@@ -17,9 +17,11 @@ import (
 const (
 	modPortalURL = "https://mods.factorio.com/api/mods/%v/full"
 	displayURL   = "https://mods.factorio.com/mod/%v/changelog"
+	OldModsDir   = "old"
 )
 
 func CheckModUpdates() (string, string, int) {
+	//Mod folder path
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -41,6 +43,8 @@ func CheckModUpdates() (string, string, int) {
 			if modInfo == nil {
 				continue
 			}
+			//Save filename
+			modInfo.filename = mod.Name()
 			fileModList = append(fileModList, *modInfo)
 		}
 	}
@@ -70,11 +74,13 @@ func CheckModUpdates() (string, string, int) {
 		}
 	}
 
+	//Check if we need to proceed
 	if len(installedMods) == 0 {
 		emsg := "The game has no installed mods to update."
 		return emsg, emsg, 0
 	}
 
+	//Fetch mod portal data
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
 		URL := fmt.Sprintf(modPortalURL, item.Name)
@@ -89,9 +95,13 @@ func CheckModUpdates() (string, string, int) {
 			cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
 			continue
 		}
+		newInfo.oldFilename = item.Name
 		detailList = append(detailList, newInfo)
 	}
 
+	var downloadList []downloadData
+
+	//Check mod postal data against mod list, find upgrades
 	updatedCount := 0
 	var shortBuf, longBuf string
 	for _, dItem := range detailList {
@@ -99,6 +109,7 @@ func CheckModUpdates() (string, string, int) {
 			if dItem.Name == iItem.Name {
 				found = false
 				newestVersion := iItem.Version
+				newestVersionData := ModReleases{}
 				for _, release := range dItem.Releases {
 					isNewer, err := newerVersion(newestVersion, release.Version)
 					if err != nil {
@@ -106,6 +117,7 @@ func CheckModUpdates() (string, string, int) {
 					}
 					if isNewer {
 						newestVersion = release.Version
+						newestVersionData = release
 						found = true
 					}
 				}
@@ -120,8 +132,39 @@ func CheckModUpdates() (string, string, int) {
 					longBuf = longBuf + "[" + iItem.Title + "-" + newestVersion + "](" + mURL + ")"
 
 					shortBuf = shortBuf + iItem.Name + "-" + newestVersion
+
+					downloadList = addDownload(
+						downloadData{
+							Filename:    newestVersionData.FileName,
+							URL:         newestVersionData.DownloadURL,
+							OldFilename: newestVersionData.oldFilename},
+						downloadList)
 				}
 			}
+		}
+	}
+
+	for _, dl := range downloadList {
+		data, _, err := factUpdater.HttpGet(dl.URL, false)
+		if err != nil {
+			//handle download failure here
+			continue
+		}
+		err = os.WriteFile(modPath+dl.Filename+".tmp", data, 0755)
+		if err != nil {
+			cwlog.DoLogCW("Unable to write to mods directory: " + dl.Filename)
+			continue
+		}
+		err = os.Rename(modPath+dl.Filename+".tmp", modPath+dl.Filename)
+		if err != nil {
+			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + dl.Filename)
+			continue
+		}
+
+		err = os.Rename(modPath+dl.OldFilename, modPath+OldModsDir+"/"+dl.OldFilename)
+		if err != nil {
+			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + dl.Filename)
+			continue
 		}
 	}
 
@@ -134,6 +177,17 @@ func CheckModUpdates() (string, string, int) {
 		emsg := "There are no installed mods to update."
 		return emsg, emsg, 0
 	}
+}
+
+func addDownload(input downloadData, list []downloadData) []downloadData {
+	for _, item := range list {
+		if item.Filename == input.Filename && item.URL == input.URL {
+			//Already exists, just return the list
+			return list
+		}
+	}
+
+	return append(list, input)
 }
 
 func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
