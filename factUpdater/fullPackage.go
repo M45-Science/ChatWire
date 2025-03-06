@@ -84,8 +84,10 @@ func fullPackage(info *InfoData) error {
 		return fmt.Errorf("Installing Factorio to '%v' failed: %v", factPath, err.Error())
 	}
 
+	fact.FactorioVersion = info.Version
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
 	fact.DoUpdateFactorio = false
+
 	return nil
 }
 

@@ -29,7 +29,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false, false
 	}
 
-	err := getFactorioVersion(info)
+	err := GetFactorioVersion(info)
 	if err != nil {
 		return info, fmt.Sprintf("Unable to get Factorio version: %v", err.Error()), true, false
 	}

@@ -24,6 +24,7 @@ const (
 	ModListName         = "mod-list.json"
 	ModsQueueFolder     = "mods-queue"
 	ModsFolder          = "mods"
+	OldModsDir          = "old"
 	RoleListFile        = "../RoleList.dat"
 	VoteFile            = "votes.dat"
 	ArchiveFolderSuffix = " maps"

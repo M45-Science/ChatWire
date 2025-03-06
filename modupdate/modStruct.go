@@ -3,10 +3,9 @@ package modupdate
 import "time"
 
 type downloadData struct {
-	Name, Title,
-	OldFilename, Filename,
-	URL, Version string
-	Ready bool
+	Name, Title, OldFilename string
+	Data                     ModReleases
+	Complete                 bool
 }
 
 type modListData struct {

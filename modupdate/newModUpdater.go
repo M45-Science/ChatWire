@@ -20,11 +20,16 @@ const (
 	displayURL     = "https://mods.factorio.com/mod/%v/changelog"
 	downloadPrefix = "https://mods.factorio.com"
 	downloadSuffix = "?username=%v&token=%v"
-	OldModsDir     = "old"
 )
 
 // Holy shit, this must be split up into smaller functions
 func CheckModUpdates() (string, string, int) {
+
+	if fact.FactorioVersion == constants.Unknown {
+		cwlog.DoLogCW("CheckModUpdates: Factroio version unknown, aborting.")
+		return "", "", 0
+	}
+
 	//Mod folder path
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -118,6 +123,25 @@ func CheckModUpdates() (string, string, int) {
 						continue
 					}
 					if isNewer {
+						//Check factorio version needed before adding
+						for _, dep := range newestVersionData.InfoJSON.Dependencies {
+							parts := strings.Split(dep, " ")
+							numParts := len(parts)
+							if strings.HasPrefix(dep, "base") {
+								if numParts == 3 {
+									tooNew, err := newerVersion(parts[2], fact.FactorioVersion)
+									if err != nil {
+										cwlog.DoLogCW("Unable to parse version: " + err.Error())
+										continue
+									}
+									if !tooNew {
+										cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a newer version of Factorio(" + parts[2] + "), skipping.")
+										continue
+									}
+								}
+							}
+						}
+
 						newestVersion = release.Version
 						newestVersionData = release
 						found = true
@@ -141,10 +165,8 @@ func CheckModUpdates() (string, string, int) {
 						downloadData{
 							Name:        iItem.Name,
 							Title:       iItem.Title,
-							Filename:    newestVersionData.FileName,
-							URL:         newestVersionData.DownloadURL,
 							OldFilename: iItem.oldFilename,
-							Version:     newestVersion},
+							Data:        newestVersionData},
 						downloadList)
 				}
 			}
@@ -154,7 +176,7 @@ func CheckModUpdates() (string, string, int) {
 	for d, dl := range downloadList {
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
-		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.URL+dlSuffix, false)
+		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
 			continue
@@ -168,7 +190,7 @@ func CheckModUpdates() (string, string, int) {
 		}
 
 		//Check if the mod info.json looks correct
-		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Version {
+		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Data.Version {
 			cwlog.DoLogCW("Mod download failed verification.")
 			continue
 		}
@@ -180,23 +202,23 @@ func CheckModUpdates() (string, string, int) {
 		}
 
 		//Write the new mod file as a temp file
-		err = os.WriteFile(modPath+dl.Filename+".tmp", data, 0755)
+		err = os.WriteFile(modPath+dl.Data.FileName+".tmp", data, 0755)
 		if err != nil {
 			cwlog.DoLogCW("Unable to write to mods directory: " + err.Error())
 			continue
 		}
 
 		//Rename the temp file to the final name
-		err = os.Rename(modPath+dl.Filename+".tmp", modPath+dl.Filename)
+		err = os.Rename(modPath+dl.Data.FileName+".tmp", modPath+dl.Data.FileName)
 		if err != nil {
 			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + err.Error())
 			continue
 		}
 
 		//Create old mods directory if needed
-		_, err = os.Stat(modPath + OldModsDir)
+		_, err = os.Stat(modPath + constants.OldModsDir)
 		if os.IsNotExist(err) {
-			err = os.Mkdir(modPath+OldModsDir, os.ModePerm)
+			err = os.Mkdir(modPath+constants.OldModsDir, os.ModePerm)
 			if err != nil {
 				cwlog.DoLogCW("Unable to create old mods directory. " + err.Error())
 				continue
@@ -205,20 +227,20 @@ func CheckModUpdates() (string, string, int) {
 
 		//Move old mod file into old directory
 		if dl.OldFilename != "" {
-			err = os.Rename(modPath+dl.OldFilename, modPath+OldModsDir+"/"+dl.OldFilename)
+			err = os.Rename(modPath+dl.OldFilename, modPath+constants.OldModsDir+"/"+dl.OldFilename)
 			if err != nil {
 				cwlog.DoLogCW("Unable to move old mod file in mods directory: " + err.Error())
 				continue
 			}
 		} else {
-			cwlog.DoLogCW("No old file found for: " + dl.Filename)
+			cwlog.DoLogCW("No old file found for: " + dl.Data.FileName)
 		}
 
-		downloadList[d].Ready = true
+		downloadList[d].Complete = true
 
 		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
-		longBuf = longBuf + "[" + dl.Title + "-" + dl.Version + "](" + mURL + ")"
-		shortBuf = shortBuf + dl.Name + "-" + dl.Version
+		longBuf = longBuf + "[" + dl.Title + "-" + dl.Data.Version + "](" + mURL + ")"
+		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 	}
 
 	if updatedCount == 0 && len(installedMods) > 0 {
@@ -234,7 +256,7 @@ func CheckModUpdates() (string, string, int) {
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
 	for _, item := range list {
-		if item.Filename == input.Filename && item.URL == input.URL {
+		if item.Data.FileName == input.Data.FileName && item.Data.DownloadURL == input.Data.DownloadURL {
 			//Already exists, just return the list
 			return list
 		}

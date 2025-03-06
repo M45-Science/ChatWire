@@ -41,6 +41,7 @@ func SyncMods(optionalFileName string) bool {
 	if optionalFileName != "" {
 		fileName = optionalFileName
 	}
+
 	var tempargs []string = []string{"--sync-mods", fileName}
 
 	// Create a context with the timeout
@@ -61,8 +62,8 @@ func SyncMods(optionalFileName string) bool {
 
 	// Check for other command errors
 	if err != nil {
-		cwlog.DoLogCW("SyncMods: Failed with error: " + err.Error())
-		return false
+		cwlog.DoLogCW("SyncMods: Error: " + err.Error())
+		//return false
 	}
 
 	if strings.Contains(string(data), "Mods synced") {

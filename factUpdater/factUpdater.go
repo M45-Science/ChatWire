@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func getFactorioVersion(info *InfoData) error {
+func GetFactorioVersion(info *InfoData) error {
 
 	if info.Version != "" {
 		return nil

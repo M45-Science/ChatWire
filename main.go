@@ -19,6 +19,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/support"
 )
@@ -65,8 +66,14 @@ func main() {
 	go support.MainLoops()
 	go support.HandleChat()
 
-	if cfg.Local.Options.AutoStart {
+	//If autolaunch is off, get current factorio version
+	if cfg.Local.Options.AutoStart && !*glob.NoAutoLaunch {
 		fact.SetAutolaunch(true, false)
+	} else {
+		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
+		factUpdater.GetFactorioVersion(info)
+		fact.FactorioVersion = info.VersInt.IntToString()
+		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
 	}
 
 	/* Wait here for process signals */

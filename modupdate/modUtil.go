@@ -54,7 +54,7 @@ func versionToInt(data string) (intVersion, error) {
 
 	var intOut intVersion
 	if len(parts) != 3 {
-		return intVersion{}, fmt.Errorf("malformed version string")
+		return intVersion{}, fmt.Errorf("malformed version string: " + data)
 	}
 	for p, part := range parts {
 		val, err := strconv.ParseInt(part, 10, 64)
