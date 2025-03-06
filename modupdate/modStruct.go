@@ -2,6 +2,15 @@ package modupdate
 
 import "time"
 
+const (
+	EO_ERROR = iota
+	EO_LESS
+	EO_LESSEQ
+	EO_EQUAL
+	EO_GREATEREQ
+	EO_GREATER
+)
+
 type downloadData struct {
 	Name, Title, OldFilename string
 	Data                     ModReleases

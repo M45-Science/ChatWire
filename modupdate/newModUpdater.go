@@ -88,6 +88,51 @@ func CheckModUpdates() (string, string, int) {
 		return emsg, emsg, 0
 	}
 
+	//Satisfy deps
+	for _, item := range installedMods {
+		for _, dep := range item.Dependencies {
+			//Skip base mods
+			if IsBaseMod(dep) {
+				continue
+			}
+
+			//Skip optional deps
+			if strings.HasPrefix(dep, "?") || strings.HasPrefix(dep, "(?)") {
+				continue
+			}
+
+			//Remove order flag
+			dep = strings.TrimPrefix(dep, "~")
+
+			//Split into parts for version equality operators
+			depParts := strings.Split(dep, " ")
+			numDepParts := len(depParts)
+
+			depStr := dep
+			depVers := ""
+			if numDepParts == 3 {
+				depStr = depParts[0]
+				depVers = depParts[2]
+			}
+			if depVers != "" {
+				//placeholder
+			}
+
+			depFound := false
+			for _, item := range installedMods {
+				if item.Name == depStr {
+					depFound = true
+					break
+				}
+			}
+			if !depFound {
+				cwlog.DoLogCW("Need dep: " + depStr)
+				//Maybe just sync mods for ease?
+			}
+		}
+
+	}
+
 	//Fetch mod portal data
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
@@ -118,30 +163,44 @@ func CheckModUpdates() (string, string, int) {
 				newestVersion := iItem.Version
 				newestVersionData := ModReleases{}
 				for _, release := range dItem.Releases {
-					isNewer, err := newerVersion(newestVersion, release.Version)
+					//Check if this release is newer
+					isNewer, err := checkVersion(EO_GREATER, newestVersion, release.Version)
 					if err != nil {
 						continue
 					}
+					//Check if factorio is new enough
 					if isNewer {
-						//Check factorio version needed before adding
+						factGood, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
+						if err != nil {
+							cwlog.DoLogCW("Unable to parse version: " + err.Error())
+							continue
+						}
+						if !factGood {
+							cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
+							continue
+						}
+						//Check base mod version needed
 						for _, dep := range newestVersionData.InfoJSON.Dependencies {
 							parts := strings.Split(dep, " ")
 							numParts := len(parts)
 							if strings.HasPrefix(dep, "base") {
+								//If they specify a base version
 								if numParts == 3 {
-									tooNew, err := newerVersion(parts[2], fact.FactorioVersion)
+									eq := ParseEquality(parts[1])
+									baseGood, err := checkVersion(eq, parts[2], fact.FactorioVersion)
 									if err != nil {
 										cwlog.DoLogCW("Unable to parse version: " + err.Error())
 										continue
 									}
-									if !tooNew {
-										cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a newer version of Factorio(" + parts[2] + "), skipping.")
+									if !baseGood {
+										cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a different version of base (" + parts[2] + "), skipping.")
 										continue
 									}
 								}
 							}
 						}
 
+						//Save this release
 						newestVersion = release.Version
 						newestVersionData = release
 						found = true
@@ -179,6 +238,11 @@ func CheckModUpdates() (string, string, int) {
 		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
+			continue
+		}
+
+		if !CheckSHA1(data, dl.Data.Sha1) {
+			cwlog.DoLogCW("Mod download has an invalid hash.")
 			continue
 		}
 

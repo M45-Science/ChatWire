@@ -6,6 +6,8 @@ import (
 	"ChatWire/cwlog"
 	"archive/zip"
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,7 +16,7 @@ import (
 	"strings"
 )
 
-func newerVersion(currentStr, remoteStr string) (bool, error) {
+func checkVersion(eo int, currentStr, remoteStr string) (bool, error) {
 
 	cInt, err := versionToInt(currentStr)
 	if err != nil {
@@ -25,35 +27,54 @@ func newerVersion(currentStr, remoteStr string) (bool, error) {
 		return false, err
 	}
 
-	//Major
-	if rInt.parts[0] > cInt.parts[0] {
-		return true, nil
-	} else if rInt.parts[0] < cInt.parts[0] {
-		return false, nil
+	// Compare major versions
+	if rInt.parts[0] != cInt.parts[0] {
+		return compareVersions(eo, cInt.parts[0], rInt.parts[0])
 	}
 
-	//Minor
-	if rInt.parts[1] > cInt.parts[1] {
-		return true, nil
-	} else if rInt.parts[1] < cInt.parts[1] {
-		return false, nil
+	// Compare minor versions
+	if rInt.parts[1] != cInt.parts[1] {
+		return compareVersions(eo, cInt.parts[1], rInt.parts[1])
 	}
 
-	//Patch
-	if rInt.parts[2] > cInt.parts[2] {
-		return true, nil
-	} else if rInt.parts[1] < cInt.parts[1] {
-		return false, nil
+	// Compare patch versions
+	if rInt.parts[2] != cInt.parts[2] {
+		return compareVersions(eo, cInt.parts[2], rInt.parts[2])
 	}
 
-	return false, nil
+	// If they are equal
+	return compareVersions(eo, 0, 0)
+}
+
+// Helper function to compare based on eo
+func compareVersions(eo, current, remote int) (bool, error) {
+	switch eo {
+	case EO_LESS:
+		return current < remote, nil
+	case EO_LESSEQ:
+		return current <= remote, nil
+	case EO_EQUAL:
+		return current == remote, nil
+	case EO_GREATEREQ:
+		return current >= remote, nil
+	case EO_GREATER:
+		return current > remote, nil
+	default:
+		return false, fmt.Errorf("invalid comparison operation")
+	}
 }
 
 func versionToInt(data string) (intVersion, error) {
 	parts := strings.Split(data, ".")
+	numParts := len(parts)
+	//For 2 digit versions
+	if numParts == 2 {
+		data = data + ".0"
+		numParts++
+	}
 
 	var intOut intVersion
-	if len(parts) != 3 {
+	if numParts != 3 {
 		return intVersion{}, fmt.Errorf("malformed version string: " + data)
 	}
 	for p, part := range parts {
@@ -157,4 +178,31 @@ func GetInfoJsonFromZip(data []byte) []byte {
 	}
 
 	return nil
+}
+
+func ParseEquality(input string) int {
+	switch input {
+	case "<":
+		return EO_LESS
+	case "<=":
+		return EO_LESSEQ
+	case "=":
+		return EO_EQUAL
+	case ">=":
+		return EO_GREATEREQ
+	case ">":
+		return EO_GREATER
+	default:
+		return EO_ERROR
+	}
+}
+
+func CheckSHA1(data []byte, checkHash string) bool {
+
+	hash := sha1.New()
+	hash.Write([]byte(data))
+	hashBytes := hash.Sum(nil)
+	hashString := hex.EncodeToString(hashBytes)
+
+	return strings.EqualFold(hashString, checkHash)
 }
