@@ -6,6 +6,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
@@ -65,14 +66,14 @@ func quickLatest(info *InfoData) (*versionInts, error) {
 
 	body, _, err := HttpGet(releaseURL, true)
 	if err != nil {
-		return nil, fmt.Errorf("downloading release list failed: %v", err.Error())
+		return nil, errors.New("downloading release list failed: " + err.Error())
 	}
 
 	//Unmarshal into temporary list
 	tempList := &getLatestData{}
 	err = json.Unmarshal(body, &tempList)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal json data: %v", err.Error())
+		return nil, errors.New("unable to unmarshal json data: " + err.Error())
 	}
 
 	parseStringsLatest(tempList)

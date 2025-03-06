@@ -2,7 +2,7 @@ package factUpdater
 
 import (
 	"ChatWire/constants"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -29,7 +29,7 @@ func HttpGet(url string, quick bool) ([]byte, string, error) {
 	//HTTP GET
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, "", fmt.Errorf("get failed: %v", err.Error())
+		return nil, "", errors.New("get failed: " + err.Error())
 	}
 
 	req.Header.Set("User-Agent", constants.ProgName+"-"+constants.Version)
@@ -37,7 +37,7 @@ func HttpGet(url string, quick bool) ([]byte, string, error) {
 	//Get response
 	res, err := hClient.Do(req)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get response: %v", err.Error())
+		return nil, "", errors.New("failed to get response: " + err.Error())
 	}
 
 	//Close once complete, if valid
@@ -48,7 +48,7 @@ func HttpGet(url string, quick bool) ([]byte, string, error) {
 	//Read all
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to read response body: %v", err.Error())
+		return nil, "", errors.New("unable to read response body: " + err.Error())
 	}
 
 	realurl := res.Request.URL.String()

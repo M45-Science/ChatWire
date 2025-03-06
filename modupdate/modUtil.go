@@ -9,6 +9,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -60,7 +61,7 @@ func compareVersions(eo, current, remote int) (bool, error) {
 	case EO_GREATER:
 		return current > remote, nil
 	default:
-		return false, fmt.Errorf("invalid comparison operation")
+		return false, errors.New("invalid comparison operation")
 	}
 }
 
@@ -75,12 +76,12 @@ func versionToInt(data string) (intVersion, error) {
 
 	var intOut intVersion
 	if numParts != 3 {
-		return intVersion{}, fmt.Errorf("malformed version string: " + data)
+		return intVersion{}, errors.New("malformed version string: " + data)
 	}
 	for p, part := range parts {
 		val, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
-			return intVersion{}, fmt.Errorf("failed to parse version string")
+			return intVersion{}, errors.New("failed to parse version string")
 		}
 		intOut.parts[p] = int(val)
 	}

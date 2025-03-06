@@ -6,7 +6,7 @@ import (
 	"ChatWire/glob"
 	"archive/tar"
 	"bytes"
-	"fmt"
+	"errors"
 	"io"
 	"os/exec"
 	"strings"
@@ -21,12 +21,6 @@ func GetFactorioVersion(info *InfoData) error {
 	if err := factBinExist(); err != nil {
 		return err
 	}
-
-	/*
-		if fact.FactIsRunning {
-			return fmt.Errorf("Factorio is already running.")
-		}
-	*/
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
@@ -62,7 +56,7 @@ func factBinExist() error {
 		return err
 	}
 	if !found {
-		return fmt.Errorf("Factorio binary was not found at: %v", fact.GetFactorioBinary())
+		return errors.New("factorio binary was not found at: " + fact.GetFactorioBinary())
 	}
 
 	return nil
@@ -107,7 +101,7 @@ func checkInstallTar(data []byte) error {
 
 	for _, item := range fileChecks {
 		if !item.good {
-			return fmt.Errorf("file '%v' missing from install package", item.name)
+			return errors.New("file '%v' missing from install package" + item.name)
 		}
 	}
 
@@ -129,13 +123,13 @@ func parseFactorioVersion(input string) (versionInts, string, string, error) {
 
 				return fversion, fbuild, fdistro, err
 			} else if words[1] == "Goodbye" {
-				return versionInts{}, "", "", fmt.Errorf("factorio quit")
+				return versionInts{}, "", "", errors.New("factorio quit")
 			}
 		}
 	}
 
 	cwlog.DoLogCW("Unexpected error: %v", input)
-	return versionInts{}, "", "", fmt.Errorf("unexpected error")
+	return versionInts{}, "", "", errors.New("unexpected error")
 }
 
 func saveFoundVersion(info *InfoData, fversion versionInts, fbuild, fdistro string) {

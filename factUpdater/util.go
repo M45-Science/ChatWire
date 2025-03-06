@@ -3,6 +3,7 @@ package factUpdater
 import (
 	"archive/tar"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -45,7 +46,7 @@ func parseVersionString(input string) (versionInts, error) {
 	c, errc := strconv.ParseUint(parts[2], 10, 64)
 
 	if erra != nil || errb != nil || errc != nil {
-		return versionInts{}, fmt.Errorf("malformed version number: A part of the version number wasn't a valid positive integer")
+		return versionInts{}, errors.New("malformed version number: A part of the version number wasn't a valid positive integer")
 	}
 
 	return versionInts{A: int(a), B: int(b), C: int(c)}, nil
