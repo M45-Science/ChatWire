@@ -31,7 +31,7 @@ func main() {
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
-	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/domain.ext/path")
+	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
 	flag.Parse()
 
 	/* Start cw logs */

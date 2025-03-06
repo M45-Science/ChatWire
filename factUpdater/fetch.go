@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -16,7 +17,7 @@ var FetchLock sync.Mutex
 const httpDownloadTimeout = time.Minute * 15
 const httpGetTimeout = time.Second * 30
 
-func HttpGet(url string, quick bool) ([]byte, string, error) {
+func HttpGet(input string, quick bool) ([]byte, string, error) {
 
 	timeout := httpDownloadTimeout
 	if quick {
@@ -28,15 +29,16 @@ func HttpGet(url string, quick bool) ([]byte, string, error) {
 		Timeout: timeout,
 	}
 
+	var URL string
 	if *glob.ProxyURL != "" {
-		stripped := strings.TrimPrefix(url, "https://")
-		stripped = strings.TrimPrefix(stripped, "http://")
 		proxy := strings.TrimSuffix(*glob.ProxyURL, "/")
-		url = proxy + "/" + stripped
+		URL = proxy + "/" + url.PathEscape(input)
+	} else {
+		URL = input
 	}
 
 	//HTTP GET
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, URL, nil)
 	if err != nil {
 		return nil, "", errors.New("get failed: " + err.Error())
 	}
