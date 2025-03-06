@@ -20,10 +20,11 @@ func CheckMods(force bool, reportNone bool) {
 			fact.FactChat("Mod updates installed: " + sMsg + suffix)
 		}
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Mod updates:** "+lMsg+suffix)
-		fact.QueueFactReboot = true
+		if fact.FactIsRunning {
+			fact.QueueFactReboot = true
+		}
 
 	} else if reportNone && count == 0 {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, lMsg)
-
 	}
 }

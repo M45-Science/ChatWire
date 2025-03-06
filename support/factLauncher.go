@@ -340,6 +340,7 @@ func launchFactorio() {
 
 	waitForDiscord()
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
+	fact.QueueFactReboot = false
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
