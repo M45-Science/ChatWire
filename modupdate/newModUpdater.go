@@ -21,6 +21,7 @@ const (
 	OldModsDir   = "old"
 )
 
+// Holy shit, this must be split up into smaller functions
 func CheckModUpdates() (string, string, int) {
 	//Mod folder path
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
