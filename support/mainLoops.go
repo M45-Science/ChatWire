@@ -692,7 +692,7 @@ func MainLoops() {
 				modupdate.CheckMods(false, false)
 			}
 
-			time.Sleep(time.Minute * 30)
+			time.Sleep(time.Hour)
 		}
 	}()
 

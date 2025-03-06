@@ -9,15 +9,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 )
 
 const (
 	modPortalURL = "https://mods.factorio.com/api/mods/%v/full"
+	displayURL   = "https://mods.factorio.com/mod/%v/changelog"
 )
 
-func CheckModUpdates(verbose bool) string {
+func CheckModUpdates() (string, string, int) {
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -27,7 +29,7 @@ func CheckModUpdates(verbose bool) string {
 	//Read mods directory
 	modList, err := os.ReadDir(modPath)
 	if err != nil {
-		return "CheckModUpdates: Unable to read mods dir: " + err.Error()
+		return "CheckModUpdates: Unable to read mods dir: " + err.Error(), "", 0
 	}
 
 	//Find all mods, read info.json inside
@@ -45,7 +47,7 @@ func CheckModUpdates(verbose bool) string {
 	//Read mods-list.json
 	jsonFileList, err := GetGameMods()
 	if err != nil {
-		return ("CheckModUpdates: Unable to mods list: " + err.Error())
+		return ("CheckModUpdates: Unable to mods list: " + err.Error()), "", 0
 	}
 
 	//Check both lists, save any that are enabled so we have the mod version + details
@@ -71,7 +73,7 @@ func CheckModUpdates(verbose bool) string {
 	}
 
 	if len(installedMods) == 0 {
-		return "The game has no installed mods to update."
+		return "The game has no installed mods to update.", "", 0
 	}
 
 	detailList := []modPortalFullData{}
@@ -91,7 +93,8 @@ func CheckModUpdates(verbose bool) string {
 		detailList = append(detailList, newInfo)
 	}
 
-	buf := ""
+	updatedCount := 0
+	var shortBuf, longBuf string
 	for _, dItem := range detailList {
 		for _, iItem := range installedMods {
 			if dItem.Name == iItem.Name {
@@ -108,23 +111,27 @@ func CheckModUpdates(verbose bool) string {
 					}
 				}
 				if found {
-					if buf != "" {
-						buf = buf + ", "
+					if updatedCount != 0 {
+						longBuf = longBuf + ", "
+						shortBuf = shortBuf + ", "
 					}
-					if verbose {
-						buf = buf + iItem.Title + ": " + iItem.Version + " -> " + newestVersion
-					} else {
-						buf = buf + iItem.Name + "-" + newestVersion
-					}
+					updatedCount++
+
+					mURL := fmt.Sprintf(displayURL, url.QueryEscape(iItem.Name))
+					longBuf = longBuf + "[" + iItem.Title + "-" + newestVersion + "](" + mURL + ")"
+
+					shortBuf = shortBuf + iItem.Name + "-" + newestVersion
 				}
 			}
 		}
 	}
 
-	if buf == "" {
-		return "All installed mods are up to date."
+	if updatedCount == 0 && len(installedMods) > 0 {
+		return "", "All installed mods are up to date.", 0
+	} else if len(installedMods) > 0 {
+		return shortBuf, longBuf, updatedCount
 	} else {
-		return buf
+		return "", "There are no installed mods to update.", 0
 	}
 }
 
