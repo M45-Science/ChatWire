@@ -76,7 +76,7 @@ func IsBaseMod(modName string) bool {
 	return false
 }
 
-func GetGameMods() (*modListData, error) {
+func GetModList() (modListData, error) {
 	path := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -85,16 +85,16 @@ func GetGameMods() (*modListData, error) {
 
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return modListData{}, err
 	}
 
 	serverMods := modListData{}
 	err = json.Unmarshal(data, &serverMods)
 	if err != nil {
-		return nil, err
+		return modListData{}, err
 	}
 
-	return &serverMods, nil
+	return serverMods, nil
 }
 
 func ReadModZipInfo(modName string) *modZipInfo {

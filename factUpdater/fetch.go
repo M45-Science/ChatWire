@@ -12,12 +12,19 @@ import (
 
 var FetchLock sync.Mutex
 
-const httpGetTimeout = time.Minute * 15
+const httpDownloadTimeout = time.Minute * 15
+const httpGetTimeout = time.Second * 30
 
-func HttpGet(url string) ([]byte, string, error) {
+func HttpGet(url string, quick bool) ([]byte, string, error) {
+
+	timeout := httpDownloadTimeout
+	if quick {
+		timeout = httpGetTimeout
+	}
+
 	// Set timeout
 	hClient := http.Client{
-		Timeout: httpGetTimeout,
+		Timeout: timeout,
 	}
 	//HTTP GET
 	req, err := http.NewRequest(http.MethodGet, url, nil)

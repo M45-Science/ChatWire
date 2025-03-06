@@ -16,8 +16,8 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	buf := ""
-	modList, mErr := modupdate.GetGameMods()
-	if mErr == nil && modList != nil {
+	modList, mErr := modupdate.GetModList()
+	if mErr == nil {
 		for _, mod := range modList.Mods {
 			if modupdate.IsBaseMod(mod.Name) {
 				continue

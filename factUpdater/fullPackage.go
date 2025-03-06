@@ -33,7 +33,7 @@ func fullPackage(info *InfoData) error {
 	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updating Factorio", "Downloading...", glob.COLOR_CYAN)
 	cwlog.DoLogCW("Downloading: %v", url)
 
-	data, filename, err = HttpGet(url)
+	data, filename, err = HttpGet(url, false)
 	if err != nil {
 		embed := &discordgo.MessageEmbed{Title: "ERROR:", Description: "Downloading Factorio failed."}
 		disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, embed)

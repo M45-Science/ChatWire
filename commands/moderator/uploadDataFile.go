@@ -38,7 +38,7 @@ func handleModList(modListBytes []byte) {
 				"**Your "+constants.ModListName+" file failed while writing.**", glob.COLOR_RED)
 			return
 		}
-		listMods, err := modupdate.GetGameMods()
+		listMods, err := modupdate.GetModList()
 		enabledCount := 0
 		disabledCount := 0
 		enabledModList := ""
@@ -85,7 +85,7 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 		"Your "+typeName+" file is uploading.", glob.COLOR_GREEN)
 
 	//We do this first, as we need it when we restart for the map.
-	data, name, err := factUpdater.HttpGet(attachmentUrl)
+	data, name, err := factUpdater.HttpGet(attachmentUrl, false)
 	if err != nil {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**Your "+typeName+" file failed while downloading.**", glob.COLOR_RED)

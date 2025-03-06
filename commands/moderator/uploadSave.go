@@ -23,7 +23,7 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 		"Your "+saveGameName+" file is uploading.", glob.COLOR_GREEN)
 
-	saveGameBytes, name, err := factUpdater.HttpGet(attachmentUrl)
+	saveGameBytes, name, err := factUpdater.HttpGet(attachmentUrl, true)
 	if err != nil {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**Your "+saveGameName+" file failed while downloading.**", glob.COLOR_RED)

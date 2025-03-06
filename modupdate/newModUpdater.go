@@ -44,11 +44,8 @@ func CheckModUpdates() (string, string, int) {
 		}
 	}
 
-	//Read mods-list.json
-	jsonFileList, err := GetGameMods()
-	if err != nil {
-		return ("CheckModUpdates: Unable to mods list: " + err.Error()), "", 0
-	}
+	//Read mods-list.json, continue even if it does not exist
+	jsonFileList, _ := GetModList()
 
 	//Check both lists, save any that are enabled so we have the mod version + details
 	var installedMods []modZipInfo
@@ -79,7 +76,7 @@ func CheckModUpdates() (string, string, int) {
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
 		URL := fmt.Sprintf(modPortalURL, item.Name)
-		data, _, err := factUpdater.HttpGet(URL)
+		data, _, err := factUpdater.HttpGet(URL, true)
 		if err != nil {
 			cwlog.DoLogCW("Mod info request failed: " + err.Error())
 			continue
