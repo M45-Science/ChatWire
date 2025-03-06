@@ -29,7 +29,8 @@ func CheckModUpdates() (string, string, int) {
 	//Read mods directory
 	modList, err := os.ReadDir(modPath)
 	if err != nil {
-		return "CheckModUpdates: Unable to read mods dir: " + err.Error(), "", 0
+		emsg := "CheckModUpdates: Unable to read mods dir: " + err.Error()
+		return emsg, emsg, 0
 	}
 
 	//Find all mods, read info.json inside
@@ -70,7 +71,8 @@ func CheckModUpdates() (string, string, int) {
 	}
 
 	if len(installedMods) == 0 {
-		return "The game has no installed mods to update.", "", 0
+		emsg := "The game has no installed mods to update."
+		return emsg, emsg, 0
 	}
 
 	detailList := []modPortalFullData{}
@@ -124,11 +126,13 @@ func CheckModUpdates() (string, string, int) {
 	}
 
 	if updatedCount == 0 && len(installedMods) > 0 {
-		return "", "All installed mods are up to date.", 0
+		emsg := "All installed mods are up to date."
+		return emsg, emsg, 0
 	} else if len(installedMods) > 0 {
 		return shortBuf, longBuf, updatedCount
 	} else {
-		return "", "There are no installed mods to update.", 0
+		emsg := "There are no installed mods to update."
+		return emsg, emsg, 0
 	}
 }
 
