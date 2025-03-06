@@ -25,8 +25,10 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 		info.VersInt = *newVersion
 		err = fullPackage(info)
 		if err != nil {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status", "Install failed.", glob.COLOR_CYAN)
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Complete", "Factorio installed.", glob.COLOR_CYAN)
 		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false, false
 	}
 
@@ -48,6 +50,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 		info.VersInt = *newVersion
 		err := fullPackage(info)
 		if err != nil {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status", "Install failed.", glob.COLOR_CYAN)
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
 
