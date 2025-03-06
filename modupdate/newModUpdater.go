@@ -16,9 +16,10 @@ import (
 )
 
 const (
-	modPortalURL = "https://mods.factorio.com/api/mods/%v/full"
-	displayURL   = "https://mods.factorio.com/mod/%v/changelog"
-	OldModsDir   = "old"
+	modPortalURL   = "https://mods.factorio.com/api/mods/%v/full"
+	displayURL     = "https://mods.factorio.com/mod/%v/changelog"
+	downloadPrefix = "https://mods.factorio.com"
+	OldModsDir     = "old"
 )
 
 // Holy shit, this must be split up into smaller functions
@@ -54,7 +55,7 @@ func CheckModUpdates() (string, string, int) {
 	//Read mods-list.json, continue even if it does not exist
 	jsonFileList, _ := GetModList()
 
-	//Check both lists, save any that are enabled so we have the mod version + details
+	//Check both lists, save any that are not explicitly disabled.
 	var installedMods []modZipInfo
 	found := false
 	for _, fmod := range fileModList {
@@ -70,7 +71,7 @@ func CheckModUpdates() (string, string, int) {
 				break
 			}
 		}
-		//Also include mods that are not in the mods-list.json (not disabled)
+		//Include mods not found in mod-list.json
 		if !found {
 			installedMods = append(installedMods, fmod)
 		}
@@ -101,9 +102,8 @@ func CheckModUpdates() (string, string, int) {
 		detailList = append(detailList, newInfo)
 	}
 
-	var downloadList []downloadData
-
 	//Check mod postal data against mod list, find upgrades
+	var downloadList []downloadData
 	updatedCount := 0
 	var shortBuf, longBuf string
 	for _, dItem := range detailList {
@@ -149,40 +149,64 @@ func CheckModUpdates() (string, string, int) {
 	}
 
 	for d, dl := range downloadList {
-		data, _, err := factUpdater.HttpGet(dl.URL, false)
+		//Fetch the mod link
+		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.URL, false)
 		if err != nil {
 			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
 			continue
 		}
+
+		/*
+		 * Must implement login with token to get the redirect
+		 */
+
+		//Read the mod info.json
 		zipIJ := ModInfoRead("", data)
 		if zipIJ == nil {
-			cwlog.DoLogCW("Mod info invalid.")
+			cwlog.DoLogCW("Mod download is invalid.")
 			continue
 		}
+
+		//Check if the mod info.json looks correct
 		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Version {
 			cwlog.DoLogCW("Mod download failed verification.")
 			continue
 		}
 
+		//Check mod for zip bomb
 		if fact.BytesHasZipBomb(data) {
 			cwlog.DoLogCW("Download contains zip bomb.")
 			continue
 		}
 
+		//Write the new mod file as a temp file
 		err = os.WriteFile(modPath+dl.Filename+".tmp", data, 0755)
 		if err != nil {
 			cwlog.DoLogCW("Unable to write to mods directory: " + err.Error())
 			continue
 		}
+
+		//Rename the temp file to the final name
 		err = os.Rename(modPath+dl.Filename+".tmp", modPath+dl.Filename)
 		if err != nil {
 			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + err.Error())
 			continue
 		}
 
+		//Create old mods directory if needed
+		_, err = os.Stat(modPath + OldModsDir)
+		if os.IsNotExist(err) {
+			err = os.Mkdir(modPath+OldModsDir, os.ModePerm)
+			if err != nil {
+				cwlog.DoLogCW("Unable to create old mods directory. " + err.Error())
+				continue
+			}
+		}
+
+		//Move old mod file into old directory
 		err = os.Rename(modPath+dl.OldFilename, modPath+OldModsDir+"/"+dl.OldFilename)
 		if err != nil {
-			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + err.Error())
+			cwlog.DoLogCW("Unable to move old mod file in mods directory: " + err.Error())
 			continue
 		}
 

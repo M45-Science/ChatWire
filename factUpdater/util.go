@@ -109,7 +109,7 @@ func untar(dst string, data []byte) error {
 			}
 
 		case tar.TypeReg:
-			_ = os.MkdirAll(filepath.Dir(target), 0770)
+			_ = os.MkdirAll(filepath.Dir(target), os.ModePerm)
 			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				return err
