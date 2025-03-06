@@ -47,8 +47,7 @@ func CheckModUpdates() (string, string, int) {
 			if modInfo == nil {
 				continue
 			}
-			//Save filename
-			modInfo.filename = mod.Name()
+			modInfo.oldFilename = mod.Name()
 			fileModList = append(fileModList, *modInfo)
 		}
 	}
@@ -99,7 +98,7 @@ func CheckModUpdates() (string, string, int) {
 			cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
 			continue
 		}
-		newInfo.oldFilename = item.Name
+		newInfo.oldFilename = item.oldFilename
 		detailList = append(detailList, newInfo)
 	}
 
@@ -131,17 +130,13 @@ func CheckModUpdates() (string, string, int) {
 					}
 					updatedCount++
 
-					mURL := fmt.Sprintf(displayURL, url.QueryEscape(iItem.Name))
-					longBuf = longBuf + "[" + iItem.Title + "-" + newestVersion + "](" + mURL + ")"
-
-					shortBuf = shortBuf + iItem.Name + "-" + newestVersion
-
 					downloadList = addDownload(
 						downloadData{
 							Name:        iItem.Name,
+							Title:       iItem.Title,
 							Filename:    newestVersionData.FileName,
 							URL:         newestVersionData.DownloadURL,
-							OldFilename: newestVersionData.oldFilename,
+							OldFilename: iItem.oldFilename,
 							Version:     newestVersion},
 						downloadList)
 				}
@@ -202,13 +197,21 @@ func CheckModUpdates() (string, string, int) {
 		}
 
 		//Move old mod file into old directory
-		err = os.Rename(modPath+dl.OldFilename, modPath+OldModsDir+"/"+dl.OldFilename)
-		if err != nil {
-			cwlog.DoLogCW("Unable to move old mod file in mods directory: " + err.Error())
-			continue
+		if dl.OldFilename != "" {
+			err = os.Rename(modPath+dl.OldFilename, modPath+OldModsDir+"/"+dl.OldFilename)
+			if err != nil {
+				cwlog.DoLogCW("Unable to move old mod file in mods directory: " + err.Error())
+				continue
+			}
+		} else {
+			cwlog.DoLogCW("No old file found for: " + dl.Filename)
 		}
 
 		downloadList[d].Ready = true
+
+		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
+		longBuf = longBuf + "[" + dl.Title + "-" + dl.Version + "](" + mURL + ")"
+		shortBuf = shortBuf + dl.Name + "-" + dl.Version
 	}
 
 	if updatedCount == 0 && len(installedMods) > 0 {

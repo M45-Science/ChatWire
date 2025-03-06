@@ -3,7 +3,7 @@ package modupdate
 import "time"
 
 type downloadData struct {
-	Name,
+	Name, Title,
 	OldFilename, Filename,
 	URL, Version string
 	Ready bool
@@ -43,7 +43,6 @@ type modPortalFullData struct {
 	Title             string        `json:"title"`
 	UpdatedAt         time.Time     `json:"updated_at"`
 
-	//Local
 	oldFilename string `json:"-"`
 }
 
@@ -73,9 +72,6 @@ type ModReleases struct {
 	ReleasedAt  time.Time   `json:"released_at"`
 	Sha1        string      `json:"sha1"`
 	Version     string      `json:"version"`
-
-	//Local
-	oldFilename string `json:"-"`
 }
 
 type modZipInfo struct {
@@ -89,6 +85,5 @@ type modZipInfo struct {
 	Dependencies        []string `json:"dependencies"`
 	SpaceTravelRequired bool     `json:"space_travel_required"`
 
-	//Local
-	filename string `json:"-"`
+	oldFilename string `json:"-"`
 }
