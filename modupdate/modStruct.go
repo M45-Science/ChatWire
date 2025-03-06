@@ -10,6 +10,10 @@ type modData struct {
 	Enabled bool
 }
 
+type intVersion struct {
+	parts [3]int
+}
+
 type modPortalFullData struct {
 	Category          string        `json:"category"`
 	Changelog         string        `json:"changelog"`

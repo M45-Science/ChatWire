@@ -16,6 +16,7 @@ import (
 )
 
 const MaxZipSize = 1024 * 1024 * 1024 //1gb
+const maxDiscordMsgLen = 2000
 
 func HasZipBomb(path string) bool {
 	zip, err := zip.OpenReader(path)
@@ -63,6 +64,10 @@ func FactChat(format string, args ...interface{}) {
 		input = format
 	} else {
 		input = fmt.Sprintf(format, args...)
+	}
+
+	if input == "" {
+		return
 	}
 
 	/* Limit length, Discord does this... but just in case */
@@ -242,22 +247,18 @@ func GetUpdateCachePath() string {
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
+	text = sclean.TruncateStringEllipsis(text, maxDiscordMsgLen)
 	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 
 	disc.CMSBufferLock.Lock()
 
 	for _, line := range lines {
+		var item disc.CMSBuf
+		item.Channel = channel
+		item.Text = line
 
-		if len(line) <= 2000 {
-			var item disc.CMSBuf
-			item.Channel = channel
-			item.Text = line
-
-			disc.CMSBuffer = append(disc.CMSBuffer, item)
-		} else {
-			cwlog.DoLogCW("CMS: Line too long! Discarding...")
-		}
+		disc.CMSBuffer = append(disc.CMSBuffer, item)
 	}
 
 	disc.CMSBufferLock.Unlock()

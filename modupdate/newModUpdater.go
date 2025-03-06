@@ -4,19 +4,20 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/factUpdater"
 	"ChatWire/util"
-	"archive/zip"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 )
 
-const modPortalURL = "https://mods.factorio.com/api/mods/%v/full"
+const (
+	modPortalURL = "https://mods.factorio.com/api/mods/%v/full"
+)
 
-func CheckModUpdates() {
+func CheckModUpdates(verbose bool) string {
 	modPath := cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -26,8 +27,7 @@ func CheckModUpdates() {
 	//Read mods directory
 	modList, err := os.ReadDir(modPath)
 	if err != nil {
-		cwlog.DoLogCW("CheckModUpdates: Unable to read mods dir: " + err.Error())
-		return
+		return "CheckModUpdates: Unable to read mods dir: " + err.Error()
 	}
 
 	//Find all mods, read info.json inside
@@ -45,12 +45,11 @@ func CheckModUpdates() {
 	//Read mods-list.json
 	jsonFileList, err := GetGameMods()
 	if err != nil {
-		cwlog.DoLogCW("CheckModUpdates: Unable to mods list: " + err.Error())
-		return
+		return ("CheckModUpdates: Unable to mods list: " + err.Error())
 	}
 
 	//Check both lists, save any that are enabled so we have the mod version + details
-	var finalModList []modZipInfo
+	var installedMods []modZipInfo
 	found := false
 	for _, fmod := range fileModList {
 		//Check if the mod is disabled
@@ -61,114 +60,72 @@ func CheckModUpdates() {
 
 			if jmod.Name == fmod.Name && jmod.Enabled {
 				found = true
-				finalModList = append(finalModList, fmod)
+				installedMods = append(installedMods, fmod)
 				break
 			}
 		}
 		//Also include mods that are not in the mods-list.json (not disabled)
 		if !found {
-			finalModList = append(finalModList, fmod)
+			installedMods = append(installedMods, fmod)
 		}
 	}
 
-	//Print out data
-	var buf string
-	for _, item := range finalModList {
-		if buf != "" {
-			buf = buf + ", "
+	if len(installedMods) == 0 {
+		return "The game has no installed mods to update."
+	}
+
+	detailList := []modPortalFullData{}
+	for _, item := range installedMods {
+		URL := fmt.Sprintf(modPortalURL, item.Name)
+		data, _, err := factUpdater.HttpGet(URL)
+		if err != nil {
+			cwlog.DoLogCW("Mod info request failed: " + err.Error())
+			continue
 		}
-		buf = buf + fmt.Sprintf("%v: %v", item.Name, item.Version)
+		newInfo := modPortalFullData{}
+		err = json.Unmarshal(data, &newInfo)
+		if err != nil {
+			cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
+			continue
+		}
+		detailList = append(detailList, newInfo)
 	}
 
-	if buf == "" {
-		buf = "No enabled game mods found."
-	}
-	cwlog.DoLogCW(buf)
-}
-
-func GetInfoJSONFromZip(zipFilePath string) ([]byte, error) {
-	// Open the zip file
-	zipReader, err := zip.OpenReader(zipFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("GetInfoJSONFromZip:  to open zip file: %w", err)
-	}
-	defer zipReader.Close()
-
-	for _, file := range zipReader.File {
-		if strings.HasSuffix(file.Name, "info.json") {
-			if strings.Count(file.Name, "/") < 2 {
-				f, err := file.Open()
-				if err != nil {
-					return nil, fmt.Errorf("GetInfoJSONFromZip: failed to open file in zip: %w", err)
+	buf := ""
+	for _, dItem := range detailList {
+		for _, iItem := range installedMods {
+			if dItem.Name == iItem.Name {
+				found = false
+				newestVersion := iItem.Version
+				for _, release := range dItem.Releases {
+					isNewer, err := newerVersion(newestVersion, release.Version)
+					if err != nil {
+						continue
+					}
+					if isNewer {
+						newestVersion = release.Version
+						found = true
+					}
 				}
-				defer f.Close()
-
-				var buf bytes.Buffer
-				_, err = io.Copy(&buf, f)
-				if err != nil {
-					return nil, fmt.Errorf("GetInfoJSONFromZip: failed to read file content: %w", err)
+				if found {
+					if buf != "" {
+						buf = buf + ", "
+					}
+					if verbose {
+						buf = buf + iItem.Title + ": " + iItem.Version + " -> " + newestVersion
+					} else {
+						buf = buf + iItem.Name + "-" + newestVersion
+					}
 				}
-
-				return buf.Bytes(), nil
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("GetInfoJSONFromZip: info.json not found in: " + zipFilePath)
-}
-
-func ReadModZipInfo(modName string) *modZipInfo {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/" + modName
-
-	data, err := GetInfoJSONFromZip(path)
-	if err != nil {
-		cwlog.DoLogCW("ReadModZipInfo: " + err.Error())
-		return nil
+	if buf == "" {
+		return "All installed mods are up to date."
+	} else {
+		return buf
 	}
-
-	modData := modZipInfo{}
-	err = json.Unmarshal(data, &modData)
-	if err != nil {
-		cwlog.DoLogCW("ReadModZipInfo: Unmarshal failure: " + err.Error())
-		return nil
-	}
-
-	return &modData
-}
-
-func IsBaseMod(modName string) bool {
-	if strings.EqualFold(modName, "base") ||
-		strings.EqualFold(modName, "elevated-rails") ||
-		strings.EqualFold(modName, "quality") ||
-		strings.EqualFold(modName, "space-age") {
-		return true
-	}
-	return false
-}
-
-func GetGameMods() (*modListData, error) {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/" + constants.ModListName
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	serverMods := modListData{}
-	err = json.Unmarshal(data, &serverMods)
-	if err != nil {
-		return nil, err
-	}
-
-	return &serverMods, nil
 }
 
 func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
