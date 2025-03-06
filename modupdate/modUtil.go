@@ -88,7 +88,7 @@ func versionToInt(data string) (intVersion, error) {
 }
 
 func IsBaseMod(modName string) bool {
-	if strings.EqualFold(modName, "base") ||
+	if strings.HasPrefix(modName, "base") ||
 		strings.EqualFold(modName, "elevated-rails") ||
 		strings.EqualFold(modName, "quality") ||
 		strings.EqualFold(modName, "space-age") {

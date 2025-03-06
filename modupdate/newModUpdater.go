@@ -235,6 +235,7 @@ func CheckModUpdates() (string, string, int) {
 	for d, dl := range downloadList {
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
+		cwlog.DoLogCW("Downloading: " + dl.Data.DownloadURL)
 		data, _, err := factUpdater.HttpGet(downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
@@ -242,20 +243,20 @@ func CheckModUpdates() (string, string, int) {
 		}
 
 		if !CheckSHA1(data, dl.Data.Sha1) {
-			cwlog.DoLogCW("Mod download has an invalid hash.")
+			cwlog.DoLogCW("Mod download is corrupted (invalid hash).")
 			continue
 		}
 
 		//Read the mod info.json
 		zipIJ := ModInfoRead("", data)
 		if zipIJ == nil {
-			cwlog.DoLogCW("Mod download is invalid.")
+			cwlog.DoLogCW("Mod download has invalid info.json invalid.")
 			continue
 		}
 
 		//Check if the mod info.json looks correct
 		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Data.Version {
-			cwlog.DoLogCW("Mod download failed verification.")
+			cwlog.DoLogCW("Mod download info.json failed basic verification.")
 			continue
 		}
 
