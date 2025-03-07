@@ -42,6 +42,11 @@ func SyncMods(optionalFileName string) bool {
 		fileName = optionalFileName
 	}
 
+	if !fact.GenerateFactorioConfig() {
+		fact.SetAutolaunch(false, true)
+		cwlog.DoLogCW("Unable to write factorio config file.")
+		return false
+	}
 	var tempargs []string = []string{"--sync-mods", fileName}
 
 	// Create a context with the timeout
@@ -62,7 +67,7 @@ func SyncMods(optionalFileName string) bool {
 
 	// Check for other command errors
 	if err != nil {
-		cwlog.DoLogCW("SyncMods: Error: " + err.Error())
+		cwlog.DoLogCW("SyncMods: Error: " + string(data))
 		//return false
 	}
 
