@@ -62,23 +62,33 @@ func CheckModUpdates() (string, string, int) {
 
 	//Check both lists, save any that are not explicitly disabled.
 	var installedMods []modZipInfo
-	found := false
 	for _, fmod := range fileModList {
 		//Check if the mod is disabled
+		doAdd := true
 		for _, jmod := range jsonFileList.Mods {
 			if IsBaseMod(jmod.Name) {
 				continue
 			}
 
-			if jmod.Name == fmod.Name && jmod.Enabled {
-				found = true
-				installedMods = append(installedMods, fmod)
+			if strings.EqualFold(jmod.Name, fmod.Name) {
+				if !jmod.Enabled {
+					doAdd = false
+				}
 				break
 			}
 		}
-		//Include mods not found in mod-list.json
-		if !found {
-			installedMods = append(installedMods, fmod)
+		//Include mods not found in mod-list.json, unless disabled
+		if doAdd {
+			dupe := false
+			for _, item := range installedMods {
+				if strings.EqualFold(item.Name, fmod.Name) {
+					dupe = true
+					break
+				}
+			}
+			if !dupe {
+				installedMods = append(installedMods, fmod)
+			}
 		}
 	}
 
@@ -159,7 +169,7 @@ func CheckModUpdates() (string, string, int) {
 	for _, dItem := range detailList {
 		for _, iItem := range installedMods {
 			if dItem.Name == iItem.Name {
-				found = false
+				found := false
 				newestVersion := iItem.Version
 				newestVersionData := ModReleases{}
 				for _, release := range dItem.Releases {
@@ -214,10 +224,6 @@ func CheckModUpdates() (string, string, int) {
 						continue
 					}
 
-					if updatedCount != 0 {
-						longBuf = longBuf + ", "
-						shortBuf = shortBuf + ", "
-					}
 					updatedCount++
 
 					downloadList = addDownload(
@@ -303,11 +309,16 @@ func CheckModUpdates() (string, string, int) {
 
 		downloadList[d].Complete = true
 
+		if updatedCount != 0 {
+			longBuf = longBuf + ", "
+			shortBuf = shortBuf + ", "
+		}
 		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
 		longBuf = longBuf + "[" + dl.Title + "-" + dl.Data.Version + "](" + mURL + ")"
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 	}
 
+	//TO DO: Report error, don't report all up to date with errors
 	if updatedCount == 0 && len(installedMods) > 0 {
 		emsg := "All installed mods are up to date."
 		return emsg, emsg, 0
@@ -321,8 +332,8 @@ func CheckModUpdates() (string, string, int) {
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
 	for _, item := range list {
-		if item.Data.FileName == input.Data.FileName && item.Data.DownloadURL == input.Data.DownloadURL {
-			//Already exists, just return the list
+		if strings.EqualFold(item.Name, input.Name) {
+			//Already here, just return list
 			return list
 		}
 	}
