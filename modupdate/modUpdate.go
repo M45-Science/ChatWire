@@ -14,7 +14,7 @@ func CheckMods(force bool, reportNone bool) {
 		return
 	}
 
-	updated, err := CheckModUpdates()
+	updated, err := CheckModUpdates(false)
 	if reportNone {
 		buf := ""
 		if err != nil {

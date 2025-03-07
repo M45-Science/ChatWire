@@ -26,11 +26,14 @@ const (
 	modUpdateTitle = "Found Mod Updates"
 )
 
-const dryRun = false
-
 // Holy shit, this must be split up into smaller functions
-func CheckModUpdates() (bool, error) {
+func CheckModUpdates(dryRun bool) (bool, error) {
 
+	//If factorio failed to load, grab the version
+	if fact.FactorioVersion == constants.Unknown {
+		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
+		factUpdater.GetFactorioVersion(info)
+	}
 	if fact.FactorioVersion == constants.Unknown {
 		emsg := "checkModUpdates: Factroio version unknown, aborting"
 		return false, errors.New(emsg)
@@ -50,7 +53,7 @@ func CheckModUpdates() (bool, error) {
 		return false, errors.New(emsg)
 	}
 
-	//Find all mods, read info.json inside
+	//Find all mods, read info.json inside each
 	var fileModList []modZipInfo
 	for _, mod := range modList {
 		if strings.HasSuffix(mod.Name(), ".zip") {
@@ -66,7 +69,7 @@ func CheckModUpdates() (bool, error) {
 	//Read mods-list.json, continue even if it does not exist
 	jsonFileList, _ := GetModList()
 
-	//Check both lists, save any that are not explicitly disabled.
+	//Check both lists, keep any that are not explicitly disabled.
 	var installedMods []modZipInfo
 	for _, fmod := range fileModList {
 		//Check if the mod is disabled
@@ -249,6 +252,7 @@ func CheckModUpdates() (bool, error) {
 		}
 	}
 
+	//Check but do not download/install
 	if dryRun {
 		for _, dl := range downloadList {
 			cwlog.DoLogCW("%v-%v", dl.Name, dl.Data.Version)
@@ -301,7 +305,7 @@ func CheckModUpdates() (bool, error) {
 
 		//Check if the mod info.json looks correct
 		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Data.Version {
-			emsg := "Mod download info.json failed basic verification."
+			emsg := "Mod download info.json failed verification."
 			cwlog.DoLogCW(emsg)
 			errorLog = emsg
 			continue
@@ -380,10 +384,21 @@ func CheckModUpdates() (bool, error) {
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
-	for _, item := range list {
+	for i, item := range list {
 		if strings.EqualFold(item.Name, input.Name) {
-			//Already here, just return list
-			return list
+			//Check versions
+			newer, err := checkVersion(EO_GREATER, item.Data.Version, input.Data.Version)
+			if err != nil {
+				cwlog.DoLogCW("addDownload: Unable to parse version")
+				return list
+			}
+			if newer {
+				//Already in list and not newer, skip
+				return list
+			} else {
+				//Already here, but older. Replace it
+				list[i] = input
+			}
 		}
 	}
 
