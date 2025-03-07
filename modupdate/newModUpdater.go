@@ -4,11 +4,14 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/factUpdater"
+	"ChatWire/glob"
 	"ChatWire/util"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -20,14 +23,15 @@ const (
 	displayURL     = "https://mods.factorio.com/mod/%v/changelog"
 	downloadPrefix = "https://mods.factorio.com"
 	downloadSuffix = "?username=%v&token=%v"
+	modUpdateTitle = "Found Mod Updates"
 )
 
 // Holy shit, this must be split up into smaller functions
-func CheckModUpdates() (string, string, int) {
+func CheckModUpdates() (bool, error) {
 
 	if fact.FactorioVersion == constants.Unknown {
-		cwlog.DoLogCW("CheckModUpdates: Factroio version unknown, aborting.")
-		return "", "", 0
+		emsg := "checkModUpdates: Factroio version unknown, aborting"
+		return false, errors.New(emsg)
 	}
 
 	//Mod folder path
@@ -40,8 +44,8 @@ func CheckModUpdates() (string, string, int) {
 	//Read mods directory
 	modList, err := os.ReadDir(modPath)
 	if err != nil {
-		emsg := "CheckModUpdates: Unable to read mods dir: " + err.Error()
-		return emsg, emsg, 0
+		emsg := "checkModUpdates: Unable to read mods dir: " + err.Error()
+		return false, errors.New(emsg)
 	}
 
 	//Find all mods, read info.json inside
@@ -94,8 +98,8 @@ func CheckModUpdates() (string, string, int) {
 
 	//Check if we need to proceed
 	if len(installedMods) == 0 {
-		emsg := "The game has no installed mods to update."
-		return emsg, emsg, 0
+		emsg := "the game has no installed mods to update"
+		return false, errors.New(emsg)
 	}
 
 	//Satisfy dependencies
@@ -238,51 +242,80 @@ func CheckModUpdates() (string, string, int) {
 		}
 	}
 
+	numDL := len(downloadList)
+	if numDL > 0 {
+		glob.UpdateMessage = nil
+		buf := fmt.Sprintf("Downloading %v mod updates.", numDL)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+	}
+	errorLog := ""
 	for d, dl := range downloadList {
+		buf := fmt.Sprintf("Downloading: %v-%v", dl.Name, dl.Data.Version)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+
+		if errorLog != "" {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, dl.Name+": "+errorLog, glob.COLOR_ORANGE)
+			errorLog = ""
+		}
+
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
 		cwlog.DoLogCW("Downloading: " + dl.Data.DownloadURL)
 		data, _, err := factUpdater.HttpGet(false, downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
-			cwlog.DoLogCW("Unable to fetch URL: " + err.Error())
+			emsg := "Unable to fetch URL"
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
 		if !CheckSHA1(data, dl.Data.Sha1) {
-			cwlog.DoLogCW("Mod download is corrupted (invalid hash).")
+			emsg := "Mod download is corrupted (invalid hash)."
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
 		//Read the mod info.json
 		zipIJ := ModInfoRead("", data)
 		if zipIJ == nil {
-			cwlog.DoLogCW("Mod download has invalid info.json invalid.")
+			emsg := "Mod download has invalid info.json."
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
 		//Check if the mod info.json looks correct
 		if zipIJ.Name != dl.Name || zipIJ.Version != dl.Data.Version {
-			cwlog.DoLogCW("Mod download info.json failed basic verification.")
+			emsg := "Mod download info.json failed basic verification."
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
 		//Check mod for zip bomb
 		if fact.BytesHasZipBomb(data) {
-			cwlog.DoLogCW("Download contains zip bomb.")
+			emsg := "Download contains possible zip bomb."
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
 		//Write the new mod file as a temp file
 		err = os.WriteFile(modPath+dl.Data.FileName+".tmp", data, 0755)
 		if err != nil {
-			cwlog.DoLogCW("Unable to write to mods directory: " + err.Error())
+			emsg := "Unable to write to mods directory"
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
 		//Rename the temp file to the final name
 		err = os.Rename(modPath+dl.Data.FileName+".tmp", modPath+dl.Data.FileName)
 		if err != nil {
-			cwlog.DoLogCW("Unable to rename temp file in mods directory: " + err.Error())
+			emsg := "Unable to rename temp file in mods directory"
+			cwlog.DoLogCW(emsg)
+			errorLog = emsg
 			continue
 		}
 
@@ -291,7 +324,9 @@ func CheckModUpdates() (string, string, int) {
 		if os.IsNotExist(err) {
 			err = os.Mkdir(modPath+constants.OldModsDir, os.ModePerm)
 			if err != nil {
-				cwlog.DoLogCW("Unable to create old mods directory. " + err.Error())
+				emsg := "Unable to create old mods directory."
+				cwlog.DoLogCW(emsg)
+				errorLog = emsg
 				continue
 			}
 		}
@@ -300,7 +335,9 @@ func CheckModUpdates() (string, string, int) {
 		if dl.OldFilename != "" {
 			err = os.Rename(modPath+dl.OldFilename, modPath+constants.OldModsDir+"/"+dl.OldFilename)
 			if err != nil {
-				cwlog.DoLogCW("Unable to move old mod file in mods directory: " + err.Error())
+				emsg := "Unable to move old mod file in mods directory"
+				cwlog.DoLogCW(emsg)
+				errorLog = emsg
 				continue
 			}
 		} else {
@@ -320,14 +357,11 @@ func CheckModUpdates() (string, string, int) {
 
 	//TO DO: Report error, don't report all up to date with errors
 	if updatedCount == 0 && len(installedMods) > 0 {
-		emsg := "All installed mods are up to date."
-		return emsg, emsg, 0
-	} else if len(installedMods) > 0 {
-		return shortBuf, longBuf, updatedCount
-	} else {
-		emsg := "There are no installed mods to update."
-		return emsg, emsg, 0
+		emsg := "Mod updates complete."
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, emsg, glob.COLOR_ORANGE)
 	}
+
+	return true, nil
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {

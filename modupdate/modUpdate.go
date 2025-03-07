@@ -12,19 +12,10 @@ func CheckMods(force bool, reportNone bool) {
 		return
 	}
 
-	sMsg, lMsg, count := CheckModUpdates()
-	if count > 0 && sMsg != "" {
-		suffix := ""
-		if fact.NumPlayers > 0 {
-			suffix = " (will upgrade on reboot, when no players are online)"
-			fact.FactChat("Mod updates installed: " + sMsg + suffix)
-		}
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Mod updates:** "+lMsg+suffix)
+	updated, err := CheckModUpdates()
+	if updated && err == nil {
 		if fact.FactIsRunning {
 			fact.QueueFactReboot = true
 		}
-
-	} else if reportNone && count == 0 {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, lMsg)
 	}
 }
