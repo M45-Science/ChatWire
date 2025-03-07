@@ -603,8 +603,8 @@ func MainLoops() {
 					}
 				}
 				glob.UpdateMessage = nil
-				time.Sleep(time.Minute * 10)
-				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
+				time.Sleep(time.Minute * 30)
+				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 10 minutes of randomness
 			} else {
 				time.Sleep(time.Minute)
 			}
@@ -692,6 +692,7 @@ func MainLoops() {
 			}
 
 			time.Sleep(time.Minute * 30)
+			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 10 minutes of randomness
 		}
 	}()
 
