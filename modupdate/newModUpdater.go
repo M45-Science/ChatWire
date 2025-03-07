@@ -26,6 +26,8 @@ const (
 	modUpdateTitle = "Found Mod Updates"
 )
 
+const dryRun = false
+
 // Holy shit, this must be split up into smaller functions
 func CheckModUpdates() (bool, error) {
 
@@ -178,36 +180,39 @@ func CheckModUpdates() (bool, error) {
 				newestVersionData := ModReleases{}
 				for _, release := range dItem.Releases {
 					//Check if this release is newer
-					isNewer, err := checkVersion(EO_GREATER, newestVersion, release.Version)
+					isNewer, err := checkVersion(EO_LESS, newestVersion, release.Version)
 					if err != nil {
 						continue
 					}
 					//Check if factorio is new enough
 					if isNewer {
-						factGood, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
+						rejectFact, err := checkVersion(EO_LESS, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
 						if err != nil {
 							cwlog.DoLogCW("Unable to parse version: " + err.Error())
 							continue
 						}
-						if !factGood {
+						if rejectFact {
 							cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
 							continue
 						}
 						//Check base mod version needed
-						for _, dep := range newestVersionData.InfoJSON.Dependencies {
+						reject := false
+						for _, dep := range release.InfoJSON.Dependencies {
 							parts := strings.Split(dep, " ")
 							numParts := len(parts)
 							if strings.HasPrefix(dep, "base") {
 								//If they specify a base version
 								if numParts == 3 {
 									eq := ParseEquality(parts[1])
-									baseGood, err := checkVersion(eq, parts[2], fact.FactorioVersion)
+									rejectBase, err := checkVersion(eq, parts[2], fact.FactorioVersion)
 									if err != nil {
 										cwlog.DoLogCW("Unable to parse version: " + err.Error())
+										reject = true
 										continue
 									}
-									if !baseGood {
+									if rejectBase {
 										cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a different version of base (" + parts[2] + "), skipping.")
+										reject = true
 										continue
 									}
 								}
@@ -215,9 +220,11 @@ func CheckModUpdates() (bool, error) {
 						}
 
 						//Save this release
-						newestVersion = release.Version
-						newestVersionData = release
-						found = true
+						if !reject {
+							newestVersion = release.Version
+							newestVersionData = release
+							found = true
+						}
 					}
 				}
 				if found {
@@ -240,6 +247,13 @@ func CheckModUpdates() (bool, error) {
 				}
 			}
 		}
+	}
+
+	if dryRun {
+		for _, dl := range downloadList {
+			cwlog.DoLogCW("%v-%v", dl.Name, dl.Data.Version)
+		}
+		return false, nil
 	}
 
 	numDL := len(downloadList)
@@ -356,12 +370,13 @@ func CheckModUpdates() (bool, error) {
 	}
 
 	//TO DO: Report error, don't report all up to date with errors
-	if updatedCount == 0 && len(installedMods) > 0 {
+	if updatedCount > 0 && len(installedMods) > 0 {
 		emsg := "Mod updates complete."
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, emsg, glob.COLOR_ORANGE)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Updates", emsg, glob.COLOR_CYAN)
+		return true, nil
 	}
 
-	return true, nil
+	return false, errors.New("No mod updates available.")
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {

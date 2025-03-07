@@ -48,18 +48,18 @@ func checkVersion(eo int, currentStr, remoteStr string) (bool, error) {
 }
 
 // Helper function to compare based on eo
-func compareVersions(eo, current, remote int) (bool, error) {
+func compareVersions(eo, av, bv int) (bool, error) {
 	switch eo {
 	case EO_LESS:
-		return current < remote, nil
+		return av < bv, nil
 	case EO_LESSEQ:
-		return current <= remote, nil
+		return av <= bv, nil
 	case EO_EQUAL:
-		return current == remote, nil
+		return av == bv, nil
 	case EO_GREATEREQ:
-		return current >= remote, nil
+		return av >= bv, nil
 	case EO_GREATER:
-		return current > remote, nil
+		return av > bv, nil
 	default:
 		return false, errors.New("invalid comparison operation")
 	}
@@ -89,6 +89,7 @@ func versionToInt(data string) (intVersion, error) {
 }
 
 func IsBaseMod(modName string) bool {
+	//Add detection of equality operators
 	if strings.HasPrefix(modName, "base") ||
 		strings.EqualFold(modName, "elevated-rails") ||
 		strings.EqualFold(modName, "quality") ||
