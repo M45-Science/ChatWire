@@ -98,7 +98,7 @@ func CheckModUpdates() (string, string, int) {
 		return emsg, emsg, 0
 	}
 
-	//Satisfy deps
+	//Satisfy dependencies
 	for _, item := range installedMods {
 		for _, dep := range item.Dependencies {
 			//Skip base mods
