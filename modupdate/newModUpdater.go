@@ -111,51 +111,6 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		return false, errors.New(emsg)
 	}
 
-	//Satisfy dependencies
-	for _, item := range installedMods {
-		for _, dep := range item.Dependencies {
-			//Skip base mods
-			if IsBaseMod(dep) {
-				continue
-			}
-
-			//Remove order flag
-			dep = strings.TrimPrefix(dep, "~")
-
-			//Skip optional deps
-			if strings.HasPrefix(dep, "?") || strings.HasPrefix(dep, "(?)") {
-				continue
-			}
-
-			//Split into parts for version equality operators
-			depParts := strings.Split(dep, " ")
-			numDepParts := len(depParts)
-
-			depStr := dep
-			depVers := ""
-			if numDepParts == 3 {
-				depStr = depParts[0]
-				depVers = depParts[2]
-			}
-			if depVers != "" {
-				//placeholder
-			}
-
-			depFound := false
-			for _, item := range installedMods {
-				if item.Name == depStr {
-					depFound = true
-					break
-				}
-			}
-			if !depFound {
-				cwlog.DoLogCW("Need dep: " + depStr)
-				//Maybe just sync mods for ease?
-			}
-		}
-
-	}
-
 	//Fetch mod portal data
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
@@ -202,7 +157,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 							cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
 							continue
 						}
-						//Check base mod version needed
+						//Check base mods version needed
 						reject := false
 						for _, dep := range release.InfoJSON.Dependencies {
 							parts := strings.Split(dep, " ")
@@ -247,7 +202,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 							}
 
 							if missingDep {
-								//
+								//Process missing dependencies here
 							}
 						}
 
@@ -260,9 +215,9 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 					}
 				}
 				if found {
+					//Check if mod is already present before downloading
 					_, err = os.Stat(modPath + canidateData.FileName)
 					if !os.IsNotExist(err) {
-						//We don't need to download this, it already exists!
 						cwlog.DoLogCW("The mod update " + canidateData.FileName + " already exists, skipping.")
 						continue
 					}
@@ -281,7 +236,10 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		}
 	}
 
-	//Check but do not download/install
+	/*
+	 * Check but do not download/install
+	 * Used for debug
+	 */
 	if dryRun {
 		for _, dl := range downloadList {
 			cwlog.DoLogCW("%v-%v", dl.Name, dl.Data.Version)
@@ -289,12 +247,14 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		return false, nil
 	}
 
+	//Show download status
 	numDL := len(downloadList)
 	if numDL > 0 {
 		glob.UpdateMessage = nil
 		buf := fmt.Sprintf("Downloading %v mod updates.", numDL)
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
 	}
+	//Show each download
 	errorLog := ""
 	for d, dl := range downloadList {
 		buf := fmt.Sprintf("Downloading: %v-%v", dl.Name, dl.Data.Version)
@@ -378,7 +338,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 			}
 		}
 
-		//Move old mod file into old directory
+		//Move old mod file into old directory, if we had one
 		if dl.OldFilename != "" {
 			err = os.Rename(modPath+dl.OldFilename, modPath+constants.OldModsDir+"/"+dl.OldFilename)
 			if err != nil {
