@@ -8,6 +8,7 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
+	"ChatWire/util"
 	"bytes"
 	"encoding/binary"
 	"os"
@@ -25,11 +26,7 @@ func handleModList(modListBytes []byte) {
 		return
 	}
 	if len(modListBytes) > 0 {
-		savePath := cfg.Global.Paths.Folders.ServersRoot +
-			cfg.Global.Paths.ChatWirePrefix +
-			cfg.Local.Callsign + "/" +
-			cfg.Global.Paths.Folders.FactorioDir + "/" +
-			cfg.Global.Paths.Folders.Mods + "/"
+		savePath := util.GetModsFolder()
 		modListPath := savePath + constants.ModListName
 
 		err := os.WriteFile(modListPath, modListBytes, 0655)
@@ -118,11 +115,7 @@ func insertModSettings(modSettingsData []byte) bool {
 			return true
 		}
 
-		modPath := cfg.Global.Paths.Folders.ServersRoot +
-			cfg.Global.Paths.ChatWirePrefix +
-			cfg.Local.Callsign + "/" +
-			cfg.Global.Paths.Folders.FactorioDir + "/" +
-			constants.ModsFolder + "/"
+		modPath := util.GetModsFolder()
 		msPath := modPath + constants.ModSettingsName
 		err := os.WriteFile(msPath, modSettingsData, 0644)
 		if err != nil {

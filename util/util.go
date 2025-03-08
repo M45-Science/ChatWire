@@ -5,9 +5,34 @@ import (
 	"strings"
 
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 )
+
+func GetFactorioFolder() string {
+	return cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/"
+}
+
+func GetModsFolder() string {
+	//Mod folder path
+	return cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		constants.ModsFolder + "/"
+}
+
+func GetSavesFolder() string {
+	return cfg.Global.Paths.Folders.ServersRoot +
+		cfg.Global.Paths.ChatWirePrefix +
+		cfg.Local.Callsign + "/" +
+		cfg.Global.Paths.Folders.FactorioDir + "/" +
+		cfg.Global.Paths.Folders.Saves
+}
 
 /*  IsPatreon checks if player has patreon role */
 func IsPatreon(id string) bool {

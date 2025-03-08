@@ -21,6 +21,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 const SyncModsTimeout = time.Minute * 15
@@ -82,11 +83,7 @@ func SyncMods(optionalFileName string) bool {
 
 /* Find the newest save game */
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
+	path := util.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 
@@ -258,11 +255,7 @@ func injectSoftMod(fileName, folderName string) {
 		}
 
 		/* Add old save files into zip */
-		path := cfg.Global.Paths.Folders.ServersRoot +
-			cfg.Global.Paths.ChatWirePrefix +
-			cfg.Local.Callsign + "/" +
-			cfg.Global.Paths.Folders.FactorioDir + "/" +
-			cfg.Global.Paths.Folders.Saves
+		path := util.GetSavesFolder()
 
 		newZipFile, err := os.Create(path + constants.TempSaveName)
 		if err != nil {
@@ -615,11 +608,7 @@ func ConfigSoftMod() {
 }
 
 func GetModFiles() []string {
-	modPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
+	modPath := util.GetModsFolder()
 
 	modList, errm := os.ReadDir(modPath)
 	modStrings := []string{}

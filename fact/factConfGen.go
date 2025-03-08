@@ -15,6 +15,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 /* Generate a server-settings.json file for Factorio */
@@ -50,10 +51,7 @@ type FactConf struct {
 func GenerateFactorioConfig() bool {
 
 	tempPath := constants.ServSettingsName + ".tmp"
-	finalPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
+	finalPath := util.GetFactorioFolder() +
 		constants.ServSettingsName
 
 	servName := "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name

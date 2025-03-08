@@ -9,6 +9,7 @@ import (
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/support"
+	"ChatWire/util"
 	"fmt"
 	"os"
 	"strings"
@@ -66,11 +67,7 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 }
 
 func insertSaveGame(i *discordgo.InteractionCreate, saveFileName string, saveGameData []byte) bool {
-	savePath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves + "/"
+	savePath := util.GetSavesFolder() + "/"
 	saveFilePath := savePath + saveFileName
 	err := os.WriteFile(saveFilePath, saveGameData, 0644)
 	if err != nil {

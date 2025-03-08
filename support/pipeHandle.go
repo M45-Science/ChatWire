@@ -773,12 +773,7 @@ func handleExitSave(input *handleData) bool {
 			}
 
 			/* Path for backup save */
-			newPath := cfg.Global.Paths.Folders.ServersRoot +
-				cfg.Global.Paths.ChatWirePrefix +
-				cfg.Local.Callsign + "/" +
-				cfg.Global.Paths.Folders.FactorioDir + "/" +
-				cfg.Global.Paths.Folders.Saves + "/"
-
+			newPath := util.GetSavesFolder() + "/"
 			/* Name for backup save */
 			newName := fmt.Sprintf("bak-%v.zip", cfg.Local.LastSaveBackup)
 

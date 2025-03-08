@@ -19,6 +19,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 var modPackLock sync.Mutex
@@ -41,11 +42,7 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	/* Mod path */
-	modPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
+	modPath := util.GetModsFolder()
 
 	files, err := os.ReadDir(modPath)
 	if err != nil {

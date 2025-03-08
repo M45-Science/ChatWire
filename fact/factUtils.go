@@ -21,6 +21,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/util"
 )
 
 var (
@@ -200,10 +201,7 @@ func WhitelistPlayer(pname string, level int) {
 /* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
 
-	wpath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
+	wpath := util.GetFactorioFolder() +
 		constants.AdminlistName
 
 	glob.PlayerListLock.RLock()
@@ -249,10 +247,7 @@ func WriteAdminlist() int {
 /* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
-	wpath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
+	wpath := util.GetFactorioFolder() +
 		constants.WhitelistName
 
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
@@ -652,11 +647,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		return
 	}
 
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
+	path := util.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -809,11 +800,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 		return
 	}
 
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
+	path := util.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -917,11 +904,7 @@ func DoChangeMap(arg string) {
 		return
 	}
 
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
+	path := util.GetSavesFolder()
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)

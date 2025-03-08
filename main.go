@@ -21,6 +21,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 	"ChatWire/support"
 )
 
@@ -29,6 +30,7 @@ func main() {
 	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands and quit.")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
+	glob.NoDiscord = flag.Bool("noDiscord", false, "Turn off Discord")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
@@ -56,7 +58,9 @@ func main() {
 
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
-	go startbot()
+	if !*glob.NoDiscord {
+		go startbot()
+	}
 
 	fact.SetupSchedule()
 	fact.LoadPlayers(true, false, false)
@@ -64,8 +68,10 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
-	go support.MainLoops()
-	go support.HandleChat()
+	if !*glob.NoDiscord {
+		go support.MainLoops()
+		go support.HandleChat()
+	}
 
 	//If autolaunch is off, get current factorio version
 	if cfg.Local.Options.AutoStart && !*glob.NoAutoLaunch {
@@ -75,6 +81,10 @@ func main() {
 		factUpdater.GetFactorioVersion(info)
 		fact.FactorioVersion = info.VersInt.IntToString()
 		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
+
+		modupdate.CheckModUpdates(true)
+		time.Sleep(time.Second * 5)
+		os.Exit(0)
 	}
 
 	/* Wait here for process signals */

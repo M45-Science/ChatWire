@@ -147,6 +147,7 @@ var (
 	DoDeregisterCommands *bool
 	LocalTestMode        *bool
 	NoAutoLaunch         *bool
+	NoDiscord            *bool
 	ProxyURL             *string
 
 	/* Vote map */
