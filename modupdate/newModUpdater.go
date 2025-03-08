@@ -33,6 +33,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	if fact.FactorioVersion == constants.Unknown {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 		factUpdater.GetFactorioVersion(info)
+		fact.FactorioVersion = info.VersInt.IntToString()
 	}
 	//Just in case that fails too
 	if fact.FactorioVersion == constants.Unknown {
@@ -132,6 +133,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 	//Check mod postal data against mod list, find upgrades
 	var downloadList []downloadData
+	var downloadCount int
 	updatedCount := 0
 	var shortBuf, longBuf string
 	for _, portalItem := range detailList {
@@ -188,40 +190,6 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 									}
 								}
 							}
-							//Check if this dependency is already satisfied
-							missingDep := false
-							for _, mod := range installedMods {
-								if strings.EqualFold(mod.Name, parts[0]) {
-
-									//Warn about incompatable mods
-									if strings.HasPrefix(dep, "!") {
-										emsg := "Warning: " + mod.Name + " is incompatable with " + dep
-										cwlog.DoLogCW(emsg)
-										glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "WARNING", emsg, glob.COLOR_RED)
-										continue
-									}
-
-									//If they specify a version for the dependency
-									if numParts == 3 {
-										eq := ParseOperator(parts[1])
-										depGood, err := checkVersion(eq, mod.Version, parts[2])
-										if err != nil {
-											cwlog.DoLogCW("Unable to parse version: " + err.Error())
-											missingDep = true
-											continue
-										}
-										if !depGood {
-											//cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of " + parts[0] + " (" + parts[2] + ").")
-											missingDep = true
-											continue
-										}
-									}
-								}
-							}
-
-							if missingDep {
-								//Process missing dependencies here
-							}
 						}
 
 						//Save this release
@@ -233,11 +201,13 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 					}
 				}
 				if found {
+					modExist := false
 					//Check if mod is already present before downloading
 					_, err = os.Stat(modPath + candidateData.FileName)
 					if !os.IsNotExist(err) {
-						cwlog.DoLogCW("The mod update " + candidateData.FileName + " already exists, skipping.")
-						continue
+						modExist = true
+					} else {
+						downloadCount++
 					}
 
 					updatedCount++
@@ -247,9 +217,65 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 							Name:        installedItem.Name,
 							Title:       installedItem.Title,
 							OldFilename: installedItem.oldFilename,
-							Data:        candidateData},
+							Data:        candidateData,
+							doDownload:  !modExist},
 						downloadList)
 				}
+			}
+		}
+	}
+
+	//Check for unmet dependencies, incompatabilites, etc.
+	for _, dl := range downloadList {
+		for _, dep := range dl.Data.InfoJSON.Dependencies {
+
+			dep = strings.TrimPrefix(dep, "~")
+
+			parts := strings.Split(dep, " ")
+			numParts := len(parts)
+
+			if IsBaseMod(parts[0]) {
+				continue
+			}
+
+			if strings.HasPrefix(parts[0], "?") {
+				continue
+			}
+
+			if strings.HasPrefix(parts[0], "!") {
+				continue
+			}
+
+			foundDep := false
+			for _, mod := range installedMods {
+				//Check if dependency already met
+				if strings.EqualFold(mod.Name, parts[0]) {
+					//If we require a specific version
+					if numParts == 3 {
+						eq := ParseOperator(parts[1])
+						reject, err := checkVersion(eq, parts[2], mod.Version)
+						if err != nil {
+							cwlog.DoLogCW("Unable to parse dependency version:" + dl.Name + ": " + dep)
+							continue
+						}
+						if reject {
+							//TODO: look for compatible version
+							emsg := "Mod " + dl.Name + " not compatible with " + mod.Name + "-" + mod.Version + "!"
+							cwlog.DoLogCW(emsg)
+							continue
+						}
+					} else {
+						//Dependency met
+						foundDep = true
+						break
+					}
+				}
+			}
+			if !foundDep {
+				//Unmet dep
+				emsg := "Warning: Mod " + dl.Name + " needs " + dep + " but it is not installed!"
+				cwlog.DoLogCW(emsg)
+				continue
 			}
 		}
 	}
@@ -266,15 +292,18 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 
 	//Show download status
-	numDL := len(downloadList)
-	if numDL > 0 {
+	if downloadCount > 0 {
 		glob.UpdateMessage = nil
-		buf := fmt.Sprintf("Downloading %v mod updates.", numDL)
+		buf := fmt.Sprintf("Downloading %v mod updates.", downloadCount)
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
 	}
 	//Show each download
 	errorLog := ""
 	for d, dl := range downloadList {
+		if !dl.doDownload {
+			continue
+		}
+
 		buf := fmt.Sprintf("Downloading: %v-%v", dl.Name, dl.Data.Version)
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
 

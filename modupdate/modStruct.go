@@ -15,6 +15,7 @@ type downloadData struct {
 	Name, Title, OldFilename string
 	Data                     ModReleases
 	Complete                 bool
+	doDownload               bool
 }
 
 type modListData struct {
