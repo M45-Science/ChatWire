@@ -17,49 +17,49 @@ import (
 	"strings"
 )
 
-func checkVersion(eo int, currentStr, remoteStr string) (bool, error) {
+func checkVersion(operator int, local, remote string) (bool, error) {
 
-	cInt, err := versionToInt(currentStr)
+	cInt, err := versionToInt(local)
 	if err != nil {
 		return false, err
 	}
-	rInt, err := versionToInt(remoteStr)
+	rInt, err := versionToInt(remote)
 	if err != nil {
 		return false, err
 	}
 
 	// Compare major versions
 	if rInt.parts[0] != cInt.parts[0] {
-		return compareVersions(eo, cInt.parts[0], rInt.parts[0])
+		return compareVersions(operator, cInt.parts[0], rInt.parts[0])
 	}
 
 	// Compare minor versions
 	if rInt.parts[1] != cInt.parts[1] {
-		return compareVersions(eo, cInt.parts[1], rInt.parts[1])
+		return compareVersions(operator, cInt.parts[1], rInt.parts[1])
 	}
 
 	// Compare patch versions
 	if rInt.parts[2] != cInt.parts[2] {
-		return compareVersions(eo, cInt.parts[2], rInt.parts[2])
+		return compareVersions(operator, cInt.parts[2], rInt.parts[2])
 	}
 
 	// If they are equal
-	return compareVersions(eo, 0, 0)
+	return compareVersions(operator, 0, 0)
 }
 
 // Helper function to compare based on eo
 func compareVersions(eo, av, bv int) (bool, error) {
 	switch eo {
 	case EO_LESS:
-		return av < bv, nil
+		return bv < av, nil
 	case EO_LESSEQ:
-		return av <= bv, nil
+		return bv <= av, nil
 	case EO_EQUAL:
-		return av == bv, nil
+		return bv == av, nil
 	case EO_GREATEREQ:
-		return av >= bv, nil
+		return bv >= av, nil
 	case EO_GREATER:
-		return av > bv, nil
+		return bv > av, nil
 	default:
 		return false, errors.New("invalid comparison operation")
 	}
@@ -88,12 +88,12 @@ func versionToInt(data string) (intVersion, error) {
 	return intOut, nil
 }
 
-func IsBaseMod(modName string) bool {
+func IsBaseMod(dep string) bool {
 	//Add detection of equality operators
-	if strings.HasPrefix(modName, "base") ||
-		strings.EqualFold(modName, "elevated-rails") ||
-		strings.EqualFold(modName, "quality") ||
-		strings.EqualFold(modName, "space-age") {
+	if strings.EqualFold(dep, "base") ||
+		strings.EqualFold(dep, "elevated-rails") ||
+		strings.EqualFold(dep, "quality") ||
+		strings.EqualFold(dep, "space-age") {
 		return true
 	}
 	return false
@@ -182,7 +182,7 @@ func GetInfoJsonFromZip(data []byte) []byte {
 	return nil
 }
 
-func ParseEquality(input string) int {
+func ParseOperator(input string) int {
 	switch input {
 	case "<":
 		return EO_LESS

@@ -34,6 +34,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 		factUpdater.GetFactorioVersion(info)
 	}
+	//Just in case that fails too
 	if fact.FactorioVersion == constants.Unknown {
 		emsg := "checkModUpdates: Factroio version unknown, aborting"
 		return false, errors.New(emsg)
@@ -54,7 +55,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 
 	//Find all mods, read info.json inside each
-	var fileModList []modZipInfo
+	var modFileList []modZipInfo
 	for _, mod := range modList {
 		if strings.HasSuffix(mod.Name(), ".zip") {
 			modInfo := ModInfoRead(mod.Name(), nil)
@@ -62,41 +63,44 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 				continue
 			}
 			modInfo.oldFilename = mod.Name()
-			fileModList = append(fileModList, *modInfo)
+			modFileList = append(modFileList, *modInfo)
 		}
 	}
 
 	//Read mods-list.json, continue even if it does not exist
-	jsonFileList, _ := GetModList()
+	jsonModList, _ := GetModList()
 
 	//Check both lists, keep any that are not explicitly disabled.
 	var installedMods []modZipInfo
-	for _, fmod := range fileModList {
+	for _, modFile := range modFileList {
 		//Check if the mod is disabled
-		doAdd := true
-		for _, jmod := range jsonFileList.Mods {
-			if IsBaseMod(jmod.Name) {
+		keep := true
+		for _, jsonMod := range jsonModList.Mods {
+			if IsBaseMod(jsonMod.Name) {
 				continue
 			}
 
-			if strings.EqualFold(jmod.Name, fmod.Name) {
-				if !jmod.Enabled {
-					doAdd = false
+			if strings.EqualFold(jsonMod.Name, modFile.Name) {
+				if !jsonMod.Enabled {
+					keep = false
 				}
 				break
 			}
 		}
 		//Include mods not found in mod-list.json, unless disabled
-		if doAdd {
+		if keep {
+			//Check for duplicates, then add
 			dupe := false
 			for _, item := range installedMods {
-				if strings.EqualFold(item.Name, fmod.Name) {
+				//This shouldn't happen, but just in case
+				if strings.EqualFold(item.Name, modFile.Name) &&
+					item.Version == modFile.Version {
 					dupe = true
 					break
 				}
 			}
 			if !dupe {
-				installedMods = append(installedMods, fmod)
+				installedMods = append(installedMods, modFile)
 			}
 		}
 	}
@@ -115,13 +119,13 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 				continue
 			}
 
+			//Remove order flag
+			dep = strings.TrimPrefix(dep, "~")
+
 			//Skip optional deps
 			if strings.HasPrefix(dep, "?") || strings.HasPrefix(dep, "(?)") {
 				continue
 			}
-
-			//Remove order flag
-			dep = strings.TrimPrefix(dep, "~")
 
 			//Split into parts for version equality operators
 			depParts := strings.Split(dep, " ")
@@ -175,27 +179,27 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	var downloadList []downloadData
 	updatedCount := 0
 	var shortBuf, longBuf string
-	for _, dItem := range detailList {
-		for _, iItem := range installedMods {
-			if dItem.Name == iItem.Name {
+	for _, portalItem := range detailList {
+		for _, installedItem := range installedMods {
+			if portalItem.Name == installedItem.Name {
 				found := false
-				newestVersion := iItem.Version
-				newestVersionData := ModReleases{}
-				for _, release := range dItem.Releases {
+				canidate := installedItem.Version
+				canidateData := ModReleases{}
+				for _, release := range portalItem.Releases {
 					//Check if this release is newer
-					isNewer, err := checkVersion(EO_LESS, newestVersion, release.Version)
+					isNewer, err := checkVersion(EO_GREATER, canidate, release.Version)
 					if err != nil {
 						continue
 					}
 					//Check if factorio is new enough
 					if isNewer {
-						rejectFact, err := checkVersion(EO_LESS, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
+						factGood, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
 						if err != nil {
 							cwlog.DoLogCW("Unable to parse version: " + err.Error())
 							continue
 						}
-						if rejectFact {
-							cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
+						if !factGood {
+							cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
 							continue
 						}
 						//Check base mod version needed
@@ -203,38 +207,63 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 						for _, dep := range release.InfoJSON.Dependencies {
 							parts := strings.Split(dep, " ")
 							numParts := len(parts)
-							if strings.HasPrefix(dep, "base") {
-								//If they specify a base version
+							if IsBaseMod(parts[0]) {
+								//If they specify a version
 								if numParts == 3 {
-									eq := ParseEquality(parts[1])
-									rejectBase, err := checkVersion(eq, parts[2], fact.FactorioVersion)
+									eq := ParseOperator(parts[1])
+									baseGood, err := checkVersion(eq, fact.FactorioVersion, parts[2])
 									if err != nil {
 										cwlog.DoLogCW("Unable to parse version: " + err.Error())
 										reject = true
 										continue
 									}
-									if rejectBase {
-										cwlog.DoLogCW("Mod release: " + dItem.Name + ": " + release.Version + " requires a different version of base (" + parts[2] + "), skipping.")
+									if !baseGood {
+										cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of base (" + parts[2] + "), skipping.")
 										reject = true
 										continue
 									}
 								}
 							}
+							//Check if this dependency is already satisfied
+							missingDep := false
+							for _, mod := range installedMods {
+								if strings.EqualFold(mod.Name, parts[0]) {
+									//If they specify a version for the dependency
+									if numParts == 3 {
+										eq := ParseOperator(parts[1])
+										depGood, err := checkVersion(eq, mod.Version, parts[2])
+										if err != nil {
+											cwlog.DoLogCW("Unable to parse version: " + err.Error())
+											missingDep = true
+											continue
+										}
+										if !depGood {
+											cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of " + parts[0] + " (" + parts[2] + ").")
+											missingDep = true
+											continue
+										}
+									}
+								}
+							}
+
+							if missingDep {
+								//
+							}
 						}
 
 						//Save this release
 						if !reject {
-							newestVersion = release.Version
-							newestVersionData = release
+							canidate = release.Version
+							canidateData = release
 							found = true
 						}
 					}
 				}
 				if found {
-					_, err = os.Stat(modPath + newestVersionData.FileName)
+					_, err = os.Stat(modPath + canidateData.FileName)
 					if !os.IsNotExist(err) {
 						//We don't need to download this, it already exists!
-						cwlog.DoLogCW("The mod update " + newestVersionData.FileName + " already exists, skipping.")
+						cwlog.DoLogCW("The mod update " + canidateData.FileName + " already exists, skipping.")
 						continue
 					}
 
@@ -242,10 +271,10 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 					downloadList = addDownload(
 						downloadData{
-							Name:        iItem.Name,
-							Title:       iItem.Title,
-							OldFilename: iItem.oldFilename,
-							Data:        newestVersionData},
+							Name:        installedItem.Name,
+							Title:       installedItem.Title,
+							OldFilename: installedItem.oldFilename,
+							Data:        canidateData},
 						downloadList)
 				}
 			}
