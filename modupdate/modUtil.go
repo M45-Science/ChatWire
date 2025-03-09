@@ -119,7 +119,6 @@ func GetModList() (modListData, error) {
 		return modListData{}, err
 	}
 
-	cwlog.DoLogCW("GetModList: %v", serverMods)
 	return serverMods, nil
 }
 
