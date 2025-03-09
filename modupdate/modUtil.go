@@ -145,7 +145,6 @@ func ModInfoRead(modName string, rawData []byte) *modZipInfo {
 		return nil
 	}
 
-	cwlog.DoLogCW("ModInfoRead: %v", modName)
 	return &modData
 }
 
@@ -291,7 +290,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 			if strings.EqualFold(portalItem.Name, installedItem.Name) {
 				newDL := findModUpgrade(portalItem, installedItem)
 				if newDL.Name != "" {
-					downloadList = append(downloadList, newDL)
+					downloadList = addDownload(newDL, downloadList)
 				}
 			}
 		}
@@ -303,7 +302,6 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 func checkModDeps(downloadList []downloadData) []downloadData {
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
-		cwlog.DoLogCW("DEPS::: %v-%v: %v", dl.Name, dl.Data.Version, dl.Data.InfoJSON.Dependencies)
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
 			dep = strings.TrimPrefix(dep, "~")
 
@@ -347,14 +345,11 @@ func checkModDeps(downloadList []downloadData) []downloadData {
 			}
 			if !foundDep {
 				//Unmet dep
-				emsg := "Warning: Mod " + dl.Name + "-" + dl.Data.Version + " needs " + dep + " but it is not installed!"
 				newInfo, _ := downloadModInfo(parts[0])
 				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
-				cwlog.DoLogCW("Got dep: %v", newDL.Name)
 				if newDL.Name != "" {
-					downloadList = append(downloadList, newDL)
+					downloadList = addDownload(newDL, downloadList)
 				}
-				cwlog.DoLogCW(emsg)
 			}
 		}
 	}
@@ -506,11 +501,11 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 				return list
 			}
 			if newer {
-				//Already in list and not newer, skip
-				return list
-			} else {
-				//Already here, but older. Replace it
+				//Already in list and newer, replace
 				list[i] = input
+			} else {
+				//Already here, but older, skip it
+				return list
 			}
 		}
 	}
@@ -519,7 +514,6 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 }
 
 func downloadModInfo(name string) (modPortalFullData, error) {
-	cwlog.DoLogCW("downloadModInfo: " + name)
 
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
@@ -533,13 +527,10 @@ func downloadModInfo(name string) (modPortalFullData, error) {
 		cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
 		return modPortalFullData{}, err
 	}
-
-	cwlog.DoLogCW("downloadModInfo: GOT %v", newInfo.Name)
 	return newInfo, nil
 }
 
 func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) downloadData {
-	cwlog.DoLogCW("findModUpgrade: %v", portalItem.Name)
 
 	found := false
 	candidateVersion := installedItem.Version
@@ -558,7 +549,7 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 				continue
 			}
 			if factReject {
-				cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
+				//cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
 				continue
 			}
 			//Check dependencies
@@ -586,7 +577,7 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 							continue
 						}
 						if baseReject {
-							cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires " + dep + " skipping.")
+							//cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires " + dep + " skipping.")
 							continue
 						}
 					}
@@ -616,7 +607,6 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 			Data:        candidateData,
 			doDownload:  !modExist}
 
-		cwlog.DoLogCW("found mod upgrade: %v", portalItem.Name)
 		return newDL
 	}
 
