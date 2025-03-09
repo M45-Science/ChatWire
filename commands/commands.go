@@ -246,6 +246,12 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
+				Name:        "list",
+				Description: "list all installed mods",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Required:    false,
+			},
+			{
 				Name:        "enable",
 				Description: "enable a mod by name",
 				Type:        discordgo.ApplicationCommandOptionString,
