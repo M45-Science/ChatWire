@@ -262,7 +262,7 @@ func MainLoops() {
 	 ************************************/
 	go fact.WatchDatabaseFile()
 
-	/* Read database, if the file was modifed */
+	/* Read database, if the file was modified */
 	go func() {
 		updated := false
 

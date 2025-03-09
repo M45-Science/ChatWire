@@ -71,7 +71,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		switch oName {
 		case "list":
-			tmsg = tmsg + listMods(i, installedMods)
+			tmsg = tmsg + listMods(installedMods)
 			//		case "add":
 			//		case "remove":
 		case "enable":
@@ -100,7 +100,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
 }
 
-func listMods(i *discordgo.InteractionCreate, installedMods []modupdate.ModData) string {
+func listMods(installedMods []modupdate.ModData) string {
 	ebuf := ""
 	for _, item := range installedMods {
 		if !item.Enabled {

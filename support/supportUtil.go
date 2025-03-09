@@ -107,10 +107,10 @@ func ProtectIdiots(text string) bool {
 			}
 
 			/* Just in case they miss part of it when copying/pasting */
-			clen := len(password)
-			if clen > 3 {
-				trimEnd := password[0 : clen-2]
-				trimStart := password[2:clen]
+			plen := len(password)
+			if plen > 3 {
+				trimEnd := password[0 : plen-2]
+				trimStart := password[2:plen]
 
 				if strings.Contains(checkme, trimEnd) {
 					idiotID = i

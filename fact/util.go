@@ -88,7 +88,7 @@ func FactChat(format string, args ...interface{}) {
 
 	/*
 		* If we are running our softmod, use the much safer
-		 * /cchat comamnd
+		 * /cchat command
 	*/
 	if glob.SoftModVersion != constants.Unknown {
 		WriteFact("/cchat " + input)

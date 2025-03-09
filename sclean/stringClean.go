@@ -58,7 +58,7 @@ func UnixPreFilter(str string) string {
 	return str
 }
 
-/* Shorten strings, end with elipsis */
+/* Shorten strings, end with ellipsis */
 func TruncateStringEllipsis(str string, num int) string {
 	bnoden := str
 	if len(str) > num {

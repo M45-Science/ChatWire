@@ -519,7 +519,7 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: user.Scoreboard, PrimaryOnly: true},
-	/* PLAYER COMMMANDS -------------------- */
+	/* PLAYER COMMANDS -------------------- */
 	{AppCmd: glob.AppCmdData{
 		Name:        "list-mods",
 		Description: "Show list of mod files",

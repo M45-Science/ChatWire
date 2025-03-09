@@ -154,7 +154,7 @@ func checkFullPackage(data []byte) ([]byte, error) {
 	cwlog.DoLogCW("unxz complete, checking tar file.")
 	err = checkInstallTar(archive)
 	if err != nil {
-		return nil, errors.New("checkFullPackage: tar verfied failed:" + err.Error())
+		return nil, errors.New("checkFullPackage: tar verify failed:" + err.Error())
 	}
 	cwlog.DoLogCW("Install package verified!")
 

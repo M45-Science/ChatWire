@@ -921,7 +921,7 @@ func handleCrashes(input *handleData) bool {
 			if time.Since(glob.LastCrashReport) > constants.CrashReportInterval*time.Second {
 				glob.LastCrashReport = time.Now()
 
-				/* Supress connection error messages */
+				/* Suppress connection error messages */
 				if !strings.Contains(input.noTimecode, "Matching server connection failed") {
 					fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
 				}
