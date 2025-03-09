@@ -21,7 +21,6 @@ import (
 	"ChatWire/fact"
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
-	"ChatWire/modupdate"
 	"ChatWire/support"
 )
 
@@ -82,9 +81,11 @@ func main() {
 		fact.FactorioVersion = info.VersInt.IntToString()
 		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
 
-		modupdate.CheckModUpdates(true)
-		time.Sleep(time.Second * 5)
-		os.Exit(0)
+		/*
+			modupdate.CheckModUpdates(true)
+			time.Sleep(time.Second * 5)
+			os.Exit(0)
+		*/
 	}
 
 	/* Wait here for process signals */
