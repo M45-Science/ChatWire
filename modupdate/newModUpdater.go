@@ -29,7 +29,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	//Read mods-list.json
 	jsonModList, _ := GetModList()
 	//Merge the two lists
-	installedMods := MergeLists(modFileList, jsonModList)
+	installedMods := mergeModLists(modFileList, jsonModList)
 
 	//Check if we need to proceed
 	if len(installedMods) == 0 {
@@ -49,7 +49,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	downloadList := findModUpgrades(installedMods, detailList)
 
 	//Check for mod dependencies
-	downloadList = checkModDeps(downloadList)
+	downloadList = checkModDependencies(downloadList)
 
 	//Dry run ends here
 	if dryRun {

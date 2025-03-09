@@ -231,7 +231,7 @@ func GetModFiles() ([]modZipInfo, error) {
 	return modFileList, nil
 }
 
-func MergeLists(modFileList []modZipInfo, jsonModList modListData) []modZipInfo {
+func mergeModLists(modFileList []modZipInfo, jsonModList modListData) []modZipInfo {
 	//Check both lists, keep any that are not explicitly disabled.
 	var installedMods []modZipInfo
 	for _, modFile := range modFileList {
@@ -298,7 +298,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-func checkModDeps(downloadList []downloadData) []downloadData {
+func checkModDependencies(downloadList []downloadData) []downloadData {
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
