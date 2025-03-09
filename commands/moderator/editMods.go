@@ -1,7 +1,9 @@
 package moderator
 
 import (
+	"ChatWire/constants"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"strings"
@@ -19,7 +21,18 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 	//Read mods-list.json
-	jsonModList, _ := modupdate.GetModList()
+	jsonModList, err := modupdate.GetModList()
+	if err != nil {
+		emsg := "Unable to read the " + constants.ModListName + " file."
+		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
+		return
+	}
+
+	if fact.FactorioBooted || fact.FactIsRunning {
+		buf := "Factorio is currently running. You must stop Factorio first."
+		disc.InteractionEphemeralResponse(i, "Error:", buf)
+		return
+	}
 
 	//Merge lists
 	installedMods := jsonModList.Mods
@@ -38,11 +51,13 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	//Handle commands
 	for _, option := range i.ApplicationCommandData().Options {
 		oName := strings.ToLower(option.Name)
 		switch oName {
 		case "add":
 		case "remove":
+			//
 		case "enable":
 			installedMods = ToggleMod(i, installedMods, oName, true)
 		case "disable":
@@ -50,7 +65,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	//Write new mod list here, handle rebooting
+	//Write new mod list here
 
 	//Check if we need to proceed
 	if len(installedMods) == 0 {
