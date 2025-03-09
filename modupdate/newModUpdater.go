@@ -18,6 +18,7 @@ const (
 
 func CheckModUpdates(dryRun bool) (bool, error) {
 
+	//If needed, get Factorio version
 	getFactoioVersion()
 
 	//Read all mod.zip files
