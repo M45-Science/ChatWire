@@ -58,7 +58,7 @@ func main() {
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
 	if !*glob.NoDiscord {
-		go startbot()
+		go startbotA()
 	}
 
 	fact.SetupSchedule()
@@ -108,7 +108,7 @@ var DiscordConnectAttempts int
 
 var botReadyAdded bool
 
-func startbot() {
+func startbotA() {
 
 	/* Check if Discord token is set */
 	if cfg.Global.Discord.Token == "" {
@@ -126,16 +126,19 @@ func startbot() {
 	 * Discord will invalidate the token if there are too many connection attempts.
 	 */
 	if erra != nil {
-		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", erra)
+		cwlog.DoLogCW("An error occurred when attempting to CREATE the Discord session. Details: %v", erra)
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
 		DiscordConnectAttempts++
 
 		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
-			startbot()
+			go startbotA()
 		}
 		return
 	}
+	startbotB(bot)
+}
 
+func startbotB(bot *discordgo.Session) {
 	/* We need a few intents to detect discord users and roles */
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
@@ -148,12 +151,12 @@ func startbot() {
 
 	/* This handles error after the initial connection */
 	if errb != nil {
-		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", errb)
+		cwlog.DoLogCW("An error occurred when attempting to OPEN the Discord session. Details: %v", errb)
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
 		DiscordConnectAttempts++
 
 		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
-			startbot()
+			go startbotB(bot)
 		}
 		return
 	}
@@ -217,6 +220,9 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	//Only on first connect
 	if !support.BotIsReady {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
+		if fact.FactIsRunning || fact.FactorioBooted {
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" was already online.", glob.COLOR_GREEN)
+		}
 	}
 
 	//Reset attempt count, we are fully connected.
