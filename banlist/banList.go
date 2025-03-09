@@ -16,8 +16,10 @@ import (
 	"ChatWire/sclean"
 )
 
-var BanList []banDataType
-var BanListLock sync.Mutex
+var (
+	BanList     []banDataType
+	banListLock sync.Mutex
+)
 
 type banDataType struct {
 	UserName string `json:"username"`
@@ -27,8 +29,8 @@ type banDataType struct {
 
 func CheckBanList(name string, doWarn bool) bool {
 	pname := strings.ToLower(name)
-	BanListLock.Lock()
-	defer BanListLock.Unlock()
+	banListLock.Lock()
+	defer banListLock.Unlock()
 
 	for _, ban := range BanList {
 		if ban.Revoked {
@@ -101,8 +103,8 @@ func WatchBanFile() {
 }
 
 func ReadBanFile(firstboot bool) {
-	BanListLock.Lock()
-	defer BanListLock.Unlock()
+	banListLock.Lock()
+	defer banListLock.Unlock()
 
 	if cfg.Global.Paths.DataFiles.Bans == "" {
 		return

@@ -22,8 +22,10 @@ import (
 	"ChatWire/util"
 )
 
-var modPackLock sync.Mutex
-var lastRun time.Time
+var (
+	modPackLock sync.Mutex
+	lastRun     time.Time
+)
 
 /* executes /online on the server, response handled in chat.go */
 func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {

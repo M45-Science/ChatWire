@@ -128,7 +128,7 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			}
 		} else if item.Type == moderator.TYPE_BOOL {
 			if *item.BData != item.DefBool || verbose {
-				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, util.BoolToString(*item.BData))
+				buf = buf + fmt.Sprintf("%23v: %v\n", item.ShortDesc, util.BoolToOnOff(*item.BData))
 			}
 		} else if item.Type == moderator.TYPE_F32 {
 			if (*item.FData32 != 0 && *item.FData32 != item.DefF32) || verbose {

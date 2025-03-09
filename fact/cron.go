@@ -13,11 +13,13 @@ import (
 	"ChatWire/cwlog"
 )
 
-var CronVar *cron.Cron
-var NextResetTime time.Time
-var NextReset string
-var TillReset string
-var NextResetUnix int64
+var (
+	CronVar       *cron.Cron
+	NextResetTime time.Time
+	NextReset     string
+	TillReset     string
+	NextResetUnix int64
+)
 
 func SetupSchedule() (err bool) {
 	if cfg.Local.Options.Schedule != "" && cfg.Local.Options.Schedule != "no-reset" {

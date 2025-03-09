@@ -23,7 +23,7 @@ import (
 	"ChatWire/util"
 )
 
-func LinuxSetProcessGroup(cmd *exec.Cmd) {
+func linuxSetProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 

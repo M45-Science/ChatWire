@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -22,6 +23,13 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/support"
+)
+
+var (
+	discordConnectAttempts int
+	messageHandlerLock     sync.Mutex
+	botReadyAdded          bool
+	hooksAdded             bool
 )
 
 func main() {
@@ -104,10 +112,6 @@ func main() {
 	fact.DoExit(false)
 }
 
-var DiscordConnectAttempts int
-
-var botReadyAdded bool
-
 func startbotA() {
 
 	/* Check if Discord token is set */
@@ -127,10 +131,10 @@ func startbotA() {
 	 */
 	if erra != nil {
 		cwlog.DoLogCW("An error occurred when attempting to CREATE the Discord session. Details: %v", erra)
-		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
-		DiscordConnectAttempts++
+		time.Sleep(time.Duration(discordConnectAttempts*5) * time.Second)
+		discordConnectAttempts++
 
-		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
+		if discordConnectAttempts < constants.MaxDiscordAttempts {
 			go startbotA()
 		}
 		return
@@ -145,17 +149,17 @@ func startbotB(bot *discordgo.Session) {
 	/* This is called when the connection is verified */
 	if !botReadyAdded {
 		botReadyAdded = true
-		bot.AddHandler(BotReady)
+		bot.AddHandler(botReady)
 	}
 	errb := bot.Open()
 
 	/* This handles error after the initial connection */
 	if errb != nil {
 		cwlog.DoLogCW("An error occurred when attempting to OPEN the Discord session. Details: %v", errb)
-		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
-		DiscordConnectAttempts++
+		time.Sleep(time.Duration(discordConnectAttempts*5) * time.Second)
+		discordConnectAttempts++
 
-		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
+		if discordConnectAttempts < constants.MaxDiscordAttempts {
 			go startbotB(bot)
 		}
 		return
@@ -165,9 +169,7 @@ func startbotB(bot *discordgo.Session) {
 	bot.LogLevel = discordgo.LogWarning
 }
 
-var hooksAdded bool
-
-func BotReady(s *discordgo.Session, r *discordgo.Ready) {
+func botReady(s *discordgo.Session, r *discordgo.Ready) {
 	if s != nil {
 		/* Save Discord descriptor, we need it */
 		disc.DS = s
@@ -226,7 +228,7 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	}
 
 	//Reset attempt count, we are fully connected.
-	DiscordConnectAttempts = 0
+	discordConnectAttempts = 0
 	support.BotIsReady = true
 }
 

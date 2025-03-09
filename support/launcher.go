@@ -24,7 +24,11 @@ import (
 	"ChatWire/util"
 )
 
-const SyncModsTimeout = time.Minute * 15
+const syncModsTimeout = time.Minute * 15
+
+var (
+	BotIsReady bool
+)
 
 func SyncMods(optionalFileName string) bool {
 
@@ -51,7 +55,7 @@ func SyncMods(optionalFileName string) bool {
 	var tempargs []string = []string{"--sync-mods", fileName}
 
 	// Create a context with the timeout
-	ctx, cancel := context.WithTimeout(context.Background(), SyncModsTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), syncModsTimeout)
 	defer cancel() // Ensure the context is canceled to release resources
 
 	// Initialize the command with the context
@@ -62,7 +66,7 @@ func SyncMods(optionalFileName string) bool {
 
 	// Check if the context deadline was exceeded (timeout)
 	if ctx.Err() == context.DeadlineExceeded {
-		cwlog.DoLogCW("SyncMods: Took too long, timed out after " + SyncModsTimeout.String() + ".")
+		cwlog.DoLogCW("SyncMods: Took too long, timed out after " + syncModsTimeout.String() + ".")
 		return false
 	}
 
@@ -296,7 +300,6 @@ func injectSoftMod(fileName, folderName string) {
 }
 
 // Wait for a moment, so we don't lose factorio booting message on first connect.
-var BotIsReady bool
 
 func waitForDiscord() {
 	if BotIsReady {
@@ -520,7 +523,7 @@ func launchFactorio() {
 
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-	LinuxSetProcessGroup(glob.FactorioCmd)
+	linuxSetProcessGroup(glob.FactorioCmd)
 	/* Connect Factorio stdout to a buffer for processing */
 	fact.GameBuffer = new(bytes.Buffer)
 	logwriter := io.MultiWriter(fact.GameBuffer)

@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const maxModsAllowed = 150
+const maxModsList = 150
 
 func handleModList(modListBytes []byte) {
 	if foundModList && foundSave {
@@ -58,9 +58,9 @@ func handleModList(modListBytes []byte) {
 				"**Your "+constants.ModListName+" file contains invalid data or no mods!**", glob.COLOR_RED)
 			return
 		}
-		if enabledCount > maxModsAllowed || disabledCount > maxModsAllowed {
+		if enabledCount > maxModsList || disabledCount > maxModsList {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-				"**Your "+constants.ModListName+" file contains too many mods! ("+strconv.FormatInt(maxModsAllowed, 10)+")**", glob.COLOR_RED)
+				"**Your "+constants.ModListName+" file contains too many mods! ("+strconv.FormatInt(maxModsList, 10)+")**", glob.COLOR_RED)
 			return
 		}
 		if enabledCount > 0 {

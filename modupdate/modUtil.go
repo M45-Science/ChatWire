@@ -71,7 +71,7 @@ func compareVersions(eo, av, bv int) (bool, error) {
 	}
 }
 
-func versionToInt(data string) (IntVersion, error) {
+func versionToInt(data string) (intVersion, error) {
 	parts := strings.Split(data, ".")
 	numParts := len(parts)
 	//For 2 digit versions
@@ -80,14 +80,14 @@ func versionToInt(data string) (IntVersion, error) {
 		numParts++
 	}
 
-	var intOut IntVersion
+	var intOut intVersion
 	if numParts != 3 {
-		return IntVersion{}, errors.New("malformed version string: " + data)
+		return intVersion{}, errors.New("malformed version string: " + data)
 	}
 	for p, part := range parts {
 		val, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
-			return IntVersion{}, errors.New("failed to parse version string")
+			return intVersion{}, errors.New("failed to parse version string")
 		}
 		intOut.parts[p] = int(val)
 	}
@@ -122,7 +122,7 @@ func GetModList() (ModListData, error) {
 	return serverMods, nil
 }
 
-func ModInfoRead(modName string, rawData []byte) *ModZipInfo {
+func modInfoRead(modName string, rawData []byte) *modZipInfo {
 	var err error
 	if rawData == nil {
 		path := util.GetModsFolder() + "/" + modName
@@ -133,9 +133,9 @@ func ModInfoRead(modName string, rawData []byte) *ModZipInfo {
 			return nil
 		}
 	}
-	jsonData := GetInfoJsonFromZip(rawData)
+	jsonData := getModJSON(rawData)
 
-	modData := ModZipInfo{}
+	modData := modZipInfo{}
 	err = json.Unmarshal(jsonData, &modData)
 	if err != nil {
 		cwlog.DoLogCW("ReadModZipInfo: Unmarshal failure: " + err.Error())
@@ -147,7 +147,7 @@ func ModInfoRead(modName string, rawData []byte) *ModZipInfo {
 	return &modData
 }
 
-func GetInfoJsonFromZip(data []byte) []byte {
+func getModJSON(data []byte) []byte {
 	// Create a reader from the byte array
 	byteReader := bytes.NewReader(data)
 
@@ -180,7 +180,7 @@ func GetInfoJsonFromZip(data []byte) []byte {
 	return nil
 }
 
-func ParseOperator(input string) int {
+func parseOperator(input string) int {
 	switch input {
 	case "<":
 		return EO_LESS
@@ -197,7 +197,7 @@ func ParseOperator(input string) int {
 	}
 }
 
-func CheckSHA1(data []byte, checkHash string) bool {
+func checkSHA1(data []byte, checkHash string) bool {
 
 	hash := sha1.New()
 	hash.Write([]byte(data))
@@ -207,7 +207,7 @@ func CheckSHA1(data []byte, checkHash string) bool {
 	return strings.EqualFold(hashString, checkHash)
 }
 
-func GetModFiles() ([]ModZipInfo, error) {
+func GetModFiles() ([]modZipInfo, error) {
 	//Read mods directory
 	modList, err := os.ReadDir(util.GetModsFolder())
 	if err != nil {
@@ -216,10 +216,10 @@ func GetModFiles() ([]ModZipInfo, error) {
 	}
 
 	//Find all mods, read info.json inside each
-	var modFileList []ModZipInfo
+	var modFileList []modZipInfo
 	for _, mod := range modList {
 		if strings.HasSuffix(mod.Name(), ".zip") {
-			modInfo := ModInfoRead(mod.Name(), nil)
+			modInfo := modInfoRead(mod.Name(), nil)
 			if modInfo == nil {
 				continue
 			}
@@ -231,9 +231,9 @@ func GetModFiles() ([]ModZipInfo, error) {
 	return modFileList, nil
 }
 
-func MergeModLists(modFileList []ModZipInfo, jsonModList ModListData) []ModZipInfo {
+func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipInfo {
 	//Check both lists, keep any that are not explicitly disabled.
-	var installedMods []ModZipInfo
+	var installedMods []modZipInfo
 	for _, modFile := range modFileList {
 		dupe := false
 		for _, item := range installedMods {
@@ -256,7 +256,7 @@ func MergeModLists(modFileList []ModZipInfo, jsonModList ModListData) []ModZipIn
 			}
 		}
 		if !dupe {
-			installedMods = append(installedMods, ModZipInfo{Name: modFile.Name, Version: "0.0.0"})
+			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: "0.0.0"})
 		}
 	}
 
@@ -277,9 +277,9 @@ func getFactoioVersion() {
 	}
 }
 
-func findModUpgrades(installedMods []ModZipInfo, detailList []ModPortalFullData) []DownloadData {
+func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData) []downloadData {
 	//Check mod postal data against mod list, find upgrades
-	var downloadList []DownloadData
+	var downloadList []downloadData
 	for _, installedItem := range installedMods {
 		for _, portalItem := range detailList {
 			if IsBaseMod(installedItem.Name) {
@@ -297,7 +297,7 @@ func findModUpgrades(installedMods []ModZipInfo, detailList []ModPortalFullData)
 	return downloadList
 }
 
-func checkModDependencies(downloadList []DownloadData) []DownloadData {
+func checkModDependencies(downloadList []downloadData) []downloadData {
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
@@ -324,7 +324,7 @@ func checkModDependencies(downloadList []DownloadData) []DownloadData {
 				if strings.EqualFold(mod.Name, dl.Name) {
 					//If we require a specific version
 					if numParts == 3 {
-						eq := ParseOperator(parts[1])
+						eq := parseOperator(parts[1])
 						rejectDep, err := checkVersion(eq, parts[2], mod.Data.Version)
 						if err != nil {
 							cwlog.DoLogCW("Unable to parse dependency version:" + dl.Name + ": " + dep)
@@ -344,7 +344,7 @@ func checkModDependencies(downloadList []DownloadData) []DownloadData {
 			if !foundDep {
 				//Unmet dep
 				newInfo, _ := downloadModInfo(parts[0])
-				newDL := findModUpgrade(newInfo, ModZipInfo{Name: parts[0], Version: "0.0.0"})
+				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
 				if newDL.Name != "" {
 					downloadList = addDownload(newDL, downloadList)
 				}
@@ -354,7 +354,7 @@ func checkModDependencies(downloadList []DownloadData) []DownloadData {
 	return downloadList
 }
 
-func getDownloadCount(downloadList []DownloadData) int {
+func getDownloadCount(downloadList []downloadData) int {
 	count := 0
 	for _, dl := range downloadList {
 		if dl.doDownload {
@@ -364,7 +364,7 @@ func getDownloadCount(downloadList []DownloadData) int {
 	return count
 }
 
-func downloadMods(downloadList []DownloadData) {
+func downloadMods(downloadList []downloadData) {
 	modPath := util.GetModsFolder()
 
 	//Show download status
@@ -401,7 +401,7 @@ func downloadMods(downloadList []DownloadData) {
 			continue
 		}
 
-		if !CheckSHA1(data, dl.Data.Sha1) {
+		if !checkSHA1(data, dl.Data.Sha1) {
 			emsg := "Mod download is corrupted (invalid hash)."
 			cwlog.DoLogCW(emsg)
 			errorLog = emsg
@@ -409,7 +409,7 @@ func downloadMods(downloadList []DownloadData) {
 		}
 
 		//Read the mod info.json
-		zipIJ := ModInfoRead("", data)
+		zipIJ := modInfoRead("", data)
 		if zipIJ == nil {
 			emsg := "Mod download has invalid info.json."
 			cwlog.DoLogCW(emsg)
@@ -489,7 +489,7 @@ func downloadMods(downloadList []DownloadData) {
 
 }
 
-func addDownload(input DownloadData, list []DownloadData) []DownloadData {
+func addDownload(input downloadData, list []downloadData) []downloadData {
 	for i, item := range list {
 		if strings.EqualFold(item.Name, input.Name) {
 			//Check versions
@@ -511,28 +511,28 @@ func addDownload(input DownloadData, list []DownloadData) []DownloadData {
 	return append(list, input)
 }
 
-func downloadModInfo(name string) (ModPortalFullData, error) {
+func downloadModInfo(name string) (modPortalFullData, error) {
 
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
 		cwlog.DoLogCW("Mod info request failed: " + err.Error())
-		return ModPortalFullData{}, err
+		return modPortalFullData{}, err
 	}
-	newInfo := ModPortalFullData{}
+	newInfo := modPortalFullData{}
 	err = json.Unmarshal(data, &newInfo)
 	if err != nil {
 		cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
-		return ModPortalFullData{}, err
+		return modPortalFullData{}, err
 	}
 	return newInfo, nil
 }
 
-func findModUpgrade(portalItem ModPortalFullData, installedItem ModZipInfo) DownloadData {
+func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) downloadData {
 
 	found := false
 	candidateVersion := installedItem.Version
-	candidateData := ModReleases{}
+	candidateData := modReleases{}
 	for _, release := range portalItem.Releases {
 		//Check if this release is newer
 		isNewer, err := checkVersion(EO_GREATEREQ, candidateVersion, release.Version)
@@ -570,7 +570,7 @@ func findModUpgrade(portalItem ModPortalFullData, installedItem ModZipInfo) Down
 				//Check base mods
 				if IsBaseMod(parts[0]) {
 					if numParts == 3 {
-						eq := ParseOperator(parts[1])
+						eq := parseOperator(parts[1])
 						baseReject, err := checkVersion(eq, fact.FactorioVersion, parts[2])
 						if err != nil {
 							cwlog.DoLogCW("Unable to parse version: " + err.Error())
@@ -598,7 +598,7 @@ func findModUpgrade(portalItem ModPortalFullData, installedItem ModZipInfo) Down
 		_, err := os.Stat(util.GetModsFolder() + candidateData.FileName)
 		modFileNotFound := os.IsNotExist(err)
 
-		newDL := DownloadData{
+		newDL := downloadData{
 			Name:        portalItem.Name,
 			Title:       portalItem.Title,
 			OldFilename: installedItem.OldFilename,
@@ -608,5 +608,5 @@ func findModUpgrade(portalItem ModPortalFullData, installedItem ModZipInfo) Down
 		return newDL
 	}
 
-	return DownloadData{}
+	return downloadData{}
 }

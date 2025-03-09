@@ -33,7 +33,7 @@ func GConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 					}
 					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.BData)
 					if co.FactUpdateCommand != "" && fact.FactorioBooted {
-						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", util.BoolToString(*co.BData)))
+						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", util.BoolToOnOff(*co.BData)))
 						buf = buf + " (live update)\n"
 					} else {
 						buf = buf + "\n"

@@ -173,10 +173,6 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 	return installedMods, emsg
 }
 
-func AddMod(name string, installedMods []modupdate.ModData) []modupdate.ModData {
-	return installedMods
-}
-
 /* Bool to string */
 func enableStr(b bool, pastTense bool) string {
 	if pastTense {

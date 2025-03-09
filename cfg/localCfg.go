@@ -10,86 +10,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
-
-/* LOCAL CONFIG */
-type local struct {
-	Callsign       string `form:"RO"`
-	Name           string
-	Port           int    `form:"RO"`
-	Comment        string `form:"-"`
-	RCONPass       string `form:"hidden" web:"Rcon Password"`
-	LastSaveBackup int    `form:"RO" web:"Last Backup Slot"`
-
-	Settings settings
-
-	Channel     channel
-	Options     localOptions
-	ModPackList []ModPackData `form:"-"`
-}
-
-type ModPackData struct {
-	Path    string
-	Created time.Time
-}
-
-type settings struct {
-	NewMap         bool `json:"-"`
-	Scenario       string
-	MapGenerator   string `web:"Map Generator Name"`
-	MapPreset      string `web:"Map Preset Name"`
-	Seed           int    `web:"Map Seed"`
-	AFKMin         int    `web:"AFK Minutes"`
-	AutosaveMin    int    `web:"Autosave Minutes"`
-	AutoPause      bool   `web:"Pause When Empty"`
-	AdminOnlyPause bool   `web:"Admin-Only Pause"`
-}
-
-type channel struct {
-	Comment     string `form:"-"`
-	ChatChannel string `web:"Channel ID"`
-}
-
-type localOptions struct {
-	LocalDescription string `web:"Factorio Description"`
-	Schedule         string `web:"Map Reset Schedule"`
-	ResetDay         string `web:"Reset Day"`
-	ResetDate        int    `web:"Reset Date"`
-	ResetHour        int    `web:"Reset Hour"`
-	ResetPingRole    string `form:"-"`
-	PlayHourEnable   bool   `web:"Limit Open Hours"`
-	PlayStartHour    int    `web:"Open Hour"`
-	PlayEndHour      int    `web:"Close Hour"`
-
-	AutoStart       bool    `web:"Auto Boot/Reboot Factorio"`
-	AutoUpdate      bool    `web:"Auto Factorio Updates"`
-	ExpUpdates      bool    `web:"Factorio Experimental Updates"`
-	HideAutosaves   bool    `web:"Hide Autosaves"`
-	HideResearch    bool    `web:"Hide Research on Discord"`
-	RegularsOnly    bool    `web:"Regulars, Veterans only"`
-	MembersOnly     bool    `web:"Members, Regulars, Veterans only"`
-	CustomWhitelist bool    `web:"Private whitelist"`
-	ModUpdate       bool    `web:"Auto update Factorio Mods"`
-	SkipReset       bool    `web:"Will skip next map reset"`
-	Speed           float32 `web:"Game Speed Factor"`
-
-	Whitelist bool
-
-	SoftModOptions softmodOptions
-}
-
-type softmodOptions struct {
-	Restrict          bool   `web:"More Restrictions For New Players"`
-	FriendlyFire      bool   `web:"Friendly Fire"`
-	OneLife           bool   `web:"One-Life Permadeath"`
-	DisableBlueprints bool   `web:"No Blueprints"`
-	Cheats            bool   `web:"Cheats Sandbox Mode"`
-	InjectSoftMod     bool   `web:"Inject Softmod"`
-	SoftModPath       string `form:"-"`
-}
 
 func GetGameLogURL() string {
 	if Global.Paths.URLs.LogsPathWeb == "" {

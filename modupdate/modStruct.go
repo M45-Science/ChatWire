@@ -11,9 +11,9 @@ const (
 	EO_GREATER
 )
 
-type DownloadData struct {
+type downloadData struct {
 	Name, Title, OldFilename string
-	Data                     ModReleases
+	Data                     modReleases
 	Complete                 bool
 	doDownload               bool
 }
@@ -26,11 +26,11 @@ type ModData struct {
 	Enabled bool
 }
 
-type IntVersion struct {
+type intVersion struct {
 	parts [3]int
 }
 
-type ModPortalFullData struct {
+type modPortalFullData struct {
 	Category          string        `json:"category"`
 	Changelog         string        `json:"changelog"`
 	CreatedAt         time.Time     `json:"created_at"`
@@ -38,12 +38,12 @@ type ModPortalFullData struct {
 	DownloadsCount    int           `json:"downloads_count"`
 	GithubPath        string        `json:"github_path"`
 	Homepage          string        `json:"homepage"`
-	Images            []ModImages   `json:"images"`
+	Images            []modImages   `json:"images"`
 	LastHighlightedAt string        `json:"last_highlighted_at"`
-	License           ModLicense    `json:"license"`
+	License           modLicense    `json:"license"`
 	Name              string        `json:"name"`
 	Owner             string        `json:"owner"`
-	Releases          []ModReleases `json:"releases"`
+	Releases          []modReleases `json:"releases"`
 	Score             float64       `json:"score"`
 	SourceURL         string        `json:"source_url"`
 	Summary           string        `json:"summary"`
@@ -55,13 +55,13 @@ type ModPortalFullData struct {
 	oldFilename string `json:"-"`
 }
 
-type ModImages struct {
+type modImages struct {
 	ID        string `json:"id"`
 	Thumbnail string `json:"thumbnail"`
 	URL       string `json:"url"`
 }
 
-type ModLicense struct {
+type modLicense struct {
 	Description string `json:"description"`
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -69,21 +69,21 @@ type ModLicense struct {
 	URL         string `json:"url"`
 }
 
-type ModInfoJSON struct {
+type modInfoJSON struct {
 	Dependencies    []string `json:"dependencies"`
 	FactorioVersion string   `json:"factorio_version"`
 }
 
-type ModReleases struct {
+type modReleases struct {
 	DownloadURL string      `json:"download_url"`
 	FileName    string      `json:"file_name"`
-	InfoJSON    ModInfoJSON `json:"info_json"`
+	InfoJSON    modInfoJSON `json:"info_json"`
 	ReleasedAt  time.Time   `json:"released_at"`
 	Sha1        string      `json:"sha1"`
 	Version     string      `json:"version"`
 }
 
-type ModZipInfo struct {
+type modZipInfo struct {
 	Name                string   `json:"name"`
 	Author              string   `json:"author"`
 	Version             string   `json:"version"`
