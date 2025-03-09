@@ -278,28 +278,6 @@ func getFactoioVersion() {
 	}
 }
 
-func getModDetails(installedMods []modZipInfo) []modPortalFullData {
-	//Fetch mod portal data
-	detailList := []modPortalFullData{}
-	for _, item := range installedMods {
-		URL := fmt.Sprintf(modPortalURL, item.Name)
-		data, _, err := factUpdater.HttpGet(false, URL, true)
-		if err != nil {
-			cwlog.DoLogCW("Mod info request failed: " + err.Error())
-			continue
-		}
-		newInfo := modPortalFullData{}
-		err = json.Unmarshal(data, &newInfo)
-		if err != nil {
-			cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
-			continue
-		}
-		newInfo.oldFilename = item.oldFilename
-		detailList = append(detailList, newInfo)
-	}
-	return detailList
-}
-
 func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData) []downloadData {
 	//Check mod postal data against mod list, find upgrades
 	var downloadList []downloadData
@@ -309,84 +287,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 				continue
 			}
 			if strings.EqualFold(portalItem.Name, installedItem.Name) {
-				found := false
-				candidate := installedItem.Version
-				candidateData := ModReleases{}
-				for _, release := range portalItem.Releases {
-					//Check if this release is newer
-					isNewer, err := checkVersion(EO_GREATER, candidate, release.Version)
-					if err != nil {
-						continue
-					}
-					//Check if factorio is new enough
-					if isNewer {
-						factReject, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
-						if err != nil {
-							cwlog.DoLogCW("Unable to parse version: " + err.Error())
-							continue
-						}
-						if factReject {
-							cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
-							continue
-						}
-						//Check dependencies
-						reject := false
-						for _, dep := range release.InfoJSON.Dependencies {
-							//This flag isn't relevant
-							dep = strings.TrimPrefix(dep, "~")
-							dep = strings.TrimSpace(dep)
-
-							//Optional dependency
-							if strings.Contains(dep, "?") {
-								continue
-							}
-
-							parts := strings.Split(dep, " ")
-							numParts := len(parts)
-							//Check base mods
-							if IsBaseMod(parts[0]) {
-								if numParts == 3 {
-									eq := ParseOperator(parts[1])
-									baseReject, err := checkVersion(eq, fact.FactorioVersion, parts[2])
-									if err != nil {
-										cwlog.DoLogCW("Unable to parse version: " + err.Error())
-										reject = true
-										continue
-									}
-									if baseReject {
-										cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires " + dep + " skipping.")
-										reject = true
-										continue
-									}
-								}
-							}
-						}
-
-						//Save this release
-						if !reject {
-							candidate = release.Version
-							candidateData = release
-							found = true
-						}
-					}
-				}
-				if found {
-					modExist := false
-					//Check if mod is already present before downloading
-					_, err := os.Stat(util.GetModsFolder() + candidateData.FileName)
-					if !os.IsNotExist(err) {
-						modExist = true
-					}
-
-					downloadList = addDownload(
-						downloadData{
-							Name:        installedItem.Name,
-							Title:       installedItem.Title,
-							OldFilename: installedItem.oldFilename,
-							Data:        candidateData,
-							doDownload:  !modExist},
-						downloadList)
-				}
+				downloadList = findModUpgrade(portalItem, installedItem, downloadList)
 			}
 		}
 	}
@@ -603,4 +504,103 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 	}
 
 	return append(list, input)
+}
+
+func downloadModInfo(name string) (modPortalFullData, error) {
+	URL := fmt.Sprintf(modPortalURL, name)
+	data, _, err := factUpdater.HttpGet(false, URL, true)
+	if err != nil {
+		cwlog.DoLogCW("Mod info request failed: " + err.Error())
+		return modPortalFullData{}, err
+	}
+	newInfo := modPortalFullData{}
+	err = json.Unmarshal(data, &newInfo)
+	if err != nil {
+		cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
+		return modPortalFullData{}, err
+	}
+	return newInfo, nil
+}
+
+func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo, downloadList []downloadData) []downloadData {
+	found := false
+	candidate := installedItem.Version
+	candidateData := ModReleases{}
+	for _, release := range portalItem.Releases {
+		//Check if this release is newer
+		isNewer, err := checkVersion(EO_GREATER, candidate, release.Version)
+		if err != nil {
+			continue
+		}
+		//Check if factorio is new enough
+		if isNewer {
+			factReject, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
+			if err != nil {
+				cwlog.DoLogCW("Unable to parse version: " + err.Error())
+				continue
+			}
+			if factReject {
+				cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
+				continue
+			}
+			//Check dependencies
+			reject := false
+			for _, dep := range release.InfoJSON.Dependencies {
+				//This flag isn't relevant
+				dep = strings.TrimPrefix(dep, "~")
+				dep = strings.TrimSpace(dep)
+
+				//Optional dependency
+				if strings.Contains(dep, "?") {
+					continue
+				}
+
+				parts := strings.Split(dep, " ")
+				numParts := len(parts)
+				//Check base mods
+				if IsBaseMod(parts[0]) {
+					if numParts == 3 {
+						eq := ParseOperator(parts[1])
+						baseReject, err := checkVersion(eq, fact.FactorioVersion, parts[2])
+						if err != nil {
+							cwlog.DoLogCW("Unable to parse version: " + err.Error())
+							reject = true
+							continue
+						}
+						if baseReject {
+							cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires " + dep + " skipping.")
+							reject = true
+							continue
+						}
+					}
+				}
+			}
+
+			//Save this release
+			if !reject {
+				candidate = release.Version
+				candidateData = release
+				found = true
+			}
+		}
+	}
+	if found {
+		modExist := false
+		//Check if mod is already present before downloading
+		_, err := os.Stat(util.GetModsFolder() + candidateData.FileName)
+		if !os.IsNotExist(err) {
+			modExist = true
+		}
+
+		downloadList = addDownload(
+			downloadData{
+				Name:        installedItem.Name,
+				Title:       installedItem.Title,
+				OldFilename: installedItem.oldFilename,
+				Data:        candidateData,
+				doDownload:  !modExist},
+			downloadList)
+	}
+
+	return downloadList
 }

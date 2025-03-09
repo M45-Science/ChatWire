@@ -37,7 +37,12 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 
 	//Fetch mod portal data
-	detailList := getModDetails(installedMods)
+	detailList := []modPortalFullData{}
+	for _, item := range installedMods {
+		newInfo, _ := downloadModInfo(item.Name)
+		newInfo.oldFilename = item.oldFilename
+		detailList = append(detailList, newInfo)
+	}
 
 	//Make a list of mods to download/check
 	downloadList := findModUpgrades(installedMods, detailList)
