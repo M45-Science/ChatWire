@@ -60,11 +60,11 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 }
 
-func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData, name string, value bool) []modupdate.ModData{
+func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData, name string, value bool) []modupdate.ModData {
 	if name == "" {
 		emsg := "You must specify a mod(s) to " + enableStr(value, false) + "."
 		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
-		return
+		return installedMods
 	}
 	for m, mod := range installedMods {
 		//Remove spaces
@@ -89,8 +89,8 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 	return installedMods
 }
 
-func AddMod(name string, installed ) {
-	for 
+func AddMod(name string, installedMods []modupdate.ModData) []modupdate.ModData {
+	return installedMods
 }
 
 /* Bool to string */
