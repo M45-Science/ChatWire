@@ -399,7 +399,7 @@ func downloadMods(downloadList []downloadData) {
 
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
-		cwlog.DoLogCW("Downloading: " + dl.Data.DownloadURL)
+		cwlog.DoLogCW("Downloading: " + dl.Name)
 		data, _, err := factUpdater.HttpGet(false, downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			emsg := "Unable to fetch URL"
