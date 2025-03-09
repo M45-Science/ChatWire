@@ -76,7 +76,7 @@ func main() {
 	//If autolaunch is off, get current factorio version
 	if cfg.Local.Options.AutoStart && !*glob.NoAutoLaunch {
 		fact.SetAutolaunch(true, false)
-	} else {
+	} else if *glob.NoAutoLaunch {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 		factUpdater.GetFactorioVersion(info)
 		fact.FactorioVersion = info.VersInt.IntToString()
@@ -145,7 +145,7 @@ func startbot() {
 	}
 	errb := bot.Open()
 
-	/* This handles error after the inital connection */
+	/* This handles error after the initial connection */
 	if errb != nil {
 		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", errb)
 		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)

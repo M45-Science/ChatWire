@@ -237,7 +237,6 @@ func mergeModLists(modFileList []modZipInfo, jsonModList modListData) []modZipIn
 	for _, modFile := range modFileList {
 		dupe := false
 		for _, item := range installedMods {
-			//This shouldn't happen, but just in case
 			if strings.EqualFold(item.Name, modFile.Name) {
 				dupe = true
 				break
@@ -257,7 +256,7 @@ func mergeModLists(modFileList []modZipInfo, jsonModList modListData) []modZipIn
 			}
 		}
 		if !dupe {
-			installedMods = append(installedMods, modZipInfo{Name: modFile.Name})
+			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: "0.0.0"})
 		}
 	}
 
@@ -474,7 +473,7 @@ func downloadMods(downloadList []downloadData) {
 				continue
 			}
 		} else {
-			cwlog.DoLogCW("No old file found for: " + dl.Data.FileName)
+			//cwlog.DoLogCW("No old file found for: " + dl.Data.FileName)
 		}
 
 		downloadList[d].Complete = true
@@ -540,8 +539,11 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 		if err != nil {
 			continue
 		}
+
 		//Check if factorio is new enough
 		if isNewer {
+			//cwlog.DoLogCW("findModUpgrade %v: %v", portalItem.Name, installedItem.Name)
+
 			factReject, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
 			if err != nil {
 				cwlog.DoLogCW("Unable to parse version: " + err.Error())
@@ -592,19 +594,16 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 		}
 	}
 	if found {
-		modExist := false
 		//Check if mod is already present before downloading
 		_, err := os.Stat(util.GetModsFolder() + candidateData.FileName)
-		if !os.IsNotExist(err) {
-			modExist = true
-		}
+		modFileNotFound := os.IsNotExist(err)
 
 		newDL := downloadData{
 			Name:        portalItem.Name,
 			Title:       portalItem.Title,
 			OldFilename: installedItem.oldFilename,
 			Data:        candidateData,
-			doDownload:  !modExist}
+			doDownload:  modFileNotFound}
 
 		return newDL
 	}
