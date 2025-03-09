@@ -11,26 +11,26 @@ const (
 	EO_GREATER
 )
 
-type downloadData struct {
+type DownloadData struct {
 	Name, Title, OldFilename string
 	Data                     ModReleases
 	Complete                 bool
 	doDownload               bool
 }
 
-type modListData struct {
-	Mods []modData
+type ModListData struct {
+	Mods []ModData
 }
-type modData struct {
+type ModData struct {
 	Name    string
 	Enabled bool
 }
 
-type intVersion struct {
+type IntVersion struct {
 	parts [3]int
 }
 
-type modPortalFullData struct {
+type ModPortalFullData struct {
 	Category          string        `json:"category"`
 	Changelog         string        `json:"changelog"`
 	CreatedAt         time.Time     `json:"created_at"`
@@ -83,7 +83,7 @@ type ModReleases struct {
 	Version     string      `json:"version"`
 }
 
-type modZipInfo struct {
+type ModZipInfo struct {
 	Name                string   `json:"name"`
 	Author              string   `json:"author"`
 	Version             string   `json:"version"`
@@ -94,5 +94,6 @@ type modZipInfo struct {
 	Dependencies        []string `json:"dependencies"`
 	SpaceTravelRequired bool     `json:"space_travel_required"`
 
-	oldFilename string `json:"-"`
+	OldFilename string `json:"-"`
+	Enabled     bool   `json:"-"`
 }

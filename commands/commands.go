@@ -263,6 +263,12 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    false,
 			},
+			{
+				Name:        "remove",
+				Description: "remove a mod",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    false,
+			},
 		},
 	},
 		Function: moderator.EditMods, ModeratorOnly: true},

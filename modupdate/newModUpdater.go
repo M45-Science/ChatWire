@@ -29,7 +29,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	//Read mods-list.json
 	jsonModList, _ := GetModList()
 	//Merge the two lists
-	installedMods := mergeModLists(modFileList, jsonModList)
+	installedMods := MergeModLists(modFileList, jsonModList)
 
 	//Check if we need to proceed
 	if len(installedMods) == 0 {
@@ -38,10 +38,10 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 
 	//Fetch mod portal data
-	detailList := []modPortalFullData{}
+	detailList := []ModPortalFullData{}
 	for _, item := range installedMods {
 		newInfo, _ := downloadModInfo(item.Name)
-		newInfo.oldFilename = item.oldFilename
+		newInfo.oldFilename = item.OldFilename
 		detailList = append(detailList, newInfo)
 	}
 
