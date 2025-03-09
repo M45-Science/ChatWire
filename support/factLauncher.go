@@ -295,14 +295,17 @@ func injectSoftMod(fileName, folderName string) {
 	}
 }
 
-// Wait for a momoment, so we don't loose factorio booting message on first connect.
+// Wait for a moment, so we don't lose factorio booting message on first connect.
 var BotIsReady bool
 
 func waitForDiscord() {
 	if BotIsReady {
 		return
 	}
-	for x := 0; x <= 60 && !BotIsReady; x++ {
+	for x := 0; x <= 10; x++ {
+		if BotIsReady {
+			return
+		}
 		cwlog.DoLogCW("Waiting for Discord...")
 		time.Sleep(time.Second)
 	}
