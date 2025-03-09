@@ -119,6 +119,7 @@ func GetModList() (modListData, error) {
 		return modListData{}, err
 	}
 
+	cwlog.DoLogCW("GetModList: %v", serverMods)
 	return serverMods, nil
 }
 
@@ -144,6 +145,7 @@ func ModInfoRead(modName string, rawData []byte) *modZipInfo {
 		return nil
 	}
 
+	cwlog.DoLogCW("ModInfoRead: %v", modName)
 	return &modData
 }
 
@@ -287,7 +289,10 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 				continue
 			}
 			if strings.EqualFold(portalItem.Name, installedItem.Name) {
-				downloadList = findModUpgrade(portalItem, installedItem, downloadList)
+				newDL := findModUpgrade(portalItem, installedItem)
+				if newDL.Name != "" {
+					downloadList = append(downloadList, newDL)
+				}
 			}
 		}
 	}
@@ -295,11 +300,11 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-func checkModDeps(downloadList []downloadData) {
+func checkModDeps(downloadList []downloadData) []downloadData {
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
+		cwlog.DoLogCW("DEPS::: %v-%v: %v", dl.Name, dl.Data.Version, dl.Data.InfoJSON.Dependencies)
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
-
 			dep = strings.TrimPrefix(dep, "~")
 
 			parts := strings.Split(dep, " ")
@@ -324,12 +329,12 @@ func checkModDeps(downloadList []downloadData) {
 					//If we require a specific version
 					if numParts == 3 {
 						eq := ParseOperator(parts[1])
-						haveDep, err := checkVersion(eq, parts[2], mod.Data.Version)
+						rejectDep, err := checkVersion(eq, parts[2], mod.Data.Version)
 						if err != nil {
 							cwlog.DoLogCW("Unable to parse dependency version:" + dl.Name + ": " + dep)
 							continue
 						}
-						if haveDep {
+						if !rejectDep {
 							foundDep = true
 							break
 						}
@@ -343,10 +348,17 @@ func checkModDeps(downloadList []downloadData) {
 			if !foundDep {
 				//Unmet dep
 				emsg := "Warning: Mod " + dl.Name + "-" + dl.Data.Version + " needs " + dep + " but it is not installed!"
+				newInfo, _ := downloadModInfo(parts[0])
+				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
+				cwlog.DoLogCW("Got dep: %v", newDL.Name)
+				if newDL.Name != "" {
+					downloadList = append(downloadList, newDL)
+				}
 				cwlog.DoLogCW(emsg)
 			}
 		}
 	}
+	return downloadList
 }
 
 func getDownloadCount(downloadList []downloadData) int {
@@ -507,6 +519,8 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 }
 
 func downloadModInfo(name string) (modPortalFullData, error) {
+	cwlog.DoLogCW("downloadModInfo: " + name)
+
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
@@ -519,16 +533,20 @@ func downloadModInfo(name string) (modPortalFullData, error) {
 		cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
 		return modPortalFullData{}, err
 	}
+
+	cwlog.DoLogCW("downloadModInfo: GOT %v", newInfo.Name)
 	return newInfo, nil
 }
 
-func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo, downloadList []downloadData) []downloadData {
+func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) downloadData {
+	cwlog.DoLogCW("findModUpgrade: %v", portalItem.Name)
+
 	found := false
-	candidate := installedItem.Version
+	candidateVersion := installedItem.Version
 	candidateData := ModReleases{}
 	for _, release := range portalItem.Releases {
 		//Check if this release is newer
-		isNewer, err := checkVersion(EO_GREATER, candidate, release.Version)
+		isNewer, err := checkVersion(EO_GREATEREQ, candidateVersion, release.Version)
 		if err != nil {
 			continue
 		}
@@ -569,7 +587,6 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo, down
 						}
 						if baseReject {
 							cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires " + dep + " skipping.")
-							reject = true
 							continue
 						}
 					}
@@ -578,7 +595,7 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo, down
 
 			//Save this release
 			if !reject {
-				candidate = release.Version
+				candidateVersion = release.Version
 				candidateData = release
 				found = true
 			}
@@ -592,15 +609,16 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo, down
 			modExist = true
 		}
 
-		downloadList = addDownload(
-			downloadData{
-				Name:        installedItem.Name,
-				Title:       installedItem.Title,
-				OldFilename: installedItem.oldFilename,
-				Data:        candidateData,
-				doDownload:  !modExist},
-			downloadList)
+		newDL := downloadData{
+			Name:        portalItem.Name,
+			Title:       portalItem.Title,
+			OldFilename: installedItem.oldFilename,
+			Data:        candidateData,
+			doDownload:  !modExist}
+
+		cwlog.DoLogCW("found mod upgrade: %v", portalItem.Name)
+		return newDL
 	}
 
-	return downloadList
+	return downloadData{}
 }

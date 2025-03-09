@@ -48,7 +48,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	downloadList := findModUpgrades(installedMods, detailList)
 
 	//Check for mod dependencies
-	checkModDeps(downloadList)
+	downloadList = checkModDeps(downloadList)
 
 	//Dry run ends here
 	if dryRun {
