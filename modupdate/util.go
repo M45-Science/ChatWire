@@ -364,11 +364,11 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 	var errStr string
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
-		for _, idep := range dl.Data.InfoJSON.Dependencies {
-			dep := strings.TrimPrefix(idep, "~")
-			dep = strings.ReplaceAll(dep, "( ? )", "")
-			dep = strings.ReplaceAll(dep, "(?)", "")
-			dep = strings.ReplaceAll(dep, "?", "")
+		for _, dep := range dl.Data.InfoJSON.Dependencies {
+			if strings.Contains(dep, "?") {
+				continue
+			}
+			dep = strings.TrimPrefix(dep, "~")
 			dep = strings.TrimSpace(dep)
 
 			parts := strings.Split(dep, " ")
