@@ -17,6 +17,11 @@ import (
 
 // Protect against spam
 func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
+	/* Throw away messages from bots */
+	if m.Author.Bot {
+		return
+	}
+
 	messageHandlerLock.Lock()
 	defer messageHandlerLock.Unlock()
 
@@ -89,11 +94,6 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	/* Throw away messages from bots */
-	if m.Author.Bot {
-		return
-	}
-
 	/* Command handling
 	 * Factorio channel ONLY */
 	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
@@ -102,9 +102,9 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		 * Chat message handling
 		 *  Don't bother if Factorio isn't running...
 		 */
-		if fact.FactorioBooted && fact.FactIsRunning {
-			cwlog.DoLogGame("[Discord] " + m.Author.Username + ": " + message)
+		cwlog.DoLogGame("[Discord] " + m.Author.Username + ": " + message)
 
+		if fact.FactorioBooted && fact.FactIsRunning {
 			/* Used for name matching */
 			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
@@ -165,7 +165,6 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			/* Send the final text to factorio */
 			fact.FactChat(nbuf)
-
 		}
 	}
 }
