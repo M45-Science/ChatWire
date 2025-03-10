@@ -22,7 +22,7 @@ func handleModList(modListBytes []byte) {
 	if foundModList && foundSave {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**You do not need to include a "+constants.ModListName+" when uploading a "+saveGameName+", ignoring.**", glob.COLOR_ORANGE)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 		return
 	}
 	if len(modListBytes) > 0 {
@@ -87,7 +87,7 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**Your "+typeName+" file failed while downloading.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: "+typeName+": http-get: Error: %v", err)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 		return nil
 	}
 	if name == typeName {
@@ -102,7 +102,7 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 	} else {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**Your "+typeName+" file didn't have the correct name.**", glob.COLOR_RED)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 	}
 	return nil
 }
@@ -121,7 +121,7 @@ func insertModSettings(modSettingsData []byte) bool {
 		if err != nil {
 			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 				"**Your "+constants.ModSettingsName+" file failed while writing.**", glob.COLOR_RED)
-			time.Sleep(errMsgDelay)
+			time.Sleep(constants.ErrMsgDelay)
 			cwlog.DoLogCW("Upload: Write "+constants.ModSettingsName+": Error: %v", err)
 			return true
 		}

@@ -2,11 +2,13 @@ package modupdate
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"errors"
+	"time"
 )
 
 const (
@@ -18,8 +20,6 @@ const (
 )
 
 func CheckModUpdates(dryRun bool) (bool, error) {
-	glob.UpdatersLock.Lock()
-	defer glob.UpdatersLock.Unlock()
 
 	//If needed, get Factorio version
 	getFactoioVersion()
@@ -52,7 +52,12 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	downloadList := findModUpgrades(installedMods, detailList)
 
 	//Check for mod dependencies
-	downloadList = checkModDependencies(downloadList)
+	downloadList, err = checkModDependencies(downloadList)
+
+	if err != nil {
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Updates: Error", err.Error(), glob.COLOR_ORANGE)
+		time.Sleep(constants.ErrMsgDelay)
+	}
 
 	//Dry run ends here
 	if dryRun {

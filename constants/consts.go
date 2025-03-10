@@ -36,6 +36,7 @@ const (
 	ModPackLifeMins     = 180
 	ModPackCooldownMin  = 5
 	MaxModPacks         = 4
+	ErrMsgDelay         = time.Second * 3
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 30

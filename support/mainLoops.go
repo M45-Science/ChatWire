@@ -689,7 +689,9 @@ func MainLoops() {
 
 		for glob.ServerRunning {
 			if cfg.Local.Options.ModUpdate {
+				glob.UpdatersLock.Lock()
 				modupdate.CheckMods(false, false)
+				glob.UpdatersLock.Unlock()
 			}
 
 			time.Sleep(time.Hour)

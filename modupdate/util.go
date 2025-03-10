@@ -359,7 +359,9 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-func checkModDependencies(downloadList []downloadData) []downloadData {
+func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
+
+	var errStr string
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
@@ -377,7 +379,12 @@ func checkModDependencies(downloadList []downloadData) []downloadData {
 			}
 
 			if strings.HasPrefix(parts[0], "!") {
-				continue
+				for m, mod := range downloadList {
+					if strings.EqualFold(mod.Name, parts[0]) {
+						downloadList[m].doDownload = false
+						errStr = errStr + "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatable with the mod " + dl.Name
+					}
+				}
 			}
 
 			foundDep := false
@@ -413,7 +420,11 @@ func checkModDependencies(downloadList []downloadData) []downloadData {
 			}
 		}
 	}
-	return downloadList
+	if errStr != "" {
+		return downloadList, errors.New(errStr)
+	} else {
+		return downloadList, nil
+	}
 }
 
 func getDownloadCount(downloadList []downloadData) int {
@@ -612,7 +623,6 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 
 		//Check if factorio is new enough
 		if isNewer {
-			//cwlog.DoLogCW("findModUpgrade %v: %v", portalItem.Name, installedItem.Name)
 
 			factReject, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
 			if err != nil {
@@ -620,7 +630,6 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 				continue
 			}
 			if factReject {
-				//cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires a different version of Factorio (" + release.InfoJSON.FactorioVersion + "), skipping.")
 				continue
 			}
 			//Check dependencies
@@ -648,7 +657,6 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 							continue
 						}
 						if baseReject {
-							//cwlog.DoLogCW("Mod release: " + portalItem.Name + ": " + release.Version + " requires " + dep + " skipping.")
 							continue
 						}
 					}

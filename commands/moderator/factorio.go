@@ -155,7 +155,10 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Checking for mod updates.")
+	glob.UpdatersLock.Lock()
 	modupdate.CheckMods(true, true)
+	glob.UpdatersLock.Unlock()
+
 }
 
 func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {

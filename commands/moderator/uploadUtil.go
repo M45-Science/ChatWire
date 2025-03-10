@@ -7,7 +7,6 @@ import (
 	"ChatWire/support"
 	"strings"
 	"sync"
-	"time"
 )
 
 const (
@@ -19,7 +18,6 @@ const (
 var (
 	UploadLock                           sync.Mutex
 	foundOption, foundSave, foundModList bool
-	errMsgDelay                          = time.Second * 3
 )
 
 func showSyncMods() string {

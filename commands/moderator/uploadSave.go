@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -29,7 +30,7 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**Your "+saveGameName+" file failed while downloading.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: http-get "+saveGameName+": Error: %v", err)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 		return
 	}
 
@@ -51,7 +52,7 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	if !support.SyncMods(saveFileName) {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"mod-sync failed, attempting to continue.", glob.COLOR_RED)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 	}
 	modBuf := showSyncMods()
 	if modBuf != "" {
@@ -74,7 +75,7 @@ func insertSaveGame(i *discordgo.InteractionCreate, saveFileName string, saveGam
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
 			"**Your "+saveGameName+" file failed while writing.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: Write "+saveGameName+": Error: %v", err)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 		return true
 	}
 	//Touch save-game
