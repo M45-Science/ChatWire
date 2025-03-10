@@ -43,6 +43,9 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	//Fetch mod portal data
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
+		if IsBaseMod(item.Name) {
+			continue
+		}
 		newInfo, _ := downloadModInfo(item.Name)
 		newInfo.oldFilename = item.OldFilename
 		detailList = append(detailList, newInfo)
