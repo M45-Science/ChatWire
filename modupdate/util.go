@@ -426,7 +426,8 @@ func getDownloadCount(downloadList []downloadData) int {
 	return count
 }
 
-func downloadMods(downloadList []downloadData) {
+func downloadMods(downloadList []downloadData) string {
+
 	modPath := util.GetModsFolder()
 
 	//Show download status
@@ -552,6 +553,8 @@ func downloadMods(downloadList []downloadData) {
 		ModHistory = append(ModHistory, newUpdate)
 		WriteModHistory()
 	}
+
+	return shortBuf
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
