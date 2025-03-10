@@ -117,7 +117,7 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			/* Name to lowercase */
 			dnamelower := strings.ToLower(dname)
-			fnamelower := strings.ToLower(m.Author.Username)
+			fnamelower := strings.ToLower(m.Author.GlobalName)
 
 			/* Reduce names to letters only */
 			dnamereduced := alphafilter.ReplaceAllString(dnamelower, "")
@@ -129,38 +129,29 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}(dname)
 
 			/* Filter names... */
-			corduser := sclean.UnicodeCleanup(m.Author.Username)
-			cordnick := sclean.UnicodeCleanup(m.Member.Nick)
+			cordnick := sclean.UnicodeCleanup(m.Author.GlobalName)
 			factuser := sclean.UnicodeCleanup(dname)
 
-			corduserlen := len(corduser)
+			/* Just in case of weird nickname */
 			cordnicklen := len(cordnick)
-
-			cordname := corduser
-
-			/* On short names, try nickname... if not add number, if no name... discordID */
-			if corduserlen < 5 {
-				if cordnicklen >= 4 && cordnicklen < 18 {
-					cordname = cordnick
-				}
-				cordnamelen := len(cordname)
-				if cordnamelen > 0 {
-					cordname = fnamereduced
-				} else {
-					cordname = fmt.Sprintf("ID#%s", m.Author.ID)
-				}
+			if cordnicklen < 2 {
+				cordnick = m.Author.Username
+			}
+			/* Just in case of weird username */
+			cordnicklen = len(cordnick)
+			if cordnicklen < 2 {
+				cordnick = fmt.Sprintf("ID#%v", m.Member.User.ID)
 			}
 
 			/* Cap name length for safety/annoyance */
-			cordname = sclean.TruncateString(cordname, 64)
+			cordnick = sclean.TruncateString(cordnick, 64)
 			factuser = sclean.TruncateString(factuser, 64)
 
 			/* Check if Discord name contains Factorio name, if not lets show both their names */
 			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
-
-				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordname, factuser, cmess)
+				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordnick, factuser, cmess)
 			} else {
-				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordname, cmess)
+				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordnick, cmess)
 			}
 
 			/* Send the final text to factorio */
