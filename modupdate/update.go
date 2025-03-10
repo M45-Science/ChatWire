@@ -97,7 +97,9 @@ func CheckMods(force bool, reportNone bool) {
 		if err != nil {
 			buf = err.Error()
 		}
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+		if buf != "" {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+		}
 	}
 	if updated && err == nil {
 		if fact.FactIsRunning {
