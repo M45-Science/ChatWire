@@ -15,9 +15,9 @@ func ModHistoryCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 func ListHistory(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	buf := ""
-	for _, item := range modupdate.ModHistory {
-		buf = buf + fmt.Sprintf("Name: %v\nVersion: %v\nDate: %v\n",
-			item.Name, item.Version, item.Date)
+	for i, item := range modupdate.ModHistory {
+		buf = buf + fmt.Sprintf("ID#%03v: Name: %v\nVersion: %10vnDate: %v\n",
+			i, item.Name, item.Version, item.Date)
 	}
 	if buf == "" {
 		buf = "History is empty."

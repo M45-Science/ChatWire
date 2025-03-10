@@ -297,11 +297,12 @@ var cmds = []glob.CommandData{
 						Name:     "clear-history",
 						Function: moderator.ClearHistory,
 					},
-					{
-						Name:     "blacklist-item",
-						Function: moderator.ClearHistory,
-					},
 				},
+			},
+			{
+				Name:        "blacklist",
+				Description: "Provide ID# of item to blacklist, or unblacklist",
+				Type:        discordgo.ApplicationCommandOptionInteger,
 			},
 		},
 	},
