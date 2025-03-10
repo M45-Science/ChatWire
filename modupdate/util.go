@@ -600,6 +600,10 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 
 func downloadModInfo(name string) (modPortalFullData, error) {
 
+	if IsBaseMod(name) {
+		return modPortalFullData{}, errors.New("this is a base mod")
+	}
+
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
