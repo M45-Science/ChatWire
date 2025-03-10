@@ -244,6 +244,7 @@ var cmds = []glob.CommandData{
 		Name:        "editmods",
 		Description: "enable/disable or add/remove factorio mods.",
 		Type:        discordgo.ChatApplicationCommand,
+
 		Options: []glob.OptionData{
 			{
 				Name:        "list",
@@ -277,7 +278,34 @@ var cmds = []glob.CommandData{
 			},
 		},
 	},
-		Function: moderator.EditMods, ModeratorOnly: true},
+		Function: moderator.EditMods, ModeratorOnly: true}, {AppCmd: glob.AppCmdData{
+		Name:        "modhistory",
+		Description: "show mod update history, blacklist updates",
+		Type:        discordgo.ChatApplicationCommand,
+		Options: []glob.OptionData{
+			{
+				Name:        "action",
+				Description: "choose one",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []glob.ChoiceData{
+					{
+						Name:     "list-history",
+						Function: moderator.ListHistory,
+					},
+					{
+						Name:     "clear-history",
+						Function: moderator.ClearHistory,
+					},
+					{
+						Name:     "blacklist-item",
+						Function: moderator.ClearHistory,
+					},
+				},
+			},
+		},
+	},
+		ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command.",

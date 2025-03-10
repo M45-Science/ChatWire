@@ -22,6 +22,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 	"ChatWire/support"
 )
 
@@ -54,6 +55,7 @@ func main() {
 	}
 	initMaps()
 	readConfigs()
+	modupdate.ReadModHistory()
 
 	if *cleanDB || *cleanBans {
 		fact.LoadPlayers(false, true, *cleanBans)

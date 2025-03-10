@@ -21,7 +21,69 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+const modHistoryFile = "modUpdateHistory.dat"
+
+func WriteModHistory() bool {
+	tempPath := modHistoryFile + ".tmp"
+	finalPath := modHistoryFile
+
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	enc.SetIndent("", "\t")
+
+	if err := enc.Encode(modHistoryFile); err != nil {
+		cwlog.DoLogCW("writeModHistory: enc.Encode failure")
+		return false
+	}
+
+	_, err := os.Create(tempPath)
+
+	if err != nil {
+		cwlog.DoLogCW("writeModHistory: os.Create failure")
+		return false
+	}
+
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+
+	if err != nil {
+		cwlog.DoLogCW("writeModHistory: WriteFile failure")
+	}
+
+	err = os.Rename(tempPath, finalPath)
+
+	if err != nil {
+		cwlog.DoLogCW("writeModHistory't rename modHistory file.")
+		return false
+	}
+
+	return true
+}
+
+func ReadModHistory() bool {
+
+	file, err := os.ReadFile(modHistoryFile)
+
+	if file != nil && err == nil {
+		newHist := []ModHistoryData{}
+
+		err := json.Unmarshal([]byte(file), &newHist)
+		if err != nil {
+			cwlog.DoLogCW("readModHistory: Unmarshal failure")
+			cwlog.DoLogCW(err.Error())
+			return false
+		}
+
+		ModHistory = newHist
+
+		return true
+	} else {
+		cwlog.DoLogCW("readModHistory: ReadFile failure")
+		return false
+	}
+}
 
 func checkVersion(operator int, local, remote string) (bool, error) {
 
@@ -485,6 +547,10 @@ func downloadMods(downloadList []downloadData) {
 		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
 		longBuf = longBuf + "[" + dl.Title + "-" + dl.Data.Version + "](" + mURL + ")"
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
+
+		newUpdate := ModHistoryData{Name: dl.Name, Version: dl.Data.Version, Date: time.Now()}
+		ModHistory = append(ModHistory, newUpdate)
+		WriteModHistory()
 	}
 
 }

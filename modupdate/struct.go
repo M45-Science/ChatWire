@@ -11,6 +11,15 @@ const (
 	EO_GREATER
 )
 
+var ModHistory []ModHistoryData
+
+type ModHistoryData struct {
+	Name, Version string
+	Date          time.Time
+	Crashes       int
+	Blacklist     bool
+}
+
 type downloadData struct {
 	Name, Title, OldFilename string
 	Data                     modReleases
