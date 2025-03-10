@@ -458,6 +458,9 @@ func downloadMods(downloadList []downloadData) string {
 		if !dl.doDownload {
 			continue
 		}
+		if IsBaseMod(dl.Name) {
+			continue
+		}
 
 		buf := ""
 		if dl.wasDep {
