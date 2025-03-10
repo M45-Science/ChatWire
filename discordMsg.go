@@ -26,10 +26,52 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	message, _ := m.ContentWithMoreMentionsReplaced(s)
+	message = sclean.UnicodeCleanup(message)
+
+	//Show attachments
+	if len(m.Attachments) > 0 {
+		message = message + "Attachments: "
+	}
+	urls := ""
+	for _, item := range m.Attachments {
+		if item.URL != "" {
+			if urls != "" {
+				urls = urls + ", "
+			}
+			urls = urls + item.ContentType + ": " + item.URL
+		}
+	}
+	message = message + urls
+
+	//Show stickers
+	stickers := ""
+	if len(m.StickerItems) > 0 {
+		message = message + "Stickers: "
+	}
+	for _, item := range m.StickerItems {
+		if item.Name != "" {
+			if stickers != "" {
+				stickers = stickers + ", "
+			}
+			stickers = stickers + item.Name
+		}
+	}
+	message = message + stickers
+
+	if message == "" {
+		return
+	}
+
+m.
+
+	//Limit size
 	if len(message) > 500 {
 		message = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(message, 500))
 	}
-	message = sclean.UnicodeCleanup(message)
+
+	//Kill continuity.
+	glob.BootMessage = nil
+	glob.UpdateMessage = nil
 
 	/* Protect players from dumb mistakes with registration codes, even on other maps */
 	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
