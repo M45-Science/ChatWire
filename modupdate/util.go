@@ -552,7 +552,6 @@ func downloadMods(downloadList []downloadData) {
 		ModHistory = append(ModHistory, newUpdate)
 		WriteModHistory()
 	}
-
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {

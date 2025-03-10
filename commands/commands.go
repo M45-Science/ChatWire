@@ -247,66 +247,43 @@ var cmds = []glob.CommandData{
 
 		Options: []glob.OptionData{
 			{
-				Name:        "list",
-				Description: "list all installed mods",
+				Name:        "mod-history",
+				Description: "Display all mod history.",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-				Required:    false,
 			},
 			{
-				Name:        "enable",
-				Description: "enable a mod by name",
+				Name:        "list-mods",
+				Description: "List all installed mods",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "enable-mod",
+				Description: "Enable a mod by name",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 			},
 			{
-				Name:        "disable",
-				Description: "disable a mod by name",
+				Name:        "disable-mod",
+				Description: "Disable a mod by name",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 			},
 			{
-				Name:        "add",
+				Name:        "blacklist-mod",
+				Description: "Prevent a mod from being updated",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "add-mod",
 				Description: "add a mod by name",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 			},
 			{
-				Name:        "remove",
+				Name:        "remove-mod",
 				Description: "remove a mod",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    false,
 			},
 		},
 	},
-		Function: moderator.EditMods, ModeratorOnly: true}, {AppCmd: glob.AppCmdData{
-		Name:        "modhistory",
-		Description: "show mod update history, blacklist updates",
-		Type:        discordgo.ChatApplicationCommand,
-		Options: []glob.OptionData{
-			{
-				Name:        "action",
-				Description: "choose one",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-				Choices: []glob.ChoiceData{
-					{
-						Name:     "list-history",
-						Function: moderator.ListHistory,
-					},
-					{
-						Name:     "clear-history",
-						Function: moderator.ClearHistory,
-					},
-				},
-			},
-			{
-				Name:        "blacklist",
-				Description: "Provide ID# of item to blacklist, or unblacklist",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-			},
-		},
-	},
-		ModeratorOnly: true},
+		Function: moderator.EditMods, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command.",

@@ -9,10 +9,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func ModHistoryCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	//
-}
-
 func ListHistory(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	buf := ""
 	for i, item := range modupdate.ModHistory {
@@ -30,8 +26,4 @@ func ClearHistory(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	modupdate.WriteModHistory()
 	disc.InteractionEphemeralResponse(i, "Mod History", "Mod history was cleared.")
 
-}
-
-func BlacklistItem(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-	//
 }

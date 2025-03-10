@@ -16,8 +16,8 @@ var ModHistory []ModHistoryData
 type ModHistoryData struct {
 	Name, Version string
 	Date          time.Time
-	Crashes       int
-	Blacklist     bool
+	BlacklistRelease,
+	BlacklistMod bool
 }
 
 type downloadData struct {
