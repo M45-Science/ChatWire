@@ -103,6 +103,9 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 func listMods(installedMods []modupdate.ModData) string {
 	ebuf := ""
 	for _, item := range installedMods {
+		if strings.EqualFold(item.Name, "base") {
+			continue
+		}
 		if !item.Enabled {
 			continue
 		}
@@ -114,6 +117,9 @@ func listMods(installedMods []modupdate.ModData) string {
 
 	dbuf := ""
 	for _, item := range installedMods {
+		if strings.EqualFold(item.Name, "base") {
+			continue
+		}
 		if item.Enabled {
 			continue
 		}
@@ -155,6 +161,9 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 	for _, part := range parts {
 		found := false
 		for m, mod := range installedMods {
+			if strings.EqualFold(mod.Name, "base") {
+				continue
+			}
 			if strings.EqualFold(mod.Name, part) {
 				if mod.Enabled != value {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
