@@ -69,7 +69,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		emsg := "Mod updates complete."
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Updates", emsg, glob.COLOR_CYAN)
 		if fact.NumPlayers > 0 && installed != "" {
-			fact.FactChat("Mod updates: " + installed + "\n(Mods will update on reboot, when server is empty)")
+			fact.FactChat("Mod updates: " + installed + " (Mods will update on reboot, when server is empty)")
 		}
 		return true, nil
 	}
