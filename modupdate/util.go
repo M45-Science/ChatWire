@@ -434,8 +434,10 @@ func downloadMods(downloadList []downloadData) string {
 	downloadCount := getDownloadCount(downloadList)
 	if downloadCount > 0 {
 		glob.UpdateMessage = nil
-		buf := fmt.Sprintf("Downloading %v mod updates.", downloadCount)
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+		if downloadCount > 1 {
+			buf := fmt.Sprintf("Downloading %v mod updates.", downloadCount)
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+		}
 	}
 	//Show each download
 	var shortBuf, longBuf string
