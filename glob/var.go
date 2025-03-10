@@ -14,7 +14,7 @@ import (
 
 var (
 	FactorioLock  sync.Mutex
-	ModLock       sync.Mutex
+	UpdatersLock  sync.Mutex
 	BootMessage   *discordgo.Message
 	UpdateMessage *discordgo.Message
 

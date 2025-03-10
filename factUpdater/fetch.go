@@ -8,11 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 )
-
-var FetchLock sync.Mutex
 
 const httpDownloadTimeout = time.Minute * 15
 const httpGetTimeout = time.Second * 30

@@ -8,16 +8,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-var FactUpdateLock sync.Mutex
-
 func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
-	FactUpdateLock.Lock()
-	defer FactUpdateLock.Unlock()
+	glob.UpdatersLock.Lock()
+	defer glob.UpdatersLock.Unlock()
 
 	glob.UpdateMessage = nil
 
@@ -69,9 +66,6 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 }
 
 func quickLatest(info *InfoData) (*versionInts, error) {
-
-	FetchLock.Lock()
-	defer FetchLock.Unlock()
 
 	body, _, err := HttpGet(false, releaseURL, true)
 	if err != nil {

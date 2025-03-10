@@ -166,6 +166,9 @@ func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	glob.UpdatersLock.Lock()
+	defer glob.UpdatersLock.Unlock()
+
 	if support.SyncMods("") {
 		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio mod sync complete.")
 	} else {
