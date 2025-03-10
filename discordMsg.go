@@ -62,8 +62,6 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-m.
-
 	//Limit size
 	if len(message) > 500 {
 		message = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(message, 500))
