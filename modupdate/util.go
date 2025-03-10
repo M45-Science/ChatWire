@@ -382,7 +382,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 				for m, mod := range downloadList {
 					if strings.EqualFold(mod.Name, parts[0]) {
 						downloadList[m].doDownload = false
-						errStr = errStr + "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatable with the mod " + dl.Name
+						errStr = errStr + "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
 					}
 				}
 			}
@@ -657,12 +657,14 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 					if numParts == 3 {
 						eq := parseOperator(parts[1])
 						baseReject, err := checkVersion(eq, fact.FactorioVersion, parts[2])
-						if err != nil {
-							cwlog.DoLogCW("Unable to parse version: " + err.Error())
+						if baseReject {
+							//cwlog.DoLogCW("Rejected: " + installedItem.Name + "-" + release.Version + ". Needs: " + dep)
 							reject = true
 							continue
 						}
-						if baseReject {
+						if err != nil {
+							cwlog.DoLogCW("Unable to parse version: " + err.Error())
+							reject = true
 							continue
 						}
 					}
