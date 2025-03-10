@@ -76,9 +76,11 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		if fact.NumPlayers > 0 && installed != "" {
 			fact.FactChat("Mod updates: " + installed + " (Mods will update on reboot, when server is empty)")
 		}
+		glob.BootMessage = nil
 		return true, nil
 	}
 
+	glob.BootMessage = nil
 	return false, errors.New("No mod updates available.")
 }
 
