@@ -7,6 +7,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"errors"
+	"sync"
 )
 
 const (
@@ -17,7 +18,11 @@ const (
 	modUpdateTitle = "Found Mod Updates"
 )
 
+var ModUpdateLock sync.Mutex
+
 func CheckModUpdates(dryRun bool) (bool, error) {
+	ModUpdateLock.Lock()
+	defer ModUpdateLock.Unlock()
 
 	//If needed, get Factorio version
 	getFactoioVersion()

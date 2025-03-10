@@ -8,11 +8,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+var FactUpdateLock sync.Mutex
+
 func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
+	FactUpdateLock.Lock()
+	defer FactUpdateLock.Unlock()
+
 	glob.UpdateMessage = nil
 
 	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}

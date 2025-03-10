@@ -302,15 +302,15 @@ func checkModDependencies(downloadList []downloadData) []downloadData {
 	for _, dl := range downloadList {
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
 			dep = strings.TrimPrefix(dep, "~")
+			dep = strings.ReplaceAll(dep, "?", "")
+			dep = strings.ReplaceAll(dep, "(?)", "")
+			dep = strings.ReplaceAll(dep, "( ? )", "")
+			dep = strings.TrimSpace(dep)
 
 			parts := strings.Split(dep, " ")
 			numParts := len(parts)
 
 			if IsBaseMod(parts[0]) {
-				continue
-			}
-
-			if strings.HasPrefix(parts[0], "?") {
 				continue
 			}
 
