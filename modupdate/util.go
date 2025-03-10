@@ -414,6 +414,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 				//Unmet dep
 				newInfo, _ := downloadModInfo(parts[0])
 				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
+				newDL.wasDep = true
 				if newDL.Name != "" {
 					downloadList = addDownload(newDL, downloadList)
 				}
@@ -458,7 +459,12 @@ func downloadMods(downloadList []downloadData) string {
 			continue
 		}
 
-		buf := fmt.Sprintf("Downloading: %v-%v", dl.Name, dl.Data.Version)
+		buf := ""
+		if dl.wasDep {
+			buf = fmt.Sprintf("Downloading dependency: %v-%v", dl.Name, dl.Data.Version)
+		} else {
+			buf = fmt.Sprintf("Downloading: %v-%v", dl.Name, dl.Data.Version)
+		}
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
 
 		if errorLog != "" {
