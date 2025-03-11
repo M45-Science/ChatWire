@@ -80,6 +80,10 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "disable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), false)
 			tmsg = tmsg + msg + "\n"
+		case "mod-history":
+			tmsg = tmsg + modupdate.ListHistory()
+		case "clear-history":
+			tmsg = tmsg + modupdate.ClearHistory()
 		default:
 			msg = oName + " is not a valid option."
 			tmsg = tmsg + msg + "\n"

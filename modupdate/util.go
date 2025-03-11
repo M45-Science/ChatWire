@@ -34,7 +34,7 @@ func WriteModHistory() bool {
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
-	if err := enc.Encode(modHistoryFile); err != nil {
+	if err := enc.Encode(ModHistory); err != nil {
 		cwlog.DoLogCW("writeModHistory: enc.Encode failure")
 		return false
 	}
@@ -452,7 +452,7 @@ func downloadMods(downloadList []downloadData) string {
 		}
 	}
 	//Show each download
-	var shortBuf, longBuf string
+	var shortBuf string
 	errorLog := ""
 	for d, dl := range downloadList {
 		if !dl.doDownload {
@@ -462,11 +462,14 @@ func downloadMods(downloadList []downloadData) string {
 			continue
 		}
 
+		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
+		longBuf := "[" + dl.Title + "-" + dl.Data.Version + "](" + mURL + ")"
+
 		buf := ""
 		if dl.wasDep {
-			buf = fmt.Sprintf("Downloading dependency: %v-%v", dl.Name, dl.Data.Version)
+			buf = fmt.Sprintf("Downloading dependency: %v", longBuf)
 		} else {
-			buf = fmt.Sprintf("Downloading: %v-%v", dl.Name, dl.Data.Version)
+			buf = fmt.Sprintf("Downloading: %v", longBuf)
 		}
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
 
@@ -564,11 +567,8 @@ func downloadMods(downloadList []downloadData) string {
 		downloadList[d].Complete = true
 
 		if downloadCount != 0 {
-			longBuf = longBuf + ", "
 			shortBuf = shortBuf + ", "
 		}
-		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
-		longBuf = longBuf + "[" + dl.Title + "-" + dl.Data.Version + "](" + mURL + ")"
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 
 		newUpdate := ModHistoryData{Name: dl.Name, Version: dl.Data.Version, Date: time.Now()}
