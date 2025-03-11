@@ -10,6 +10,7 @@ import (
 	"ChatWire/util"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -73,7 +74,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "list-mods":
 			tmsg = tmsg + listMods(installedMods)
 		case "add-mod":
-			parseModName(i, option.StringValue())
+			tmsg = tmsg + parseModName(i, option.StringValue())
 		case "enable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
@@ -100,11 +101,11 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
 }
 
-func parseModName(i *discordgo.InteractionCreate, input string) {
+func parseModName(i *discordgo.InteractionCreate, input string) string {
 	tempName := strings.TrimSpace(input)
 	lname := strings.ToLower(tempName)
 
-	if strings.HasPrefix(lname, "factorio.com") {
+	if strings.Contains(lname, "factorio.com") {
 		temp := strings.TrimPrefix(lname, "https")
 		temp = strings.TrimPrefix(temp, "http")
 		temp = strings.TrimPrefix(temp, "://mods.factorio.com/mod/")
@@ -117,10 +118,10 @@ func parseModName(i *discordgo.InteractionCreate, input string) {
 			parts = strings.Split(temp, "/")
 		}
 		modName := parts[0]
-		cwlog.DoLogCW("Mod Name (from URL): %v", modName)
+		return fmt.Sprintf("Mod Name (from URL): %v", modName)
 
 	} else {
-		cwlog.DoLogCW("Non url: %v", lname)
+		return fmt.Sprintf("Non url: %v", lname)
 	}
 }
 
