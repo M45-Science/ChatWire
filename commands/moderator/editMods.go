@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -73,7 +74,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "list-mods":
 			tmsg = tmsg + listMods(installedMods)
 		case "add-mod":
-			tmsg = tmsg + parseModName(i, option.StringValue())
+			tmsg = tmsg + addMod(option.StringValue())
 		case "enable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
@@ -104,7 +105,47 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
 }
 
-func parseModName(i *discordgo.InteractionCreate, input string) string {
+func addMod(input string) string {
+
+	input = strings.ReplaceAll(input, " ", "")
+	mods := strings.Split(input, ",")
+
+	buf := ""
+	modList, err := modupdate.GetModList()
+	if err != nil {
+		return err.Error()
+	}
+
+	for _, mod := range mods {
+		modName, success := parseModName(mod)
+		if !success {
+			return modName + ": mod not found."
+		}
+		for _, item := range modList.Mods {
+			if item.Name == modName {
+				return "The mod " + modName + " is already installed!"
+			}
+		}
+		modupdate.ModHistory = append(modupdate.ModHistory, modupdate.ModHistoryData{
+			Name: mod, Notes: "Added by user", Date: time.Now()})
+		modList.Mods = append(modList.Mods, modupdate.ModData{Name: modName, Enabled: true})
+		if buf != "" {
+			buf = buf + ", "
+		}
+		buf = buf + modName
+	}
+
+	if buf != "" {
+		modupdate.WriteModHistory()
+		writeModsList(modList)
+		modupdate.CheckModUpdates(false)
+		return "Adding mods: " + buf
+	}
+
+	return "You must specify mods to add."
+}
+
+func parseModName(input string) (string, bool) {
 	name := strings.TrimSpace(input)
 
 	if ContainsIgnoreCase(name, "factorio.com") {
@@ -123,24 +164,24 @@ func parseModName(i *discordgo.InteractionCreate, input string) string {
 		modData, err := modupdate.DownloadModInfo(modName)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "Mod info unmarshal failed") {
-				return "Mod not found: " + modName
+				return "Mod not found: " + modName, false
 			} else {
-				return "Error looking up mod: " + modName
+				return "Error looking up mod: " + modName, false
 			}
 		}
 
-		return ("Mod From URL: " + modData.Name)
+		return modData.Name, true
 
 	} else {
 		modData, err := modupdate.DownloadModInfo(name)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "Mod info unmarshal failed") {
-				return "Mod not found: " + name
+				return "Mod not found: " + name, false
 			} else {
-				return "Error looking up mod: " + name
+				return "Error looking up mod: " + name, false
 			}
 		}
-		return "Mod: " + modData.Name
+		return modData.Name, true
 	}
 }
 
@@ -202,6 +243,7 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 	parts := strings.Split(input, ",")
 
 	emsg := ""
+	dirty := false
 	for _, part := range parts {
 		found := false
 		for m, mod := range installedMods {
@@ -212,6 +254,10 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 				if mod.Enabled != value {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
 					installedMods[m].Enabled = value
+
+					modupdate.ModHistory = append(modupdate.ModHistory, modupdate.ModHistoryData{
+						Name: mod.Name, Notes: enableStr(value, true) + " by user", Date: time.Now()})
+					dirty = true
 				} else {
 					emsg = emsg + "The mod '" + mod.Name + "' was already " + enableStr(value, true) + "!"
 				}
@@ -222,6 +268,9 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 		if !found {
 			emsg = emsg + "There is no mod by the name: " + input
 		}
+	}
+	if dirty {
+		modupdate.WriteModHistory()
 	}
 	return installedMods, emsg
 }
