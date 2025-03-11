@@ -84,7 +84,7 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 		//cwlog.DoLogCW("Received line: %s\n", line)
 		parts := strings.Split(line, " ")
 		numParts := len(parts)
-		if numParts > 0 {
+		if numParts > 1 {
 			if parts[1] == "Goodbye" {
 				break
 			}
