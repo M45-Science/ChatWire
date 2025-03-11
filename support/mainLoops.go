@@ -2,7 +2,6 @@ package support
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -425,7 +424,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(2 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 {
 
@@ -604,8 +603,13 @@ func MainLoops() {
 					}
 				}
 				glob.UpdateMessage = nil
-				time.Sleep(time.Minute * 10)
-				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 5 minutes of randomness
+
+				if *glob.ProxyURL != "" {
+					time.Sleep(time.Minute * 5)
+				} else {
+					time.Sleep(time.Minute * 15)
+
+				}
 			} else {
 				time.Sleep(time.Minute)
 			}
@@ -694,7 +698,12 @@ func MainLoops() {
 				glob.UpdatersLock.Unlock()
 			}
 
-			time.Sleep(time.Hour)
+			if *glob.ProxyURL != "" {
+				time.Sleep(time.Minute * 15)
+			} else {
+				time.Sleep(time.Hour * 4)
+			}
+
 		}
 	}()
 
