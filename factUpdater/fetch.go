@@ -53,7 +53,7 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 
 	//Check status code
 	if res.StatusCode != 200 {
-		return nil, "", errors.New("http error: " + err.Error())
+		return nil, "", errors.New("http error")
 	}
 
 	//Close once complete, if valid
