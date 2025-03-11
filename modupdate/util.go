@@ -299,7 +299,7 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 	for _, modFile := range modFileList {
 		dupe := false
 		for _, item := range installedMods {
-			if strings.EqualFold(item.Name, modFile.Name) {
+			if item.Name == modFile.Name {
 				dupe = true
 				break
 			}
@@ -312,7 +312,7 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 		dupe := false
 		for _, item := range installedMods {
 			//This shouldn't happen, but just in case
-			if strings.EqualFold(item.Name, modFile.Name) {
+			if item.Name == modFile.Name {
 				dupe = true
 				break
 			}
@@ -347,7 +347,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 			if IsBaseMod(installedItem.Name) {
 				continue
 			}
-			if strings.EqualFold(portalItem.Name, installedItem.Name) {
+			if portalItem.Name == installedItem.Name {
 				newDL := findModUpgrade(portalItem, installedItem)
 				if newDL.Name != "" {
 					downloadList = addDownload(newDL, downloadList)
@@ -380,7 +380,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
 			if strings.HasPrefix(parts[0], "!") {
 				for m, mod := range downloadList {
-					if strings.EqualFold(mod.Name, parts[0]) {
+					if mod.Name == parts[0] {
 						downloadList[m].doDownload = false
 						errStr = errStr + "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
 					}
@@ -390,7 +390,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 			foundDep := false
 			for _, mod := range downloadList {
 				//Check if dependency already met
-				if strings.EqualFold(mod.Name, dl.Name) {
+				if mod.Name == dl.Name {
 					//If we require a specific version
 					if numParts == 3 {
 						eq := parseOperator(parts[1])
@@ -571,7 +571,7 @@ func downloadMods(downloadList []downloadData) string {
 		}
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 
-		newUpdate := ModHistoryData{Name: dl.Name, Version: dl.Data.Version, Date: time.Now()}
+		newUpdate := ModHistoryData{Name: dl.Name, Notes: "Updated", Version: dl.Data.Version, Date: time.Now()}
 		ModHistory = append(ModHistory, newUpdate)
 		WriteModHistory()
 	}
@@ -581,7 +581,7 @@ func downloadMods(downloadList []downloadData) string {
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
 	for i, item := range list {
-		if strings.EqualFold(item.Name, input.Name) {
+		if item.Name == input.Name {
 			//Check versions
 			newer, err := checkVersion(EO_GREATER, item.Data.Version, input.Data.Version)
 			if err != nil {
