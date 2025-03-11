@@ -81,7 +81,7 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 		line := scanner.Text()
 		line = strings.TrimSpace(line)
 
-		cwlog.DoLogCW("Received line: %s\n", line)
+		//cwlog.DoLogCW("Received line: %s\n", line)
 		parts := strings.Split(line, " ")
 		numParts := len(parts)
 		if numParts > 0 {
@@ -121,8 +121,6 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
 				"All mods synced.", glob.COLOR_CYAN)
 		}
-
-		time.Sleep(time.Millisecond * 100)
 	}
 
 	if err := scanner.Err(); err != nil {
