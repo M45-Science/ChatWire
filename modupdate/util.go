@@ -385,11 +385,12 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 						errStr = errStr + "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
 					}
 				}
+				continue
 			}
 
 			foundDep := false
 			for _, mod := range downloadList {
-				if strings.Contains(dep, "!") {
+				if strings.Contains(mod.Name, "!") {
 					continue
 				}
 				//Check if dependency already met
@@ -459,6 +460,9 @@ func downloadMods(downloadList []downloadData) string {
 	errorLog := ""
 	for d, dl := range downloadList {
 		if !dl.doDownload {
+			continue
+		}
+		if strings.Contains(dl.Name, "!") {
 			continue
 		}
 		if IsBaseMod(dl.Name) {
