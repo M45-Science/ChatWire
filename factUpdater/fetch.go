@@ -16,6 +16,7 @@ const httpGetTimeout = time.Second * 30
 
 func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 
+	//Change timeout based on request type
 	timeout := httpDownloadTimeout
 	if quick {
 		timeout = httpGetTimeout
@@ -26,6 +27,7 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 		Timeout: timeout,
 	}
 
+	//Use proxy if provided
 	var URL string
 	if *glob.ProxyURL != "" && !noproxy {
 		proxy := strings.TrimSuffix(*glob.ProxyURL, "/")
@@ -48,6 +50,11 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 		return nil, "", errors.New("failed to get response: " + err.Error())
 	}
 
+	//Check status code
+	if res.StatusCode != 200 {
+		return nil, "", errors.New("http error: " + err.Error())
+	}
+
 	//Close once complete, if valid
 	if res.Body != nil {
 		defer res.Body.Close()
@@ -57,6 +64,13 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, "", errors.New("unable to read response body: " + err.Error())
+	}
+
+	//Check data length
+	if res.ContentLength >= 0 {
+		if len(body) != int(res.ContentLength) {
+			return nil, "", errors.New("data ended early")
+		}
 	}
 
 	realurl := res.Request.URL.String()
