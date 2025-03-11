@@ -118,7 +118,11 @@ func parseModName(i *discordgo.InteractionCreate, input string) string {
 
 		modData, err := modupdate.DownloadModInfo(modName)
 		if err != nil {
-			return "Error looking up mod: " + err.Error()
+			if strings.HasPrefix(err.Error(), "Mod info unmarshal failed") {
+				return "Mod not found: " + modName
+			} else {
+				return "Error looking up mod: " + modName
+			}
 		}
 
 		return ("Mod From URL: " + modData.Name)
@@ -126,7 +130,11 @@ func parseModName(i *discordgo.InteractionCreate, input string) string {
 	} else {
 		modData, err := modupdate.DownloadModInfo(name)
 		if err != nil {
-			return "Error looking up mod: " + err.Error()
+			if strings.HasPrefix(err.Error(), "Mod info unmarshal failed") {
+				return "Mod not found: " + name
+			} else {
+				return "Error looking up mod: " + name
+			}
 		}
 		return "Mod: " + modData.Name
 	}

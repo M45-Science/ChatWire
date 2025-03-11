@@ -610,16 +610,16 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
-		cwlog.DoLogCW("Mod info request failed: " + err.Error())
-		cwlog.DoLogCW(string(data))
-		return modPortalFullData{}, err
+		emsg := "Mod info request failed: " + err.Error()
+		cwlog.DoLogCW(emsg)
+		return modPortalFullData{}, errors.New(emsg)
 	}
 	newInfo := modPortalFullData{}
 	err = json.Unmarshal(data, &newInfo)
 	if err != nil {
-		cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
-		cwlog.DoLogCW(string(data))
-		return modPortalFullData{}, err
+		emsg := "Mod info unmarshal failed: " + err.Error()
+		cwlog.DoLogCW(emsg)
+		return modPortalFullData{}, errors.New(emsg)
 	}
 	return newInfo, nil
 }
