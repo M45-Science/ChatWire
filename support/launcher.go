@@ -2,6 +2,7 @@ package support
 
 import (
 	"archive/zip"
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -22,28 +23,29 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/util"
-)
 
-const syncModsTimeout = time.Minute * 15
+	"github.com/bwmarrin/discordgo"
+)
 
 var (
 	BotIsReady bool
 )
 
-func SyncMods(optionalFileName string) bool {
+const (
+	dotInterval      = time.Second * 5
+	progressInterval = time.Second * 10
+	syncModsTimeout  = time.Minute * 15
+)
+
+func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
-	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
-	RestoreSetting := cfg.Local.Options.ModUpdate
-	cfg.Local.Options.ModUpdate = false
-	defer func(rVal bool) {
-		cfg.Local.Options.ModUpdate = rVal
-	}(RestoreSetting)
-
-	_, fileName, _ := GetSaveGame(true)
-	if optionalFileName != "" {
+	fileName := ""
+	if optionalFileName == "" {
+		_, fileName, _ = GetSaveGame(true)
+	} else {
 		fileName = optionalFileName
 	}
 
@@ -56,33 +58,84 @@ func SyncMods(optionalFileName string) bool {
 
 	// Create a context with the timeout
 	ctx, cancel := context.WithTimeout(context.Background(), syncModsTimeout)
-	defer cancel() // Ensure the context is canceled to release resources
+	defer cancel()
 
-	// Initialize the command with the context
 	cmd := exec.CommandContext(ctx, fact.GetFactorioBinary(), tempargs...)
 
-	// Execute the command and get the output
-	data, err := cmd.Output()
-
-	// Check if the context deadline was exceeded (timeout)
-	if ctx.Err() == context.DeadlineExceeded {
-		cwlog.DoLogCW("SyncMods: Took too long, timed out after " + syncModsTimeout.String() + ".")
-		return false
-	}
-
-	// Check for other command errors
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		cwlog.DoLogCW("SyncMods: Error: " + string(data))
-		//return false
-	}
-
-	if strings.Contains(string(data), "Mods synced") {
-		cwlog.DoLogCW("Factorio mods synced with save-game.")
-		return true
-	} else {
-		cwlog.DoLogCW("SyncMods: Error: Unexpected output.")
+		cwlog.DoLogCW("SyncMods: Error reading stdout: %v\n", err)
 		return false
 	}
+
+	if err := cmd.Start(); err != nil {
+		cwlog.DoLogCW("Error starting command: %v", err)
+	}
+
+	scanner := bufio.NewScanner(stdout)
+
+	modsLoading := false
+	var lastDot time.Time
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+
+		cwlog.DoLogCW("Received line: %s\n", line)
+		parts := strings.Split(line, " ")
+		numParts := len(parts)
+		if numParts > 0 {
+			if parts[1] == "Goodbye" {
+				break
+			}
+		}
+		if numParts > 2 {
+			if parts[1] == "Loading" && parts[2] == "mod" {
+				if !modsLoading {
+					modsLoading = true
+					glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
+						"Loading mods", glob.COLOR_CYAN)
+				} else if time.Since(lastDot) > dotInterval {
+					lastDot = time.Now()
+					if glob.UpdateMessage != nil && len(glob.UpdateMessage.Embeds) > 0 {
+						embed := glob.UpdateMessage.Embeds[0]
+						embed.Description = embed.Description + " ."
+						disc.DS.ChannelMessageEditEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage.ID, embed)
+					}
+				}
+			}
+		}
+		if numParts > 3 {
+			if parts[3] == "Downloading" {
+				urlParts := strings.Split(parts[4], "/")
+				if len(urlParts) > 1 {
+					if urlParts[1] == "download" {
+						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
+							"Downloading: "+urlParts[2], glob.COLOR_CYAN)
+					}
+				}
+			}
+		}
+
+		if line == "Mods synced" {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
+				"All mods synced.", glob.COLOR_CYAN)
+		}
+
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	if err := scanner.Err(); err != nil {
+		cwlog.DoLogCW("SyncMods: Error reading stdout: %v\n", err)
+		return false
+	}
+
+	if err := cmd.Wait(); err != nil {
+		cwlog.DoLogCW("SyncMods: Command finished with error: %v\n", err)
+		return false
+	}
+
+	return true
 }
 
 /* Find the newest save game */

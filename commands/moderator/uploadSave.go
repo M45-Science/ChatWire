@@ -51,7 +51,7 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 
 	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
 		"**Downloading any "+saveGameName+" installed mods, PLEASE WAIT...**", glob.COLOR_CYAN)
-	if !support.SyncMods(saveFileName) {
+	if !support.SyncMods(i, saveFileName) {
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
 			"mod-sync failed, attempting to continue.", glob.COLOR_RED)
 		time.Sleep(constants.ErrMsgDelay)

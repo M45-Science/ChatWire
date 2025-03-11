@@ -172,8 +172,8 @@ func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	glob.UpdatersLock.Lock()
 	defer glob.UpdatersLock.Unlock()
 
-	if support.SyncMods("") {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio mod sync complete.")
+	if support.SyncMods(i, "") {
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync", "Mod sync complete.", glob.COLOR_CYAN)
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "ERROR", "Syncing mods failed", glob.COLOR_RED)
 	}
