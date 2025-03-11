@@ -78,6 +78,9 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "enable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
+		case "clear-all-mods":
+			msg = clearAllMods()
+			tmsg = tmsg + msg + "\n"
 		case "disable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), false)
 			tmsg = tmsg + msg + "\n"
@@ -103,6 +106,11 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
+}
+
+func clearAllMods() string {
+
+	return ""
 }
 
 func addMod(input string) string {
