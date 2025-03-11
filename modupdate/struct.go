@@ -14,10 +14,8 @@ const (
 var ModHistory []ModHistoryData
 
 type ModHistoryData struct {
-	Name, Version string
-	Date          time.Time
-	BlacklistRelease,
-	BlacklistMod bool
+	Name, Notes, Version string
+	Date                 time.Time
 }
 
 type downloadData struct {
