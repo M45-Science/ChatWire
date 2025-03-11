@@ -378,7 +378,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 				continue
 			}
 
-			if strings.Contains(parts[0], "!") {
+			if strings.Contains(dep, "!") {
 				for m, mod := range downloadList {
 					if mod.Name == parts[0] {
 						downloadList[m].doDownload = false
@@ -389,7 +389,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
 			foundDep := false
 			for _, mod := range downloadList {
-				if strings.Contains(mod.Name, "!") {
+				if strings.Contains(dep, "!") {
 					continue
 				}
 				//Check if dependency already met
