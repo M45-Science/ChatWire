@@ -10,7 +10,6 @@ import (
 	"ChatWire/util"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
@@ -102,15 +101,13 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 }
 
 func parseModName(i *discordgo.InteractionCreate, input string) string {
-	tempName := strings.TrimSpace(input)
-	lname := strings.ToLower(tempName)
+	name := strings.TrimSpace(input)
 
-	if strings.Contains(lname, "factorio.com") {
-		temp := strings.TrimPrefix(lname, "https")
-		temp = strings.TrimPrefix(temp, "http")
-		temp = strings.TrimPrefix(temp, "://mods.factorio.com/mod/")
-		temp = strings.TrimPrefix(temp, "://mods.factorio.com/download/")
-
+	if ContainsIgnoreCase(name, "factorio.com") {
+		temp := TrimPrefixIgnoreCase(name, "https")
+		temp = TrimPrefixIgnoreCase(temp, "http")
+		temp = TrimPrefixIgnoreCase(temp, "://mods.factorio.com/mod/")
+		temp = TrimPrefixIgnoreCase(temp, "://mods.factorio.com/download/")
 		var parts []string
 		if strings.Contains(temp, "?") {
 			parts = strings.Split(temp, "?")
@@ -118,10 +115,20 @@ func parseModName(i *discordgo.InteractionCreate, input string) string {
 			parts = strings.Split(temp, "/")
 		}
 		modName := parts[0]
-		return fmt.Sprintf("Mod Name (from URL): %v", modName)
+
+		modData, err := modupdate.DownloadModInfo(modName)
+		if err != nil {
+			return "Error looking up mod: " + err.Error()
+		}
+
+		return ("Mod From URL: " + modData.Name)
 
 	} else {
-		return fmt.Sprintf("Non url: %v", lname)
+		modData, err := modupdate.DownloadModInfo(name)
+		if err != nil {
+			return "Error looking up mod: " + err.Error()
+		}
+		return "Mod: " + modData.Name
 	}
 }
 
@@ -261,4 +268,17 @@ func writeModsList(modList modupdate.ModListData) bool {
 	cwlog.DoLogCW("Wrote " + constants.ModListName)
 
 	return true
+}
+
+func TrimPrefixIgnoreCase(s, prefix string) string {
+	if strings.HasPrefix(strings.ToLower(s), strings.ToLower(prefix)) {
+		return s[len(prefix):]
+	}
+	return s
+}
+
+func ContainsIgnoreCase(s, substr string) bool {
+	return strings.Contains(
+		strings.ToLower(s), strings.ToLower(substr),
+	)
 }

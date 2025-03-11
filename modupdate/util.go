@@ -412,7 +412,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 			}
 			if !foundDep {
 				//Unmet dep
-				newInfo, _ := downloadModInfo(parts[0])
+				newInfo, _ := DownloadModInfo(parts[0])
 				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
 				newDL.wasDep = true
 				if newDL.Name != "" {
@@ -601,22 +601,24 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 	return append(list, input)
 }
 
-func downloadModInfo(name string) (modPortalFullData, error) {
+func DownloadModInfo(name string) (modPortalFullData, error) {
 
 	if IsBaseMod(name) {
-		return modPortalFullData{}, errors.New("this is a base mod")
+		return modPortalFullData{}, errors.New("this is a base-game mod")
 	}
 
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
 		cwlog.DoLogCW("Mod info request failed: " + err.Error())
+		cwlog.DoLogCW(string(data))
 		return modPortalFullData{}, err
 	}
 	newInfo := modPortalFullData{}
 	err = json.Unmarshal(data, &newInfo)
 	if err != nil {
 		cwlog.DoLogCW("Mod info unmarshal failed: " + err.Error())
+		cwlog.DoLogCW(string(data))
 		return modPortalFullData{}, err
 	}
 	return newInfo, nil
