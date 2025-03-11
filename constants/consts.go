@@ -75,10 +75,6 @@ const (
 	/* Max results to return */
 	WhoisResults = 15
 
-	/* Maximum time before giving up on mod updater */
-	ModUpdateLimit = 10 * time.Minute
-	ModUpdaterPath = "scripts/mod_updater.py"
-
 	/* Maximum time to wait for Factorio to close */
 	MaxFactorioCloseWait = 45 * 10 //Loop sleep is 1/10 of a second
 

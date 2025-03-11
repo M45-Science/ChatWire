@@ -389,6 +389,9 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
 			foundDep := false
 			for _, mod := range downloadList {
+				if strings.HasPrefix(mod.Name, "!") {
+					continue
+				}
 				//Check if dependency already met
 				if mod.Name == dl.Name {
 					//If we require a specific version
