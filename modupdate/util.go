@@ -378,7 +378,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 				continue
 			}
 
-			if strings.HasPrefix(parts[0], "!") {
+			if strings.Contains(parts[0], "!") {
 				for m, mod := range downloadList {
 					if mod.Name == parts[0] {
 						downloadList[m].doDownload = false
@@ -389,7 +389,7 @@ func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
 			foundDep := false
 			for _, mod := range downloadList {
-				if strings.HasPrefix(mod.Name, "!") {
+				if strings.Contains(mod.Name, "!") {
 					continue
 				}
 				//Check if dependency already met
@@ -659,6 +659,11 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 
 				//Optional dependency
 				if strings.Contains(dep, "?") {
+					continue
+				}
+
+				//Incompatible dependency
+				if strings.Contains(dep, "!") {
 					continue
 				}
 
