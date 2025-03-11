@@ -70,14 +70,14 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		oName := strings.ToLower(option.Name)
 
 		switch oName {
-		case "list":
+		case "list-mods":
 			tmsg = tmsg + listMods(installedMods)
-			//		case "add":
-			//		case "remove":
-		case "enable":
+		case "add-mod":
+			parseModName(i, option.StringValue())
+		case "enable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
-		case "disable":
+		case "disable-mod":
 			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), false)
 			tmsg = tmsg + msg + "\n"
 		default:
@@ -98,6 +98,30 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
+}
+
+func parseModName(i *discordgo.InteractionCreate, input string) {
+	tempName := strings.TrimSpace(input)
+	lname := strings.ToLower(tempName)
+
+	if strings.HasPrefix(lname, "factorio.com") {
+		temp := strings.TrimPrefix(lname, "https")
+		temp = strings.TrimPrefix(temp, "http")
+		temp = strings.TrimPrefix(temp, "://mods.factorio.com/mod/")
+		temp = strings.TrimPrefix(temp, "://mods.factorio.com/download/")
+
+		var parts []string
+		if strings.Contains(temp, "?") {
+			parts = strings.Split(temp, "?")
+		} else {
+			parts = strings.Split(temp, "/")
+		}
+		modName := parts[0]
+		cwlog.DoLogCW("Mod Name (from URL): %v", modName)
+
+	} else {
+		cwlog.DoLogCW("Non url: %v", lname)
+	}
 }
 
 func listMods(installedMods []modupdate.ModData) string {
