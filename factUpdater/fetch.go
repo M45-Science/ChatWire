@@ -42,6 +42,7 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 		return nil, "", errors.New("get failed: " + err.Error())
 	}
 
+	//Header
 	req.Header.Set("User-Agent", constants.ProgName+"-"+constants.Version)
 
 	//Get response
