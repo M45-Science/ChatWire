@@ -16,7 +16,7 @@ func ListHistory() string {
 		if item.Version != "" {
 			buf = buf + "Version: \n" + item.Version
 		}
-		buf = buf + item.Date.Format("01-02-2006 03:04 PM")
+		buf = buf + item.Date.Format("01-02-2006 03:04 PM") + "\n\n"
 	}
 	if buf == "" {
 		buf = "History is empty."
