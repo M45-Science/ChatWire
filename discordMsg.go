@@ -8,6 +8,7 @@ import (
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"ChatWire/support"
+	"ChatWire/util"
 	"fmt"
 	"regexp"
 	"strings"
@@ -102,60 +103,76 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		 * Chat message handling
 		 *  Don't bother if Factorio isn't running...
 		 */
-		cwlog.DoLogGame("[Discord] " + m.Author.Username + ": " + message)
 
-		if fact.FactorioBooted && fact.FactIsRunning {
-			/* Used for name matching */
-			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
+		/* Used for name matching */
+		alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
-			/* Remove control characters and discord markdown */
-			cmess := sclean.RemoveDiscordMarkdown(message)
+		/* Remove control characters and discord markdown */
+		cleanedMessage := sclean.RemoveDiscordMarkdown(message)
 
-			/* Try to find factorio name, for registered players */
-			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
-			nbuf := ""
+		/* Try to find factorio name, for registered players */
+		factName := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 
-			/* Name to lowercase */
-			dnamelower := strings.ToLower(dname)
-			fnamelower := strings.ToLower(m.Author.GlobalName)
+		/* Name to lowercase */
+		factNameLower := strings.ToLower(factName)
+		discNameLower := strings.ToLower(m.Author.GlobalName)
 
-			/* Reduce names to letters only */
-			dnamereduced := alphafilter.ReplaceAllString(dnamelower, "")
-			fnamereduced := alphafilter.ReplaceAllString(fnamelower, "")
+		/* Reduce names to letters only */
+		factNameReduced := alphafilter.ReplaceAllString(factNameLower, "")
+		discNameReduced := alphafilter.ReplaceAllString(discNameLower, "")
 
-			/* Mark as seen, async */
-			go func(factname string) {
-				fact.UpdateSeen(factname)
-			}(dname)
+		/* Mark as seen, async */
+		go func(factname string) {
+			fact.UpdateSeen(factname)
+		}(factName)
 
-			/* Filter names... */
-			cordnick := sclean.UnicodeCleanup(m.Author.GlobalName)
-			factuser := sclean.UnicodeCleanup(dname)
+		/* Filter names... */
+		discordName := sclean.UnicodeCleanup(m.Author.GlobalName)
+		factorioName := sclean.UnicodeCleanup(factName)
 
-			/* Just in case of weird nickname */
-			cordnicklen := len(cordnick)
-			if cordnicklen < 2 {
-				cordnick = m.Author.Username
-			}
-			/* Just in case of weird username */
-			cordnicklen = len(cordnick)
-			if cordnicklen < 2 {
-				cordnick = fmt.Sprintf("ID#%v", m.Member.User.ID)
-			}
-
-			/* Cap name length for safety/annoyance */
-			cordnick = sclean.TruncateString(cordnick, 64)
-			factuser = sclean.TruncateString(factuser, 64)
-
-			/* Check if Discord name contains Factorio name, if not lets show both their names */
-			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
-				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordnick, factuser, cmess)
-			} else {
-				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordnick, cmess)
-			}
-
-			/* Send the final text to factorio */
-			fact.FactChat(nbuf)
+		/* Just in case of weird nickname */
+		discordNameLen := len(discordName)
+		if discordNameLen < 2 {
+			discordName = m.Author.Username
 		}
+		/* Just in case of weird username */
+		discordNameLen = len(discordName)
+		if discordNameLen < 2 {
+			discordName = fmt.Sprintf("ID#%v", m.Member.User.ID)
+		}
+
+		/* Cap name length for safety/annoyance */
+		discordName = sclean.TruncateString(discordName, 64)
+		factorioName = sclean.TruncateString(factorioName, 64)
+
+		namePrefix := ""
+		interaction := &discordgo.InteractionCreate{Interaction: &discordgo.Interaction{Member: m.Member}}
+		if disc.CheckAdmin(interaction) {
+			namePrefix = "(Admin) "
+		} else if disc.CheckModerator(interaction) {
+			namePrefix = "(Moderator) "
+		} else if util.IsPatreon(m.Author.ID) || disc.CheckSupporter(interaction) {
+			namePrefix = "(Supporter) "
+		} else if disc.CheckVeteran(interaction) {
+			namePrefix = "(Veteran) "
+		} else if disc.CheckRegular(interaction) {
+			namePrefix = "(Regular) "
+		} else if disc.CheckMember(interaction) {
+			namePrefix = "(Member) "
+		}
+
+		/* Check if Discord name contains Factorio name, if not lets show both their names */
+		output := ""
+		if factName != "" && !strings.Contains(factNameReduced, discNameReduced) && !strings.Contains(discNameReduced, factNameReduced) {
+			output = fmt.Sprintf("[Discord] %v%v(%v): %v", namePrefix, discordName, factorioName, cleanedMessage)
+		} else {
+			output = fmt.Sprintf("[Discord] %v%v: %v", namePrefix, discordName, cleanedMessage)
+		}
+
+		/* Send the final text to factorio */
+		if fact.FactorioBooted && fact.FactIsRunning {
+			fact.FactChat(output)
+		}
+		cwlog.DoLogGame(output)
 	}
 }
