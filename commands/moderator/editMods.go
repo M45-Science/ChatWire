@@ -10,6 +10,7 @@ import (
 	"ChatWire/util"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -20,20 +21,64 @@ import (
 func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	var msg string
+	tmsg := ""
 
+	optionsList := i.ApplicationCommandData().Options
+	if len(optionsList) == 0 {
+		emsg := "You must choose at least one option."
+		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
+		return
+	}
+
+	for _, option := range optionsList {
+		oName := strings.ToLower(option.Name)
+
+		switch oName {
+		case "mod-history":
+			tmsg = tmsg + modupdate.ListHistory()
+		case "clear-history":
+			tmsg = tmsg + modupdate.ClearHistory()
+		case "list-mods":
+			tmsg = tmsg + listMods()
+		case "enable-mod":
+			msg = ToggleMod(option.StringValue(), true)
+			tmsg = tmsg + msg + "\n"
+		case "disable-mod":
+			msg = ToggleMod(option.StringValue(), false)
+			tmsg = tmsg + msg + "\n"
+		case "add-mod":
+			tmsg = tmsg + addMod(option.StringValue())
+		case "clear-all-mods":
+			msg = clearAllMods()
+			tmsg = tmsg + msg + "\n"
+		case "updater-blacklist":
+			msg = updaterBlacklist(option.StringValue())
+			tmsg = tmsg + msg + "\n"
+		default:
+			msg = oName + " is not a valid option."
+			tmsg = tmsg + msg + "\n"
+		}
+	}
+
+	//Check if we need to proceed
+	if tmsg == "" {
+		tmsg = "Unknown error"
+	}
+	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
+}
+
+func GetCombinedModList() ([]modupdate.ModData, error) {
 	//Read all mod.zip files
 	modFileList, err := modupdate.GetModFiles()
 	if err != nil {
 		emsg := "Unable to read mods directory."
-		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
-		return
+		return []modupdate.ModData{}, errors.New(emsg)
 	}
 	//Read mods-list.json
 	jsonModList, err := modupdate.GetModList()
 	if err != nil {
 		emsg := "Unable to read the " + constants.ModListName + " file."
-		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
-		return
+		return []modupdate.ModData{}, errors.New(emsg)
 	}
 
 	//Merge lists
@@ -53,56 +98,8 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	optionsList := i.ApplicationCommandData().Options
-	if len(optionsList) == 0 {
-		emsg := "You must choose at least one option."
-		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
-		return
-	}
-	tmsg := ""
+	return installedMods, nil
 
-	for _, option := range optionsList {
-		oName := strings.ToLower(option.Name)
-
-		switch oName {
-		case "mod-history":
-			tmsg = tmsg + modupdate.ListHistory()
-		case "clear-history":
-			tmsg = tmsg + modupdate.ClearHistory()
-		case "list-mods":
-			tmsg = tmsg + listMods(installedMods)
-		case "enable-mod":
-			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
-			tmsg = tmsg + msg + "\n"
-		case "disable-mod":
-			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), false)
-			tmsg = tmsg + msg + "\n"
-		case "add-mod":
-			tmsg = tmsg + addMod(option.StringValue())
-		case "clear-all-mods":
-			msg = clearAllMods()
-			tmsg = tmsg + msg + "\n"
-		case "updater-blacklist":
-			msg = updaterBlacklist(option.StringValue())
-			tmsg = tmsg + msg + "\n"
-		default:
-			msg = oName + " is not a valid option."
-			tmsg = tmsg + msg + "\n"
-		}
-	}
-
-	if !writeModsList(modupdate.ModListData{Mods: installedMods}) {
-		emsg := "Failed to write the mod-list.json file."
-		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
-		return
-	}
-
-	//Check if we need to proceed
-	if tmsg == "" {
-		tmsg = "Unknown error"
-	}
-
-	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
 }
 
 func updaterBlacklist(input string) string {
@@ -114,14 +111,16 @@ func clearAllMods() string {
 		emsg := "Factorio is currently running. You must stop Factorio first."
 		return emsg
 	}
-	err := os.Remove(util.GetModsFolder())
+	err := os.RemoveAll(util.GetModsFolder())
 	if err != nil {
 		return "Unable to delete mods folder: " + err.Error()
 	}
-	err = os.Mkdir(util.GetModsFolder(), 0655)
+	err = os.Mkdir(util.GetModsFolder(), 0755)
 	if err != nil {
 		return "Unable to create a new mods folder: " + err.Error()
 	}
+
+	WriteModsList(modupdate.ModListData{})
 	return "All mods, settings and old mods were deleted."
 }
 
@@ -157,7 +156,7 @@ func addMod(input string) string {
 
 	if buf != "" {
 		modupdate.WriteModHistory()
-		writeModsList(modList)
+		WriteModsList(modList)
 		modupdate.CheckModUpdates(false)
 		return "Adding mods: " + buf
 	}
@@ -205,7 +204,12 @@ func parseModName(input string) (string, bool) {
 	}
 }
 
-func listMods(installedMods []modupdate.ModData) string {
+func listMods() string {
+	installedMods, err := GetCombinedModList()
+	if err != nil {
+		return err.Error()
+	}
+
 	ebuf := ""
 	for _, item := range installedMods {
 		if strings.EqualFold(item.Name, "base") {
@@ -251,15 +255,19 @@ func listMods(installedMods []modupdate.ModData) string {
 	return ebuf + dbuf
 }
 
-func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData, name string, value bool) ([]modupdate.ModData, string) {
+func ToggleMod(name string, value bool) string {
 	if fact.FactorioBooted || fact.FactIsRunning {
 		emsg := "Factorio is currently running. You must stop Factorio first."
-		return installedMods, emsg
+		return emsg
 	}
 	if name == "" {
 		emsg := "You must specify a mod(s) to " + enableStr(value, false) + "."
-		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
-		return installedMods, emsg
+		return emsg
+	}
+
+	installedMods, err := GetCombinedModList()
+	if err != nil {
+		return err.Error()
 	}
 
 	//Remove spaces
@@ -296,7 +304,7 @@ func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData
 	if dirty {
 		modupdate.WriteModHistory()
 	}
-	return installedMods, emsg
+	return emsg
 }
 
 /* Bool to string */
@@ -316,7 +324,7 @@ func enableStr(b bool, pastTense bool) string {
 	}
 }
 
-func writeModsList(modList modupdate.ModListData) bool {
+func WriteModsList(modList modupdate.ModListData) bool {
 
 	finalPath := util.GetModsFolder() + constants.ModListName
 	tempPath := finalPath + ".tmp"
@@ -330,6 +338,7 @@ func writeModsList(modList modupdate.ModListData) bool {
 		return false
 	}
 
+	os.Mkdir(util.GetModsFolder(), 0755)
 	_, err := os.Create(tempPath)
 
 	if err != nil {
@@ -337,7 +346,7 @@ func writeModsList(modList modupdate.ModListData) bool {
 		return false
 	}
 
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0755)
 
 	if err != nil {
 		cwlog.DoLogCW("writeModsList: WriteFile failure")

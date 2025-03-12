@@ -3,9 +3,6 @@ package moderator
 import (
 	"ChatWire/cfg"
 	"ChatWire/fact"
-	"ChatWire/modupdate"
-	"ChatWire/support"
-	"strings"
 	"sync"
 )
 
@@ -19,33 +16,6 @@ var (
 	UploadLock                           sync.Mutex
 	foundOption, foundSave, foundModList bool
 )
-
-func showSyncMods() string {
-	buf := ""
-	modList, mErr := modupdate.GetModList()
-	if mErr == nil {
-		for _, mod := range modList.Mods {
-			if modupdate.IsBaseMod(mod.Name) {
-				continue
-			}
-			if !mod.Enabled {
-				continue
-			}
-			if buf != "" {
-				buf = buf + ", "
-			}
-			if mod.Enabled {
-				buf = buf + strings.TrimSuffix(mod.Name, ".zip")
-			}
-		}
-	}
-
-	if buf == "" {
-		buf = strings.Join(support.GetModFiles(), ", ")
-	}
-
-	return buf
-}
 
 func stopWaitFact(msg string) {
 	if fact.FactorioBooted || fact.FactIsRunning {

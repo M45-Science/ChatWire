@@ -55,7 +55,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	downloadList := findModUpgrades(installedMods, detailList)
 
 	//Check for mod dependencies
-	downloadList, err = checkModDependencies(downloadList)
+	downloadList, err = resolveModDependencies(downloadList)
 
 	if err != nil {
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Updates: Error", err.Error(), glob.COLOR_ORANGE)

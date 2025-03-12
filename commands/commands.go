@@ -279,7 +279,7 @@ var cmds = []glob.CommandData{
 			{
 				Name:        "clear-all-mods",
 				Description: "Clear entire mod directory (reset)",
-				Type:        discordgo.ApplicationCommandOptionString,
+				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
 				Name:        "updater-blacklist",

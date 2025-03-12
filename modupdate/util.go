@@ -359,7 +359,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-func checkModDependencies(downloadList []downloadData) ([]downloadData, error) {
+func resolveModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
 	var errStr string
 	//Check for unmet dependencies, incompatabilites, etc.
