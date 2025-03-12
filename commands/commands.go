@@ -248,12 +248,12 @@ var cmds = []glob.CommandData{
 		Options: []glob.OptionData{
 			{
 				Name:        "mod-history",
-				Description: "Display all mod history.",
+				Description: "Display all mod history",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
 				Name:        "clear-history",
-				Description: "Clear all mod history.",
+				Description: "Clear all mod history",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
@@ -263,22 +263,27 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "enable-mod",
-				Description: "Enable a mod by name, use commas to enable more than one mod",
+				Description: "Enable mods by name: mod1, mod2",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{
 				Name:        "disable-mod",
-				Description: "Disable a mod by name, use commas to disable more than one mod",
+				Description: "Disable mods by name: mod1, mod2",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{
 				Name:        "add-mod",
-				Description: "Add mods by name or URL, use commas to add more than one mod",
+				Description: "Add mods by name or URL. mod1, mod2URL",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{
 				Name:        "clear-all-mods",
-				Description: "Clear entire mod directory.",
+				Description: "Clear entire mod directory (reset)",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "updater-blacklist",
+				Description: "Prevent automatic updates for mods. Supply mod names, separated by commas to blacklist or unblacklist",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 		},

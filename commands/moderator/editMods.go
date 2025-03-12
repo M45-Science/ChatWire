@@ -36,12 +36,6 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	if fact.FactorioBooted || fact.FactIsRunning {
-		buf := "Factorio is currently running. You must stop Factorio first."
-		disc.InteractionEphemeralResponse(i, "Error:", buf)
-		return
-	}
-
 	//Merge lists
 	installedMods := jsonModList.Mods
 	for _, jmod := range modFileList {
@@ -71,23 +65,26 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		oName := strings.ToLower(option.Name)
 
 		switch oName {
-		case "list-mods":
-			tmsg = tmsg + listMods(installedMods)
-		case "add-mod":
-			tmsg = tmsg + addMod(option.StringValue())
-		case "enable-mod":
-			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
-			tmsg = tmsg + msg + "\n"
-		case "clear-all-mods":
-			msg = clearAllMods()
-			tmsg = tmsg + msg + "\n"
-		case "disable-mod":
-			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), false)
-			tmsg = tmsg + msg + "\n"
 		case "mod-history":
 			tmsg = tmsg + modupdate.ListHistory()
 		case "clear-history":
 			tmsg = tmsg + modupdate.ClearHistory()
+		case "list-mods":
+			tmsg = tmsg + listMods(installedMods)
+		case "enable-mod":
+			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), true)
+			tmsg = tmsg + msg + "\n"
+		case "disable-mod":
+			installedMods, msg = ToggleMod(i, installedMods, option.StringValue(), false)
+			tmsg = tmsg + msg + "\n"
+		case "add-mod":
+			tmsg = tmsg + addMod(option.StringValue())
+		case "clear-all-mods":
+			msg = clearAllMods()
+			tmsg = tmsg + msg + "\n"
+		case "updater-blacklist":
+			msg = clearAllMods()
+			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
 			tmsg = tmsg + msg + "\n"
@@ -108,8 +105,16 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
 }
 
-func clearAllMods() string {
+func updaterBlacklist(input string) string {
+	return ""
+}
 
+func clearAllMods() string {
+	if fact.FactorioBooted || fact.FactIsRunning {
+		emsg := "Factorio is currently running. You must stop Factorio first."
+		return emsg
+	}
+	//Clear all zips, json and dat.
 	return ""
 }
 
@@ -240,6 +245,10 @@ func listMods(installedMods []modupdate.ModData) string {
 }
 
 func ToggleMod(i *discordgo.InteractionCreate, installedMods []modupdate.ModData, name string, value bool) ([]modupdate.ModData, string) {
+	if fact.FactorioBooted || fact.FactIsRunning {
+		emsg := "Factorio is currently running. You must stop Factorio first."
+		return installedMods, emsg
+	}
 	if name == "" {
 		emsg := "You must specify a mod(s) to " + enableStr(value, false) + "."
 		disc.InteractionEphemeralResponseColor(i, "Error", emsg, glob.COLOR_RED)
