@@ -83,7 +83,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			msg = clearAllMods()
 			tmsg = tmsg + msg + "\n"
 		case "updater-blacklist":
-			msg = clearAllMods()
+			msg = updaterBlacklist(option.StringValue())
 			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
@@ -114,8 +114,15 @@ func clearAllMods() string {
 		emsg := "Factorio is currently running. You must stop Factorio first."
 		return emsg
 	}
-	//Clear all zips, json and dat.
-	return ""
+	err := os.Remove(util.GetModsFolder())
+	if err != nil {
+		return "Unable to delete mods folder: " + err.Error()
+	}
+	err = os.Mkdir(util.GetModsFolder(), 0655)
+	if err != nil {
+		return "Unable to create a new mods folder: " + err.Error()
+	}
+	return "All mods, settings and old mods were deleted."
 }
 
 func addMod(input string) string {
