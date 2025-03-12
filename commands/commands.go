@@ -242,7 +242,7 @@ var cmds = []glob.CommandData{
 		Function: moderator.UploadFile, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "editmods",
-		Description: "enable/disable or add/remove factorio mods.",
+		Description: "enable/disable or add/remove Factorio mods",
 		Type:        discordgo.ChatApplicationCommand,
 
 		Options: []glob.OptionData{
@@ -283,7 +283,7 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "updater-blacklist",
-				Description: "Prevent automatic updates for mods. Supply mod names, separated by commas to blacklist or unblacklist",
+				Description: "Prevent automatic updates for mods.Names separated by commas to add/remove.",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 		},
