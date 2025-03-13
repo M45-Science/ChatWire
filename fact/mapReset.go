@@ -55,7 +55,7 @@ func Map_reset(doReport bool) {
 		QueueReboot = false      //Skip queued reboot
 		QueueFactReboot = false  //Skip queued reboot
 		DoUpdateFactorio = false //Skip queued updates
-		cfg.WriteLCfg()
+		SetResetDate()
 
 		SetAutolaunch(false, false)
 		QuitFactorio("Server rebooting for map reset!!!")
