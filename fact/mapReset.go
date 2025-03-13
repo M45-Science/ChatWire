@@ -57,7 +57,7 @@ func Map_reset(doReport bool) {
 		DoUpdateFactorio = false //Skip queued updates
 
 		SetAutolaunch(false, false)
-		QuitFactorio("Server rebooting for map reset!!!")
+		QuitFactorio("Server rebooting for map reset!")
 	} else {
 		return
 	}

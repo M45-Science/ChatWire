@@ -2,8 +2,8 @@ package fact
 
 import (
 	"ChatWire/cfg"
-	"ChatWire/cwlog"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hako/durafmt"
@@ -37,15 +37,13 @@ func CheckMapReset() {
 		}
 
 		//Reset was some time ago, skip
-		if until < maxResetWindow {
+		if until < -maxResetWindow {
 			units, err := durafmt.DefaultUnitsCoder.Decode(units)
 			if err != nil {
 				panic(err)
 			}
-			cfg.Local.Options.NextReset = time.Time{}
-			cwlog.DoLogCW("Scheduled map reset was over %v ago. Skipping.", durafmt.Parse(maxResetWindow).Format(units))
+			LogCMS(cfg.Local.Channel.ChatChannel, "Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
 		} else {
-
 			Map_reset(false)
 		}
 	}
@@ -53,10 +51,11 @@ func CheckMapReset() {
 
 func warnMapReset() {
 	buf := "Map reset in " + TimeTillReset()
+	buf = strings.ToUpper(buf)
 	LogCMS(cfg.Local.Channel.ChatChannel, "⚠️ **"+buf+"**")
 
 	if NumPlayers > 0 {
-		warn := "WARNING: "
+		warn := "*** NOTICE: "
 		FactChat(warn + AddFactColor("red", buf))
 		FactChat(warn + AddFactColor("cyan", buf))
 		FactChat(warn + AddFactColor("black", buf))
@@ -119,7 +118,13 @@ func TimeTillReset() string {
 	if !HasResetTime() {
 		return "No reset is scheduled"
 	}
-	next := cfg.Local.Options.NextReset.UTC().Sub(time.Now().UTC()).Round(time.Minute)
+	next := cfg.Local.Options.NextReset.UTC().Sub(time.Now().UTC())
+
+	if next > time.Minute {
+		next = next.Round(time.Minute)
+	} else {
+		next = next.Round(time.Second)
+	}
 	units, err := durafmt.DefaultUnitsCoder.Decode(units)
 	if err != nil {
 		panic(err)
