@@ -52,11 +52,13 @@ func CheckMapReset() {
 }
 
 func warnMapReset() {
-	buf := "WARNING: Map reset in " + TimeTillReset()
-	LogCMS(cfg.Local.Channel.ChatChannel, buf)
-	FactChat(AddFactColor("red", buf))
-	FactChat(AddFactColor("cyan", buf))
-	FactChat(AddFactColor("black", buf))
+	buf := "Map reset in " + TimeTillReset()
+	LogCMS(cfg.Local.Channel.ChatChannel, "**"+buf+"**")
+
+	warn := "WARNING: "
+	FactChat(warn + AddFactColor("red", buf))
+	FactChat(warn + AddFactColor("cyan", buf))
+	FactChat(warn + AddFactColor("black", buf))
 }
 
 func SetResetDate() {
