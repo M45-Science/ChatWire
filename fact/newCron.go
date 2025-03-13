@@ -3,7 +3,6 @@ package fact
 import (
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
-	"ChatWire/fact"
 	"fmt"
 	"time"
 
@@ -56,7 +55,7 @@ func warnMapReset() {
 	buf := "Map reset in " + TimeTillReset()
 	LogCMS(cfg.Local.Channel.ChatChannel, "**"+buf+"**")
 
-	if fact.NumPlayers > 0 {
+	if NumPlayers > 0 {
 		warn := "WARNING: "
 		FactChat(warn + AddFactColor("red", buf))
 		FactChat(warn + AddFactColor("cyan", buf))
