@@ -46,8 +46,10 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if fact.HasResetInterval() {
 		disc.InteractionEphemeralResponse(i, "Schedule", "Schedule set: "+fact.FormatResetInterval()+"\nWill reset at: "+fact.FormatResetTime())
+		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ The map reset schedule has been changed: "+fact.FormatResetTime()+" ("+fact.FormatResetInterval()+")")
 	} else {
 		disc.InteractionEphemeralResponse(i, "Schedule", "Schedule disabled.")
+		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ The map reset schedule has been disabled.")
 	}
 
 }
