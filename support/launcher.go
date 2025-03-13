@@ -633,15 +633,9 @@ func ConfigSoftMod() {
 		fact.WriteFact("/onelife off")
 	}
 
-	/* Config reset-interval */
-	resetInterval := fact.FormatResetInterval()
-	if resetInterval != "" {
-		fact.WriteFact("/resetint " + resetInterval)
-	} else {
-		fact.WriteFact("/resetint")
-	}
-
+	UpdateDuration()
 	UpdateInterval()
+
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 		fact.WriteFact("/blueprints off")
 	}

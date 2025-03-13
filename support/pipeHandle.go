@@ -337,7 +337,7 @@ func handlePlayerJoin(input *handleData) bool {
 				fact.FactIsRunning &&
 				fact.FactorioBooted {
 
-				UpdateInterval()
+				UpdateDuration()
 
 				/* Give people patreon/nitro tags in-game. */
 				did := disc.GetDiscordIDFromFactorioName(pname)

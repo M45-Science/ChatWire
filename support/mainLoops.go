@@ -732,7 +732,7 @@ func MainLoops() {
 				fact.FactIsRunning &&
 				fact.FactorioBooted &&
 				fact.NumPlayers > 0 {
-				UpdateInterval()
+				UpdateDuration()
 				fact.CheckMapReset()
 			}
 

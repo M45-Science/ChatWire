@@ -106,7 +106,7 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "reset-hour",
-				Description: "Time of day to reset, 24 hour format UTC.",
+				Description: "Time of day to reset, 24 hour format UTC. USE 0 FOR NONE.",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    glob.Ptr(0.0),
 				MaxValue:    glob.Ptr(23.0),

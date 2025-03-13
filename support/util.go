@@ -12,7 +12,7 @@ import (
 
 var lastDur string
 
-func UpdateInterval() {
+func UpdateDuration() {
 	if fact.HasResetTime() {
 		buf := "/resetdur " + fact.TimeTillReset()
 		if fact.HasResetInterval() {
@@ -25,7 +25,7 @@ func UpdateInterval() {
 
 		lastDur = buf
 	} else {
-		buf := "/resetdur "
+		buf := "/resetdur"
 
 		/* Don't write it, if nothing has changed */
 		if !strings.EqualFold(buf, lastDur) {
@@ -33,6 +33,15 @@ func UpdateInterval() {
 		}
 
 		lastDur = buf
+	}
+}
+
+func UpdateInterval() {
+	/* Config reset-interval */
+	if fact.HasResetInterval() {
+		fact.WriteFact("/resetint " + fact.FormatResetTime())
+	} else {
+		fact.WriteFact("/resetint")
 	}
 }
 
@@ -61,7 +70,7 @@ func checkHours() {
 				shutTime = shutTime.Add(time.Minute * 10)
 
 				for fact.NumPlayers > 0 {
-					if time.Until(shutTime) <= time.Second {
+					if time.Now().UTC().Sub(shutTime) <= time.Second {
 						break
 					}
 					if WithinHours() {

@@ -9,6 +9,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/support"
 )
 
 func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
@@ -29,18 +30,22 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			n = cfg.ResetInterval{}
 		}
 	}
-	oldDate := cfg.Local.Options.NextReset
+
+	cfg.Local.Options.ResetInterval = n
 	fact.SetResetDate()
-	if oldDate.Compare(time.Now().AddDate(0, 3, 1)) > 0 {
+
+	if cfg.Local.Options.NextReset.UTC().Sub(time.Now().UTC()) > (time.Hour*24*30*3 + (time.Hour * 24)) {
 		disc.InteractionEphemeralResponse(i, "Schedule", "The maximum map reset interval is 3 months, rejecting.")
-		cfg.Local.Options.NextReset = oldDate
+		cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
+		cfg.Local.Options.NextReset = time.Time{}
 		return
 	}
-	cfg.Local.Options.ResetInterval = n
+
 	cfg.WriteLCfg()
+	support.ConfigSoftMod()
 
 	if fact.HasResetInterval() {
-		disc.InteractionEphemeralResponse(i, "Schedule", "Schedule set: "+fact.FormatResetInterval())
+		disc.InteractionEphemeralResponse(i, "Schedule", "Schedule set: "+fact.FormatResetInterval()+"\nWill reset at: "+fact.FormatResetTime())
 	} else {
 		disc.InteractionEphemeralResponse(i, "Schedule", "Schedule disabled.")
 	}
