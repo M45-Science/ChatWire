@@ -65,95 +65,35 @@ var cmds = []glob.CommandData{
 		ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
-		Description: "Change the automatic map reset schedule.",
+		Description: "Change the map reset schedule.",
 		Options: []glob.OptionData{
 			{
-				Name:        "preset",
-				Description: "How often to reset the map.",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-				Choices: []glob.ChoiceData{
-					{
-						Name: "three-months",
-					},
-					{
-						Name: "two-months",
-					},
-					{
-						Name: "monthly",
-					},
-					{
-						Name: "twice-monthly",
-					},
-					{
-						Name: "day-of-week",
-					},
-					{
-						Name: "third-dates",
-					},
-					{
-						Name: "odd-dates",
-					},
-					{
-						Name: "daily",
-					},
-					{
-						Name: "no-reset",
-					},
-				},
+				Name: "Reset-Hour",
+				Type: discordgo.ApplicationCommandOptionInteger,
 			},
 			{
-				Name:        "day",
-				Description: "FOR DAY-OF-WEEK PRESET ONLY",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Choices: []glob.ChoiceData{
-					{
-						Name:  "monday",
-						Value: "MON",
-					},
-					{
-						Name:  "tuesday",
-						Value: "TUE",
-					},
-					{
-						Name:  "wednesday",
-						Value: "WED",
-					},
-					{
-						Name:  "thursday",
-						Value: "THU",
-					},
-					{
-						Name:  "friday",
-						Value: "FRI",
-					},
-					{
-						Name:  "saturday",
-						Value: "SAT",
-					},
-					{
-						Name:  "sunday",
-						Value: "SUN",
-					},
-					{
-						Name:  "default",
-						Value: "",
-					},
-				},
+				Name: "Disable",
+				Type: discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
-				Name:        "date",
-				Description: "For two-week or monthly schedules.",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(27)),
+				Name:     "Months",
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				Required: true,
 			},
 			{
-				Name:        "hour",
-				Description: "Hour to reset. (24-hour UTC)",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(23)),
+				Name:     "Weeks",
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				Required: true,
+			},
+			{
+				Name:     "Days",
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				Required: true,
+			},
+			{
+				Name:     "Hours",
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				Required: true,
 			},
 		},
 	},

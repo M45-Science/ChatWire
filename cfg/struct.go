@@ -154,13 +154,16 @@ type ResetInterval struct {
 }
 
 type localOptions struct {
-	LocalDescription string        `web:"Factorio Description"`
-	ResetInterval    ResetInterval `web:"Reset interval"`
-	NextReset        time.Time     `web:"Next map reset"`
-	ResetPingRole    string        `form:"-"`
-	PlayHourEnable   bool          `web:"Limit Open Hours"`
-	PlayStartHour    int           `web:"Open Hour"`
-	PlayEndHour      int           `web:"Close Hour"`
+	LocalDescription string `web:"Factorio Description"`
+
+	ResetInterval ResetInterval `web:"Reset interval"`
+	NextReset     time.Time     `web:"Next map reset"`
+	ResetHour     int           `web:"Map Reset Hour"`
+
+	ResetPingRole  string `form:"-"`
+	PlayHourEnable bool   `web:"Limit Open Hours"`
+	PlayStartHour  int    `web:"Open Hour"`
+	PlayEndHour    int    `web:"Close Hour"`
 
 	AutoStart       bool    `web:"Auto Boot/Reboot Factorio"`
 	AutoUpdate      bool    `web:"Auto Factorio Updates"`

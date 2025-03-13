@@ -10,6 +10,14 @@ import (
 
 const units = "year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,ms:ms,us:us"
 
+func SetResetDate() {
+	n := cfg.Local.Options.ResetInterval
+	base := time.Now().UTC()
+	offset := time.Date(base.Year(), base.Month(), base.Day(), cfg.Local.Options.ResetHour, 0, 0, 0, time.UTC)
+	cfg.Local.Options.NextReset = offset.AddDate(0, n.Months, n.Days).Add(time.Duration(n.Hours) * time.Hour)
+	cfg.WriteLCfg()
+}
+
 func AdvanceReset() {
 	if !HasResetInterval() {
 		return
