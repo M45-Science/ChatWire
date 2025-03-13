@@ -10,6 +10,31 @@ import (
 
 const units = "year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,ms:ms,us:us"
 
+func CheckMapReset() {
+	if !HasResetTime() {
+		return
+	}
+
+	var warnTimes = []time.Duration{
+		time.Minute * 30, time.Minute * 10, time.Minute * 5, time.Minute, time.Second * 30, time.Second * 10}
+	until := time.Until(cfg.Local.Options.NextReset)
+
+	for _, time := range warnTimes {
+		if until == time {
+			warnMapReset()
+			break
+		}
+	}
+}
+
+func warnMapReset() {
+	buf := "WARNING: Map reset in " + TimeTillReset()
+	LogCMS(cfg.Local.Channel.ChatChannel, buf)
+	FactChat(AddFactColor("red", buf))
+	FactChat(AddFactColor("cyan", buf))
+	FactChat(AddFactColor("black", buf))
+}
+
 func SetResetDate() {
 	if !HasResetInterval() {
 		return
@@ -17,7 +42,11 @@ func SetResetDate() {
 	n := cfg.Local.Options.ResetInterval
 	base := time.Now().UTC()
 	offset := time.Date(base.Year(), base.Month(), base.Day(), cfg.Local.Options.ResetHour, 0, 0, 0, time.UTC)
-	cfg.Local.Options.NextReset = offset.AddDate(0, n.Months, n.Days).Add(time.Duration(n.Hours) * time.Hour)
+	startDate := offset.AddDate(0, n.Months, n.Days)
+
+	startDate = startDate.Add(time.Duration(n.Weeks) * time.Hour * 24 * 7)
+	startDate = startDate.Add(time.Duration(n.Hours) * time.Hour)
+	cfg.Local.Options.NextReset = startDate
 	cfg.WriteLCfg()
 }
 
@@ -26,21 +55,21 @@ func AdvanceReset() {
 		return
 	}
 	s := cfg.Local.Options.ResetInterval
-	newResetTime := cfg.Local.Options.NextReset.AddDate(s.Years, s.Months, s.Days)
+	newResetTime := cfg.Local.Options.NextReset.AddDate(0, s.Months, s.Days)
 	newResetTime = newResetTime.Add(time.Duration(s.Hours) * time.Hour)
 	cfg.Local.Options.NextReset = newResetTime
 }
 
 func HasResetInterval() bool {
 	s := cfg.Local.Options.ResetInterval
-	if s.Years == 0 && s.Months == 0 && s.Days == 0 && s.Hours == 0 {
+	if s.Months == 0 && s.Weeks == 0 && s.Days == 0 && s.Hours == 0 {
 		return false
 	}
 	return true
 }
 
 func HasResetTime() bool {
-	return cfg.Local.Options.NextReset.IsZero()
+	return cfg.Local.Options.NextReset != time.Time{}
 }
 
 func DisableNextReset() {
@@ -65,7 +94,7 @@ func TimeTillReset() string {
 	}
 
 	dura := durafmt.Parse(next)
-	return dura.LimitToUnit("minute").LimitFirstN(2).Format(units)
+	return dura.LimitFirstN(2).Format(units)
 }
 
 func FormatResetTime() string {
@@ -84,40 +113,33 @@ func FormatResetInterval() string {
 	first := true
 
 	i := cfg.Local.Options.ResetInterval
-	if i.Years > 0 {
-		if !first {
-			buf = buf + ", "
-		}
-		first = false
-		buf = buf + fmt.Sprintf("%v year", i.Years, Plural(i.Years))
-	}
 	if i.Months > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v month", i.Months, Plural(i.Months))
+		buf = buf + fmt.Sprintf("%v month%v", i.Months, Plural(i.Months))
 	}
 	if i.Weeks > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v week", i.Weeks, Plural(i.Weeks))
+		buf = buf + fmt.Sprintf("%v week%v", i.Weeks, Plural(i.Weeks))
 	}
 	if i.Days > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v day", i.Days, Plural(i.Days))
+		buf = buf + fmt.Sprintf("%v day%v", i.Days, Plural(i.Days))
 	}
 	if i.Hours > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v hour", i.Hours, Plural(i.Hours))
+		buf = buf + fmt.Sprintf("%v hour%v", i.Hours, Plural(i.Hours))
 	}
 
 	return buf

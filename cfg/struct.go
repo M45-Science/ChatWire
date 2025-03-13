@@ -150,7 +150,7 @@ type channel struct {
 }
 
 type ResetInterval struct {
-	Years, Months, Weeks, Days, Hours int
+	Months, Weeks, Days, Hours int
 }
 
 type localOptions struct {

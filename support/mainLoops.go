@@ -453,11 +453,9 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(time.Second * 5)
 
 			if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
 				if fact.NumPlayers > 0 {
-
 					/* Warn players */
 					if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
 						msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
@@ -489,6 +487,8 @@ func MainLoops() {
 					fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
 					time.Sleep(time.Minute * 10)
 				}
+			} else {
+				time.Sleep(time.Second * 5)
 			}
 		}
 	}()
@@ -733,6 +733,7 @@ func MainLoops() {
 				fact.FactorioBooted &&
 				fact.NumPlayers > 0 {
 				UpdateInterval()
+				fact.CheckMapReset()
 			}
 
 			time.Sleep(time.Second)

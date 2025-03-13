@@ -890,6 +890,7 @@ func DoChangeMap(arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
 		Map_reset(false)
+		SetResetDate()
 		return
 	}
 

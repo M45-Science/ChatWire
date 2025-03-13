@@ -66,34 +66,55 @@ var cmds = []glob.CommandData{
 	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
 		Description: "Change the map reset schedule.",
+		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
-				Name: "Reset-Hour",
-				Type: discordgo.ApplicationCommandOptionInteger,
-			},
-			{
-				Name: "Disable",
-				Type: discordgo.ApplicationCommandOptionBoolean,
-			},
-			{
-				Name:     "Months",
+				Name:        "months",
+				Description: "Months",
+
 				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(6.0),
 				Required: true,
 			},
 			{
-				Name:     "Weeks",
+				Name:        "weeks",
+				Description: "Weeks",
+
 				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(26.0),
 				Required: true,
 			},
 			{
-				Name:     "Days",
+				Name:        "days",
+				Description: "Days",
+
 				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(182.0),
 				Required: true,
 			},
 			{
-				Name:     "Hours",
+				Name:        "hours",
+				Description: "Hours",
+
 				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(4320.0),
 				Required: true,
+			},
+			{
+				Name:        "reset-hour",
+				Description: "Time of day to reset, 24 hour format UTC.",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				MinValue:    glob.Ptr(0.0),
+				MaxValue:    glob.Ptr(23.0),
+			},
+			{
+				Name:        "disable",
+				Description: "Turn automatic map resets off",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 		},
 	},
@@ -278,15 +299,15 @@ var cmds = []glob.CommandData{
 				Name:        "start-hour",
 				Description: "hour to start server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(23)),
+				MinValue:    glob.Ptr(0.0),
+				MaxValue:    glob.Ptr(23.0),
 			},
 			{
 				Name:        "end-hour",
 				Description: "hour to stop server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(23)),
+				MinValue:    glob.Ptr(0.0),
+				MaxValue:    glob.Ptr(23.0),
 			},
 			{
 				Name:        "enabled",
