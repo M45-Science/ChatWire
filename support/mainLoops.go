@@ -727,16 +727,30 @@ func MainLoops() {
 	/* Update time till reset   */
 	/****************************/
 	go func() {
+		ticker := time.NewTicker(time.Minute)
+
 		for glob.ServerRunning {
+			<-ticker.C
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
-				fact.FactorioBooted &&
-				fact.NumPlayers > 0 {
+				fact.FactorioBooted {
 				UpdateDuration()
+			}
+		}
+	}()
+
+	/****************************/
+	/* Check for map resets	    */
+	/****************************/
+	go func() {
+		ticker := time.NewTicker(time.Second)
+
+		for glob.ServerRunning {
+			<-ticker.C
+			if fact.FactIsRunning &&
+				fact.FactorioBooted {
 				fact.CheckMapReset()
 			}
-
-			time.Sleep(time.Second)
 		}
 	}()
 

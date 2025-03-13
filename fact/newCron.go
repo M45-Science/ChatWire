@@ -19,12 +19,12 @@ func CheckMapReset() {
 
 	var warnTimes = []time.Duration{
 		time.Minute * 30, time.Minute * 10, time.Minute * 5, time.Minute, time.Second * 30, time.Second * 10}
-	until := cfg.Local.Options.NextReset.Sub(time.Now().UTC())
+	until := cfg.Local.Options.NextReset.Sub(time.Now().UTC().Round(time.Second)).Round(time.Second)
 
 	for _, time := range warnTimes {
 		if until == time {
 			warnMapReset()
-			return
+			break
 		}
 	}
 
@@ -53,7 +53,7 @@ func CheckMapReset() {
 
 func warnMapReset() {
 	buf := "Map reset in " + TimeTillReset()
-	LogCMS(cfg.Local.Channel.ChatChannel, "**"+buf+"**")
+	LogCMS(cfg.Local.Channel.ChatChannel, "⚠️ **"+buf+"**")
 
 	if NumPlayers > 0 {
 		warn := "WARNING: "
@@ -77,7 +77,7 @@ func SetResetDate() {
 	startDate := offset.AddDate(0, n.Months, n.Days)
 	startDate = startDate.Add(time.Duration(n.Weeks) * time.Hour * 24 * 7)
 	startDate = startDate.Add(time.Duration(n.Hours) * time.Hour)
-	cfg.Local.Options.NextReset = startDate
+	cfg.Local.Options.NextReset = startDate.Round(time.Second)
 	cfg.WriteLCfg()
 }
 
@@ -88,7 +88,7 @@ func AdvanceReset() {
 	s := cfg.Local.Options.ResetInterval
 	newResetTime := cfg.Local.Options.NextReset.AddDate(0, s.Months, s.Days)
 	newResetTime = newResetTime.Add(time.Duration(s.Hours) * time.Hour)
-	cfg.Local.Options.NextReset = newResetTime
+	cfg.Local.Options.NextReset = newResetTime.Round(time.Second)
 	SetResetDate()
 
 }

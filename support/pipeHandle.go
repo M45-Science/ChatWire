@@ -298,9 +298,12 @@ func handlePlayerJoin(input *handleData) bool {
 	 * JOIN AREA
 	 *****************/
 	if strings.HasPrefix(input.noDatestamp, "[JOIN]") {
+		fact.WriteFact(glob.OnlineCommand)
 		cwlog.DoLogGame(input.noDatestamp)
 
 		if input.noDatestampListLen > 1 {
+
+			//Check ban list, promote, show join, unpause, patreon/nitro, online command
 			pname := sclean.UnicodeCleanup(input.noDatestampList[1])
 			if banlist.CheckBanList(pname, true) {
 				return true
@@ -333,10 +336,7 @@ func handlePlayerJoin(input *handleData) bool {
 			fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 
 			/* Update softmod map schedule */
-			if glob.SoftModVersion != constants.Unknown &&
-				fact.FactIsRunning &&
-				fact.FactorioBooted {
-
+			if glob.SoftModVersion != constants.Unknown {
 				UpdateDuration()
 
 				/* Give people patreon/nitro tags in-game. */
@@ -351,7 +351,6 @@ func handlePlayerJoin(input *handleData) bool {
 				}
 			}
 
-			fact.WriteFact(glob.OnlineCommand)
 		}
 		return true
 	}
