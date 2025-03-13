@@ -49,24 +49,9 @@ func GetMapTypeName(num int) string {
 /* Generate map */
 func Map_reset(doReport bool) {
 
-	SetupSchedule()
-
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
-
-		/* Turn off skip reset flag regardless of reset reason */
-		if cfg.Local.Options.SkipReset {
-			cfg.Local.Options.SkipReset = false
-			cfg.WriteLCfg()
-
-			/*Don't reset if this is an automatic reset, otherwise proceed. */
-			if !doReport {
-				return
-			}
-		}
-
-		cfg.Local.Options.SkipReset = false
 		QueueReboot = false      //Skip queued reboot
 		QueueFactReboot = false  //Skip queued reboot
 		DoUpdateFactorio = false //Skip queued updates

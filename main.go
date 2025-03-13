@@ -71,7 +71,6 @@ func main() {
 		go startbotA()
 	}
 
-	fact.SetupSchedule()
 	fact.LoadPlayers(true, false, false)
 	disc.ReadRoleList()
 	banlist.ReadBanFile(true)

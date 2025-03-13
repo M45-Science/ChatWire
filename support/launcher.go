@@ -634,16 +634,14 @@ func ConfigSoftMod() {
 	}
 
 	/* Config reset-interval */
-	if fact.NextReset != "" {
-		fact.WriteFact("/resetint " + fact.NextReset)
+	resetInterval := fact.FormatResetInterval()
+	if resetInterval != "" {
+		fact.WriteFact("/resetint " + resetInterval)
 	} else {
 		fact.WriteFact("/resetint")
 	}
-	if fact.TillReset != "" && cfg.Local.Options.Schedule != "" {
-		fact.WriteFact("/resetdur " + fact.TillReset + " (" + strings.ToUpper(cfg.Local.Options.Schedule) + ")")
-	} else {
-		fact.WriteFact("/resetdur")
-	}
+
+	UpdateInterval()
 	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
 		fact.WriteFact("/blueprints off")
 	}

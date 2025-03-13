@@ -64,8 +64,6 @@ func ReloadConfig(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	buf := "Config files have been reloaded."
 	disc.InteractionEphemeralResponse(i, "Complete:", buf)
 
-	fact.SetupSchedule()
-
 	support.ConfigSoftMod()
 
 	/* This also uses /config to live change settings. */

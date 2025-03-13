@@ -610,12 +610,9 @@ func DoUpdateChannelName() {
 	URL, found := MakeSteamURL()
 	var newTopic string
 
-	if NextResetUnix > 0 {
+	if HasResetTime() {
 		mpre := "MAP RESET"
-		if cfg.Local.Options.SkipReset {
-			mpre = "(SKIP)"
-		}
-		newTopic = fmt.Sprintf("%v: <t:%v:F>(LOCAL)", mpre, NextResetUnix)
+		newTopic = fmt.Sprintf("%v: <t:%v:F>(LOCAL)", mpre, cfg.Local.Options.NextReset.UTC().Unix())
 	}
 	if found {
 		newTopic = newTopic + ", CONNECT: " + URL
@@ -892,19 +889,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 func DoChangeMap(arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
-
-		/* Turn off skip reset flag */
-		cfg.Local.Options.SkipReset = false
-		cfg.WriteLCfg()
-
 		Map_reset(false)
-		return
-	} else if strings.EqualFold(arg, "skip-reset") {
-		cfg.Local.Options.SkipReset = true
-		cfg.WriteLCfg()
-
-		msg := "VOTE: The next map reset will be skipped."
-		LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 		return
 	}
 
@@ -1124,10 +1109,6 @@ func MakeSteamURL() (string, bool) {
 
 /* Program shutdown */
 func DoExit(delay bool) {
-
-	if CronVar != nil {
-		CronVar.Stop()
-	}
 
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" shutting down.", glob.COLOR_RED)
 

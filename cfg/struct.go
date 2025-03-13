@@ -149,16 +149,18 @@ type channel struct {
 	ChatChannel string `web:"Channel ID"`
 }
 
+type ResetInterval struct {
+	Years, Months, Weeks, Days, Hours int
+}
+
 type localOptions struct {
-	LocalDescription string `web:"Factorio Description"`
-	Schedule         string `web:"Map Reset Schedule"`
-	ResetDay         string `web:"Reset Day"`
-	ResetDate        int    `web:"Reset Date"`
-	ResetHour        int    `web:"Reset Hour"`
-	ResetPingRole    string `form:"-"`
-	PlayHourEnable   bool   `web:"Limit Open Hours"`
-	PlayStartHour    int    `web:"Open Hour"`
-	PlayEndHour      int    `web:"Close Hour"`
+	LocalDescription string        `web:"Factorio Description"`
+	ResetInterval    ResetInterval `web:"Reset interval"`
+	NextReset        time.Time     `web:"Next map reset"`
+	ResetPingRole    string        `form:"-"`
+	PlayHourEnable   bool          `web:"Limit Open Hours"`
+	PlayStartHour    int           `web:"Open Hour"`
+	PlayEndHour      int           `web:"Close Hour"`
 
 	AutoStart       bool    `web:"Auto Boot/Reboot Factorio"`
 	AutoUpdate      bool    `web:"Auto Factorio Updates"`
@@ -169,7 +171,6 @@ type localOptions struct {
 	MembersOnly     bool    `web:"Members, Regulars, Veterans only"`
 	CustomWhitelist bool    `web:"Private whitelist"`
 	ModUpdate       bool    `web:"Auto update Factorio Mods"`
-	SkipReset       bool    `web:"Will skip next map reset"`
 	Speed           float32 `web:"Game Speed Factor"`
 
 	Whitelist bool

@@ -1,7 +1,6 @@
 package moderator
 
 import (
-	"ChatWire/cfg"
 	"ChatWire/fact"
 	"sync"
 )
@@ -19,18 +18,9 @@ var (
 
 func stopWaitFact(msg string) {
 	if fact.FactorioBooted || fact.FactIsRunning {
-
-		/* Turn off skip reset flag regardless of reset reason */
-		if cfg.Local.Options.SkipReset {
-			cfg.Local.Options.SkipReset = false
-			cfg.WriteLCfg()
-		}
-
-		cfg.Local.Options.SkipReset = false
 		fact.QueueReboot = false      //Skip queued reboot
 		fact.QueueFactReboot = false  //Skip queued reboot
 		fact.DoUpdateFactorio = false //Skip queued updates
-		cfg.WriteLCfg()
 
 		fact.SetAutolaunch(false, false)
 		fact.QuitFactorio(msg)

@@ -10,6 +10,32 @@ import (
 	"time"
 )
 
+var lastDur string
+
+func UpdateInterval() {
+	if fact.HasResetTime() {
+		buf := "/resetdur " + fact.TimeTillReset()
+		if fact.HasResetInterval() {
+			buf = buf + " (" + fact.FormatResetInterval() + ")"
+		}
+		/* Don't write it, if nothing has changed */
+		if !strings.EqualFold(buf, lastDur) {
+			fact.WriteFact(buf)
+		}
+
+		lastDur = buf
+	} else {
+		buf := "/resetdur "
+
+		/* Don't write it, if nothing has changed */
+		if !strings.EqualFold(buf, lastDur) {
+			fact.WriteFact(buf)
+		}
+
+		lastDur = buf
+	}
+}
+
 func checkHours() {
 	for glob.ServerRunning {
 		time.Sleep(time.Second * 15)

@@ -13,7 +13,6 @@ func MapReset(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Resetting map...")
 
 	//Turn off skip reset flag
-	cfg.Local.Options.SkipReset = false
 	cfg.WriteLCfg()
 
 	fact.Map_reset(true)
