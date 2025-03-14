@@ -610,6 +610,7 @@ func MainLoops() {
 					time.Sleep(time.Minute * 15)
 
 				}
+
 			} else {
 				time.Sleep(time.Minute)
 			}
@@ -703,7 +704,6 @@ func MainLoops() {
 			} else {
 				time.Sleep(time.Hour * 4)
 			}
-
 		}
 	}()
 
