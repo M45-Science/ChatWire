@@ -703,7 +703,6 @@ func MainLoops() {
 			} else {
 				time.Sleep(time.Hour * 4)
 			}
-
 		}
 	}()
 
