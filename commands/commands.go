@@ -75,7 +75,6 @@ var cmds = []glob.CommandData{
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(6.0),
-				Required: true,
 			},
 			{
 				Name:        "weeks",
@@ -84,7 +83,6 @@ var cmds = []glob.CommandData{
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(26.0),
-				Required: true,
 			},
 			{
 				Name:        "days",
@@ -93,7 +91,6 @@ var cmds = []glob.CommandData{
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(182.0),
-				Required: true,
 			},
 			{
 				Name:        "hours",
@@ -102,7 +99,6 @@ var cmds = []glob.CommandData{
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(4320.0),
-				Required: true,
 			},
 			{
 				Name:        "reset-hour",
@@ -118,10 +114,9 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "reset-date",
-				Description: "Force Reset-Date (YYYY-MM-DD HH-MM-SS) 24H-UTC",
+				Description: "Temporarily Force Reset-Date (YYYY-MM-DD HH-MM-SS) 24H-UTC",
 
-				Type:     discordgo.ApplicationCommandOptionString,
-				Required: false,
+				Type: discordgo.ApplicationCommandOptionString,
 			},
 		},
 	},
