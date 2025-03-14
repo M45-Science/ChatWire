@@ -69,32 +69,32 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
-				Name:        "months",
-				Description: "Months",
+				Name:        "interval-months",
+				Description: "Set the number of months in the map reset interval",
 
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(6.0),
 			},
 			{
-				Name:        "weeks",
-				Description: "Weeks",
+				Name:        "interval-weeks",
+				Description: "Set the number of weeks in the map reset interval",
 
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(26.0),
 			},
 			{
-				Name:        "days",
-				Description: "Days",
+				Name:        "interval-days",
+				Description: "Set the number of days in the map reset interval",
 
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),
 				MaxValue: glob.Ptr(182.0),
 			},
 			{
-				Name:        "hours",
-				Description: "Hours",
+				Name:        "interval-hours",
+				Description: "Set the number of hours in the map reset interval",
 
 				Type:     discordgo.ApplicationCommandOptionInteger,
 				MinValue: glob.Ptr(0.0),

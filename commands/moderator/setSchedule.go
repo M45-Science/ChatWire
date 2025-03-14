@@ -14,29 +14,34 @@ import (
 
 func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	n := cfg.ResetInterval{}
-	var gotInterval bool
+	var gotInterval, gotDate bool
 
 	buf := ""
 	for _, item := range i.ApplicationCommandData().Options {
 		switch item.Name {
-		case "months":
+		case "interval-months":
 			n.Months = int(item.UintValue())
 			gotInterval = true
-		case "weeks":
+		case "interval-weeks":
 			n.Weeks = int(item.UintValue())
 			gotInterval = true
-		case "days":
+		case "interval-days":
 			n.Days = int(item.UintValue())
-			gotInterval = true
-		case "hours":
+
+		case "interval-hours":
 			n.Hours = int(item.UintValue())
 			gotInterval = true
 		case "reset-hour":
 			cfg.Local.Options.ResetHour = int(item.UintValue())
+			gotDate = true
 		case "reset-date":
 			buf = buf + parseResetDate(item.StringValue())
+			gotDate = true
 		case "disable":
 			n = cfg.ResetInterval{}
+			cfg.Local.Options.NextReset = time.Time{}
+			gotDate = true
+			gotInterval = true
 		}
 	}
 
@@ -56,11 +61,19 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	cfg.WriteLCfg()
 	support.ConfigSoftMod()
 
-	if fact.HasResetInterval() {
-		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ The map reset schedule has been changed:\n"+
-			fact.FormatResetTime()+" ("+fact.TimeTillReset()+")\nCurrent reset interval: "+fact.FormatResetInterval())
-	} else {
-		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ The map reset schedule has been disabled.")
+	if gotInterval {
+		if fact.HasResetInterval() {
+			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset interval changed: "+fact.FormatResetInterval())
+		} else {
+			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset interval disabled")
+		}
+	}
+	if gotDate {
+		if fact.HasResetTime() {
+			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset date changed: "+fact.FormatResetTime()+"("+fact.TimeTillReset()+")")
+		} else {
+			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset date disabled")
+		}
 	}
 
 	if buf != "" {
