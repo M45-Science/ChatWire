@@ -604,12 +604,7 @@ func MainLoops() {
 				}
 				glob.UpdateMessage = nil
 
-				if *glob.ProxyURL != "" {
-					time.Sleep(time.Minute * 5)
-				} else {
-					time.Sleep(time.Minute * 15)
-
-				}
+				time.Sleep(time.Minute * 30)
 			} else {
 				time.Sleep(time.Minute)
 			}
@@ -698,11 +693,7 @@ func MainLoops() {
 				glob.UpdatersLock.Unlock()
 			}
 
-			if *glob.ProxyURL != "" {
-				time.Sleep(time.Minute * 15)
-			} else {
-				time.Sleep(time.Hour * 4)
-			}
+			time.Sleep(time.Hour * 3)
 		}
 	}()
 
