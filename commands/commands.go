@@ -65,7 +65,7 @@ var cmds = []glob.CommandData{
 		ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
-		Description: "Change the map reset schedule.",
+		Description: "Change the map reset interval or date.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
@@ -106,7 +106,7 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "reset-hour",
-				Description: "Time of day to reset, 24 hour format UTC. USE 0 FOR NONE.",
+				Description: "Force hour to reset, 24 hour format UTC. USE 0 FOR NONE",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				MinValue:    glob.Ptr(0.0),
 				MaxValue:    glob.Ptr(23.0),
@@ -115,6 +115,13 @@ var cmds = []glob.CommandData{
 				Name:        "disable",
 				Description: "Turn automatic map resets off",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "reset-date",
+				Description: "Force Reset-Date (YYYY-MM-DD HH-MM-SS) 24H-UTC",
+
+				Type:     discordgo.ApplicationCommandOptionString,
+				Required: false,
 			},
 		},
 	},

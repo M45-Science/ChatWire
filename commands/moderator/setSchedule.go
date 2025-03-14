@@ -26,6 +26,8 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			n.Hours = int(item.UintValue())
 		case "reset-hour":
 			cfg.Local.Options.ResetHour = int(item.UintValue())
+		case "reset-date":
+			parseResetDate(item.StringValue())
 		case "disable":
 			n = cfg.ResetInterval{}
 		}
@@ -52,4 +54,16 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ The map reset schedule has been disabled.")
 	}
 
+}
+
+func parseResetDate(input string) string {
+	layout := "2006-01-02 15-04-05"
+
+	// Parse the time string
+	parsedTime, err := time.Parse(layout, input)
+	if err != nil {
+		return "Unable to parse date provided. Format is 'YYYY-MM-DD HH-MM-SS' (24-hour UTC)"
+	}
+	cfg.Local.Options.NextReset = parsedTime
+	return "Date accepted: " + fact.FormatResetTime() + " (" + fact.TimeTillReset() + ")"
 }
