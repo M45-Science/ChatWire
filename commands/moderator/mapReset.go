@@ -12,5 +12,4 @@ func MapReset(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Resetting map...")
 
 	fact.Map_reset(true)
-	fact.SetResetDate()
 }

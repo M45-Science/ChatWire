@@ -85,10 +85,10 @@ func AdvanceReset() {
 		return
 	}
 	s := cfg.Local.Options.ResetInterval
-	newResetTime := cfg.Local.Options.NextReset.AddDate(0, s.Months, s.Days)
-	newResetTime = newResetTime.Add(time.Duration(s.Hours) * time.Hour)
-	cfg.Local.Options.NextReset = newResetTime.Round(time.Second)
-	SetResetDate()
+	partA := cfg.Local.Options.NextReset.AddDate(0, s.Months, s.Days)
+	partB := partA.Add(time.Duration(s.Weeks) * time.Hour * 24 * 7)
+	partC := partB.Add(time.Duration(s.Hours) * time.Hour)
+	cfg.Local.Options.NextReset = partC.Round(time.Second)
 }
 
 func HasResetInterval() bool {
