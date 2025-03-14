@@ -52,9 +52,10 @@ func Map_reset(doReport bool) {
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
-		QueueReboot = false      //Skip queued reboot
-		QueueFactReboot = false  //Skip queued fact reboot
-		DoUpdateFactorio = false //Skip queued updates
+		QueueReboot = false                 //Skip queued reboot
+		QueueFactReboot = false             //Skip queued fact reboot
+		DoUpdateFactorio = false            //Skip queued updates
+		cfg.Local.Options.SkipReset = false //Turn off skip reset
 
 		SetAutolaunch(false, false)
 		QuitFactorio("Server rebooting for map reset!")

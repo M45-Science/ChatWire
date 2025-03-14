@@ -42,7 +42,7 @@ func CheckMapReset() {
 			if err != nil {
 				panic(err)
 			}
-			LogCMS(cfg.Local.Channel.ChatChannel, "Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
+			LogCMS(cfg.Local.Channel.ChatChannel, "❇️ Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
 		} else {
 			Map_reset(false)
 		}

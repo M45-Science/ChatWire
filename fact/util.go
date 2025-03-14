@@ -694,20 +694,32 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 			},
 		},
 	)
-	//Skip reset, not allowed for public maps
-	//if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
-	availableMaps = append(availableMaps,
-		discordgo.SelectMenuOption{
 
-			Label:       "SKIP-RESET",
-			Description: "Skip the next map reset.",
-			Value:       "SKIP-RESET",
-			Emoji: &discordgo.ComponentEmoji{
-				Name: "🚫",
+	if cfg.Local.Options.SkipReset {
+		availableMaps = append(availableMaps,
+			discordgo.SelectMenuOption{
+
+				Label:       "SKIP-RESET",
+				Description: "Skip the next map reset.",
+				Value:       "SKIP-RESET",
+				Emoji: &discordgo.ComponentEmoji{
+					Name: "❇️",
+				},
 			},
-		},
-	)
-	//}
+		)
+	} else {
+		availableMaps = append(availableMaps,
+			discordgo.SelectMenuOption{
+
+				Label:       "SKIP-RESET",
+				Description: "ALREADY SKIPPED!",
+				Value:       "ALREADY-SKIPPED",
+				Emoji: &discordgo.ComponentEmoji{
+					Name: "🚫",
+				},
+			},
+		)
+	}
 
 	for i := 0; i < numFiles; i++ {
 
@@ -891,6 +903,14 @@ func DoChangeMap(arg string) {
 	if strings.EqualFold(arg, "new-map") {
 		Map_reset(false)
 		SetResetDate()
+		return
+	}
+	if strings.EqualFold(arg, "skip-reset") {
+		if !cfg.Local.Options.SkipReset {
+			cfg.Local.Options.SkipReset = true
+			LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ NOTICE: The upcoming map reset has been skipped.")
+			AdvanceReset()
+		}
 		return
 	}
 

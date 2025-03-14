@@ -159,6 +159,7 @@ type localOptions struct {
 	ResetInterval ResetInterval `web:"Reset interval"`
 	NextReset     time.Time     `web:"Next map reset"`
 	ResetHour     int           `web:"Map Reset Hour"`
+	SkipReset     bool          `web:"Skip Map Reset"`
 
 	ResetPingRole  string `form:"-"`
 	PlayHourEnable bool   `web:"Limit Open Hours"`
