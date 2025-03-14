@@ -591,7 +591,7 @@ func MainLoops() {
 	go func() {
 
 		if *glob.ProxyURL != "" {
-			ticker := time.NewTicker(1 * time.Millisecond)
+			ticker := time.NewTicker(1 * time.Second)
 			defer ticker.Stop()
 
 			for glob.ServerRunning {
