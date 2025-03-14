@@ -222,6 +222,9 @@ func listMods() string {
 			ebuf = ebuf + ", "
 		}
 		ebuf = ebuf + item.Name
+		if modupdate.IsBaseMod(item.Name) {
+			ebuf = ebuf + " (base-mod)"
+		}
 	}
 
 	dbuf := ""
@@ -236,6 +239,9 @@ func listMods() string {
 			dbuf = dbuf + ", "
 		}
 		dbuf = dbuf + item.Name
+		if modupdate.IsBaseMod(item.Name) {
+			dbuf = dbuf + " (base-mod)"
+		}
 	}
 
 	if ebuf == "" {

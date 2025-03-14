@@ -429,7 +429,7 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "vote-map",
-		Description: "Vote for a new/previous map. Requires TWO vote points.",
+		Description: "PRESS ENTER to get a list of maps. Requires TWO vote points.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
