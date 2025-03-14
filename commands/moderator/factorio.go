@@ -155,7 +155,10 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Checking for mod updates.")
+	glob.UpdatersLock.Lock()
 	modupdate.CheckMods(true, true)
+	glob.UpdatersLock.Unlock()
+
 }
 
 func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
@@ -166,8 +169,11 @@ func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	if support.SyncMods("") {
-		fact.CMS(cfg.Local.Channel.ChatChannel, "Factorio mod sync complete.")
+	glob.UpdatersLock.Lock()
+	defer glob.UpdatersLock.Unlock()
+
+	if support.SyncMods(i, "") {
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync", "Mod sync complete.", glob.COLOR_CYAN)
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "ERROR", "Syncing mods failed", glob.COLOR_RED)
 	}

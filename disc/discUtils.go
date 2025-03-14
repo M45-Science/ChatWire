@@ -1,6 +1,7 @@
 package disc
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -217,7 +218,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		return err
 	}
 
-	return fmt.Errorf("error")
+	return errors.New("error")
 }
 
 /* See if a role exists */

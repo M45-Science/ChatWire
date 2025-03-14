@@ -6,6 +6,7 @@ import (
 	"ChatWire/commands/admin"
 	"ChatWire/commands/moderator"
 	"ChatWire/commands/user"
+	"ChatWire/constants"
 	"ChatWire/glob"
 )
 
@@ -226,19 +227,68 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "mod-list",
-				Description: "select a mod-list.json file",
+				Description: "select a " + constants.ModListName + " file",
 				Type:        discordgo.ApplicationCommandOptionAttachment,
 				Required:    false,
 			},
 			{
 				Name:        "mod-settings",
-				Description: "select a mod-settings.dat file",
+				Description: "select a " + constants.ModSettingsName + " file",
 				Type:        discordgo.ApplicationCommandOptionAttachment,
 				Required:    false,
 			},
 		},
 	},
 		Function: moderator.UploadFile, ModeratorOnly: true},
+	{AppCmd: glob.AppCmdData{
+		Name:        "editmods",
+		Description: "enable/disable or add/remove Factorio mods",
+		Type:        discordgo.ChatApplicationCommand,
+
+		Options: []glob.OptionData{
+			{
+				Name:        "mod-history",
+				Description: "Display all mod history",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "clear-history",
+				Description: "Clear all mod history",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "list-mods",
+				Description: "List all installed mods",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "enable-mod",
+				Description: "Enable mods by name: mod1, mod2",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "disable-mod",
+				Description: "Disable mods by name: mod1, mod2",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "add-mod",
+				Description: "Add mods by name or URL. mod1, mod2URL",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+			{
+				Name:        "clear-all-mods",
+				Description: "Clear entire mod directory (reset)",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "updater-blacklist",
+				Description: "Prevent automatic updates for mods.Names separated by commas to add/remove.",
+				Type:        discordgo.ApplicationCommandOptionString,
+			},
+		},
+	},
+		Function: moderator.EditMods, ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "rcon",
 		Description: "Remotely run a factorio command.",
@@ -480,7 +530,7 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: user.Scoreboard, PrimaryOnly: true},
-	/* PLAYER COMMMANDS -------------------- */
+	/* PLAYER COMMANDS -------------------- */
 	{AppCmd: glob.AppCmdData{
 		Name:        "list-mods",
 		Description: "Show list of mod files",

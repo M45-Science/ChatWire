@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -9,6 +10,7 @@ import (
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/support"
+	"ChatWire/util"
 	"fmt"
 	"os"
 	"strings"
@@ -18,23 +20,25 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
+const msgTitle = "File Upload"
+
 func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modSettingsBytes []byte) {
 	foundOption = true
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-		"Your "+saveGameName+" file is uploading.", glob.COLOR_GREEN)
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+		"The "+saveGameName+" file is uploading.", glob.COLOR_CYAN)
 
-	saveGameBytes, name, err := factUpdater.HttpGet(attachmentUrl)
+	saveGameBytes, name, err := factUpdater.HttpGet(true, attachmentUrl, true)
 	if err != nil {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"**Your "+saveGameName+" file failed while downloading.**", glob.COLOR_RED)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+			"**The "+saveGameName+" file failed while downloading.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: http-get "+saveGameName+": Error: %v", err)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 		return
 	}
 
 	sBuf := fmt.Sprintf("Downloaded "+saveGameName+": %v, Size: %v", name, humanize.Bytes(uint64(len(saveGameBytes))))
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-		sBuf, glob.COLOR_GREEN)
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+		sBuf, glob.COLOR_CYAN)
 
 	stopWaitFact("Server rebooting to load a new custom map.")
 
@@ -45,50 +49,46 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 
 	insertModSettings(modSettingsBytes)
 
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-		"**Downloading any "+saveGameName+" installed mods, PLEASE WAIT...**", glob.COLOR_GREEN)
-	if !support.SyncMods(saveFileName) {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+		"**Downloading any "+saveGameName+" installed mods, PLEASE WAIT...**", glob.COLOR_CYAN)
+	if !support.SyncMods(i, saveFileName) {
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
 			"mod-sync failed, attempting to continue.", glob.COLOR_RED)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 	}
-	modBuf := showSyncMods()
+	/*modBuf := showSyncMods()
 	if modBuf != "" {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"Installed mods: "+modBuf, glob.COLOR_GREEN)
-	}
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-		"Checking for mod updates.", glob.COLOR_GREEN)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+			"Installed mods: "+modBuf, glob.COLOR_CYAN)
+	}*/
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+		"Checking for mod updates.", glob.COLOR_CYAN)
 	modupdate.CheckMods(true, true)
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-		"Attempting to load your "+saveGameName+".", glob.COLOR_GREEN)
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+		"Attempting to load the "+saveGameName+".", glob.COLOR_CYAN)
 	fact.DoChangeMap(strings.TrimSuffix(saveFileName, ".zip"))
 }
 
 func insertSaveGame(i *discordgo.InteractionCreate, saveFileName string, saveGameData []byte) bool {
-	savePath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves + "/"
+	savePath := util.GetSavesFolder() + "/"
 	saveFilePath := savePath + saveFileName
 	err := os.WriteFile(saveFilePath, saveGameData, 0644)
 	if err != nil {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-			"**Your "+saveGameName+" file failed while writing.**", glob.COLOR_RED)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+			"**The "+saveGameName+" file failed while writing.**", glob.COLOR_RED)
 		cwlog.DoLogCW("Upload: Write "+saveGameName+": Error: %v", err)
-		time.Sleep(errMsgDelay)
+		time.Sleep(constants.ErrMsgDelay)
 		return true
 	}
 	//Touch save-game
 	currentTime := time.Now().UTC().Local()
 	_ = os.Chtimes(saveFilePath, currentTime, currentTime)
 
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status",
-		"Checking "+saveGameName+".", glob.COLOR_GREEN)
-	if fact.HasZipBomb(saveFilePath) {
+	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
+		"Checking "+saveGameName+".", glob.COLOR_CYAN)
+	if fact.FileHasZipBomb(saveFilePath) {
 		msg := "**THE " + strings.ToUpper(saveGameName) + " MAY CONTAIN A ZIP-BOMB ATTACK, ABORTING. UPLOADED BY: ID: " + i.Member.User.ID + " USERNAME: " + i.Member.User.Username + " INCIDENT LOGGED. **"
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", msg, glob.COLOR_RED)
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle, msg, glob.COLOR_RED)
 		cwlog.DoLogCW(msg)
 		cwlog.DoLogGame(msg)
 		os.Remove(saveFilePath)

@@ -20,6 +20,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 func GetMapTypeNum(mapt string) int {
@@ -123,7 +124,7 @@ func Map_reset(doReport bool) {
 		}
 	} else {
 		for _, f := range files {
-			if strings.EqualFold(f.Name(), "mod-settings.dat") {
+			if strings.EqualFold(f.Name(), constants.ModSettingsName) {
 				err := os.Rename(qPath+f.Name(), modPath+f.Name())
 				if err != nil {
 					cwlog.DoLogCW(err.Error())
@@ -184,12 +185,7 @@ func GenNewMap() string {
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
-	genpath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
-
+	genpath := util.GetSavesFolder()
 	flist, err := filepath.Glob(genpath + "/gen-*.zip")
 	if err != nil {
 		panic(err)
@@ -227,11 +223,7 @@ func GenNewMap() string {
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	sName := "gen-" + ourcode + ".zip"
 
-	filename := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves +
+	filename := util.GetSavesFolder() +
 		"/" + sName
 	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
 

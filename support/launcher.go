@@ -2,9 +2,9 @@ package support
 
 import (
 	"archive/zip"
+	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -22,107 +22,123 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/util"
+
+	"github.com/bwmarrin/discordgo"
 )
 
-type modListData struct {
-	Mods []modData
-}
-type modData struct {
-	Name    string
-	Enabled bool
-}
+var (
+	BotIsReady bool
+)
 
-func GetGameMods() (*modListData, error) {
-	return ConfigGameMods(nil, false)
-}
+const (
+	dotInterval      = time.Second * 5
+	progressInterval = time.Second * 10
+	syncModsTimeout  = time.Minute * 15
+)
 
-func SyncMods(optionalFileName string) bool {
+func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
-	glob.ModLock.Lock()
-	defer glob.ModLock.Unlock()
-
-	//Save current auto-mod-update setting, disable mod updating, then restore on exit.
-	RestoreSetting := cfg.Local.Options.ModUpdate
-	cfg.Local.Options.ModUpdate = false
-	defer func(rVal bool) {
-		cfg.Local.Options.ModUpdate = rVal
-	}(RestoreSetting)
-
-	_, fileName, _ := GetSaveGame(true)
-	if optionalFileName != "" {
+	fileName := ""
+	if optionalFileName == "" {
+		_, fileName, _ = GetSaveGame(true)
+	} else {
 		fileName = optionalFileName
 	}
+
+	if !fact.GenerateFactorioConfig() {
+		cwlog.DoLogCW("Unable to write factorio config file.")
+		return false
+	}
+
 	var tempargs []string = []string{"--sync-mods", fileName}
 
-	var cmd *exec.Cmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
-	data, err := cmd.Output()
-	if err != nil {
-		cwlog.DoLogCW(string(data) + " : " + err.Error())
-	} else {
-		if strings.Contains(string(data), "Mods synced") {
-			cwlog.DoLogCW("Factorio mods synced with save-game.")
-			return true
-		}
-	}
-	return false
-}
+	// Create a context with the timeout
+	ctx, cancel := context.WithTimeout(context.Background(), syncModsTimeout)
+	defer cancel()
 
-func ConfigGameMods(controlList []string, setState bool) (*modListData, error) {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Mods + "/" + "mod-list.json"
+	cmd := exec.CommandContext(ctx, fact.GetFactorioBinary(), tempargs...)
 
-	data, err := os.ReadFile(path)
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return nil, err
+		cwlog.DoLogCW("SyncMods: Error reading stdout: %v\n", err)
+		return false
 	}
 
-	serverMods := modListData{}
-	err = json.Unmarshal(data, &serverMods)
-	if err != nil {
-		return nil, err
+	if err := cmd.Start(); err != nil {
+		cwlog.DoLogCW("Error starting command: %v", err)
 	}
 
-	if len(controlList) > 0 {
-		for s, serverMod := range serverMods.Mods {
-			if strings.EqualFold(serverMod.Name, "base") {
-				continue
+	scanner := bufio.NewScanner(stdout)
+
+	modsLoading := false
+	var lastDot time.Time
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+
+		//cwlog.DoLogCW("Received line: %s\n", line)
+		parts := strings.Split(line, " ")
+		numParts := len(parts)
+		if numParts > 1 {
+			if parts[1] == "Goodbye" {
+				break
 			}
-			for _, controlMod := range controlList {
-				if strings.EqualFold(serverMod.Name, controlMod) {
-					serverMods.Mods[s].Enabled = setState
-
-					cwlog.DoLogCW(BoolToString(setState) + " " + serverMod.Name)
+		}
+		if numParts > 2 {
+			if parts[1] == "Loading" && parts[2] == "mod" {
+				if !modsLoading {
+					modsLoading = true
+					glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
+						"Loading mods", glob.COLOR_CYAN)
+				} else if time.Since(lastDot) > dotInterval {
+					lastDot = time.Now()
+					if glob.UpdateMessage != nil && len(glob.UpdateMessage.Embeds) > 0 {
+						embed := glob.UpdateMessage.Embeds[0]
+						embed.Description = embed.Description + " ."
+						disc.DS.ChannelMessageEditEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage.ID, embed)
+					}
+				}
+			}
+		}
+		if numParts > 3 {
+			if parts[3] == "Downloading" {
+				urlParts := strings.Split(parts[4], "/")
+				if len(urlParts) > 1 {
+					if urlParts[1] == "download" {
+						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
+							"Downloading: "+urlParts[2], glob.COLOR_CYAN)
+					}
 				}
 			}
 		}
 
-		outbuf := new(bytes.Buffer)
-		enc := json.NewEncoder(outbuf)
-		enc.SetIndent("", "\t")
-
-		if err := enc.Encode(serverMods); err != nil {
-			return nil, err
+		if line == "Mods synced" {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
+				"All mods synced.", glob.COLOR_CYAN)
 		}
-
-		err = os.WriteFile(path, outbuf.Bytes(), 0644)
-		cwlog.DoLogCW("Wrote mod-list.json")
 	}
-	return &serverMods, err
+
+	if err := scanner.Err(); err != nil {
+		cwlog.DoLogCW("SyncMods: Error reading stdout: %v\n", err)
+		return false
+	}
+
+	if err := cmd.Wait(); err != nil {
+		cwlog.DoLogCW("SyncMods: Command finished with error: %v\n", err)
+		return false
+	}
+
+	return true
 }
 
 /* Find the newest save game */
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
+	path := util.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 
@@ -294,11 +310,7 @@ func injectSoftMod(fileName, folderName string) {
 		}
 
 		/* Add old save files into zip */
-		path := cfg.Global.Paths.Folders.ServersRoot +
-			cfg.Global.Paths.ChatWirePrefix +
-			cfg.Local.Callsign + "/" +
-			cfg.Global.Paths.Folders.FactorioDir + "/" +
-			cfg.Global.Paths.Folders.Saves
+		path := util.GetSavesFolder()
 
 		newZipFile, err := os.Create(path + constants.TempSaveName)
 		if err != nil {
@@ -338,14 +350,16 @@ func injectSoftMod(fileName, folderName string) {
 	}
 }
 
-// Wait for a momoment, so we don't loose factorio booting message on first connect.
-var BotIsReady bool
+// Wait for a moment, so we don't lose factorio booting message on first connect.
 
 func waitForDiscord() {
 	if BotIsReady {
 		return
 	}
-	for x := 0; x <= 60 && !BotIsReady; x++ {
+	for x := 0; x <= 10; x++ {
+		if BotIsReady {
+			return
+		}
 		cwlog.DoLogCW("Waiting for Discord...")
 		time.Sleep(time.Second)
 	}
@@ -382,6 +396,7 @@ func launchFactorio() {
 
 	waitForDiscord()
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
+	fact.QueueFactReboot = false
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
@@ -559,7 +574,7 @@ func launchFactorio() {
 
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-	LinuxSetProcessGroup(glob.FactorioCmd)
+	linuxSetProcessGroup(glob.FactorioCmd)
 	/* Connect Factorio stdout to a buffer for processing */
 	fact.GameBuffer = new(bytes.Buffer)
 	logwriter := io.MultiWriter(fact.GameBuffer)
@@ -650,11 +665,7 @@ func ConfigSoftMod() {
 }
 
 func GetModFiles() []string {
-	modPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
+	modPath := util.GetModsFolder()
 
 	modList, errm := os.ReadDir(modPath)
 	modStrings := []string{}

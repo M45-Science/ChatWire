@@ -2,7 +2,6 @@ package support
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -20,9 +19,10 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
+	"ChatWire/util"
 )
 
-func LinuxSetProcessGroup(cmd *exec.Cmd) {
+func linuxSetProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
@@ -261,7 +261,7 @@ func MainLoops() {
 	 ************************************/
 	go fact.WatchDatabaseFile()
 
-	/* Read database, if the file was modifed */
+	/* Read database, if the file was modified */
 	go func() {
 		updated := false
 
@@ -424,7 +424,7 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			time.Sleep(2 * time.Second)
+			time.Sleep(5 * time.Second)
 
 			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 {
 
@@ -497,7 +497,7 @@ func MainLoops() {
 	 * Check signal files
 	 *********************/
 	go func() {
-		clearOldSignals()
+		util.ClearOldSignals()
 		failureReported := false
 		for glob.ServerRunning {
 
@@ -603,8 +603,13 @@ func MainLoops() {
 					}
 				}
 				glob.UpdateMessage = nil
-				time.Sleep(time.Minute * 30)
-				time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 10 minutes of randomness
+
+				if *glob.ProxyURL != "" {
+					time.Sleep(time.Minute * 5)
+				} else {
+					time.Sleep(time.Minute * 15)
+
+				}
 			} else {
 				time.Sleep(time.Minute)
 			}
@@ -688,11 +693,16 @@ func MainLoops() {
 
 		for glob.ServerRunning {
 			if cfg.Local.Options.ModUpdate {
+				glob.UpdatersLock.Lock()
 				modupdate.CheckMods(false, false)
+				glob.UpdatersLock.Unlock()
 			}
 
-			time.Sleep(time.Minute * 30)
-			time.Sleep(time.Second * time.Duration(rand.Intn(300))) //Add 10 minutes of randomness
+			if *glob.ProxyURL != "" {
+				time.Sleep(time.Minute * 15)
+			} else {
+				time.Sleep(time.Hour * 4)
+			}
 		}
 	}()
 

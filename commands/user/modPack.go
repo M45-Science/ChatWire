@@ -12,17 +12,20 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/dustin/go-humanize"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
+	"ChatWire/util"
 )
 
-var modPackLock sync.Mutex
-var lastRun time.Time
+var (
+	modPackLock sync.Mutex
+	lastRun     time.Time
+)
 
 /* executes /online on the server, response handled in chat.go */
 func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
@@ -40,50 +43,38 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	/* Mod path */
-	modPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
-
-	files, err := os.ReadDir(modPath)
+	mfile, err := modupdate.GetModFiles()
 	if err != nil {
-		cwlog.DoLogCW(err.Error())
-		disc.InteractionEphemeralResponse(i, "Error", "Error reading mods folder, please inform mods.")
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to read mod files.")
+		return
+	}
+	jfile, err := modupdate.GetModList()
+	if err != nil {
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to read mod list.")
 		return
 	}
 
-	totalFiles := 0
-	modFiles := 0
-	var fbytes int64
+	modPath := util.GetModsFolder()
 	var modsList []string = []string{}
-	for _, f := range files {
-		if strings.HasSuffix(f.Name(), ".zip") {
-			modsList = append(modsList, modPath+f.Name())
-			modFiles++
-			totalFiles++
-
-			i, _ := f.Info()
-			fbytes += i.Size()
-		} else if strings.EqualFold(f.Name(), "mod-list.json") {
-			modsList = append(modsList, modPath+f.Name())
-			totalFiles++
-
-			i, _ := f.Info()
-			fbytes += i.Size()
-		} else if strings.EqualFold(f.Name(), "mod-settings.dat") {
-			modsList = append(modsList, modPath+f.Name())
-			totalFiles++
-
-			i, _ := f.Info()
-			fbytes += i.Size()
+	modFiles := 0
+	for _, item := range jfile.Mods {
+		if modupdate.IsBaseMod(item.Name) {
+			continue
+		}
+		if !item.Enabled {
+			continue
+		}
+		for _, mod := range mfile {
+			if strings.EqualFold(mod.Name, item.Name) {
+				modsList = append(modsList, modPath+mod.OldFilename)
+				modFiles++
+			}
 		}
 	}
 
 	if modFiles > 0 {
-		msg := fmt.Sprintf("%d mods found, %v total.\nGenerating modpack zip, please wait.", modFiles, humanize.Bytes(uint64(fbytes)))
-		disc.InteractionEphemeralResponse(i, "Mods", msg)
+		msg := fmt.Sprintf("%d enabled mods found.\nGenerating modpack zip, please wait.", modFiles)
+		disc.InteractionEphemeralResponse(i, "Modpack", msg)
 
 		makeModPack(i, modsList)
 	} else {

@@ -20,6 +20,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/util"
 )
 
 /* Protect players from dumb mistakes with registration codes */
@@ -346,10 +347,10 @@ func handlePlayerJoin(input *handleData) bool {
 				/* Give people patreon/nitro tags in-game. */
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				if did != "" {
-					if IsPatreon(did) {
+					if util.IsPatreon(did) {
 						fact.WriteFact("/patreon %s", pname)
 					}
-					if IsNitro(did) {
+					if util.IsNitro(did) {
 						fact.WriteFact("/nitro %s", pname)
 					}
 				}
@@ -772,12 +773,7 @@ func handleExitSave(input *handleData) bool {
 			}
 
 			/* Path for backup save */
-			newPath := cfg.Global.Paths.Folders.ServersRoot +
-				cfg.Global.Paths.ChatWirePrefix +
-				cfg.Local.Callsign + "/" +
-				cfg.Global.Paths.Folders.FactorioDir + "/" +
-				cfg.Global.Paths.Folders.Saves + "/"
-
+			newPath := util.GetSavesFolder() + "/"
 			/* Name for backup save */
 			newName := fmt.Sprintf("bak-%v.zip", cfg.Local.LastSaveBackup)
 
@@ -925,7 +921,7 @@ func handleCrashes(input *handleData) bool {
 			if time.Since(glob.LastCrashReport) > constants.CrashReportInterval*time.Second {
 				glob.LastCrashReport = time.Now()
 
-				/* Supress connection error messages */
+				/* Suppress connection error messages */
 				if !strings.Contains(input.noTimecode, "Matching server connection failed") {
 					fact.CMS(cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": "+cfg.Local.Name+":\n"+input.noTimecode)
 				}

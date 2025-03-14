@@ -2,35 +2,59 @@ package factUpdater
 
 import (
 	"ChatWire/constants"
+	"ChatWire/glob"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
-	"sync"
 	"time"
 )
 
-var FetchLock sync.Mutex
+const httpDownloadTimeout = time.Minute * 15
+const httpGetTimeout = time.Second * 30
 
-const httpGetTimeout = time.Minute * 15
+func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 
-func HttpGet(url string) ([]byte, string, error) {
+	//Change timeout based on request type
+	timeout := httpDownloadTimeout
+	if quick {
+		timeout = httpGetTimeout
+	}
+
 	// Set timeout
 	hClient := http.Client{
-		Timeout: httpGetTimeout,
-	}
-	//HTTP GET
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, "", fmt.Errorf("get failed: %v", err.Error())
+		Timeout: timeout,
 	}
 
+	//Use proxy if provided
+	var URL string
+	if *glob.ProxyURL != "" && !noproxy {
+		proxy := strings.TrimSuffix(*glob.ProxyURL, "/")
+		URL = proxy + "/" + url.PathEscape(input)
+	} else {
+		URL = input
+	}
+
+	//HTTP GET
+	req, err := http.NewRequest(http.MethodGet, URL, nil)
+	if err != nil {
+		return nil, "", errors.New("get failed: " + err.Error())
+	}
+
+	//Header
 	req.Header.Set("User-Agent", constants.ProgName+"-"+constants.Version)
 
 	//Get response
 	res, err := hClient.Do(req)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get response: %v", err.Error())
+		return nil, "", errors.New("failed to get response: " + err.Error())
+	}
+
+	//Check status code
+	if res.StatusCode != 200 {
+		return nil, "", fmt.Errorf("http status error: %v", res.StatusCode)
 	}
 
 	//Close once complete, if valid
@@ -41,7 +65,14 @@ func HttpGet(url string) ([]byte, string, error) {
 	//Read all
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to read response body: %v", err.Error())
+		return nil, "", errors.New("unable to read response body: " + err.Error())
+	}
+
+	//Check data length
+	if res.ContentLength >= 0 {
+		if len(body) != int(res.ContentLength) {
+			return nil, "", errors.New("data ended early")
+		}
 	}
 
 	realurl := res.Request.URL.String()

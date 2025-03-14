@@ -12,8 +12,10 @@ import (
 )
 
 /* Discord role member-lists */
-var RoleList RoleListData
-var RoleListUpdated bool
+var (
+	RoleList        RoleListData
+	RoleListUpdated bool
+)
 
 /* Cache a list of players with specific Discord roles */
 func WriteRoleList() bool {

@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2665-03-03.2025-0722p"
+	Version            = "2670-03-11.2025-0437p"
 	CWEpoch            = 1653239822390688174 //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -20,8 +20,11 @@ const (
 	WhitelistName       = "server-whitelist.json"
 	AdminlistName       = "server-adminlist.json"
 	ServSettingsName    = "server-settings.json"
+	ModSettingsName     = "mod-settings.dat"
+	ModListName         = "mod-list.json"
 	ModsQueueFolder     = "mods-queue"
 	ModsFolder          = "mods"
+	OldModsDir          = "old"
 	RoleListFile        = "../RoleList.dat"
 	VoteFile            = "votes.dat"
 	ArchiveFolderSuffix = " maps"
@@ -33,6 +36,7 @@ const (
 	ModPackLifeMins     = 180
 	ModPackCooldownMin  = 5
 	MaxModPacks         = 4
+	ErrMsgDelay         = time.Second * 3
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 30
@@ -70,10 +74,6 @@ const (
 
 	/* Max results to return */
 	WhoisResults = 15
-
-	/* Maximum time before giving up on mod updater */
-	ModUpdateLimit = 10 * time.Minute
-	ModUpdaterPath = "scripts/mod_updater.py"
 
 	/* Maximum time to wait for Factorio to close */
 	MaxFactorioCloseWait = 45 * 10 //Loop sleep is 1/10 of a second

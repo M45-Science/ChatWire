@@ -3,15 +3,10 @@ package moderator
 import (
 	"ChatWire/cfg"
 	"ChatWire/fact"
-	"ChatWire/support"
-	"strings"
 	"sync"
-	"time"
 )
 
 const (
-	modSettingsName    = "mod-settings.dat"
-	modListName        = "mod-list.json"
 	saveGameName       = "save-game"
 	MaxModSettingsSize = 1024 * 1024 //1MB
 	MaxModListSize     = 1024 * 1024 //1MB
@@ -20,44 +15,7 @@ const (
 var (
 	UploadLock                           sync.Mutex
 	foundOption, foundSave, foundModList bool
-	errMsgDelay                          = time.Second * 3
 )
-
-func showSyncMods() string {
-	buf := ""
-	modList, mErr := support.GetGameMods()
-	if mErr == nil && modList != nil {
-		for _, mod := range modList.Mods {
-			if strings.EqualFold(mod.Name, "base") {
-				continue
-			}
-			if strings.EqualFold(mod.Name, "elevated-rails") {
-				continue
-			}
-			if strings.EqualFold(mod.Name, "quality") {
-				continue
-			}
-			if strings.EqualFold(mod.Name, "space-age") {
-				continue
-			}
-			if !mod.Enabled {
-				continue
-			}
-			if buf != "" {
-				buf = buf + ", "
-			}
-			if mod.Enabled {
-				buf = buf + strings.TrimSuffix(mod.Name, ".zip")
-			}
-		}
-	}
-
-	if buf == "" {
-		buf = strings.Join(support.GetModFiles(), ", ")
-	}
-
-	return buf
-}
 
 func stopWaitFact(msg string) {
 	if fact.FactorioBooted || fact.FactIsRunning {

@@ -12,6 +12,10 @@ import (
 
 /* Normal CW log */
 func DoLogCW(format string, args ...interface{}) {
+	if glob.CWLogDesc == nil {
+		return
+	}
+
 	ctime := time.Now()
 	_, filename, line, _ := runtime.Caller(1)
 
@@ -27,7 +31,6 @@ func DoLogCW(format string, args ...interface{}) {
 	_, err := glob.CWLogDesc.WriteString(buf)
 	if err != nil {
 		fmt.Println("DoLog: WriteString failure")
-		glob.CWLogDesc.Close()
 		glob.CWLogDesc = nil
 		return
 	}
@@ -35,6 +38,10 @@ func DoLogCW(format string, args ...interface{}) {
 
 /* Game log */
 func DoLogGame(format string, args ...interface{}) {
+	if glob.GameLogDesc == nil {
+		return
+	}
+
 	ctime := time.Now()
 
 	var text string
@@ -49,7 +56,6 @@ func DoLogGame(format string, args ...interface{}) {
 	_, err := glob.GameLogDesc.WriteString(buf)
 	if err != nil {
 		fmt.Println("DoLogGame: WriteString failure")
-		glob.GameLogDesc.Close()
 		glob.GameLogDesc = nil
 		return
 	}

@@ -400,7 +400,7 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 						defer delete(tempData, pname)
 						continue
 					}
-					//Delete uneeded data from member/reg/moderator
+					//Delete unneeded data from member/reg/moderator
 					if tempData[pname].Level > 0 {
 						tempData[pname].SusScore = 0
 						tempData[pname].BanReason = ""
@@ -451,14 +451,14 @@ func WritePlayers() {
 	defer glob.PlayerListWriteLock.Unlock()
 
 	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-	fo, err := os.Create(dbPath)
+	pdb, err := os.Create(dbPath)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write db file, path: %v", dbPath)
 		return
 	}
-	/*  close fo on exit and check for its returned error */
+	/*  close pdb on exit and check for its returned error */
 	defer func() {
-		if err := fo.Close(); err != nil {
+		if err := pdb.Close(); err != nil {
 			panic(err)
 		}
 	}()

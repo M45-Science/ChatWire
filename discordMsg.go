@@ -8,20 +8,23 @@ import (
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"ChatWire/support"
+	"ChatWire/util"
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-var MessageHandlerLock sync.Mutex
-
 // Protect against spam
 func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
-	MessageHandlerLock.Lock()
-	defer MessageHandlerLock.Unlock()
+	/* Throw away messages from bots */
+	if m.Author.Bot {
+		return
+	}
+
+	messageHandlerLock.Lock()
+	defer messageHandlerLock.Unlock()
 
 	/* Ignore messages from self */
 	if m.Author.ID == s.State.User.ID {
@@ -29,10 +32,50 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	message, _ := m.ContentWithMoreMentionsReplaced(s)
+	message = sclean.UnicodeCleanup(message)
+
+	//Show attachments
+	if len(m.Attachments) > 0 {
+		message = message + "Attachments: "
+	}
+	urls := ""
+	for _, item := range m.Attachments {
+		if item.URL != "" {
+			if urls != "" {
+				urls = urls + ", "
+			}
+			urls = urls + item.ContentType + ": " + item.URL
+		}
+	}
+	message = message + urls
+
+	//Show stickers
+	stickers := ""
+	if len(m.StickerItems) > 0 {
+		message = message + "Stickers: "
+	}
+	for _, item := range m.StickerItems {
+		if item.Name != "" {
+			if stickers != "" {
+				stickers = stickers + ", "
+			}
+			stickers = stickers + item.Name
+		}
+	}
+	message = message + stickers
+
+	if message == "" {
+		return
+	}
+
+	//Limit size
 	if len(message) > 500 {
 		message = fmt.Sprintf("%s(cut, too long!)", sclean.TruncateStringEllipsis(message, 500))
 	}
-	message = sclean.UnicodeCleanup(message)
+
+	//Kill continuity.
+	glob.BootMessage = nil
+	glob.UpdateMessage = nil
 
 	/* Protect players from dumb mistakes with registration codes, even on other maps */
 	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
@@ -52,11 +95,6 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	/* Throw away messages from bots */
-	if m.Author.Bot {
-		return
-	}
-
 	/* Command handling
 	 * Factorio channel ONLY */
 	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
@@ -65,70 +103,76 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 		 * Chat message handling
 		 *  Don't bother if Factorio isn't running...
 		 */
-		if fact.FactorioBooted && fact.FactIsRunning {
-			cwlog.DoLogGame("[Discord] " + m.Author.Username + ": " + message)
 
-			/* Used for name matching */
-			alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
+		/* Used for name matching */
+		alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
 
-			/* Remove control characters and discord markdown */
-			cmess := sclean.RemoveDiscordMarkdown(message)
+		/* Remove control characters and discord markdown */
+		cleanedMessage := sclean.RemoveDiscordMarkdown(message)
 
-			/* Try to find factorio name, for registered players */
-			dname := disc.GetFactorioNameFromDiscordID(m.Author.ID)
-			nbuf := ""
+		/* Try to find factorio name, for registered players */
+		factName := disc.GetFactorioNameFromDiscordID(m.Author.ID)
 
-			/* Name to lowercase */
-			dnamelower := strings.ToLower(dname)
-			fnamelower := strings.ToLower(m.Author.Username)
+		/* Name to lowercase */
+		factNameLower := strings.ToLower(factName)
+		discNameLower := strings.ToLower(m.Author.GlobalName)
 
-			/* Reduce names to letters only */
-			dnamereduced := alphafilter.ReplaceAllString(dnamelower, "")
-			fnamereduced := alphafilter.ReplaceAllString(fnamelower, "")
+		/* Reduce names to letters only */
+		factNameReduced := alphafilter.ReplaceAllString(factNameLower, "")
+		discNameReduced := alphafilter.ReplaceAllString(discNameLower, "")
 
-			/* Mark as seen, async */
-			go func(factname string) {
-				fact.UpdateSeen(factname)
-			}(dname)
+		/* Mark as seen, async */
+		go func(factname string) {
+			fact.UpdateSeen(factname)
+		}(factName)
 
-			/* Filter names... */
-			corduser := sclean.UnicodeCleanup(m.Author.Username)
-			cordnick := sclean.UnicodeCleanup(m.Member.Nick)
-			factuser := sclean.UnicodeCleanup(dname)
+		/* Filter names... */
+		discordName := sclean.UnicodeCleanup(m.Author.GlobalName)
+		factorioName := sclean.UnicodeCleanup(factName)
 
-			corduserlen := len(corduser)
-			cordnicklen := len(cordnick)
-
-			cordname := corduser
-
-			/* On short names, try nickname... if not add number, if no name... discordID */
-			if corduserlen < 5 {
-				if cordnicklen >= 4 && cordnicklen < 18 {
-					cordname = cordnick
-				}
-				cordnamelen := len(cordname)
-				if cordnamelen > 0 {
-					cordname = fnamereduced
-				} else {
-					cordname = fmt.Sprintf("ID#%s", m.Author.ID)
-				}
-			}
-
-			/* Cap name length for safety/annoyance */
-			cordname = sclean.TruncateString(cordname, 64)
-			factuser = sclean.TruncateString(factuser, 64)
-
-			/* Check if Discord name contains Factorio name, if not lets show both their names */
-			if dname != "" && !strings.Contains(dnamereduced, fnamereduced) && !strings.Contains(fnamereduced, dnamereduced) {
-
-				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] @%s (%s):[/color] %s", cordname, factuser, cmess)
-			} else {
-				nbuf = fmt.Sprintf("[color=0,0.5,1][Discord] %s:[/color] %s", cordname, cmess)
-			}
-
-			/* Send the final text to factorio */
-			fact.FactChat(nbuf)
-
+		/* Just in case of weird nickname */
+		discordNameLen := len(discordName)
+		if discordNameLen < 2 {
+			discordName = m.Author.Username
 		}
+		/* Just in case of weird username */
+		discordNameLen = len(discordName)
+		if discordNameLen < 2 {
+			discordName = fmt.Sprintf("ID#%v", m.Member.User.ID)
+		}
+
+		/* Cap name length for safety/annoyance */
+		discordName = sclean.TruncateString(discordName, 64)
+		factorioName = sclean.TruncateString(factorioName, 64)
+
+		namePrefix := ""
+		interaction := &discordgo.InteractionCreate{Interaction: &discordgo.Interaction{Member: m.Member}}
+		if disc.CheckAdmin(interaction) {
+			namePrefix = "(Admin) "
+		} else if disc.CheckModerator(interaction) {
+			namePrefix = "(Moderator) "
+		} else if util.IsPatreon(m.Author.ID) || disc.CheckSupporter(interaction) {
+			namePrefix = "(Supporter) "
+		} else if disc.CheckVeteran(interaction) {
+			namePrefix = "(Veteran) "
+		} else if disc.CheckRegular(interaction) {
+			namePrefix = "(Regular) "
+		} else if disc.CheckMember(interaction) {
+			namePrefix = "(Member) "
+		}
+
+		/* Check if Discord name contains Factorio name, if not lets show both their names */
+		output := ""
+		if factName != "" && !strings.Contains(factNameReduced, discNameReduced) && !strings.Contains(discNameReduced, factNameReduced) {
+			output = fmt.Sprintf("[Discord] %v%v(%v): %v", namePrefix, discordName, factorioName, cleanedMessage)
+		} else {
+			output = fmt.Sprintf("[Discord] %v%v: %v", namePrefix, discordName, cleanedMessage)
+		}
+
+		/* Send the final text to factorio */
+		if fact.FactorioBooted && fact.FactIsRunning {
+			fact.FactChat(output)
+		}
+		cwlog.DoLogGame(output)
 	}
 }

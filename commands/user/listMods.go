@@ -3,6 +3,7 @@ package user
 import (
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 	"ChatWire/support"
 	"strings"
 
@@ -15,10 +16,10 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	buf := ""
-	modList, mErr := support.GetGameMods()
-	if mErr == nil && modList != nil {
+	modList, mErr := modupdate.GetModList()
+	if mErr == nil {
 		for _, mod := range modList.Mods {
-			if strings.EqualFold(mod.Name, "base") {
+			if modupdate.IsBaseMod(mod.Name) {
 				continue
 			}
 			if !mod.Enabled {

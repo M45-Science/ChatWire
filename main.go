@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,8 +20,17 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
+	"ChatWire/factUpdater"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 	"ChatWire/support"
+)
+
+var (
+	discordConnectAttempts int
+	messageHandlerLock     sync.Mutex
+	botReadyAdded          bool
+	hooksAdded             bool
 )
 
 func main() {
@@ -28,8 +38,10 @@ func main() {
 	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands and quit.")
 	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
+	glob.NoDiscord = flag.Bool("noDiscord", false, "Turn off Discord")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
+	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
 	flag.Parse()
 
 	/* Start cw logs */
@@ -43,6 +55,7 @@ func main() {
 	}
 	initMaps()
 	readConfigs()
+	modupdate.ReadModHistory()
 
 	if *cleanDB || *cleanBans {
 		fact.LoadPlayers(false, true, *cleanBans)
@@ -54,7 +67,9 @@ func main() {
 
 	/* Start Discord bot, don't wait for it.
 	 * We want Factorio online even if Discord is down. */
-	go startbot()
+	if !*glob.NoDiscord {
+		go startbotA()
+	}
 
 	fact.SetupSchedule()
 	fact.LoadPlayers(true, false, false)
@@ -62,11 +77,19 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
-	go support.MainLoops()
-	go support.HandleChat()
+	if !*glob.NoDiscord {
+		go support.MainLoops()
+		go support.HandleChat()
+	}
 
-	if cfg.Local.Options.AutoStart {
+	//If autolaunch is off, get current factorio version
+	if cfg.Local.Options.AutoStart && !*glob.NoAutoLaunch {
 		fact.SetAutolaunch(true, false)
+	} else if *glob.NoAutoLaunch {
+		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
+		factUpdater.GetFactorioVersion(info)
+		fact.FactorioVersion = info.VersInt.IntToString()
+		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
 	}
 
 	/* Wait here for process signals */
@@ -85,11 +108,7 @@ func main() {
 	fact.DoExit(false)
 }
 
-var DiscordConnectAttempts int
-
-var botReadyAdded bool
-
-func startbot() {
+func startbotA() {
 
 	/* Check if Discord token is set */
 	if cfg.Global.Discord.Token == "" {
@@ -107,34 +126,37 @@ func startbot() {
 	 * Discord will invalidate the token if there are too many connection attempts.
 	 */
 	if erra != nil {
-		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", erra)
-		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
-		DiscordConnectAttempts++
+		cwlog.DoLogCW("An error occurred when attempting to CREATE the Discord session. Details: %v", erra)
+		time.Sleep(time.Duration(discordConnectAttempts*5) * time.Second)
+		discordConnectAttempts++
 
-		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
-			startbot()
+		if discordConnectAttempts < constants.MaxDiscordAttempts {
+			go startbotA()
 		}
 		return
 	}
+	startbotB(bot)
+}
 
+func startbotB(bot *discordgo.Session) {
 	/* We need a few intents to detect discord users and roles */
 	bot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged | discordgo.IntentsGuildPresences | discordgo.IntentsGuildMembers)
 
 	/* This is called when the connection is verified */
 	if !botReadyAdded {
 		botReadyAdded = true
-		bot.AddHandler(BotReady)
+		bot.AddHandler(botReady)
 	}
 	errb := bot.Open()
 
-	/* This handles error after the inital connection */
+	/* This handles error after the initial connection */
 	if errb != nil {
-		cwlog.DoLogCW("An error occurred when attempting to create the Discord session. Details: %v", errb)
-		time.Sleep(time.Duration(DiscordConnectAttempts*5) * time.Second)
-		DiscordConnectAttempts++
+		cwlog.DoLogCW("An error occurred when attempting to OPEN the Discord session. Details: %v", errb)
+		time.Sleep(time.Duration(discordConnectAttempts*5) * time.Second)
+		discordConnectAttempts++
 
-		if DiscordConnectAttempts < constants.MaxDiscordAttempts {
-			startbot()
+		if discordConnectAttempts < constants.MaxDiscordAttempts {
+			go startbotB(bot)
 		}
 		return
 	}
@@ -143,9 +165,7 @@ func startbot() {
 	bot.LogLevel = discordgo.LogWarning
 }
 
-var hooksAdded bool
-
-func BotReady(s *discordgo.Session, r *discordgo.Ready) {
+func botReady(s *discordgo.Session, r *discordgo.Ready) {
 	if s != nil {
 		/* Save Discord descriptor, we need it */
 		disc.DS = s
@@ -198,10 +218,13 @@ func BotReady(s *discordgo.Session, r *discordgo.Ready) {
 	//Only on first connect
 	if !support.BotIsReady {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
+		if fact.FactIsRunning || fact.FactorioBooted {
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" was already online.", glob.COLOR_GREEN)
+		}
 	}
 
 	//Reset attempt count, we are fully connected.
-	DiscordConnectAttempts = 0
+	discordConnectAttempts = 0
 	support.BotIsReady = true
 }
 

@@ -6,12 +6,16 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
+	glob.UpdatersLock.Lock()
+	defer glob.UpdatersLock.Unlock()
+
 	glob.UpdateMessage = nil
 
 	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
@@ -24,12 +28,14 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 		info.VersInt = *newVersion
 		err = fullPackage(info)
 		if err != nil {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status", "Install failed: "+err.Error(), glob.COLOR_CYAN)
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
+		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Complete", "Factorio installed.", glob.COLOR_CYAN)
 		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false, false
 	}
 
-	err := getFactorioVersion(info)
+	err := GetFactorioVersion(info)
 	if err != nil {
 		return info, fmt.Sprintf("Unable to get Factorio version: %v", err.Error()), true, false
 	}
@@ -47,6 +53,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 		info.VersInt = *newVersion
 		err := fullPackage(info)
 		if err != nil {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status", "Update failed: "+err.Error(), glob.COLOR_CYAN)
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
 
@@ -60,19 +67,16 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 
 func quickLatest(info *InfoData) (*versionInts, error) {
 
-	FetchLock.Lock()
-	defer FetchLock.Unlock()
-
-	body, _, err := HttpGet(releaseURL)
+	body, _, err := HttpGet(false, releaseURL, true)
 	if err != nil {
-		return nil, fmt.Errorf("downloading release list failed: %v", err.Error())
+		return nil, errors.New("downloading release list failed: " + err.Error())
 	}
 
 	//Unmarshal into temporary list
 	tempList := &getLatestData{}
 	err = json.Unmarshal(body, &tempList)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal json data: %v", err.Error())
+		return nil, errors.New("unable to unmarshal json data: " + err.Error())
 	}
 
 	parseStringsLatest(tempList)

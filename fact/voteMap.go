@@ -15,6 +15,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 /* See if the player's vote is valid and add it to the list */
@@ -44,11 +45,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		return
 	}
 
-	path := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
+	path := util.GetSavesFolder()
 
 	/* Check if file is valid and found */
 	autoSaveStr := fmt.Sprintf("%v.zip", arg)
