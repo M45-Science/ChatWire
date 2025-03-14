@@ -17,6 +17,10 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	var gotInterval, gotDate bool
 
 	buf := ""
+	if len(i.ApplicationCommandData().Options) == 0 {
+		buf = "You must pick an option."
+	}
+
 	for _, item := range i.ApplicationCommandData().Options {
 		switch item.Name {
 		case "interval-months":
@@ -27,10 +31,11 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			gotInterval = true
 		case "interval-days":
 			n.Days = int(item.UintValue())
-
+			gotInterval = true
 		case "interval-hours":
 			n.Hours = int(item.UintValue())
 			gotInterval = true
+
 		case "reset-hour":
 			cfg.Local.Options.ResetHour = int(item.UintValue())
 			gotDate = true
@@ -42,6 +47,8 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			cfg.Local.Options.NextReset = time.Time{}
 			gotDate = true
 			gotInterval = true
+		default:
+			buf = buf + "That is not a valid option! : " + item.Name
 		}
 	}
 
@@ -63,16 +70,16 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	if gotInterval {
 		if fact.HasResetInterval() {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset interval changed: "+fact.FormatResetInterval())
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ Map reset interval changed: "+fact.FormatResetInterval())
 		} else {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset interval disabled")
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ Map reset interval disabled")
 		}
 	}
 	if gotDate {
 		if fact.HasResetTime() {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset date changed: "+fact.FormatResetTime()+"("+fact.TimeTillReset()+")")
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ Map reset date changed: "+fact.FormatResetTime()+"("+fact.TimeTillReset()+")")
 		} else {
-			fact.CMS(cfg.Local.Channel.ChatChannel, "❇️ Map reset date disabled")
+			fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ Map reset date disabled")
 		}
 	}
 
