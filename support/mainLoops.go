@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"strings"
@@ -586,33 +587,39 @@ func MainLoops() {
 	/****************************
 	* Check for Factorio updates
 	****************************/
+	//Every 30 minutes
 	go func() {
 
-		time.Sleep(time.Second * 15)
-		for glob.ServerRunning {
-			if cfg.Local.Options.AutoUpdate {
-				glob.UpdateMessage = nil
-				_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
-				if msg != "" {
-					if !err && !upToDate {
-						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
-						cwlog.DoLogCW(msg)
-					} else if err && !upToDate {
-						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
-						cwlog.DoLogCW(msg)
-					}
-				}
-				glob.UpdateMessage = nil
+		if *glob.ProxyURL != "" {
+			ticker := time.NewTicker(1 * time.Millisecond)
+			defer ticker.Stop()
 
-				if *glob.ProxyURL != "" {
-					time.Sleep(time.Minute * 5)
-				} else {
-					time.Sleep(time.Minute * 15)
+			for glob.ServerRunning {
+				<-ticker.C
 
+				if !cfg.Local.Options.AutoUpdate {
+					continue
 				}
 
-			} else {
-				time.Sleep(time.Minute)
+				cTime := time.Now()
+				if cTime.Second() != 0 {
+					continue
+				}
+
+				if cTime.Minute() == 0 || cTime.Minute() == 30 {
+					checkFactUpdate()
+				}
+
+			}
+		} else {
+
+			for glob.ServerRunning {
+				time.Sleep(time.Minute * 30)
+				if cfg.Local.Options.AutoUpdate {
+					checkFactUpdate()
+				}
+				//Add 0 to 5 minutes of sleep
+				time.Sleep(time.Microsecond * time.Duration((rand.Float64() * 60000000 * 5.0)))
 			}
 		}
 	}()
@@ -689,20 +696,45 @@ func MainLoops() {
 	/****************************/
 	/* Check for mod update     */
 	/****************************/
+	//Every 3 hours
 	go func() {
-		time.Sleep(time.Minute)
 
-		for glob.ServerRunning {
-			if cfg.Local.Options.ModUpdate {
-				glob.UpdatersLock.Lock()
-				modupdate.CheckMods(false, false)
-				glob.UpdatersLock.Unlock()
+		if *glob.ProxyURL != "" {
+			ticker := time.NewTicker(1 * time.Second)
+			defer ticker.Stop()
+
+			for glob.ServerRunning {
+				<-ticker.C
+				if cfg.Local.Options.ModUpdate {
+					continue
+				}
+
+				cTime := time.Now()
+				if cTime.Second() != 0 {
+					continue
+				}
+				if cTime.Minute() != 0 {
+					continue
+				}
+				if cTime.Hour()%3 == 0 {
+					glob.UpdatersLock.Lock()
+					modupdate.CheckMods(false, false)
+					glob.UpdatersLock.Unlock()
+				}
 			}
+		} else {
 
-			if *glob.ProxyURL != "" {
-				time.Sleep(time.Minute * 15)
-			} else {
-				time.Sleep(time.Hour * 4)
+			for glob.ServerRunning {
+				time.Sleep(time.Hour * 3)
+
+				if cfg.Local.Options.ModUpdate {
+					glob.UpdatersLock.Lock()
+					modupdate.CheckMods(false, false)
+					glob.UpdatersLock.Unlock()
+				}
+
+				//Add 0 to 5 minutes of sleep
+				time.Sleep(time.Microsecond * time.Duration((rand.Float64() * 60000000 * 5.0)))
 			}
 		}
 	}()
@@ -796,4 +828,19 @@ func MainLoops() {
 
 	go checkHours()
 
+}
+
+func checkFactUpdate() {
+	glob.UpdateMessage = nil
+	_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
+	if msg != "" {
+		if !err && !upToDate {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
+			cwlog.DoLogCW(msg)
+		} else if err && !upToDate {
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
+			cwlog.DoLogCW(msg)
+		}
+	}
+	glob.UpdateMessage = nil
 }
