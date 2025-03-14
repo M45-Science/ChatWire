@@ -35,20 +35,8 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "interval-hours":
 			n.Hours = int(item.UintValue())
 			gotInterval = true
-
-		case "reset-hour":
-			cfg.Local.Options.ResetHour = int(item.UintValue())
-			gotDate = true
-		case "reset-date":
-			buf = buf + parseResetDate(item.StringValue())
-			gotDate = true
-		case "disable":
-			n = cfg.ResetInterval{}
-			cfg.Local.Options.NextReset = time.Time{}
-			gotDate = true
-			gotInterval = true
 		default:
-			buf = buf + "That is not a valid option! : " + item.Name
+			buf = buf + "That is not a valid option: " + item.Name
 		}
 	}
 
@@ -62,6 +50,22 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
 			cfg.Local.Options.NextReset = time.Time{}
 			return
+		}
+	}
+
+	for _, item := range i.ApplicationCommandData().Options {
+		switch item.Name {
+		case "reset-hour":
+			cfg.Local.Options.ResetHour = int(item.UintValue())
+			gotDate = true
+		case "reset-date":
+			buf = buf + parseResetDate(item.StringValue())
+			gotDate = true
+		case "disable":
+			n = cfg.ResetInterval{}
+			cfg.Local.Options.NextReset = time.Time{}
+			gotDate = true
+			gotInterval = true
 		}
 	}
 
