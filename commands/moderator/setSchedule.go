@@ -53,7 +53,6 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		disc.InteractionEphemeralResponse(i, "Schedule", "Schedule disabled.")
 		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ The map reset schedule has been disabled.")
 	}
-
 }
 
 func parseResetDate(input string) string {
@@ -65,5 +64,6 @@ func parseResetDate(input string) string {
 		return "Unable to parse date provided. Format is 'YYYY-MM-DD HH-MM-SS' (24-hour UTC)"
 	}
 	cfg.Local.Options.NextReset = parsedTime
-	return "Date accepted: " + fact.FormatResetTime() + " (" + fact.TimeTillReset() + ")"
+	return "Date accepted: " + fact.FormatResetTime() + " (" + fact.TimeTillReset() + ")\n" +
+		"Changing the interval will override the new reset date."
 }
