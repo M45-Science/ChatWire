@@ -695,30 +695,32 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		},
 	)
 
-	if cfg.Local.Options.SkipReset {
-		availableMaps = append(availableMaps,
-			discordgo.SelectMenuOption{
+	if HasResetInterval() && HasResetTime() {
+		if !cfg.Local.Options.SkipReset {
+			availableMaps = append(availableMaps,
+				discordgo.SelectMenuOption{
 
-				Label:       "SKIP-RESET",
-				Description: "Skip the next map reset.",
-				Value:       "SKIP-RESET",
-				Emoji: &discordgo.ComponentEmoji{
-					Name: "❇️",
+					Label:       "SKIP-RESET",
+					Description: "Skip the next map reset.",
+					Value:       "SKIP-RESET",
+					Emoji: &discordgo.ComponentEmoji{
+						Name: "❇️",
+					},
 				},
-			},
-		)
-	} else {
-		availableMaps = append(availableMaps,
-			discordgo.SelectMenuOption{
+			)
+		} else {
+			availableMaps = append(availableMaps,
+				discordgo.SelectMenuOption{
 
-				Label:       "SKIP-RESET",
-				Description: "ALREADY SKIPPED!",
-				Value:       "ALREADY-SKIPPED",
-				Emoji: &discordgo.ComponentEmoji{
-					Name: "🚫",
+					Label:       "SKIP-RESET",
+					Description: "ALREADY SKIPPED!",
+					Value:       "ALREADY-SKIPPED",
+					Emoji: &discordgo.ComponentEmoji{
+						Name: "🚫",
+					},
 				},
-			},
-		)
+			)
+		}
 	}
 
 	for i := 0; i < numFiles; i++ {
@@ -906,11 +908,17 @@ func DoChangeMap(arg string) {
 		return
 	}
 	if strings.EqualFold(arg, "skip-reset") {
-		if !cfg.Local.Options.SkipReset {
-			cfg.Local.Options.SkipReset = true
-			LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ NOTICE: The upcoming map reset has been skipped.")
-			AdvanceReset()
+		if HasResetInterval() && HasResetTime() {
+			if !cfg.Local.Options.SkipReset {
+				cfg.Local.Options.SkipReset = true
+				cfg.WriteLCfg()
+				LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ NOTICE: The upcoming map reset has been skipped.")
+				AdvanceReset()
+			}
 		}
+		return
+	}
+	if strings.EqualFold(arg, "already-skipped") {
 		return
 	}
 

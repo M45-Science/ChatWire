@@ -52,10 +52,9 @@ func Map_reset(doReport bool) {
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
-		QueueReboot = false                 //Skip queued reboot
-		QueueFactReboot = false             //Skip queued fact reboot
-		DoUpdateFactorio = false            //Skip queued updates
-		cfg.Local.Options.SkipReset = false //Turn off skip reset
+		QueueReboot = false      //Skip queued reboot
+		QueueFactReboot = false  //Skip queued fact reboot
+		DoUpdateFactorio = false //Skip queued updates
 
 		SetAutolaunch(false, false)
 		QuitFactorio("Server rebooting for map reset!")
@@ -169,6 +168,9 @@ func Map_reset(doReport bool) {
 func GenNewMap() string {
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
+
+	cfg.Local.Options.SkipReset = false //Turn off skip reset
+	cfg.WriteLCfg()
 
 	genpath := util.GetSavesFolder()
 	flist, err := filepath.Glob(genpath + "/gen-*.zip")

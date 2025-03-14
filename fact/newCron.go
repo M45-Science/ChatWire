@@ -89,7 +89,6 @@ func AdvanceReset() {
 	newResetTime = newResetTime.Add(time.Duration(s.Hours) * time.Hour)
 	cfg.Local.Options.NextReset = newResetTime.Round(time.Second)
 	SetResetDate()
-
 }
 
 func HasResetInterval() bool {
