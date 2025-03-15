@@ -592,6 +592,7 @@ func downloadMods(downloadList []downloadData) string {
 	return shortBuf
 }
 
+// Add mod history, merge "Added by" and "Installed" entries
 func AddModHistory(newItem ModHistoryItem) {
 
 	defer WriteModHistory()
