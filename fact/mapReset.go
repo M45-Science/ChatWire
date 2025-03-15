@@ -161,7 +161,6 @@ func Map_reset(doReport bool) {
 	VoidAllVotes() /* Void all votes */
 	WriteVotes()
 
-	LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Map reset complete, booting.")
 	SetAutolaunch(true, false)
 }
 
