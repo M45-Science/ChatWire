@@ -838,7 +838,7 @@ func checkFactUpdate() {
 			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
 			cwlog.DoLogCW(msg)
 		} else if err && !upToDate {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
+			//glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
 			cwlog.DoLogCW(msg)
 		}
 	}
