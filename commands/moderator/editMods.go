@@ -51,9 +51,6 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "clear-all-mods":
 			msg = clearAllMods()
 			tmsg = tmsg + msg + "\n"
-		case "updater-blacklist":
-			msg = updaterBlacklist(option.StringValue())
-			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
 			tmsg = tmsg + msg + "\n"
@@ -102,10 +99,6 @@ func GetCombinedModList() ([]modupdate.ModData, error) {
 
 }
 
-func updaterBlacklist(input string) string {
-	return ""
-}
-
 func clearAllMods() string {
 	if fact.FactorioBooted || fact.FactIsRunning {
 		emsg := "Factorio is currently running. You must stop Factorio first."
@@ -145,7 +138,7 @@ func addMod(input string) string {
 				return "The mod " + modName + " is already installed!"
 			}
 		}
-		modupdate.ModHistory = append(modupdate.ModHistory, modupdate.ModHistoryData{
+		modupdate.ModHistory.History = append(modupdate.ModHistory.History, modupdate.ModHistoryItem{
 			Name: mod, Notes: "Added by user", Date: time.Now()})
 		modList.Mods = append(modList.Mods, modupdate.ModData{Name: modName, Enabled: true})
 		if buf != "" {
@@ -293,7 +286,7 @@ func ToggleMod(name string, value bool) string {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
 					installedMods[m].Enabled = value
 
-					modupdate.ModHistory = append(modupdate.ModHistory, modupdate.ModHistoryData{
+					modupdate.ModHistory.History = append(modupdate.ModHistory.History, modupdate.ModHistoryItem{
 						Name: mod.Name, Notes: enableStr(value, true) + " by user", Date: time.Now()})
 					dirty = true
 				} else {

@@ -11,9 +11,14 @@ const (
 	EO_GREATER
 )
 
-var ModHistory []ModHistoryData
+var ModHistory ModHistoryData
 
 type ModHistoryData struct {
+	History   []ModHistoryItem
+	Blacklist []ModHistoryItem
+}
+
+type ModHistoryItem struct {
 	Name, Notes, Version string
 	Date                 time.Time
 }
@@ -30,6 +35,7 @@ type downloadData struct {
 type ModListData struct {
 	Mods []ModData
 }
+
 type ModData struct {
 	Name    string
 	Enabled bool

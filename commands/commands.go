@@ -216,7 +216,7 @@ var cmds = []glob.CommandData{
 			},
 			{
 				Name:        "clear-history",
-				Description: "Clear all mod history",
+				Description: "Clear all mod history and updater blacklist",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
@@ -243,11 +243,6 @@ var cmds = []glob.CommandData{
 				Name:        "clear-all-mods",
 				Description: "Clear entire mod directory (reset)",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
-			},
-			{
-				Name:        "updater-blacklist",
-				Description: "Prevent automatic updates for mods.Names separated by commas to add/remove.",
-				Type:        discordgo.ApplicationCommandOptionString,
 			},
 		},
 	},

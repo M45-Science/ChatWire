@@ -67,7 +67,7 @@ func ReadModHistory() bool {
 	file, err := os.ReadFile(modHistoryFile)
 
 	if file != nil && err == nil {
-		newHist := []ModHistoryData{}
+		newHist := ModHistoryData{}
 
 		err := json.Unmarshal([]byte(file), &newHist)
 		if err != nil {
@@ -578,8 +578,8 @@ func downloadMods(downloadList []downloadData) string {
 		}
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 
-		newUpdate := ModHistoryData{Name: dl.Name, Notes: "Updated", Version: dl.Data.Version, Date: time.Now()}
-		ModHistory = append(ModHistory, newUpdate)
+		newUpdate := ModHistoryItem{Name: dl.Name, Notes: "Updated", Version: dl.Data.Version, Date: time.Now()}
+		ModHistory.History = append(ModHistory.History, newUpdate)
 		WriteModHistory()
 	}
 
