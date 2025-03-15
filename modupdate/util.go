@@ -585,11 +585,32 @@ func downloadMods(downloadList []downloadData) string {
 			Version: dl.Data.Version, Filename: dl.Data.FileName,
 			OldVersion: dl.OldVersion, OldFilename: dl.OldFilename,
 		}
-		ModHistory.History = append(ModHistory.History, newUpdate)
+		AddModHistory(newUpdate)
 		WriteModHistory()
 	}
 
 	return shortBuf
+}
+
+func AddModHistory(newItem ModHistoryItem) {
+
+	defer WriteModHistory()
+
+	if newItem.Notes == "Installed" {
+		for i, item := range ModHistory.History {
+			if item.Name == newItem.Name && strings.HasPrefix(item.Notes, "Added by") {
+				//Transfer notes
+				newItem.Notes = item.Notes
+				ModHistory.History[i] = newItem
+				WriteModHistory()
+				return
+			}
+		}
+	}
+
+	ModHistory.History =
+		append(ModHistory.History, newItem)
+
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {

@@ -16,10 +16,13 @@ func ListHistory() string {
 		buf = buf + fmt.Sprintf("%-5v: %v\n",
 			i+1, item.Name)
 		if item.Notes != "" {
-			buf = buf + "Notes: " + item.Notes + "\n"
+			buf = buf + item.Notes + "\n"
 		}
 		if item.Version != "" {
-			buf = buf + "Version: " + item.Version + "\n"
+			if item.OldVersion != "0.0.0" {
+				buf = buf + item.OldVersion + " -> "
+			}
+			buf = buf + item.Version + "\n"
 		}
 		buf = buf + item.Date.UTC().Format("01-02-2006 03:04 PM") + " UTC\n\n"
 

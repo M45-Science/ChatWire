@@ -51,6 +51,9 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "clear-all-mods":
 			msg = clearAllMods()
 			tmsg = tmsg + msg + "\n"
+		case "mod-update-rollback":
+			msg = modUpdateRollback(i, option.StringValue())
+			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
 			tmsg = tmsg + msg + "\n"
@@ -62,6 +65,11 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		tmsg = "Unknown error"
 	}
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
+}
+
+func modUpdateRollback(i *discordgo.InteractionCreate, value string) string {
+
+	return ""
 }
 
 func GetCombinedModList() ([]modupdate.ModData, error) {
@@ -123,10 +131,7 @@ func addMod(i *discordgo.InteractionCreate, input string) string {
 	mods := strings.Split(input, ",")
 
 	buf := ""
-	modList, err := modupdate.GetModList()
-	if err != nil {
-		return err.Error()
-	}
+	modList, _ := modupdate.GetModList()
 
 	for _, mod := range mods {
 		modName, success := parseModName(mod)
@@ -140,8 +145,9 @@ func addMod(i *discordgo.InteractionCreate, input string) string {
 		}
 		disc.InteractionEphemeralResponseColor(i, "Status", "Adding mods: "+modName, glob.COLOR_CYAN)
 
-		modupdate.ModHistory.History = append(modupdate.ModHistory.History, modupdate.ModHistoryItem{
+		modupdate.AddModHistory(modupdate.ModHistoryItem{
 			Name: mod, Notes: "Added by " + i.Member.User.Username, Date: time.Now()})
+
 		modList.Mods = append(modList.Mods, modupdate.ModData{Name: modName, Enabled: true})
 		if buf != "" {
 			buf = buf + ", "
@@ -288,8 +294,9 @@ func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
 					installedMods[m].Enabled = value
 
-					modupdate.ModHistory.History = append(modupdate.ModHistory.History, modupdate.ModHistoryItem{
+					modupdate.AddModHistory(modupdate.ModHistoryItem{
 						Name: mod.Name, Notes: enableStr(value, true) + " by " + i.Member.User.Username, Date: time.Now()})
+
 					dirty = true
 				} else {
 					emsg = emsg + "The mod '" + mod.Name + "' was already " + enableStr(value, true) + "!"
