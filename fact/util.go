@@ -130,14 +130,14 @@ func SetAutolaunch(autolaunch, report bool) {
 	if !autolaunch && FactAutoStart {
 		FactAutoStart = false
 		if report {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Warning", "Auto-reboot has been turned OFF.", glob.COLOR_RED)
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Auto-reboot has been turned OFF.", glob.COLOR_GREEN)
 		}
 		cwlog.DoLogCW("Autolaunch disabled.")
 	} else if autolaunch && !FactAutoStart {
 		FactAutoStart = true
 		cwlog.DoLogCW("Autolaunch enabled.")
 		if report {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Warning", "Auto-reboot has been ENABLED.", glob.COLOR_RED)
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Auto-reboot has been ENABLED.", glob.COLOR_GREEN)
 		}
 	}
 
