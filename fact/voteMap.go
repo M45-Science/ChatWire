@@ -21,12 +21,8 @@ import (
 /* See if the player's vote is valid and add it to the list */
 func CheckVote(i *discordgo.InteractionCreate, arg string) {
 
-	if strings.EqualFold(arg, "new-map") ||
-		strings.EqualFold(arg, "skip-reset") {
-		if !cfg.Local.Options.MembersOnly &&
-			!cfg.Local.Options.RegularsOnly {
-			return
-		}
+	if strings.EqualFold(arg, "already-skipped") {
+		return
 	}
 
 	glob.VoteBoxLock.Lock()
@@ -77,7 +73,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 	/* Cooldown */
 	if !glob.VoteBox.LastMapChange.IsZero() && time.Since(glob.VoteBox.LastMapChange) < constants.MapCooldownMins*time.Minute {
 		left := (constants.MapCooldownMins * time.Minute).Round(time.Second) - time.Since(glob.VoteBox.LastMapChange)
-		buf := fmt.Sprintf("The map can not be changed for another %v.", left.Round(time.Second).String())
+		buf := fmt.Sprintf("Votes are not allowed for another %v. (cooldown)", left.Round(time.Second).String())
 		disc.InteractionEphemeralResponse(i, "Status", buf)
 		return
 	}

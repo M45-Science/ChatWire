@@ -610,12 +610,9 @@ func DoUpdateChannelName() {
 	URL, found := MakeSteamURL()
 	var newTopic string
 
-	if NextResetUnix > 0 {
+	if HasResetTime() {
 		mpre := "MAP RESET"
-		if cfg.Local.Options.SkipReset {
-			mpre = "(SKIP)"
-		}
-		newTopic = fmt.Sprintf("%v: <t:%v:F>(LOCAL)", mpre, NextResetUnix)
+		newTopic = fmt.Sprintf("%v: <t:%v:F>(LOCAL)", mpre, cfg.Local.Options.NextReset.UTC().Unix())
 	}
 	if found {
 		newTopic = newTopic + ", CONNECT: " + URL
@@ -697,20 +694,34 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 			},
 		},
 	)
-	//Skip reset, not allowed for public maps
-	//if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
-	availableMaps = append(availableMaps,
-		discordgo.SelectMenuOption{
 
-			Label:       "SKIP-RESET",
-			Description: "Skip the next map reset.",
-			Value:       "SKIP-RESET",
-			Emoji: &discordgo.ComponentEmoji{
-				Name: "🚫",
-			},
-		},
-	)
-	//}
+	if HasResetInterval() && HasResetTime() {
+		if !cfg.Local.Options.SkipReset {
+			availableMaps = append(availableMaps,
+				discordgo.SelectMenuOption{
+
+					Label:       "SKIP-RESET",
+					Description: "Skip the next map reset.",
+					Value:       "SKIP-RESET",
+					Emoji: &discordgo.ComponentEmoji{
+						Name: "❇️",
+					},
+				},
+			)
+		} else {
+			availableMaps = append(availableMaps,
+				discordgo.SelectMenuOption{
+
+					Label:       "SKIP-RESET",
+					Description: "ALREADY SKIPPED!",
+					Value:       "ALREADY-SKIPPED",
+					Emoji: &discordgo.ComponentEmoji{
+						Name: "🚫",
+					},
+				},
+			)
+		}
+	}
 
 	for i := 0; i < numFiles; i++ {
 
@@ -892,19 +903,22 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 func DoChangeMap(arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
-
-		/* Turn off skip reset flag */
-		cfg.Local.Options.SkipReset = false
-		cfg.WriteLCfg()
-
 		Map_reset(false)
+		SetResetDate()
 		return
-	} else if strings.EqualFold(arg, "skip-reset") {
-		cfg.Local.Options.SkipReset = true
-		cfg.WriteLCfg()
-
-		msg := "VOTE: The next map reset will be skipped."
-		LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
+	}
+	if strings.EqualFold(arg, "skip-reset") {
+		if HasResetInterval() && HasResetTime() {
+			if !cfg.Local.Options.SkipReset {
+				cfg.Local.Options.SkipReset = true
+				cfg.WriteLCfg()
+				LogGameCMS(true, cfg.Local.Channel.ChatChannel, "❇️ NOTICE: The upcoming map reset has been skipped.")
+				AdvanceReset()
+			}
+		}
+		return
+	}
+	if strings.EqualFold(arg, "already-skipped") {
 		return
 	}
 
@@ -1124,10 +1138,6 @@ func MakeSteamURL() (string, bool) {
 
 /* Program shutdown */
 func DoExit(delay bool) {
-
-	if CronVar != nil {
-		CronVar.Stop()
-	}
 
 	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" shutting down.", glob.COLOR_RED)
 

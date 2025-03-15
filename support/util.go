@@ -10,6 +10,41 @@ import (
 	"time"
 )
 
+var lastDur string
+
+func UpdateDuration() {
+	if fact.HasResetTime() {
+		buf := "/resetdur " + fact.TimeTillReset()
+		if fact.HasResetInterval() {
+			buf = buf + " (" + fact.FormatResetInterval() + ")"
+		}
+		/* Don't write it, if nothing has changed */
+		if !strings.EqualFold(buf, lastDur) {
+			fact.WriteFact(buf)
+		}
+
+		lastDur = buf
+	} else {
+		buf := "/resetdur"
+
+		/* Don't write it, if nothing has changed */
+		if !strings.EqualFold(buf, lastDur) {
+			fact.WriteFact(buf)
+		}
+
+		lastDur = buf
+	}
+}
+
+func UpdateInterval() {
+	/* Config reset-interval */
+	if fact.HasResetInterval() {
+		fact.WriteFact("/resetint " + fact.FormatResetTime())
+	} else {
+		fact.WriteFact("/resetint")
+	}
+}
+
 func checkHours() {
 	for glob.ServerRunning {
 		time.Sleep(time.Second * 15)
@@ -35,7 +70,7 @@ func checkHours() {
 				shutTime = shutTime.Add(time.Minute * 10)
 
 				for fact.NumPlayers > 0 {
-					if time.Until(shutTime) <= time.Second {
+					if time.Now().UTC().Sub(shutTime) <= time.Second {
 						break
 					}
 					if WithinHours() {

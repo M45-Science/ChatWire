@@ -71,7 +71,6 @@ func main() {
 		go startbotA()
 	}
 
-	fact.SetupSchedule()
 	fact.LoadPlayers(true, false, false)
 	disc.ReadRoleList()
 	banlist.ReadBanFile(true)
@@ -219,7 +218,7 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 	if !support.BotIsReady {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
 		if fact.FactIsRunning || fact.FactorioBooted {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" was already online.", glob.COLOR_GREEN)
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" is online.", glob.COLOR_GREEN)
 		}
 	}
 

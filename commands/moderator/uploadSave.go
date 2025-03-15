@@ -56,11 +56,6 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 			"mod-sync failed, attempting to continue.", glob.COLOR_RED)
 		time.Sleep(constants.ErrMsgDelay)
 	}
-	/*modBuf := showSyncMods()
-	if modBuf != "" {
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
-			"Installed mods: "+modBuf, glob.COLOR_CYAN)
-	}*/
 	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, msgTitle,
 		"Checking for mod updates.", glob.COLOR_CYAN)
 	modupdate.CheckMods(true, true)

@@ -65,95 +65,58 @@ var cmds = []glob.CommandData{
 		ModeratorOnly: true},
 	{AppCmd: glob.AppCmdData{
 		Name:        "map-schedule",
-		Description: "Change the automatic map reset schedule.",
+		Description: "Change the map reset interval or date.",
+		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
-				Name:        "preset",
-				Description: "How often to reset the map.",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-				Choices: []glob.ChoiceData{
-					{
-						Name: "three-months",
-					},
-					{
-						Name: "two-months",
-					},
-					{
-						Name: "monthly",
-					},
-					{
-						Name: "twice-monthly",
-					},
-					{
-						Name: "day-of-week",
-					},
-					{
-						Name: "third-dates",
-					},
-					{
-						Name: "odd-dates",
-					},
-					{
-						Name: "daily",
-					},
-					{
-						Name: "no-reset",
-					},
-				},
+				Name:        "interval-months",
+				Description: "Set the number of months in the map reset interval",
+
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(6.0),
 			},
 			{
-				Name:        "day",
-				Description: "FOR DAY-OF-WEEK PRESET ONLY",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Choices: []glob.ChoiceData{
-					{
-						Name:  "monday",
-						Value: "MON",
-					},
-					{
-						Name:  "tuesday",
-						Value: "TUE",
-					},
-					{
-						Name:  "wednesday",
-						Value: "WED",
-					},
-					{
-						Name:  "thursday",
-						Value: "THU",
-					},
-					{
-						Name:  "friday",
-						Value: "FRI",
-					},
-					{
-						Name:  "saturday",
-						Value: "SAT",
-					},
-					{
-						Name:  "sunday",
-						Value: "SUN",
-					},
-					{
-						Name:  "default",
-						Value: "",
-					},
-				},
+				Name:        "interval-weeks",
+				Description: "Set the number of weeks in the map reset interval",
+
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(26.0),
 			},
 			{
-				Name:        "date",
-				Description: "For two-week or monthly schedules.",
+				Name:        "interval-days",
+				Description: "Set the number of days in the map reset interval",
+
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(182.0),
+			},
+			{
+				Name:        "interval-hours",
+				Description: "Set the number of hours in the map reset interval",
+
+				Type:     discordgo.ApplicationCommandOptionInteger,
+				MinValue: glob.Ptr(0.0),
+				MaxValue: glob.Ptr(4320.0),
+			},
+			{
+				Name:        "reset-hour",
+				Description: "Force hour to reset, 24 hour format UTC. USE 0 FOR NONE",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(27)),
+				MinValue:    glob.Ptr(0.0),
+				MaxValue:    glob.Ptr(23.0),
 			},
 			{
-				Name:        "hour",
-				Description: "Hour to reset. (24-hour UTC)",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(23)),
+				Name:        "disable",
+				Description: "Turn automatic map resets off",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "reset-date",
+				Description: "Temporarily Force Reset-Date (YYYY-MM-DD HH-MM-SS) 24H-UTC",
+
+				Type: discordgo.ApplicationCommandOptionString,
 			},
 		},
 	},
@@ -338,15 +301,15 @@ var cmds = []glob.CommandData{
 				Name:        "start-hour",
 				Description: "hour to start server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(23)),
+				MinValue:    glob.Ptr(0.0),
+				MaxValue:    glob.Ptr(23.0),
 			},
 			{
 				Name:        "end-hour",
 				Description: "hour to stop server (24-hour UTC)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
-				MinValue:    glob.Ptr(float64(0)),
-				MaxValue:    glob.Ptr(float64(23)),
+				MinValue:    glob.Ptr(0.0),
+				MaxValue:    glob.Ptr(23.0),
 			},
 			{
 				Name:        "enabled",
@@ -466,7 +429,7 @@ var cmds = []glob.CommandData{
 
 	{AppCmd: glob.AppCmdData{
 		Name:        "vote-map",
-		Description: "Vote for a new/previous map. Requires TWO vote points.",
+		Description: "PRESS ENTER to get a list of maps. Requires TWO vote points.",
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{

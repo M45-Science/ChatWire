@@ -385,15 +385,6 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.SoftModOptions.InjectSoftMod,
 	},
 	{
-		Name:      "map-reset-skip",
-		ShortDesc: "Map reset skip",
-		Desc:      "Skip the next map reset.",
-		Type:      TYPE_BOOL,
-		DefBool:   false,
-
-		BData: &cfg.Local.Options.SkipReset,
-	},
-	{
 		Name:      "Speed",
 		ShortDesc: "Game Speed",
 		Desc:      "Set the game speed (1.0 normal)",
