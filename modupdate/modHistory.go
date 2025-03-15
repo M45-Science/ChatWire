@@ -49,18 +49,7 @@ func ListHistory() string {
 		bufb = "Updater blacklist is empty."
 	}
 
-	buf := bufa + "\n" + bufb + "\n"
-	if histCount > 0 {
-		buf = buf + "To add an item from the mod history to the updater blacklist, type `/edit-mods mod-history add <number>`\n"
-		buf = buf + "Alternatively, you can type the *name** of the mod instead of the item number.\n"
-	}
-	if blackCount > 0 {
-		buf = buf + "To remove an item from the blacklist type `/edit-mods mod-history remove <number>`\n"
-	}
-	if histCount > maxItemsPage {
-		buf = buf + "To see more history, type `/edit-mods mod-history page <number>`\n"
-	}
-	return buf
+	return bufa + "\n" + bufb + "\n"
 }
 
 func ClearHistory() string {
