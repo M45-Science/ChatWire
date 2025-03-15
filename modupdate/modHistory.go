@@ -28,7 +28,7 @@ func ListHistory() string {
 		}
 	}
 	if bufa == "" {
-		bufa = "History is empty."
+		bufa = "Mod history is empty."
 	}
 	bufb := ""
 	var blackCount = 0
@@ -46,7 +46,7 @@ func ListHistory() string {
 		blackCount++
 	}
 	if bufb == "" {
-		bufb = "Blacklist is empty."
+		bufb = "Updater blacklist is empty."
 	}
 
 	buf := bufa + "\n" + bufb + "\n"
