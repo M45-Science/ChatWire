@@ -47,7 +47,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 			continue
 		}
 		newInfo, _ := DownloadModInfo(item.Name)
-		newInfo.oldFilename = item.OldFilename
+		newInfo.filename = item.Filename
 		detailList = append(detailList, newInfo)
 	}
 

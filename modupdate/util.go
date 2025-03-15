@@ -285,7 +285,7 @@ func GetModFiles() ([]modZipInfo, error) {
 			if modInfo == nil {
 				continue
 			}
-			modInfo.OldFilename = mod.Name()
+			modInfo.Filename = mod.Name()
 			modFileList = append(modFileList, *modInfo)
 		}
 	}
@@ -567,8 +567,6 @@ func downloadMods(downloadList []downloadData) string {
 				errorLog = emsg
 				continue
 			}
-		} else {
-			//cwlog.DoLogCW("No old file found for: " + dl.Data.FileName)
 		}
 
 		downloadList[d].Complete = true
@@ -578,7 +576,15 @@ func downloadMods(downloadList []downloadData) string {
 		}
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 
-		newUpdate := ModHistoryItem{Name: dl.Name, Notes: "Updated", Version: dl.Data.Version, Date: time.Now()}
+		noteMsg := "Installed"
+		if dl.OldFilename != "" {
+			noteMsg = "Updated"
+		}
+		newUpdate := ModHistoryItem{
+			Name: dl.Name, Notes: noteMsg, Date: time.Now(),
+			Version: dl.Data.Version, Filename: dl.Data.FileName,
+			OldVersion: dl.OldVersion, OldFilename: dl.OldFilename,
+		}
 		ModHistory.History = append(ModHistory.History, newUpdate)
 		WriteModHistory()
 	}
@@ -706,11 +712,17 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 		modFileNotFound := os.IsNotExist(err)
 
 		newDL := downloadData{
-			Name:        portalItem.Name,
-			Title:       portalItem.Title,
-			OldFilename: installedItem.OldFilename,
-			Data:        candidateData,
-			doDownload:  modFileNotFound}
+			Name:  portalItem.Name,
+			Title: portalItem.Title,
+
+			Filename:    portalItem.filename,
+			OldFilename: installedItem.Filename,
+
+			OldVersion: installedItem.Version,
+			Version:    candidateData.Version,
+
+			Data:       candidateData,
+			doDownload: modFileNotFound}
 
 		return newDL
 	}

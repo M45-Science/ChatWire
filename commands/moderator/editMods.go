@@ -41,13 +41,13 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "list-mods":
 			tmsg = tmsg + listMods()
 		case "enable-mod":
-			msg = ToggleMod(option.StringValue(), true)
+			msg = ToggleMod(i, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
 		case "disable-mod":
-			msg = ToggleMod(option.StringValue(), false)
+			msg = ToggleMod(i, option.StringValue(), false)
 			tmsg = tmsg + msg + "\n"
 		case "add-mod":
-			tmsg = tmsg + addMod(option.StringValue())
+			tmsg = tmsg + addMod(i, option.StringValue())
 		case "clear-all-mods":
 			msg = clearAllMods()
 			tmsg = tmsg + msg + "\n"
@@ -117,7 +117,7 @@ func clearAllMods() string {
 	return "All mods, settings and old mods were deleted."
 }
 
-func addMod(input string) string {
+func addMod(i *discordgo.InteractionCreate, input string) string {
 
 	input = strings.ReplaceAll(input, " ", "")
 	mods := strings.Split(input, ",")
@@ -138,8 +138,10 @@ func addMod(input string) string {
 				return "The mod " + modName + " is already installed!"
 			}
 		}
+		disc.InteractionEphemeralResponseColor(i, "Status", "Adding mods: "+modName, glob.COLOR_CYAN)
+
 		modupdate.ModHistory.History = append(modupdate.ModHistory.History, modupdate.ModHistoryItem{
-			Name: mod, Notes: "Added by user", Date: time.Now()})
+			Name: mod, Notes: "Added by " + i.Member.User.Username, Date: time.Now()})
 		modList.Mods = append(modList.Mods, modupdate.ModData{Name: modName, Enabled: true})
 		if buf != "" {
 			buf = buf + ", "
@@ -254,7 +256,7 @@ func listMods() string {
 	return ebuf + dbuf
 }
 
-func ToggleMod(name string, value bool) string {
+func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 	if fact.FactorioBooted || fact.FactIsRunning {
 		emsg := "Factorio is currently running. You must stop Factorio first."
 		return emsg
@@ -287,7 +289,7 @@ func ToggleMod(name string, value bool) string {
 					installedMods[m].Enabled = value
 
 					modupdate.ModHistory.History = append(modupdate.ModHistory.History, modupdate.ModHistoryItem{
-						Name: mod.Name, Notes: enableStr(value, true) + " by user", Date: time.Now()})
+						Name: mod.Name, Notes: enableStr(value, true) + " by " + i.Member.User.Username, Date: time.Now()})
 					dirty = true
 				} else {
 					emsg = emsg + "The mod '" + mod.Name + "' was already " + enableStr(value, true) + "!"

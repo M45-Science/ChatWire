@@ -66,7 +66,7 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 		for _, mod := range mfile {
 			if strings.EqualFold(mod.Name, item.Name) {
-				modsList = append(modsList, modPath+mod.OldFilename)
+				modsList = append(modsList, modPath+mod.Filename)
 				modFiles++
 			}
 		}

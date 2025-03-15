@@ -19,14 +19,18 @@ type ModHistoryData struct {
 }
 
 type ModHistoryItem struct {
-	Name, Notes, Version string
-	Date                 time.Time
+	Name, Notes, Version, OldVersion string
+	Filename, OldFilename            string
+	Date                             time.Time
 }
 
 type downloadData struct {
-	Name, Title, OldFilename string
-	Data                     modReleases
-	Complete                 bool
+	Name, Title           string
+	Filename, OldFilename string
+	Data                  modReleases
+	Complete              bool
+
+	Version, OldVersion string
 
 	doDownload bool
 	wasDep     bool
@@ -67,7 +71,7 @@ type modPortalFullData struct {
 	Title             string        `json:"title"`
 	UpdatedAt         time.Time     `json:"updated_at"`
 
-	oldFilename string `json:"-"`
+	filename string `json:"-"`
 }
 
 type modImages struct {
@@ -109,6 +113,7 @@ type modZipInfo struct {
 	Dependencies        []string `json:"dependencies"`
 	SpaceTravelRequired bool     `json:"space_travel_required"`
 
-	OldFilename string `json:"-"`
-	Enabled     bool   `json:"-"`
+	Filename    string
+	OldFilename string
+	Enabled     bool `json:"-"`
 }
