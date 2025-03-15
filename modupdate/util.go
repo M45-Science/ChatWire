@@ -602,7 +602,6 @@ func AddModHistory(newItem ModHistoryItem) {
 				//Transfer notes
 				newItem.Notes = item.Notes
 				ModHistory.History[i] = newItem
-				WriteModHistory()
 				return
 			}
 		}
