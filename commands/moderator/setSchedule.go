@@ -35,8 +35,6 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "interval-hours":
 			n.Hours = int(item.UintValue())
 			gotInterval = true
-		default:
-			buf = buf + "That is not a valid option: " + item.Name
 		}
 	}
 
