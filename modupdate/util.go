@@ -728,8 +728,21 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 		}
 	}
 	if found {
+		//Check if mod is already present in old mods directory before downloading
+		//This is great for rolling back to an older version without downloading
+		oldMod := util.GetModsFolder() + constants.OldModsDir + "/" + candidateData.FileName
+		_, err := os.Stat(oldMod)
+		oldModFileNotFound := os.IsNotExist(err)
+		if !oldModFileNotFound {
+			newMod := util.GetModsFolder() + candidateData.FileName
+			err = os.Rename(oldMod, newMod)
+			if err != nil {
+				cwlog.DoLogCW("Unable to move mod from old mods directory.")
+			}
+		}
+
 		//Check if mod is already present before downloading
-		_, err := os.Stat(util.GetModsFolder() + candidateData.FileName)
+		_, err = os.Stat(util.GetModsFolder() + candidateData.FileName)
 		modFileNotFound := os.IsNotExist(err)
 
 		newDL := downloadData{
