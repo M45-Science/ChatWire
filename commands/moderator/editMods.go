@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -52,7 +53,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			msg = clearAllMods()
 			tmsg = tmsg + msg + "\n"
 		case "mod-update-rollback":
-			msg = modUpdateRollback(i, option.StringValue())
+			msg = modUpdateRollback(option.UintValue())
 			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
@@ -67,9 +68,41 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponseColor(i, "Status", tmsg, glob.COLOR_CYAN)
 }
 
-func modUpdateRollback(i *discordgo.InteractionCreate, value string) string {
+func modUpdateRollback(value uint64) string {
+	/*
+	 * Current plan:
+	 * Take input of item number, find it
+	 * Make chain of changes to get back
+	 * Display list of changes to make, ask for confirm
+	 * Stop factorio for changes, with reason note
+	 * Apply changes and disable mod update automatically and NOTE UPDATES ARE DISABLED
+	 */
 
-	return ""
+	numHist := uint64(len(modupdate.ModHistory.History))
+	if value < 1 || value > numHist {
+		msg := modupdate.ListHistory()
+		return msg + "\nThat isn't a valid mod history number, please check again."
+	}
+
+	//Just in case
+	if r := recover(); r != nil {
+		return fmt.Sprintf("Unexpected error: %v", r)
+	}
+
+	buf := ""
+	var rollbackList []modupdate.ModHistoryItem
+	for x := value; x < numHist; x++ {
+		rollbackList = append(rollbackList, modupdate.ModHistory.History[x])
+		buf = buf + modupdate.ModHistory.History[x].Filename + " to " + modupdate.ModHistory.History[x].OldFilename + "\n"
+	}
+	if rollbackList != nil {
+		//
+	}
+
+	if buf == "" {
+		buf = "Not able to roll back?"
+	}
+	return buf
 }
 
 func GetCombinedModList() ([]modupdate.ModData, error) {

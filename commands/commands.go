@@ -244,6 +244,11 @@ var cmds = []glob.CommandData{
 				Description: "Clear entire mod directory (reset)",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
+			{
+				Name:        "mod-update-rollback",
+				Description: "Revert mod updates if there is an issue.",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+			},
 		},
 	},
 		Function: moderator.EditMods, ModeratorOnly: true},
