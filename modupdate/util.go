@@ -369,7 +369,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-const rd = true
+const rd = false
 
 func resolveModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
