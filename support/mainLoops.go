@@ -592,7 +592,6 @@ func MainLoops() {
 
 		if *glob.ProxyURL != "" {
 			ticker := time.NewTicker(1 * time.Second)
-			defer ticker.Stop()
 
 			for glob.ServerRunning {
 				<-ticker.C
@@ -700,12 +699,11 @@ func MainLoops() {
 	go func() {
 
 		if *glob.ProxyURL != "" {
-			ticker := time.NewTicker(1 * time.Second)
-			defer ticker.Stop()
+			ticker := time.NewTicker(time.Second)
 
 			for glob.ServerRunning {
 				<-ticker.C
-				if cfg.Local.Options.ModUpdate {
+				if !cfg.Local.Options.ModUpdate {
 					continue
 				}
 
