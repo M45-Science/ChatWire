@@ -609,6 +609,9 @@ func AddModHistory(newItem ModHistoryItem) {
 	}
 
 	for _, item := range ModHistory.History {
+		if item.BootItem {
+			continue
+		}
 		if item.Name == newItem.Name {
 			if item.Version == newItem.Version {
 				//Duplicate entry

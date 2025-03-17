@@ -29,8 +29,12 @@ func ListHistory() string {
 			break
 		}
 
-		buf = buf + fmt.Sprintf("**%4v: %v**\n",
-			i+1, item.Name)
+		if item.Name == "Factorio booted" {
+			buf = buf + item.Name + "\n"
+		} else {
+			buf = buf + fmt.Sprintf("**%4v: %v**\n",
+				i+1, item.Name)
+		}
 		if item.Notes != "" {
 			buf = buf + item.Notes + "\n"
 		}
@@ -101,9 +105,9 @@ func ModUpdateRollback(value uint64) string {
 		item := ModHistory.History[x]
 
 		rollbackList = append(rollbackList, item)
-		if ModHistory.History[x].OldFilename != "" {
+		if item.OldFilename != "" {
 			buf = buf + "Downgrade " + item.Name + ": " + item.Version + " --> " + item.OldVersion + "\n"
-		} else {
+		} else if item.Name != "Factorio booted" {
 			buf = buf + "Remove " + item.Name + "-" + item.Version + "\n"
 		}
 	}

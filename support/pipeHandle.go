@@ -19,6 +19,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 	"ChatWire/sclean"
 	"ChatWire/util"
 )
@@ -672,6 +673,9 @@ func handleFactReady(input *handleData) bool {
 		fact.FactIsRunning = false
 		fact.SetFactRunning(true, true)
 
+		newHist := modupdate.ModHistoryItem{Name: "Factorio booted", Date: time.Now(), BootItem: true}
+		modupdate.AddModHistory(newHist)
+
 		fact.WriteFact("/sversion")
 		fact.WriteFact(glob.OnlineCommand)
 	}
@@ -867,6 +871,10 @@ func handleCrashes(input *handleData) bool {
 		/* Mod Errors */
 		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua error and will reboot.**")
+
+			newHist := modupdate.ModHistoryItem{Name: "Factorio closed with a lua error.", Date: time.Now()}
+			modupdate.AddModHistory(newHist)
+
 			fact.SetFactRunning(false, true)
 			return true
 		}
