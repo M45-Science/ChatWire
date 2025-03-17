@@ -44,9 +44,14 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	detailList := []modPortalFullData{}
 	for _, item := range installedMods {
 		if IsBaseMod(item.Name) {
+
 			continue
 		}
-		newInfo, _ := DownloadModInfo(item.Name)
+		newInfo, err := DownloadModInfo(item.Name)
+		if err != nil {
+			return false, err
+		}
+
 		newInfo.filename = item.Filename
 		detailList = append(detailList, newInfo)
 	}
@@ -97,12 +102,14 @@ func CheckMods(force bool, reportNone bool) {
 
 	updated, err := CheckModUpdates(false)
 	if reportNone {
+		title := modUpdateTitle
 		buf := ""
 		if err != nil {
 			buf = err.Error()
+			title = "Error"
 		}
 		if buf != "" {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, title, buf, glob.COLOR_CYAN)
 		}
 	}
 	if updated && err == nil {
