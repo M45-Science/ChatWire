@@ -75,7 +75,7 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 				return nil, "", errors.New("data ended early")
 			}
 		} else {
-			return nil, "", errors.New("content length did not match")
+			return nil, "", errors.New("proxy did not supply content length")
 		}
 	} else {
 		if res.ContentLength > 0 {
