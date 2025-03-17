@@ -608,6 +608,15 @@ func AddModHistory(newItem ModHistoryItem) {
 		}
 	}
 
+	for _, item := range ModHistory.History {
+		if item.Name == newItem.Name {
+			if item.Version == newItem.Version {
+				//Duplicate entry
+				return
+			}
+		}
+	}
+
 	ModHistory.History =
 		append(ModHistory.History, newItem)
 
