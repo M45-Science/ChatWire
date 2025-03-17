@@ -158,15 +158,25 @@ func versionToInt(data string) (intVersion, error) {
 
 func IsBaseMod(dep string) bool {
 	//Add detection of equality operators
-	if strings.EqualFold(dep, "base") ||
-		strings.EqualFold(dep, "elevated-rails") ||
-		strings.EqualFold(dep, "quality") ||
-		strings.EqualFold(dep, "space-age") {
+	if dep == "base" ||
+		dep == "elevated-rails" ||
+		dep == "quality" ||
+		dep == "space-age" {
 		return true
 	}
 	return false
 }
 
+func IsBasePrefix(dep string) bool {
+	//Add detection of equality operators
+	if strings.HasPrefix(dep, "base") ||
+		strings.HasPrefix(dep, "elevated-rails") ||
+		strings.HasPrefix(dep, "quality") ||
+		strings.HasPrefix(dep, "space-age") {
+		return true
+	}
+	return false
+}
 func GetModList() (ModListData, error) {
 	path := util.GetModsFolder() + constants.ModListName
 
@@ -359,7 +369,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-const rd = false
+const rd = true
 
 func resolveModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
@@ -371,19 +381,33 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 				cwlog.DoLogCW(dl.Name + ": dep: " + dep)
 			}
 
+			//Optional dep
 			if strings.Contains(dep, "?") {
 				if rd {
 					cwlog.DoLogCW(dl.Name + ": Skipping optional dep: " + dep)
 				}
 				continue
 			}
+			//~ operator not applicable here
 			dep = strings.TrimPrefix(dep, "~")
+			//Just in case
 			dep = strings.TrimSpace(dep)
 
+			depName := dep
+			versionNeeded := ""
+			equalityOperator := ""
+			requiresVersion := false
 			parts := strings.Split(dep, " ")
 			numParts := len(parts)
 
-			if IsBaseMod(parts[0]) {
+			if numParts >= 3 {
+				requiresVersion = true
+				versionNeeded = parts[numParts-1]
+				equalityOperator = parts[numParts-2]
+				depName = strings.Join(parts[:numParts-2], " ")
+			}
+
+			if IsBaseMod(depName) {
 				if rd {
 					cwlog.DoLogCW(dl.Name + ": Skipping base mod: " + dep)
 				}
@@ -395,7 +419,7 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 					cwlog.DoLogCW(dl.Name + ": checking for incompatible mods: " + dep)
 				}
 				for m, mod := range downloadList {
-					if mod.Name == parts[0] {
+					if mod.Name == depName {
 						downloadList[m].doDownload = false
 						emsg := "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
 						errStr = errStr + emsg
@@ -405,50 +429,66 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 				continue
 			}
 
+			//Check locally for deps
+			if rd {
+				cwlog.DoLogCW(dl.Name + ": Checking locally for deps")
+			}
 			foundDep := false
 			for _, mod := range downloadList {
-				if strings.Contains(mod.Name, "!") {
-					continue
-				}
 				//Check if dependency already met
-				if mod.Name == parts[0] {
+				if mod.Name == depName {
 					//If we require a specific version
-					if numParts == 3 {
-						eq := parseOperator(parts[1])
-						rejectDep, err := checkVersion(eq, parts[2], mod.Data.Version)
+					if requiresVersion {
+						eq := parseOperator(equalityOperator)
+						rejectDep, err := checkVersion(eq, versionNeeded, mod.Data.Version)
 						if err != nil {
 							cwlog.DoLogCW("Unable to parse dependency version:" + dl.Name + ": " + dep)
 							continue
 						}
 						if !rejectDep {
 							if rd {
-								cwlog.DoLogCW(dl.Name + ": rejecting dep: " + dep)
+								cwlog.DoLogCW(dl.Name + ": rejecting dep version: " + dep)
 							}
 							foundDep = true
 							break
 						}
 					} else {
 						//Dependency met
+						if rd {
+							cwlog.DoLogCW(dl.Name + ": Dependency met: " + dep)
+						}
 						foundDep = true
 						break
 					}
 				}
 			}
 			if !foundDep {
-				//Unmet dep
-				newInfo, err := DownloadModInfo(parts[0])
-				if err != nil {
-					cwlog.DoLogCW("Unable to download mod info for: " + parts[0])
+				if IsBaseMod(depName) || IsBasePrefix(depName) {
 					continue
 				}
-				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
+				if rd {
+					cwlog.DoLogCW(depName + ": Dependency UNMET")
+				}
+				newInfo, err := DownloadModInfo(depName)
+				if err != nil {
+					cwlog.DoLogCW("Unable to download mod info for: " + depName)
+					continue
+				}
+				if rd {
+					cwlog.DoLogCW("%v: dep %v info: %v", dl.Name, dep, newInfo.Name)
+				}
+				vn := "0.0.0"
+				if versionNeeded != "" {
+					vn = versionNeeded
+				}
+				newDL := findModUpgrade(newInfo, modZipInfo{Name: depName, Version: vn})
+				if rd {
+					cwlog.DoLogCW("%v: dep %v upgrade: %v-%v", dl.Name, dep, newDL.Name, newDL.Version)
+				}
 				newDL.wasDep = true
 				if newDL.Name != "" {
+					cwlog.DoLogCW("Download added: %v-%v", newDL.Name, newDL.Version)
 					downloadList = addDownload(newDL, downloadList)
-				}
-			} else {
-				if rd {
-					cwlog.DoLogCW(dl.Name + ": already have dep: " + dep)
 				}
 			}
 		}
@@ -497,7 +537,7 @@ func downloadMods(downloadList []downloadData) string {
 			continue
 		}
 
-		mURL := fmt.Sprintf(displayURL, url.QueryEscape(dl.Name))
+		mURL := fmt.Sprintf(displayURL, url.PathEscape(dl.Name))
 		longBuf := "[" + dl.Title + "-" + dl.Data.Version + "](" + mURL + ")"
 
 		buf := ""
@@ -682,10 +722,12 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 		return modPortalFullData{}, errors.New("this is a base-game mod")
 	}
 
+	name = url.PathEscape(name)
+
 	URL := fmt.Sprintf(modPortalURL, name)
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
-		emsg := "Mod info request failed: " + err.Error()
+		emsg := "Mod info request for " + name + " failed: " + err.Error()
 		cwlog.DoLogCW(emsg)
 		return modPortalFullData{}, errors.New(emsg)
 	}
