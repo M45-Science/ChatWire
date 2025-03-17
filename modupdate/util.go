@@ -416,7 +416,11 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 			}
 			if !foundDep {
 				//Unmet dep
-				newInfo, _ := DownloadModInfo(parts[0])
+				newInfo, err := DownloadModInfo(parts[0])
+				if err != nil {
+					cwlog.DoLogCW("Unable to download mod info for: " + parts[0])
+					continue
+				}
 				newDL := findModUpgrade(newInfo, modZipInfo{Name: parts[0], Version: "0.0.0"})
 				newDL.wasDep = true
 				if newDL.Name != "" {
@@ -478,6 +482,8 @@ func downloadMods(downloadList []downloadData) string {
 		} else {
 			buf = fmt.Sprintf("Downloading: %v", longBuf)
 		}
+		cwlog.DoLogCW(buf)
+
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
 
 		if errorLog != "" {
@@ -487,7 +493,6 @@ func downloadMods(downloadList []downloadData) string {
 
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
-		cwlog.DoLogCW("Downloading: " + dl.Name)
 		data, _, err := factUpdater.HttpGet(false, downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			emsg := "Unable to fetch URL"
