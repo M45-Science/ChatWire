@@ -69,9 +69,21 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 	}
 
 	//Check data length
-	if res.ContentLength >= 0 {
-		if len(body) != int(res.ContentLength) {
-			return nil, "", errors.New("data ended early")
+	if *glob.ProxyURL != "" {
+		if res.ContentLength > 0 {
+			if len(body) != int(res.ContentLength) {
+				return nil, "", errors.New("data ended early")
+			}
+		} else {
+			return nil, "", errors.New("content length did not match")
+		}
+	} else {
+		if res.ContentLength > 0 {
+			if len(body) != int(res.ContentLength) {
+				return nil, "", errors.New("data ended early")
+			}
+		} else if res.ContentLength != -1 {
+			return nil, "", errors.New("content length did not match")
 		}
 	}
 
