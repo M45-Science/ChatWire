@@ -91,7 +91,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 /* Read entire mod folder */
 func CheckMods(force bool, reportNone bool) {
 
-	if !cfg.Local.Options.AutoUpdate && !force {
+	if !cfg.Local.Options.ModUpdate && !force {
 		return
 	}
 
