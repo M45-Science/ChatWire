@@ -359,13 +359,22 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
+const rd = false
+
 func resolveModDependencies(downloadList []downloadData) ([]downloadData, error) {
 
 	var errStr string
 	//Check for unmet dependencies, incompatabilites, etc.
 	for _, dl := range downloadList {
 		for _, dep := range dl.Data.InfoJSON.Dependencies {
+			if rd {
+				cwlog.DoLogCW(dl.Name + ": dep: " + dep)
+			}
+
 			if strings.Contains(dep, "?") {
+				if rd {
+					cwlog.DoLogCW(dl.Name + ": Skipping optional dep: " + dep)
+				}
 				continue
 			}
 			dep = strings.TrimPrefix(dep, "~")
@@ -375,10 +384,16 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 			numParts := len(parts)
 
 			if IsBaseMod(parts[0]) {
+				if rd {
+					cwlog.DoLogCW(dl.Name + ": Skipping base mod: " + dep)
+				}
 				continue
 			}
 
 			if strings.Contains(dep, "!") {
+				if rd {
+					cwlog.DoLogCW(dl.Name + ": checking for incompatible mods: " + dep)
+				}
 				for m, mod := range downloadList {
 					if mod.Name == parts[0] {
 						downloadList[m].doDownload = false
@@ -396,7 +411,7 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 					continue
 				}
 				//Check if dependency already met
-				if mod.Name == dl.Name {
+				if mod.Name == parts[0] {
 					//If we require a specific version
 					if numParts == 3 {
 						eq := parseOperator(parts[1])
@@ -406,6 +421,9 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 							continue
 						}
 						if !rejectDep {
+							if rd {
+								cwlog.DoLogCW(dl.Name + ": rejecting dep: " + dep)
+							}
 							foundDep = true
 							break
 						}
@@ -427,6 +445,10 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 				newDL.wasDep = true
 				if newDL.Name != "" {
 					downloadList = addDownload(newDL, downloadList)
+				}
+			} else {
+				if rd {
+					cwlog.DoLogCW(dl.Name + ": already have dep: " + dep)
 				}
 			}
 		}
