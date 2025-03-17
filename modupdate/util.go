@@ -382,7 +382,9 @@ func resolveModDependencies(downloadList []downloadData) ([]downloadData, error)
 				for m, mod := range downloadList {
 					if mod.Name == parts[0] {
 						downloadList[m].doDownload = false
-						errStr = errStr + "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
+						emsg := "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
+						errStr = errStr + emsg
+						cwlog.DoLogCW(emsg)
 					}
 				}
 				continue
