@@ -369,6 +369,34 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
+func resolveModDependenciesNEW(downloadList []downloadData) ([]downloadData, error) {
+
+	/*
+		get list of mod files and mod-list.json
+		set mod-list mods to version 0.0.0
+		prefer mod-file over mod-list
+
+		func checkdep()
+		get mod portal data for all
+		check releases that factorio version is okay
+		check for releases that meet base mod requirements
+		check releases for versions newer or equal to what we have
+		get mod portal info for release deps if not already present in list
+		check release deps for factorio version / base mod versions
+		check release deps: checkdep()
+
+		if error, abort. Otherwise save to download list.
+		download file to list
+		if all downloaded, save to disk.
+		move old mods out
+
+		report changes to user
+		save to mod history
+	*/
+
+	return []downloadData{}, nil
+}
+
 const rd = false
 
 func resolveModDependencies(downloadList []downloadData) ([]downloadData, error) {
