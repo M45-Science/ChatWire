@@ -192,7 +192,7 @@ func GetModList() (ModListData, error) {
 	}
 
 	for _, item := range serverMods.Mods {
-		cwlog.DoLogCW("GetModList: %v : %v"+item.Name, item.Enabled)
+		cwlog.DoLogCW("GetModList: %v : %v", item.Name, item.Enabled)
 	}
 	return serverMods, nil
 }
@@ -331,7 +331,11 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 			}
 		}
 		if !dupe {
-			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: "0.0.0"})
+			vers := "0.0.0"
+			if IsBaseMod(modFile.Name) {
+				vers = fact.FactorioVersion
+			}
+			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: vers})
 		}
 	}
 
