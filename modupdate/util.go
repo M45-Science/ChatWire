@@ -376,17 +376,15 @@ func resolveModDependenciesNEW(downloadList []downloadData) ([]downloadData, err
 		set mod-list mods to version 0.0.0
 		prefer mod-file over mod-list
 
-		func checkdep()
-		get mod portal data for all
+		func checkdep(list)
+		get mod portal data for list
 		check releases that factorio version is okay
 		check for releases that meet base mod requirements
 		check releases for versions newer or equal to what we have
-		get mod portal info for release deps if not already present in list
-		check release deps for factorio version / base mod versions
-		check release deps: checkdep()
+		check release deps checkdep(dep)
+		on fail abort, on return add to download list
 
-		if error, abort. Otherwise save to download list.
-		download file to list
+		download files to ram
 		if all downloaded, save to disk.
 		move old mods out
 
