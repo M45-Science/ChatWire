@@ -10,14 +10,22 @@ import (
 	"strings"
 )
 
+const (
+	modPortalURL   = "https://mods.factorio.com/api/mods/%v/full"
+	displayURL     = "https://mods.factorio.com/mod/%v/changelog"
+	downloadPrefix = "https://mods.factorio.com"
+	downloadSuffix = "?username=%v&token=%v"
+	modUpdateTitle = "Found Mod Updates"
+)
+
 /* Read entire mod folder */
-func NEWCheckMods(force bool, reportNone bool) {
+func CheckMods(force bool, reportNone bool) {
 
 	if !cfg.Local.Options.ModUpdate && !force {
 		return
 	}
 
-	updated, err := NEWCheckModUpdates(false)
+	updated, err := CheckModUpdates(false)
 	if reportNone {
 		title := modUpdateTitle
 		buf := ""
@@ -36,7 +44,7 @@ func NEWCheckMods(force bool, reportNone bool) {
 	}
 }
 
-func NEWCheckModUpdates(dryRun bool) (bool, error) {
+func CheckModUpdates(dryRun bool) (bool, error) {
 	// If needed, get Factorio version
 	getFactoioVersion()
 
@@ -98,6 +106,9 @@ func NEWCheckModUpdates(dryRun bool) (bool, error) {
 							continue
 						}
 						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
+						if IsBaseMod(depInfo.name) {
+
+						}
 					}
 				}
 			}
