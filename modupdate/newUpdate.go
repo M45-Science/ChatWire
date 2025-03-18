@@ -78,9 +78,9 @@ func NEWCheckModUpdates(dryRun bool) (bool, error) {
 
 	for _, item := range modPortalData {
 		//Find a release that fits
-		candidate := modRelease{}
+		candidate := modRelease{Version: "0.0.0"}
 		for _, rel := range item.Releases {
-			cwlog.DoLogCW("%v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
+			//cwlog.DoLogCW("%v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
 			goodA, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
 			if err != nil {
 				return false, err
@@ -94,15 +94,15 @@ func NEWCheckModUpdates(dryRun bool) (bool, error) {
 				if goodB {
 					for _, dep := range rel.InfoJSON.Dependencies {
 						depInfo := parseDep(dep)
-						cwlog.DoLogCW("%v, %v, %v", depInfo.name, depInfo.equality, depInfo.version)
+						if depInfo.optional {
+							continue
+						}
+						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
 					}
 				}
 			}
 		}
 	}
-
-	//check deps here
-	//make download list
 
 	downloadList := []downloadData{}
 
@@ -132,6 +132,22 @@ func NEWCheckModUpdates(dryRun bool) (bool, error) {
 }
 
 func parseDep(input string) depRequires {
+	incompatible, optional := false, false
+
+	input = strings.TrimSpace(input)
+	if strings.HasPrefix(input, "!") {
+		incompatible = true
+	}
+	if strings.HasPrefix(input, "?") || strings.HasPrefix(input, "(?)") || strings.HasPrefix(input, "( ? )") {
+		optional = true
+	}
+	input = strings.TrimPrefix(input, "~")
+	input = strings.TrimPrefix(input, "!")
+	input = strings.TrimPrefix(input, "?")
+	input = strings.TrimPrefix(input, "(?)")
+	input = strings.TrimPrefix(input, "( ? )")
+	input = strings.TrimSpace(input)
+
 	nameEnd := 0
 	versionStart := 0
 	for c, ch := range input {
@@ -142,9 +158,12 @@ func parseDep(input string) depRequires {
 			versionStart = c
 		}
 	}
+	if nameEnd == 0 {
+		return depRequires{name: input, optional: optional, incompatible: incompatible}
+	}
 	name := strings.TrimSpace(input[:nameEnd])
-	equality := strings.TrimSpace(input[nameEnd:versionStart])
-	version := strings.TrimSpace(input[versionStart:])
+	equality := strings.TrimSpace(input[nameEnd : versionStart+1])
+	version := strings.TrimSpace(input[versionStart+1:])
 
-	return depRequires{name: name, equality: equality, version: version}
+	return depRequires{name: name, equality: equality, version: version, optional: optional, incompatible: incompatible}
 }

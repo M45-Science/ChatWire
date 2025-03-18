@@ -122,4 +122,5 @@ type modZipInfo struct {
 
 type depRequires struct {
 	name, equality, version string
+	optional, incompatible  bool
 }
