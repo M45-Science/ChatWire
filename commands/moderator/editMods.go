@@ -86,7 +86,7 @@ func GetCombinedModList() ([]modupdate.ModData, error) {
 	for _, jmod := range modFileList {
 		found := false
 		for _, fmod := range modFileList {
-			if strings.EqualFold(jmod.Name, fmod.Name) {
+			if jmod.Name == fmod.Name {
 				found = true
 				break
 			}
@@ -208,7 +208,7 @@ func listMods() string {
 
 	ebuf := ""
 	for _, item := range installedMods {
-		if strings.EqualFold(item.Name, "base") {
+		if item.Name == "base" {
 			continue
 		}
 		if !item.Enabled {
@@ -225,7 +225,7 @@ func listMods() string {
 
 	dbuf := ""
 	for _, item := range installedMods {
-		if strings.EqualFold(item.Name, "base") {
+		if item.Name == "base" {
 			continue
 		}
 		if item.Enabled {
@@ -281,10 +281,10 @@ func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 	for _, part := range parts {
 		found := false
 		for m, mod := range installedMods {
-			if strings.EqualFold(mod.Name, "base") {
+			if mod.Name == "base" {
 				continue
 			}
-			if strings.EqualFold(mod.Name, part) {
+			if mod.Name == part {
 				if mod.Enabled != value {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
 					installedMods[m].Enabled = value
