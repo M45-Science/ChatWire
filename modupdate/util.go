@@ -191,6 +191,9 @@ func GetModList() (ModListData, error) {
 		return ModListData{}, err
 	}
 
+	for _, item := range serverMods.Mods {
+		cwlog.DoLogCW("GetModList: %v : %v"+item.Name, item.Enabled)
+	}
 	return serverMods, nil
 }
 
@@ -296,6 +299,7 @@ func GetModFiles() ([]modZipInfo, error) {
 				continue
 			}
 			modInfo.Filename = mod.Name()
+			cwlog.DoLogCW("GetModMiles: " + mod.Name())
 			modFileList = append(modFileList, *modInfo)
 		}
 	}
@@ -321,7 +325,6 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 	for _, modFile := range jsonModList.Mods {
 		dupe := false
 		for _, item := range installedMods {
-			//This shouldn't happen, but just in case
 			if item.Name == modFile.Name {
 				dupe = true
 				break
@@ -330,6 +333,10 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 		if !dupe {
 			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: "0.0.0"})
 		}
+	}
+
+	for _, item := range installedMods {
+		cwlog.DoLogCW("mergeModLists: %v-%v", item.Name, item.Version)
 	}
 
 	return installedMods
@@ -745,7 +752,7 @@ func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) down
 
 	found := false
 	candidateVersion := installedItem.Version
-	candidateData := modReleases{}
+	candidateData := modRelease{}
 	for _, release := range portalItem.Releases {
 		//Check if this release is newer
 		isNewer, err := checkVersion(EO_GREATEREQ, candidateVersion, release.Version)
