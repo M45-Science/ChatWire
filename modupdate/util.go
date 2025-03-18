@@ -369,7 +369,7 @@ func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData)
 	return downloadList
 }
 
-func resolveModDependenciesNEW(downloadList []downloadData) ([]downloadData, error) {
+func resolveDeps(downloadList []modZipInfo) ([]downloadData, error) {
 
 	/*
 		get list of mod files and mod-list.json
