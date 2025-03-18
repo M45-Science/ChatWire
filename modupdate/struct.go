@@ -121,6 +121,7 @@ type modZipInfo struct {
 }
 
 type depRequires struct {
-	name, equality, version string
-	optional, incompatible  bool
+	name, version          string
+	equality               int
+	optional, incompatible bool
 }

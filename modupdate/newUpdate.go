@@ -44,6 +44,60 @@ func CheckMods(force bool, reportNone bool) {
 	}
 }
 
+func checkDeps(modPortalData []modPortalFullData) (bool, error) {
+
+	for _, item := range modPortalData {
+
+		//Find a release that fits
+		candidate := modRelease{Version: "0.0.0"}
+		if item.installed.Version != "" {
+			candidate.Version = item.installed.Version
+		}
+
+		for _, rel := range item.Releases {
+			//cwlog.DoLogCW("%v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
+
+			installedOlder, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
+			if err != nil {
+				return false, err
+			}
+			if installedOlder {
+				cwlog.DoLogCW("%v: Cand: %v, Rel: %v", item.Name, candidate.Version, rel.Version)
+				candidateOlder, err := checkVersion(EO_GREATEREQ, candidate.Version, rel.Version)
+				if err != nil {
+					return false, err
+				}
+				if candidateOlder {
+					depsMet := true
+					for _, dep := range rel.InfoJSON.Dependencies {
+						depInfo := parseDep(dep)
+						if depInfo.optional {
+							continue
+						}
+						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
+						if IsBaseMod(depInfo.name) {
+							good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
+							if !good || err != nil {
+								depsMet = false
+								continue
+							}
+						} else {
+							for _, check := range modPortalData {
+								if check.Name == depInfo.name {
+									cwlog.DoLogCW("Dep available: %v", depInfo.name)
+								}
+							}
+						}
+					}
+					if depsMet {
+						candidate = rel
+					}
+				}
+			}
+		}
+	}
+}
+
 func CheckModUpdates(dryRun bool) (bool, error) {
 	// If needed, get Factorio version
 	getFactoioVersion()
@@ -84,36 +138,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	for _, item := range modPortalData {
-		//Find a release that fits
-		candidate := modRelease{Version: "0.0.0"}
-		for _, rel := range item.Releases {
-			//cwlog.DoLogCW("%v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
-			goodA, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
-			if err != nil {
-				return false, err
-			}
-			if goodA {
-				cwlog.DoLogCW("%v: Cand: %v, Rel: %v", item.Name, candidate.Version, rel.Version)
-				goodB, err := checkVersion(EO_GREATEREQ, candidate.Version, rel.Version)
-				if err != nil {
-					return false, err
-				}
-				if goodB {
-					for _, dep := range rel.InfoJSON.Dependencies {
-						depInfo := parseDep(dep)
-						if depInfo.optional {
-							continue
-						}
-						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
-						if IsBaseMod(depInfo.name) {
-
-						}
-					}
-				}
-			}
-		}
-	}
+	checkDeps(modPortalData)
 
 	downloadList := []downloadData{}
 
@@ -176,5 +201,5 @@ func parseDep(input string) depRequires {
 	equality := strings.TrimSpace(input[nameEnd : versionStart+1])
 	version := strings.TrimSpace(input[versionStart+1:])
 
-	return depRequires{name: name, equality: equality, version: version, optional: optional, incompatible: incompatible}
+	return depRequires{name: name, equality: parseOperator(equality), version: version, optional: optional, incompatible: incompatible}
 }
