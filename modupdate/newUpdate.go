@@ -85,9 +85,27 @@ func checkDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 								continue
 							}
 						} else {
+							depFound := false
 							for _, check := range modPortalData {
 								if check.Name == depInfo.name {
 									cwlog.DoLogCW("Dep available: %v", depInfo.name)
+									depFound = true
+									break
+								}
+							}
+							if !depFound {
+								depInfo, err := DownloadModInfo(depInfo.name)
+								if err != nil {
+									cwlog.DoLogCW("checkdeps: dep: DownloadModInfo: %v", err)
+									return []downloadData{}, err
+								}
+								dl, err := checkDeps([]modPortalFullData{depInfo})
+								if err != nil {
+									cwlog.DoLogCW("checkdeps: dep: checkdeps: %v", err)
+									return []downloadData{}, err
+								}
+								if len(dl) > 0 {
+									output = append(output, dl...)
 								}
 							}
 						}
