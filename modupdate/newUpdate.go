@@ -74,6 +74,7 @@ func checkDeps(modPortalData []modPortalFullData) (bool, error) {
 						if depInfo.optional {
 							continue
 						}
+						//Check base mod version
 						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
 						if IsBaseMod(depInfo.name) {
 							good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
