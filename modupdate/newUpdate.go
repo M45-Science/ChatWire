@@ -44,7 +44,7 @@ func CheckMods(force bool, reportNone bool) {
 	}
 }
 
-func checkDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
+func resolveDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 
 	var output []downloadData
 
@@ -78,7 +78,7 @@ func checkDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 						}
 						//Check base mod version
 						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
-						if IsBaseMod(depInfo.name) {
+						if IsBaseMod(depInfo.name) && depInfo.version != "" {
 							good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
 							if !good || err != nil {
 								depsMet = false
@@ -99,13 +99,15 @@ func checkDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 									cwlog.DoLogCW("checkdeps: dep: DownloadModInfo: %v", err)
 									return []downloadData{}, err
 								}
-								dl, err := checkDeps([]modPortalFullData{depInfo})
+								dl, err := resolveDeps([]modPortalFullData{depInfo})
 								if err != nil {
 									cwlog.DoLogCW("checkdeps: dep: checkdeps: %v", err)
 									return []downloadData{}, err
 								}
 								if len(dl) > 0 {
-									output = append(output, dl...)
+									for _, item := range dl {
+										output = addDownload(item, output)
+									}
 								}
 							}
 						}
@@ -118,8 +120,8 @@ func checkDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 		}
 
 		if candidate.Version != "0.0.0" {
-			output = append(output, downloadData{Name: item.installed.Name, Version: candidate.Version,
-				Data: candidate, Filename: candidate.FileName, OldVersion: item.installed.Version, OldFilename: item.installed.Filename})
+			output = addDownload(downloadData{Name: item.installed.Name, Version: candidate.Version,
+				Data: candidate, Filename: candidate.FileName, OldVersion: item.installed.Version, OldFilename: item.installed.Filename}, output)
 		}
 
 	}
@@ -167,9 +169,11 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	checkDeps(modPortalData)
-
-	downloadList := []downloadData{}
+	downloadList, err := resolveDeps(modPortalData)
+	if err != nil {
+		cwlog.DoLogCW("NEWCheckModUpdates: checkDeps" + err.Error())
+		return false, err
+	}
 
 	//Dry run ends here
 	if dryRun {

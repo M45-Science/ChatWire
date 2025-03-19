@@ -350,26 +350,6 @@ func getFactoioVersion() {
 	}
 }
 
-func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData) []downloadData {
-	//Check mod postal data against mod list, find upgrades
-	var downloadList []downloadData
-	for _, installedItem := range installedMods {
-		for _, portalItem := range detailList {
-			if IsBaseMod(installedItem.Name) {
-				continue
-			}
-			if portalItem.Name == installedItem.Name {
-				newDL := findModUpgrade(portalItem, installedItem)
-				if newDL.Name != "" {
-					downloadList = addDownload(newDL, downloadList)
-				}
-			}
-		}
-	}
-
-	return downloadList
-}
-
 func getDownloadCount(downloadList []downloadData) int {
 	count := 0
 	for _, dl := range downloadList {
@@ -589,7 +569,7 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 func DownloadModInfo(name string) (modPortalFullData, error) {
 
 	if IsBaseMod(name) {
-		return modPortalFullData{}, errors.New("this is a base-game mod")
+		return modPortalFullData{}, nil
 	}
 
 	name = url.PathEscape(name)
@@ -609,110 +589,4 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 		return modPortalFullData{}, errors.New(emsg)
 	}
 	return newInfo, nil
-}
-
-func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) downloadData {
-
-	found := false
-	candidateVersion := installedItem.Version
-	candidateData := modRelease{}
-	for _, release := range portalItem.Releases {
-		//Check if this release is newer
-		isNewer, err := checkVersion(EO_GREATEREQ, candidateVersion, release.Version)
-		if err != nil {
-			continue
-		}
-
-		//Check if factorio is new enough
-		if isNewer {
-
-			factReject, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
-			if err != nil {
-				cwlog.DoLogCW("Unable to parse version: " + err.Error())
-				continue
-			}
-			if factReject {
-				continue
-			}
-			//Check dependencies
-			reject := false
-			for _, dep := range release.InfoJSON.Dependencies {
-				//This flag isn't relevant
-				dep = strings.TrimPrefix(dep, "~")
-				dep = strings.TrimSpace(dep)
-
-				//Optional dependency
-				if strings.Contains(dep, "?") {
-					continue
-				}
-
-				//Incompatible dependency
-				if strings.Contains(dep, "!") {
-					continue
-				}
-
-				parts := strings.Split(dep, " ")
-				numParts := len(parts)
-				//Check base mods
-				if IsBaseMod(parts[0]) {
-					if numParts == 3 {
-						eq := parseOperator(parts[1])
-						baseReject, err := checkVersion(eq, fact.FactorioVersion, parts[2])
-						if baseReject {
-							//cwlog.DoLogCW("Rejected: " + installedItem.Name + "-" + release.Version + ". Needs: " + dep)
-							reject = true
-							continue
-						}
-						if err != nil {
-							cwlog.DoLogCW("Unable to parse version: " + err.Error())
-							reject = true
-							continue
-						}
-					}
-				}
-			}
-
-			//Save this release
-			if !reject {
-				candidateVersion = release.Version
-				candidateData = release
-				found = true
-			}
-		}
-	}
-	if found {
-		//Check if mod is already present in old mods directory before downloading
-		//This is great for rolling back to an older version without downloading
-		oldMod := util.GetModsFolder() + constants.OldModsDir + "/" + candidateData.FileName
-		_, err := os.Stat(oldMod)
-		oldModFileNotFound := os.IsNotExist(err)
-		if !oldModFileNotFound {
-			newMod := util.GetModsFolder() + candidateData.FileName
-			err = os.Rename(oldMod, newMod)
-			if err != nil {
-				cwlog.DoLogCW("Unable to move mod from old mods directory.")
-			}
-		}
-
-		//Check if mod is already present before downloading
-		_, err = os.Stat(util.GetModsFolder() + candidateData.FileName)
-		modFileNotFound := os.IsNotExist(err)
-
-		newDL := downloadData{
-			Name:  portalItem.Name,
-			Title: portalItem.Title,
-
-			Filename:    portalItem.filename,
-			OldFilename: installedItem.Filename,
-
-			OldVersion: installedItem.Version,
-			Version:    candidateData.Version,
-
-			Data:       candidateData,
-			doDownload: modFileNotFound}
-
-		return newDL
-	}
-
-	return downloadData{}
 }
