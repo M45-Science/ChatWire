@@ -47,7 +47,12 @@ func CheckMods(force bool, reportNone bool) {
 
 const resolveDepsDebug = false
 
-func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData, error) {
+func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
+
+	if depth > 100 {
+		return []downloadData{}, nil
+	}
+
 	var downloadMods []downloadData
 	for _, item := range modPortalData {
 
@@ -132,7 +137,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 								}
 							}
 							//Recursively check dep's deps
-							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true)
+							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1)
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
@@ -208,7 +213,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps(modPortalData, false)
+	downloadList, err := resolveDeps(modPortalData, false, 0)
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
 		return false, err
