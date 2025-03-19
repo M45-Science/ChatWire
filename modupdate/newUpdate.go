@@ -57,17 +57,17 @@ func checkDeps(modPortalData []modPortalFullData) (bool, error) {
 		for _, rel := range item.Releases {
 			//cwlog.DoLogCW("%v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
 
-			installedOlder, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
+			releaseNewer, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
 			if err != nil {
 				return false, err
 			}
-			if installedOlder {
+			if releaseNewer {
 				cwlog.DoLogCW("%v: Cand: %v, Rel: %v", item.Name, candidate.Version, rel.Version)
-				candidateOlder, err := checkVersion(EO_GREATEREQ, candidate.Version, rel.Version)
+				candidateNewer, err := checkVersion(EO_GREATEREQ, rel.Version, candidate.Version)
 				if err != nil {
 					return false, err
 				}
-				if candidateOlder {
+				if candidateNewer {
 					depsMet := true
 					for _, dep := range rel.InfoJSON.Dependencies {
 						depInfo := parseDep(dep)
