@@ -19,7 +19,7 @@ type ModHistoryData struct {
 }
 
 type ModHistoryItem struct {
-	BootItem                         bool
+	InfoItem                         bool
 	Name, Notes, Version, OldVersion string
 	Filename, OldFilename            string
 	Date                             time.Time
