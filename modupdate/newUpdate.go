@@ -44,7 +44,9 @@ func CheckMods(force bool, reportNone bool) {
 	}
 }
 
-func checkDeps(modPortalData []modPortalFullData) (bool, error) {
+func checkDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
+
+	var output []downloadData
 
 	for _, item := range modPortalData {
 
@@ -59,13 +61,13 @@ func checkDeps(modPortalData []modPortalFullData) (bool, error) {
 
 			releaseNewer, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
 			if err != nil {
-				return false, err
+				return []downloadData{}, err
 			}
 			if releaseNewer {
 				cwlog.DoLogCW("%v: Cand: %v, Rel: %v", item.Name, candidate.Version, rel.Version)
 				candidateNewer, err := checkVersion(EO_GREATEREQ, rel.Version, candidate.Version)
 				if err != nil {
-					return false, err
+					return []downloadData{}, err
 				}
 				if candidateNewer {
 					depsMet := true
@@ -96,7 +98,15 @@ func checkDeps(modPortalData []modPortalFullData) (bool, error) {
 				}
 			}
 		}
+
+		if candidate.Version != "0.0.0" {
+			output = append(output, downloadData{Name: item.installed.Name, Version: candidate.Version,
+				Data: candidate, Filename: candidate.FileName, OldVersion: item.installed.Version, OldFilename: item.installed.Filename})
+		}
+
 	}
+
+	return output, nil
 }
 
 func CheckModUpdates(dryRun bool) (bool, error) {
