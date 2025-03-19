@@ -316,7 +316,7 @@ func GetModFiles() ([]modZipInfo, error) {
 	return modFileList, nil
 }
 
-func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipInfo {
+func MergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipInfo {
 	//Check both lists, keep any that are not explicitly disabled.
 	var installedMods []modZipInfo
 	for _, modFile := range modFileList {
@@ -540,7 +540,7 @@ func AddModHistory(newItem ModHistoryItem) {
 	}
 
 	for _, item := range ModHistory.History {
-		if item.BootItem {
+		if item.InfoItem {
 			continue
 		}
 		if item.Name == newItem.Name {
