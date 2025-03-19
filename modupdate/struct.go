@@ -33,8 +33,7 @@ type downloadData struct {
 
 	Version, OldVersion string
 
-	doDownload bool
-	wasDep     bool
+	wasDep bool
 }
 
 type ModListData struct {

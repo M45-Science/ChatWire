@@ -44,7 +44,7 @@ func CheckMods(force bool, reportNone bool) {
 	}
 }
 
-func resolveDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
+func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData, error) {
 
 	var output []downloadData
 
@@ -57,15 +57,21 @@ func resolveDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 		}
 
 		for _, rel := range item.Releases {
-			//cwlog.DoLogCW("%v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
+			//cwlog.DoLogCW("RELEASES: %v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
 
-			releaseNewer, err := checkVersion(EO_GREATEREQ, item.installed.Version, rel.Version)
-			if err != nil {
-				return []downloadData{}, err
+			releaseNewer := false
+			if item.installed.Version == "" {
+				releaseNewer = true
+			} else {
+				var err error
+				releaseNewer, err = checkVersion(EO_GREATER, item.installed.Version, rel.Version)
+				if err != nil {
+					return []downloadData{}, err
+				}
 			}
 			if releaseNewer {
-				cwlog.DoLogCW("%v: Cand: %v, Rel: %v", item.Name, candidate.Version, rel.Version)
-				candidateNewer, err := checkVersion(EO_GREATEREQ, rel.Version, candidate.Version)
+				cwlog.DoLogCW("NEWER: %v: LOCAL: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
+				candidateNewer, err := checkVersion(EO_GREATER, candidate.Version, rel.Version)
 				if err != nil {
 					return []downloadData{}, err
 				}
@@ -73,41 +79,49 @@ func resolveDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 					depsMet := true
 					for _, dep := range rel.InfoJSON.Dependencies {
 						depInfo := parseDep(dep)
+						if depInfo.incompatible {
+							continue
+						}
 						if depInfo.optional {
 							continue
 						}
 						//Check base mod version
-						cwlog.DoLogCW("name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
-						if IsBaseMod(depInfo.name) && depInfo.version != "" {
-							good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
-							if !good || err != nil {
-								depsMet = false
-								continue
+						cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
+						if IsBaseMod(depInfo.name) {
+							if depInfo.version != "" {
+								good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
+								if !good || err != nil {
+									depsMet = false
+									continue
+								}
 							}
+							cwlog.DoLogCW("base dep available: %v", dep)
 						} else {
-							depFound := false
-							for _, check := range modPortalData {
-								if check.Name == depInfo.name {
-									cwlog.DoLogCW("Dep available: %v", depInfo.name)
-									depFound = true
+							haveDepInfo := false
+							depPortalInfo := modPortalFullData{}
+							cwlog.DoLogCW("CHECKING DEP %v-%v", depInfo.name, depInfo.version)
+							for _, item := range modPortalData {
+								if item.Name == depInfo.name {
+									haveDepInfo = true
+									depPortalInfo = item
 									break
 								}
 							}
-							if !depFound {
-								depInfo, err := DownloadModInfo(depInfo.name)
+							if !haveDepInfo {
+								depPortalInfo, err = DownloadModInfo(depInfo.name)
 								if err != nil {
-									cwlog.DoLogCW("checkdeps: dep: DownloadModInfo: %v", err)
+									cwlog.DoLogCW("resolveDeps: dep: DownloadModInfo: %v", err)
 									return []downloadData{}, err
 								}
-								dl, err := resolveDeps([]modPortalFullData{depInfo})
-								if err != nil {
-									cwlog.DoLogCW("checkdeps: dep: checkdeps: %v", err)
-									return []downloadData{}, err
-								}
-								if len(dl) > 0 {
-									for _, item := range dl {
-										output = addDownload(item, output)
-									}
+							}
+							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true)
+							if err != nil {
+								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
+								return []downloadData{}, err
+							}
+							if len(dl) > 0 {
+								for _, item := range dl {
+									output = addDownload(item, output)
 								}
 							}
 						}
@@ -119,9 +133,11 @@ func resolveDeps(modPortalData []modPortalFullData) ([]downloadData, error) {
 			}
 		}
 
-		if candidate.Version != "0.0.0" {
-			output = addDownload(downloadData{Name: item.installed.Name, Version: candidate.Version,
-				Data: candidate, Filename: candidate.FileName, OldVersion: item.installed.Version, OldFilename: item.installed.Filename}, output)
+		if candidate.Version != "0.0.0" && item.installed.Version != candidate.Version {
+			output = addDownload(downloadData{Title: item.Title, Name: item.Name, Filename: candidate.FileName,
+				OldFilename: item.installed.Filename, Data: candidate, Version: candidate.Version,
+				OldVersion: item.installed.Version, wasDep: wasDep,
+			}, output)
 		}
 
 	}
@@ -169,16 +185,16 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps(modPortalData)
+	downloadList, err := resolveDeps(modPortalData, false)
 	if err != nil {
-		cwlog.DoLogCW("NEWCheckModUpdates: checkDeps" + err.Error())
+		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
 		return false, err
 	}
 
 	//Dry run ends here
 	if dryRun {
 		for _, dl := range downloadList {
-			cwlog.DoLogCW("%v-%v: %v", dl.Name, dl.Data.Version, dl.doDownload)
+			cwlog.DoLogCW("%v-%v: %v", dl.Name, dl.Data.Version, dl.Filename)
 		}
 		return false, nil
 	}
