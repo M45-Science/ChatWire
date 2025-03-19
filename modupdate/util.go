@@ -181,9 +181,11 @@ func GetModList() (ModListData, error) {
 		return ModListData{}, err
 	}
 
-	for _, item := range serverMods.Mods {
-		cwlog.DoLogCW("GetModList: %v : %v", item.Name, item.Enabled)
-	}
+	/*
+		for _, item := range serverMods.Mods {
+			cwlog.DoLogCW("GetModList: %v : %v", item.Name, item.Enabled)
+		}
+	*/
 	return serverMods, nil
 }
 
@@ -262,6 +264,23 @@ func parseOperator(input string) int {
 	}
 }
 
+func operatorToString(input int) string {
+	switch input {
+	case EO_LESS:
+		return "<"
+	case EO_LESSEQ:
+		return "<="
+	case EO_EQUAL:
+		return "="
+	case EO_GREATEREQ:
+		return ">="
+	case EO_GREATER:
+		return ">"
+	default:
+		return "ERR"
+	}
+}
+
 func checkSHA1(data []byte, checkHash string) bool {
 
 	hash := sha1.New()
@@ -289,7 +308,7 @@ func GetModFiles() ([]modZipInfo, error) {
 				continue
 			}
 			modInfo.Filename = mod.Name()
-			cwlog.DoLogCW("GetModMiles: " + mod.Name())
+			//cwlog.DoLogCW("GetModFiles: " + mod.Name())
 			modFileList = append(modFileList, *modInfo)
 		}
 	}
@@ -329,9 +348,11 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 		}
 	}
 
-	for _, item := range installedMods {
-		cwlog.DoLogCW("mergeModLists: %v-%v", item.Name, item.Version)
-	}
+	/*
+		for _, item := range installedMods {
+			cwlog.DoLogCW("mergeModLists: %v-%v", item.Name, item.Version)
+		}
+	*/
 
 	return installedMods
 }

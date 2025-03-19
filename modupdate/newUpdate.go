@@ -45,9 +45,7 @@ func CheckMods(force bool, reportNone bool) {
 }
 
 func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData, error) {
-
-	var output []downloadData
-
+	var downloadMods []downloadData
 	for _, item := range modPortalData {
 
 		//Find a release that fits
@@ -86,7 +84,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 							continue
 						}
 						//Check base mod version
-						cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, depInfo.equality, depInfo.version, depInfo.incompatible)
+						cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, operatorToString(depInfo.equality), depInfo.version, depInfo.incompatible)
 						if IsBaseMod(depInfo.name) {
 							if depInfo.version != "" {
 								good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
@@ -121,7 +119,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 							}
 							if len(dl) > 0 {
 								for _, item := range dl {
-									output = addDownload(item, output)
+									downloadMods = addDownload(item, downloadMods)
 								}
 							}
 						}
@@ -134,15 +132,15 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 		}
 
 		if candidate.Version != "0.0.0" && item.installed.Version != candidate.Version {
-			output = addDownload(downloadData{Title: item.Title, Name: item.Name, Filename: candidate.FileName,
+			downloadMods = addDownload(downloadData{Title: item.Title, Name: item.Name, Filename: candidate.FileName,
 				OldFilename: item.installed.Filename, Data: candidate, Version: candidate.Version,
 				OldVersion: item.installed.Version, wasDep: wasDep,
-			}, output)
+			}, downloadMods)
 		}
 
 	}
 
-	return output, nil
+	return downloadMods, nil
 }
 
 func CheckModUpdates(dryRun bool) (bool, error) {
@@ -172,7 +170,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		if IsBaseMod(item.Name) {
 			continue
 		}
-		cwlog.DoLogCW("Getting portal info: %v", item.Name)
+		//cwlog.DoLogCW("Getting portal info: %v", item.Name)
 		newInfo, err := DownloadModInfo(item.Name)
 		if err != nil {
 			cwlog.DoLogCW("NEWCheckModUpdates: DownloadModInfo" + err.Error())
@@ -182,7 +180,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		newInfo.filename = item.Filename
 		newInfo.installed = item
 		modPortalData = append(modPortalData, newInfo)
-		cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
+		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
 	downloadList, err := resolveDeps(modPortalData, false)
