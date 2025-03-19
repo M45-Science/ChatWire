@@ -44,6 +44,8 @@ func CheckMods(force bool, reportNone bool) {
 	}
 }
 
+const resolveDepsDebug = false
+
 func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData, error) {
 	var downloadMods []downloadData
 	for _, item := range modPortalData {
@@ -68,7 +70,9 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 				}
 			}
 			if releaseNewer {
-				cwlog.DoLogCW("NEWER: %v: LOCAL: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
+				if resolveDepsDebug {
+					cwlog.DoLogCW("NEWER: %v: LOCAL: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
+				}
 				candidateNewer, err := checkVersion(EO_GREATER, candidate.Version, rel.Version)
 				if err != nil {
 					return []downloadData{}, err
@@ -84,7 +88,9 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 							continue
 						}
 						//Check base mod version
-						cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, operatorToString(depInfo.equality), depInfo.version, depInfo.incompatible)
+						if resolveDepsDebug {
+							cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, operatorToString(depInfo.equality), depInfo.version, depInfo.incompatible)
+						}
 						if IsBaseMod(depInfo.name) {
 							if depInfo.version != "" {
 								good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
@@ -93,11 +99,15 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 									continue
 								}
 							}
-							cwlog.DoLogCW("base dep available: %v", dep)
+							if resolveDepsDebug {
+								cwlog.DoLogCW("base dep available: %v", dep)
+							}
 						} else {
 							haveDepInfo := false
 							depPortalInfo := modPortalFullData{}
-							cwlog.DoLogCW("CHECKING DEP %v-%v", depInfo.name, depInfo.version)
+							if resolveDepsDebug {
+								cwlog.DoLogCW("CHECKING DEP %v-%v", depInfo.name, depInfo.version)
+							}
 							for _, item := range modPortalData {
 								if item.Name == depInfo.name {
 									haveDepInfo = true

@@ -568,16 +568,22 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 			if newer {
 				//Already in list and newer, replace
 				list[i] = input
-				cwlog.DoLogCW("Added newer download: %v-%v", input.Name, input.Version)
+				if resolveDepsDebug {
+					cwlog.DoLogCW("Added newer download: %v-%v", input.Name, input.Version)
+				}
 			} else {
 				//Already here, but older, skip it
-				cwlog.DoLogCW("DID NOT ADD download: %v-%v", input.Name, input.Version)
+				if resolveDepsDebug {
+					cwlog.DoLogCW("DID NOT ADD download: %v-%v", input.Name, input.Version)
+				}
 				return list
 			}
 		}
 	}
 
-	cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
+	if resolveDepsDebug {
+		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
+	}
 	return append(list, input)
 }
 
