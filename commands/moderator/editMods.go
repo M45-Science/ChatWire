@@ -10,7 +10,6 @@ import (
 	"ChatWire/util"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"os"
 	"strings"
 	"time"
@@ -65,41 +64,6 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		tmsg = "Unknown error"
 	}
 	disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
-}
-
-func GetCombinedModList() ([]modupdate.ModData, error) {
-	//Read all mod.zip files
-	modFileList, err := modupdate.GetModFiles()
-	if err != nil {
-		emsg := "Unable to read mods directory."
-		return []modupdate.ModData{}, errors.New(emsg)
-	}
-	//Read mods-list.json
-	jsonModList, err := modupdate.GetModList()
-	if err != nil {
-		emsg := "Unable to read the " + constants.ModListName + " file."
-		return []modupdate.ModData{}, errors.New(emsg)
-	}
-
-	//Merge lists
-	installedMods := jsonModList.Mods
-	for _, jmod := range modFileList {
-		found := false
-		for _, fmod := range modFileList {
-			if jmod.Name == fmod.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			//Default enabled
-			newMod := modupdate.ModData{Name: jmod.Name, Enabled: true}
-			installedMods = append(installedMods, newMod)
-		}
-	}
-
-	return installedMods, nil
-
 }
 
 func clearAllMods() string {
@@ -201,55 +165,63 @@ func parseModName(input string) (string, bool) {
 }
 
 func listMods() string {
-	installedMods, err := GetCombinedModList()
+	modFiles, err := modupdate.GetModFiles()
 	if err != nil {
-		return err.Error()
+		return "Unable to read mod files."
 	}
+	modList, _ := modupdate.GetModList()
+	mergedMods := modupdate.MergeModLists(modFiles, modList)
 
 	ebuf := ""
-	for _, item := range installedMods {
-		if item.Name == "base" {
-			continue
-		}
-		if !item.Enabled {
-			continue
-		}
-		if ebuf != "" {
-			ebuf = ebuf + ", "
-		}
-		ebuf = ebuf + item.Name
-		if modupdate.IsBaseMod(item.Name) {
-			ebuf = ebuf + " (base-mod)"
-		}
-	}
-
-	dbuf := ""
-	for _, item := range installedMods {
+	for _, item := range mergedMods {
 		if item.Name == "base" {
 			continue
 		}
 		if item.Enabled {
 			continue
 		}
-		if dbuf != "" {
-			dbuf = dbuf + ", "
+		if ebuf != "" {
+			ebuf = ebuf + "\n"
 		}
-		dbuf = dbuf + item.Name
 		if modupdate.IsBaseMod(item.Name) {
-			dbuf = dbuf + " (base-mod)"
+			ebuf = ebuf + item.Name + " (base mod)"
+		} else if item.Version != constants.Unknown {
+			ebuf = ebuf + item.Name + "-" + item.Version
+		} else {
+			ebuf = ebuf + item.Name
+		}
+	}
+
+	dbuf := ""
+	for _, item := range mergedMods {
+		if item.Name == "base" {
+			continue
+		}
+		if !item.Enabled {
+			continue
+		}
+		if dbuf != "" {
+			dbuf = dbuf + "\n"
+		}
+		if modupdate.IsBaseMod(item.Name) {
+			dbuf = dbuf + item.Name + " (base mod)"
+		} else if item.Version != constants.Unknown {
+			dbuf = dbuf + item.Name + "-" + item.Version
+		} else {
+			dbuf = dbuf + item.Name
 		}
 	}
 
 	if ebuf == "" {
 		ebuf = "Enabled: None"
 	} else {
-		ebuf = "Enabled: " + ebuf
+		ebuf = "Enabled:\n" + ebuf
 	}
 
 	if dbuf == "" {
 		dbuf = "\n\nDisabled: None"
 	} else {
-		dbuf = "Disabled: " + dbuf
+		dbuf = "Disabled:\n" + dbuf
 		if ebuf != "" {
 			dbuf = "\n\n" + dbuf
 		}
@@ -267,10 +239,12 @@ func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 		return emsg
 	}
 
-	installedMods, err := GetCombinedModList()
+	modFiles, err := modupdate.GetModFiles()
 	if err != nil {
-		return err.Error()
+		return "Unable to read mod files."
 	}
+	modList, _ := modupdate.GetModList()
+	mergedMods := modupdate.MergeModLists(modFiles, modList)
 
 	//Remove spaces
 	input := strings.ReplaceAll(name, " ", "")
@@ -280,14 +254,14 @@ func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 	dirty := false
 	for _, part := range parts {
 		found := false
-		for m, mod := range installedMods {
+		for m, mod := range mergedMods {
 			if mod.Name == "base" {
 				continue
 			}
 			if mod.Name == part {
 				if mod.Enabled != value {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
-					installedMods[m].Enabled = value
+					mergedMods[m].Enabled = value
 
 					modupdate.AddModHistory(modupdate.ModHistoryItem{
 						Name: mod.Name, Notes: enableStr(value, true) + " by " + i.Member.User.Username, Date: time.Now()})
