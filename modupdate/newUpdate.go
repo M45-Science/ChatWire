@@ -8,6 +8,7 @@ import (
 	"ChatWire/glob"
 	"errors"
 	"strings"
+	"time"
 )
 
 const (
@@ -18,7 +19,6 @@ const (
 	modUpdateTitle = "Found Mod Updates"
 )
 
-/* Read entire mod folder */
 func CheckMods(force bool, reportNone bool) {
 
 	if !cfg.Local.Options.ModUpdate && !force {
@@ -50,12 +50,12 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 	var downloadMods []downloadData
 	for _, item := range modPortalData {
 
-		//Find a release that fits
 		candidate := modRelease{Version: "0.0.0"}
 		if item.installed.Version != "" {
 			candidate.Version = item.installed.Version
 		}
 
+		//Check all releases
 		for _, rel := range item.Releases {
 			//cwlog.DoLogCW("RELEASES: %v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
 
@@ -69,28 +69,34 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 					return []downloadData{}, err
 				}
 			}
+			//If release is newer, check candidate
 			if releaseNewer {
 				if resolveDepsDebug {
 					cwlog.DoLogCW("NEWER: %v: LOCAL: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
 				}
-				candidateNewer, err := checkVersion(EO_GREATER, candidate.Version, rel.Version)
+				releaseNewer, err := checkVersion(EO_GREATER, candidate.Version, rel.Version)
 				if err != nil {
 					return []downloadData{}, err
 				}
-				if candidateNewer {
+				//If release is newer check deps
+				if releaseNewer {
 					depsMet := true
+
 					for _, dep := range rel.InfoJSON.Dependencies {
 						depInfo := parseDep(dep)
 						if depInfo.incompatible {
+							//TODO, check other mods here
 							continue
 						}
 						if depInfo.optional {
+							//We can ignore optional deps
 							continue
 						}
 						//Check base mod version
 						if resolveDepsDebug {
 							cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, operatorToString(depInfo.equality), depInfo.version, depInfo.incompatible)
 						}
+						//If dep is a base mod, check it here
 						if IsBaseMod(depInfo.name) {
 							if depInfo.version != "" {
 								good, err := checkVersion(depInfo.equality, depInfo.version, fact.FactorioVersion)
@@ -102,6 +108,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 							if resolveDepsDebug {
 								cwlog.DoLogCW("base dep available: %v", dep)
 							}
+							//Dep is a mod, check if we have it
 						} else {
 							haveDepInfo := false
 							depPortalInfo := modPortalFullData{}
@@ -115,6 +122,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 									break
 								}
 							}
+							//We do not have the dep, download info
 							if !haveDepInfo {
 								depPortalInfo, err = DownloadModInfo(depInfo.name)
 								if err != nil {
@@ -122,11 +130,13 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 									return []downloadData{}, err
 								}
 							}
+							//Recursively check dep's deps
 							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true)
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
 							}
+							//If needed, download dep's deps
 							if len(dl) > 0 {
 								for _, item := range dl {
 									downloadMods = addDownload(item, downloadMods)
@@ -134,6 +144,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 							}
 						}
 					}
+					//If deps were met, we can update the candidate
 					if depsMet {
 						candidate = rel
 					}
@@ -141,6 +152,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 			}
 		}
 
+		//Add candidate to the download list
 		if candidate.Version != "0.0.0" && item.installed.Version != candidate.Version {
 			downloadMods = addDownload(downloadData{Title: item.Title, Name: item.Name, Filename: candidate.FileName,
 				OldFilename: item.installed.Filename, Data: candidate, Version: candidate.Version,
@@ -150,6 +162,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool) ([]downloadData
 
 	}
 
+	//Return list of downloads
 	return downloadMods, nil
 }
 
@@ -164,9 +177,9 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 
 	// Read mods-list.json
-	jsonModList, _ := GetModList()
+	jsonModList, _ := GetModList() //Ignore error, mods-list.json missing isn't the end of the world.
 	// Merge the two lists
-	installedMods := mergeModLists(modFileList, jsonModList)
+	installedMods := MergeModLists(modFileList, jsonModList)
 
 	// Check if we need to proceed
 	if len(installedMods) == 0 {
@@ -187,6 +200,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 			return false, err
 		}
 
+		//Save the filename, for dealing with old versions later
 		newInfo.filename = item.Filename
 		newInfo.installed = item
 		modPortalData = append(modPortalData, newInfo)
@@ -207,6 +221,10 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		return false, nil
 	}
 
+	if len(downloadList) > 0 {
+		newHist := ModHistoryItem{Name: "Mod update started", InfoItem: true, Date: time.Now()}
+		AddModHistory(newHist)
+	}
 	shortBuf := downloadMods(downloadList)
 
 	//TO DO: Report error, don't report all up to date with errors
@@ -228,12 +246,15 @@ func parseDep(input string) depRequires {
 	incompatible, optional := false, false
 
 	input = strings.TrimSpace(input)
+	//Mark incompatible
 	if strings.HasPrefix(input, "!") {
 		incompatible = true
 	}
+	//Mark optional
 	if strings.HasPrefix(input, "?") || strings.HasPrefix(input, "(?)") || strings.HasPrefix(input, "( ? )") {
 		optional = true
 	}
+	//Remove prefixes before processing
 	input = strings.TrimPrefix(input, "~")
 	input = strings.TrimPrefix(input, "!")
 	input = strings.TrimPrefix(input, "?")
@@ -243,6 +264,7 @@ func parseDep(input string) depRequires {
 
 	nameEnd := 0
 	versionStart := 0
+	// This properly handled malformed dependencies (no spaces) *cough flare stack cough*
 	for c, ch := range input {
 		if ch == '>' || ch == '<' || ch == '=' {
 			if nameEnd == 0 {
