@@ -7,6 +7,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -213,6 +214,12 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		return false, err
 	}
 
+	_, err = checkIncompatible(installedMods, downloadList)
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+		return false, err
+	}
+
 	//Dry run ends here
 	if dryRun {
 		for _, dl := range downloadList {
@@ -240,6 +247,50 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 	glob.BootMessage = nil
 	return false, errors.New("No mod updates available.")
+}
+
+type incMod struct {
+	Name, Version string
+	Deps          []string
+}
+
+func checkIncompatible(installed []modZipInfo, downloadList []downloadData) (bool, error) {
+
+	combined := []incMod{}
+	for _, imod := range installed {
+		combined = append(combined, incMod{Name: imod.Name, Version: imod.Version, Deps: imod.Dependencies})
+	}
+	for _, dmod := range downloadList {
+		combined = append(combined, incMod{Name: dmod.Name, Version: dmod.Version, Deps: dmod.Data.InfoJSON.Dependencies})
+	}
+
+	for _, itemA := range combined {
+		for _, itemB := range combined {
+			if itemA.Name == itemB.Name {
+				continue
+			}
+			for _, depA := range itemA.Deps {
+				depInfo := parseDep(depA)
+				if depInfo.incompatible {
+					if itemB.Name == depInfo.name {
+						good, err := checkVersion(depInfo.equality, depInfo.version, itemB.Version)
+						if err != nil {
+							emsg := fmt.Sprintf("checkIncompatible: %v: %v", depA, err)
+							cwlog.DoLogCW(emsg)
+							return true, errors.New(emsg)
+						}
+						if !good {
+							emsg := fmt.Sprintf("checkIncompatible: %v-%v not compatible with %v-%v!", itemA.Name, itemB.Version, itemB.Name, itemB.Version)
+							cwlog.DoLogCW(emsg)
+							return true, errors.New(emsg)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func parseDep(input string) depRequires {
