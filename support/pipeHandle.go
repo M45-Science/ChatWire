@@ -673,7 +673,7 @@ func handleFactReady(input *handleData) bool {
 		fact.FactIsRunning = false
 		fact.SetFactRunning(true, true)
 
-		newHist := modupdate.ModHistoryItem{Name: "Factorio booted", Date: time.Now(), BootItem: true}
+		newHist := modupdate.ModHistoryItem{Name: "Factorio booted", Date: time.Now(), InfoItem: true}
 		modupdate.AddModHistory(newHist)
 
 		fact.WriteFact("/sversion")
