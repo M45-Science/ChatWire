@@ -605,7 +605,7 @@ func MainLoops() {
 					continue
 				}
 
-				if cTime.Minute() == 0 || cTime.Minute() == 30 {
+				if cTime.Minute() == 15 || cTime.Minute() == 45 {
 					checkFactUpdate()
 				}
 
