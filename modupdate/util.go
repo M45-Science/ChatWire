@@ -167,16 +167,6 @@ func IsBaseMod(dep string) bool {
 	return false
 }
 
-func IsBasePrefix(dep string) bool {
-	//Add detection of equality operators
-	if strings.HasPrefix(dep, "base") ||
-		strings.HasPrefix(dep, "elevated-rails") ||
-		strings.HasPrefix(dep, "quality") ||
-		strings.HasPrefix(dep, "space-age") {
-		return true
-	}
-	return false
-}
 func GetModList() (ModListData, error) {
 	path := util.GetModsFolder() + constants.ModListName
 
@@ -191,6 +181,11 @@ func GetModList() (ModListData, error) {
 		return ModListData{}, err
 	}
 
+	/*
+		for _, item := range serverMods.Mods {
+			cwlog.DoLogCW("GetModList: %v : %v", item.Name, item.Enabled)
+		}
+	*/
 	return serverMods, nil
 }
 
@@ -269,6 +264,23 @@ func parseOperator(input string) int {
 	}
 }
 
+func operatorToString(input int) string {
+	switch input {
+	case EO_LESS:
+		return "<"
+	case EO_LESSEQ:
+		return "<="
+	case EO_EQUAL:
+		return "="
+	case EO_GREATEREQ:
+		return ">="
+	case EO_GREATER:
+		return ">"
+	default:
+		return "ERR"
+	}
+}
+
 func checkSHA1(data []byte, checkHash string) bool {
 
 	hash := sha1.New()
@@ -296,6 +308,7 @@ func GetModFiles() ([]modZipInfo, error) {
 				continue
 			}
 			modInfo.Filename = mod.Name()
+			//cwlog.DoLogCW("GetModFiles: " + mod.Name())
 			modFileList = append(modFileList, *modInfo)
 		}
 	}
@@ -303,7 +316,7 @@ func GetModFiles() ([]modZipInfo, error) {
 	return modFileList, nil
 }
 
-func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipInfo {
+func MergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipInfo {
 	//Check both lists, keep any that are not explicitly disabled.
 	var installedMods []modZipInfo
 	for _, modFile := range modFileList {
@@ -321,16 +334,25 @@ func mergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 	for _, modFile := range jsonModList.Mods {
 		dupe := false
 		for _, item := range installedMods {
-			//This shouldn't happen, but just in case
 			if item.Name == modFile.Name {
 				dupe = true
 				break
 			}
 		}
 		if !dupe {
-			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: "0.0.0"})
+			vers := "0.0.0"
+			if IsBaseMod(modFile.Name) {
+				vers = fact.FactorioVersion
+			}
+			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: vers})
 		}
 	}
+
+	/*
+		for _, item := range installedMods {
+			cwlog.DoLogCW("mergeModLists: %v-%v", item.Name, item.Version)
+		}
+	*/
 
 	return installedMods
 }
@@ -349,191 +371,8 @@ func getFactoioVersion() {
 	}
 }
 
-func findModUpgrades(installedMods []modZipInfo, detailList []modPortalFullData) []downloadData {
-	//Check mod postal data against mod list, find upgrades
-	var downloadList []downloadData
-	for _, installedItem := range installedMods {
-		for _, portalItem := range detailList {
-			if IsBaseMod(installedItem.Name) {
-				continue
-			}
-			if portalItem.Name == installedItem.Name {
-				newDL := findModUpgrade(portalItem, installedItem)
-				if newDL.Name != "" {
-					downloadList = addDownload(newDL, downloadList)
-				}
-			}
-		}
-	}
-
-	return downloadList
-}
-
-func resolveModDependenciesNEW(downloadList []downloadData) ([]downloadData, error) {
-
-	/*
-		get list of mod files and mod-list.json
-		set mod-list mods to version 0.0.0
-		prefer mod-file over mod-list
-
-		func checkdep(list)
-		get mod portal data for list
-		check releases that factorio version is okay
-		check for releases that meet base mod requirements
-		check releases for versions newer or equal to what we have
-		check release deps checkdep(dep)
-		on fail abort, on return add to download list
-
-		download files to ram
-		if all downloaded, save to disk.
-		move old mods out
-
-		report changes to user
-		save to mod history
-	*/
-
-	return []downloadData{}, nil
-}
-
-const rd = false
-
-func resolveModDependencies(downloadList []downloadData) ([]downloadData, error) {
-
-	var errStr string
-	//Check for unmet dependencies, incompatabilites, etc.
-	for _, dl := range downloadList {
-		for _, dep := range dl.Data.InfoJSON.Dependencies {
-			if rd {
-				cwlog.DoLogCW(dl.Name + ": dep: " + dep)
-			}
-
-			//Optional dep
-			if strings.Contains(dep, "?") {
-				if rd {
-					cwlog.DoLogCW(dl.Name + ": Skipping optional dep: " + dep)
-				}
-				continue
-			}
-			//~ operator not applicable here
-			dep = strings.TrimPrefix(dep, "~")
-			//Just in case
-			dep = strings.TrimSpace(dep)
-
-			depName := dep
-			versionNeeded := ""
-			equalityOperator := ""
-			requiresVersion := false
-			parts := strings.Split(dep, " ")
-			numParts := len(parts)
-
-			if numParts >= 3 {
-				requiresVersion = true
-				versionNeeded = parts[numParts-1]
-				equalityOperator = parts[numParts-2]
-				depName = strings.Join(parts[:numParts-2], " ")
-			}
-
-			if IsBaseMod(depName) {
-				if rd {
-					cwlog.DoLogCW(dl.Name + ": Skipping base mod: " + dep)
-				}
-				continue
-			}
-
-			if strings.Contains(dep, "!") {
-				if rd {
-					cwlog.DoLogCW(dl.Name + ": checking for incompatible mods: " + dep)
-				}
-				for m, mod := range downloadList {
-					if mod.Name == depName {
-						downloadList[m].doDownload = false
-						emsg := "Mod " + mod.Name + "-" + mod.Data.Version + " is not compatible with the mod " + dl.Name
-						errStr = errStr + emsg
-						cwlog.DoLogCW(emsg)
-					}
-				}
-				continue
-			}
-
-			//Check locally for deps
-			if rd {
-				cwlog.DoLogCW(dl.Name + ": Checking locally for deps")
-			}
-			foundDep := false
-			for _, mod := range downloadList {
-				//Check if dependency already met
-				if mod.Name == depName {
-					//If we require a specific version
-					if requiresVersion {
-						eq := parseOperator(equalityOperator)
-						rejectDep, err := checkVersion(eq, versionNeeded, mod.Data.Version)
-						if err != nil {
-							cwlog.DoLogCW("Unable to parse dependency version:" + dl.Name + ": " + dep)
-							continue
-						}
-						if !rejectDep {
-							if rd {
-								cwlog.DoLogCW(dl.Name + ": rejecting dep version: " + dep)
-							}
-							foundDep = true
-							break
-						}
-					} else {
-						//Dependency met
-						if rd {
-							cwlog.DoLogCW(dl.Name + ": Dependency met: " + dep)
-						}
-						foundDep = true
-						break
-					}
-				}
-			}
-			if !foundDep {
-				if IsBaseMod(depName) || IsBasePrefix(depName) {
-					continue
-				}
-				if rd {
-					cwlog.DoLogCW(depName + ": Dependency UNMET")
-				}
-				newInfo, err := DownloadModInfo(depName)
-				if err != nil {
-					cwlog.DoLogCW("Unable to download mod info for: " + depName)
-					continue
-				}
-				if rd {
-					cwlog.DoLogCW("%v: dep %v info: %v", dl.Name, dep, newInfo.Name)
-				}
-				vn := "0.0.0"
-				if versionNeeded != "" {
-					vn = versionNeeded
-				}
-				newDL := findModUpgrade(newInfo, modZipInfo{Name: depName, Version: vn})
-				if rd {
-					cwlog.DoLogCW("%v: dep %v upgrade: %v-%v", dl.Name, dep, newDL.Name, newDL.Version)
-				}
-				newDL.wasDep = true
-				if newDL.Name != "" {
-					cwlog.DoLogCW("Download added: %v-%v", newDL.Name, newDL.Version)
-					downloadList = addDownload(newDL, downloadList)
-				}
-			}
-		}
-	}
-	if errStr != "" {
-		return downloadList, errors.New(errStr)
-	} else {
-		return downloadList, nil
-	}
-}
-
 func getDownloadCount(downloadList []downloadData) int {
-	count := 0
-	for _, dl := range downloadList {
-		if dl.doDownload {
-			count++
-		}
-	}
-	return count
+	return len(downloadList)
 }
 
 func downloadMods(downloadList []downloadData) string {
@@ -553,9 +392,6 @@ func downloadMods(downloadList []downloadData) string {
 	var shortBuf string
 	errorLog := ""
 	for d, dl := range downloadList {
-		if !dl.doDownload {
-			continue
-		}
 		if strings.Contains(dl.Name, "!") {
 			continue
 		}
@@ -704,7 +540,7 @@ func AddModHistory(newItem ModHistoryItem) {
 	}
 
 	for _, item := range ModHistory.History {
-		if item.BootItem {
+		if item.InfoItem {
 			continue
 		}
 		if item.Name == newItem.Name {
@@ -732,20 +568,29 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 			if newer {
 				//Already in list and newer, replace
 				list[i] = input
+				if resolveDepsDebug {
+					cwlog.DoLogCW("Added newer download: %v-%v", input.Name, input.Version)
+				}
 			} else {
 				//Already here, but older, skip it
+				if resolveDepsDebug {
+					cwlog.DoLogCW("DID NOT ADD download: %v-%v", input.Name, input.Version)
+				}
 				return list
 			}
 		}
 	}
 
+	if resolveDepsDebug {
+		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
+	}
 	return append(list, input)
 }
 
 func DownloadModInfo(name string) (modPortalFullData, error) {
 
 	if IsBaseMod(name) {
-		return modPortalFullData{}, errors.New("this is a base-game mod")
+		return modPortalFullData{}, nil
 	}
 
 	name = url.PathEscape(name)
@@ -765,110 +610,4 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 		return modPortalFullData{}, errors.New(emsg)
 	}
 	return newInfo, nil
-}
-
-func findModUpgrade(portalItem modPortalFullData, installedItem modZipInfo) downloadData {
-
-	found := false
-	candidateVersion := installedItem.Version
-	candidateData := modReleases{}
-	for _, release := range portalItem.Releases {
-		//Check if this release is newer
-		isNewer, err := checkVersion(EO_GREATEREQ, candidateVersion, release.Version)
-		if err != nil {
-			continue
-		}
-
-		//Check if factorio is new enough
-		if isNewer {
-
-			factReject, err := checkVersion(EO_GREATEREQ, fact.FactorioVersion, release.InfoJSON.FactorioVersion)
-			if err != nil {
-				cwlog.DoLogCW("Unable to parse version: " + err.Error())
-				continue
-			}
-			if factReject {
-				continue
-			}
-			//Check dependencies
-			reject := false
-			for _, dep := range release.InfoJSON.Dependencies {
-				//This flag isn't relevant
-				dep = strings.TrimPrefix(dep, "~")
-				dep = strings.TrimSpace(dep)
-
-				//Optional dependency
-				if strings.Contains(dep, "?") {
-					continue
-				}
-
-				//Incompatible dependency
-				if strings.Contains(dep, "!") {
-					continue
-				}
-
-				parts := strings.Split(dep, " ")
-				numParts := len(parts)
-				//Check base mods
-				if IsBaseMod(parts[0]) {
-					if numParts == 3 {
-						eq := parseOperator(parts[1])
-						baseReject, err := checkVersion(eq, fact.FactorioVersion, parts[2])
-						if baseReject {
-							//cwlog.DoLogCW("Rejected: " + installedItem.Name + "-" + release.Version + ". Needs: " + dep)
-							reject = true
-							continue
-						}
-						if err != nil {
-							cwlog.DoLogCW("Unable to parse version: " + err.Error())
-							reject = true
-							continue
-						}
-					}
-				}
-			}
-
-			//Save this release
-			if !reject {
-				candidateVersion = release.Version
-				candidateData = release
-				found = true
-			}
-		}
-	}
-	if found {
-		//Check if mod is already present in old mods directory before downloading
-		//This is great for rolling back to an older version without downloading
-		oldMod := util.GetModsFolder() + constants.OldModsDir + "/" + candidateData.FileName
-		_, err := os.Stat(oldMod)
-		oldModFileNotFound := os.IsNotExist(err)
-		if !oldModFileNotFound {
-			newMod := util.GetModsFolder() + candidateData.FileName
-			err = os.Rename(oldMod, newMod)
-			if err != nil {
-				cwlog.DoLogCW("Unable to move mod from old mods directory.")
-			}
-		}
-
-		//Check if mod is already present before downloading
-		_, err = os.Stat(util.GetModsFolder() + candidateData.FileName)
-		modFileNotFound := os.IsNotExist(err)
-
-		newDL := downloadData{
-			Name:  portalItem.Name,
-			Title: portalItem.Title,
-
-			Filename:    portalItem.filename,
-			OldFilename: installedItem.Filename,
-
-			OldVersion: installedItem.Version,
-			Version:    candidateData.Version,
-
-			Data:       candidateData,
-			doDownload: modFileNotFound}
-
-		return newDL
-	}
-
-	return downloadData{}
 }

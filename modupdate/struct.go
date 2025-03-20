@@ -19,7 +19,7 @@ type ModHistoryData struct {
 }
 
 type ModHistoryItem struct {
-	BootItem                         bool
+	InfoItem                         bool
 	Name, Notes, Version, OldVersion string
 	Filename, OldFilename            string
 	Date                             time.Time
@@ -28,13 +28,12 @@ type ModHistoryItem struct {
 type downloadData struct {
 	Name, Title           string
 	Filename, OldFilename string
-	Data                  modReleases
+	Data                  modRelease
 	Complete              bool
 
 	Version, OldVersion string
 
-	doDownload bool
-	wasDep     bool
+	wasDep bool
 }
 
 type ModListData struct {
@@ -51,28 +50,29 @@ type intVersion struct {
 }
 
 type modPortalFullData struct {
-	Category          string        `json:"category"`
-	Changelog         string        `json:"changelog"`
-	CreatedAt         time.Time     `json:"created_at"`
-	Description       string        `json:"description"`
-	DownloadsCount    int           `json:"downloads_count"`
-	GithubPath        string        `json:"github_path"`
-	Homepage          string        `json:"homepage"`
-	Images            []modImages   `json:"images"`
-	LastHighlightedAt string        `json:"last_highlighted_at"`
-	License           modLicense    `json:"license"`
-	Name              string        `json:"name"`
-	Owner             string        `json:"owner"`
-	Releases          []modReleases `json:"releases"`
-	Score             float64       `json:"score"`
-	SourceURL         string        `json:"source_url"`
-	Summary           string        `json:"summary"`
-	Tags              []string      `json:"tags"`
-	Thumbnail         string        `json:"thumbnail"`
-	Title             string        `json:"title"`
-	UpdatedAt         time.Time     `json:"updated_at"`
+	Category          string       `json:"category"`
+	Changelog         string       `json:"changelog"`
+	CreatedAt         time.Time    `json:"created_at"`
+	Description       string       `json:"description"`
+	DownloadsCount    int          `json:"downloads_count"`
+	GithubPath        string       `json:"github_path"`
+	Homepage          string       `json:"homepage"`
+	Images            []modImages  `json:"images"`
+	LastHighlightedAt string       `json:"last_highlighted_at"`
+	License           modLicense   `json:"license"`
+	Name              string       `json:"name"`
+	Owner             string       `json:"owner"`
+	Releases          []modRelease `json:"releases"`
+	Score             float64      `json:"score"`
+	SourceURL         string       `json:"source_url"`
+	Summary           string       `json:"summary"`
+	Tags              []string     `json:"tags"`
+	Thumbnail         string       `json:"thumbnail"`
+	Title             string       `json:"title"`
+	UpdatedAt         time.Time    `json:"updated_at"`
 
-	filename string `json:"-"`
+	filename  string `json:"-"`
+	installed modZipInfo
 }
 
 type modImages struct {
@@ -94,7 +94,7 @@ type modInfoJSON struct {
 	FactorioVersion string   `json:"factorio_version"`
 }
 
-type modReleases struct {
+type modRelease struct {
 	DownloadURL string      `json:"download_url"`
 	FileName    string      `json:"file_name"`
 	InfoJSON    modInfoJSON `json:"info_json"`
@@ -117,4 +117,10 @@ type modZipInfo struct {
 	Filename    string
 	OldFilename string
 	Enabled     bool `json:"-"`
+}
+
+type depRequires struct {
+	name, version          string
+	equality               int
+	optional, incompatible bool
 }
