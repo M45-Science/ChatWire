@@ -33,6 +33,10 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Generating new map.")
 	fileName := fact.GenNewMap()
 
+	newHist := modupdate.ModHistoryItem{InfoItem: true,
+		Name: "Generate New Map By: " + i.Member.User.Username, Notes: fileName, Date: time.Now()}
+	modupdate.AddModHistory(newHist)
+
 	disc.InteractionEphemeralResponse(i, "Map generator", fileName)
 }
 
@@ -108,6 +112,9 @@ func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			disc.InteractionEphemeralResponse(i, "Error:", buf)
 			return
 		}
+		newHist := modupdate.ModHistoryItem{InfoItem: true,
+			Name: "Map Archived By: " + i.Member.User.Username, Notes: newmappath, Date: time.Now()}
+		modupdate.AddModHistory(newHist)
 		return
 
 	} else {

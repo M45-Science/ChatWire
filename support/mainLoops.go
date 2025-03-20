@@ -835,6 +835,10 @@ func checkFactUpdate() {
 		if !err && !upToDate {
 			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
 			cwlog.DoLogCW(msg)
+
+			newHist := modupdate.ModHistoryItem{InfoItem: true,
+				Name: "Factorio Uopdated", Notes: fact.NewVersion, Date: time.Now()}
+			modupdate.AddModHistory(newHist)
 		} else if err && !upToDate {
 			//glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
 			cwlog.DoLogCW(msg)
