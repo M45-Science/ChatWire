@@ -211,7 +211,7 @@ var cmds = []glob.CommandData{
 		Options: []glob.OptionData{
 			{
 				Name:        "mod-history",
-				Description: "See mod history and blacklist",
+				Description: "Input: Page Number. See mod history and blacklist",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{

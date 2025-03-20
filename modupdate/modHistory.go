@@ -20,12 +20,11 @@ const (
 )
 
 func ListHistory() string {
+	buf := ""
 
-	buf := "**Mod History:**\n\n"
-	var histCount = 0
 	for i, item := range ModHistory.History {
-		histCount++
-		if i > maxModHistory {
+		if i > maxItemsPage {
+			buf = buf + "\n...\n"
 			break
 		}
 
@@ -50,7 +49,7 @@ func ListHistory() string {
 		buf = "Mod history is empty."
 	}
 
-	return buf
+	return "**Mod History:**\n\n" + buf
 }
 
 func ClearHistory() string {
