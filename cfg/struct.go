@@ -109,6 +109,7 @@ type globalOptions struct {
 	DisableSpamProtect bool   `form:"RO" web:"Disable Chat Spam AutoBan"`
 	FCLWarnOnly        bool   `web:"FCL-Ban Warn-Only"`
 	FCLWarnRegulars    bool   `web:"FCL-Ban Warning For Regulars"`
+	NonBlockSave       bool
 }
 
 /* LOCAL CONFIG */
@@ -142,6 +143,7 @@ type settings struct {
 	AutosaveMin    int    `web:"Autosave Minutes"`
 	AutoPause      bool   `web:"Pause When Empty"`
 	AdminOnlyPause bool   `web:"Admin-Only Pause"`
+	Heartbeats     int    `web:"Heartbeats per second"`
 }
 
 type channel struct {

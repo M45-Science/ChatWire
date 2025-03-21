@@ -32,7 +32,12 @@ func GenerateFactorioConfig() bool {
 	autosaves := 250
 	autosave_interval := 15
 	autokick := 30
+	maxUpload := 10000
+	maxUploadSlots := 2
 
+	if cfg.Local.Settings.Heartbeats > 6 && cfg.Local.Settings.Heartbeats < 240 {
+		heartbeats = cfg.Local.Settings.Heartbeats
+	}
 	if cfg.Global.Options.AutosaveMax > 0 {
 		autosaves = cfg.Global.Options.AutosaveMax
 	}
@@ -86,7 +91,7 @@ func GenerateFactorioConfig() bool {
 	var tags []string
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
 		descrLines = append(descrLines, "Map generator: "+cfg.Local.Settings.MapGenerator)
-	} else if cfg.Local.Settings.MapPreset != "" {
+	} else if cfg.Local.Settings.MapPreset != "" && cfg.Local.Settings.MapPreset != "default" {
 		descrLines = append(descrLines, "Map preset: "+cfg.Local.Settings.MapPreset)
 	}
 	/*if cfg.Global.FactorioData.Username != "" {
@@ -143,8 +148,13 @@ func GenerateFactorioConfig() bool {
 		Autosave_slots:          autosaves,
 		Afk_autokick_interval:   autokick,
 		Auto_pause:              cfg.Local.Settings.AutoPause,
-		Only_admins_can_pause:   cfg.Local.Settings.AdminOnlyPause,
+		Only_admins_can_pause:   true,
 		Autosave_only_on_server: true,
+
+		Max_upload_slots:                   maxUploadSlots,
+		Max_upload_in_kilobytes_per_second: maxUpload,
+		Auto_pause_when_players_connect:    cfg.Local.Options.RegularsOnly,
+		Non_blocking_saving:                cfg.Global.Options.NonBlockSave,
 	}
 
 	c := "/config set"
