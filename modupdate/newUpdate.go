@@ -91,7 +91,6 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 					for _, dep := range rel.InfoJSON.Dependencies {
 						depInfo := parseDep(dep)
 						if depInfo.incompatible {
-							//TODO, check other mods here
 							continue
 						}
 						if depInfo.optional {
@@ -114,8 +113,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 							if resolveDepsDebug {
 								cwlog.DoLogCW("base dep available: %v", dep)
 							}
-							//Dep is a mod, check if we have it
-						} else {
+						} else { //Dep is a mod, check if we have it
 							haveDepInfo := false
 							depPortalInfo := modPortalFullData{}
 							if resolveDepsDebug {
@@ -142,7 +140,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
 							}
-							//If needed, download dep's deps
+							//Download dep and all of dep's deps.
 							if len(dl) > 0 {
 								for _, item := range dl {
 									downloadMods = addDownload(item, downloadMods)
@@ -239,7 +237,6 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 	shortBuf := downloadMods(downloadList)
 
-	//TO DO: Report error, don't report all up to date with errors
 	if getDownloadCount(downloadList) > 0 && len(installedMods) > 0 {
 		emsg := "Mod updates complete."
 		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Updates", emsg, glob.COLOR_CYAN)
@@ -320,7 +317,7 @@ func parseDep(input string) depRequires {
 
 	nameEnd := 0
 	versionStart := 0
-	// This properly handled malformed dependencies (no spaces) *cough flare stack cough*
+	// This properly handles malformed dependencies (no spaces) *cough flare stack cough*
 	for c, ch := range input {
 		if ch == '>' || ch == '<' || ch == '=' {
 			if nameEnd == 0 {
