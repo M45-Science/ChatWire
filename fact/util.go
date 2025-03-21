@@ -37,6 +37,49 @@ var (
 	FactRunningLock sync.Mutex
 )
 
+func GetFactUPS() (int, int, int) {
+	TickHistoryLock.Lock()
+	var tenMin []TickInt
+	var thirtyMin []TickInt
+	var oneHour []TickInt
+
+	tickHistoryLen := len(TickHistory) - 1
+	var tenMinAvr, thirtyMinAvr, oneHourAvr float64
+	if tickHistoryLen > 0 {
+		end := TickHistory[tickHistoryLen]
+		endInt := float64(end.Day*86400.0 + end.Hour*3600.0 + end.Min*60.0 + end.Sec)
+
+		if tickHistoryLen >= 600 {
+			tenMin = TickHistory[tickHistoryLen-600 : tickHistoryLen]
+
+			for _, item := range tenMin {
+				tenMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			}
+		}
+		if tickHistoryLen >= 1800 {
+			thirtyMin = TickHistory[tickHistoryLen-1800.0 : tickHistoryLen]
+
+			for _, item := range thirtyMin {
+				thirtyMinAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			}
+		}
+		if tickHistoryLen >= 3600 {
+			oneHour = TickHistory[tickHistoryLen-3600 : tickHistoryLen]
+
+			for _, item := range oneHour {
+				oneHourAvr += float64(endInt) - float64(item.Day*86400.0+item.Hour*3600.0+item.Min*60.0+item.Sec)
+			}
+		}
+
+		tenMinAvr = tenMinAvr / 180300.0 * 60.0
+		thirtyMinAvr = thirtyMinAvr / 1620900.0 * 60.0
+		oneHourAvr = oneHourAvr / 6481800.0 * 60.0
+	}
+	TickHistoryLock.Unlock()
+
+	return int(tenMinAvr), int(thirtyMinAvr), int(oneHourAvr)
+}
+
 func WriteBanBy(name, reason, banBy string) {
 	tNow := time.Now()
 	banTimeFormat := "01-02-2006"
@@ -577,6 +620,23 @@ func UpdateChannelName() {
 	}
 	if nump == 0 {
 		icon = "⚫"
+	}
+
+	_, _, hourUPSAvr := GetFactUPS()
+	if hourUPSAvr < 58 {
+		icon = "⬜"
+		if cfg.Local.Options.CustomWhitelist {
+			icon = "🟥"
+		}
+		if cfg.Local.Options.MembersOnly {
+			icon = "🟩"
+		}
+		if cfg.Local.Options.RegularsOnly {
+			icon = "🟧"
+		}
+		if nump == 0 {
+			icon = "⬛"
+		}
 	}
 
 	if nump == 0 {
