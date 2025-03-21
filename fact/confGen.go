@@ -32,7 +32,7 @@ func GenerateFactorioConfig() bool {
 	autosaves := 250
 	autosave_interval := 15
 	autokick := 30
-	maxUpload := 10000
+	maxUpload := 12500
 	maxUploadSlots := 2
 
 	if cfg.Local.Settings.Heartbeats > 6 && cfg.Local.Settings.Heartbeats < 240 {
