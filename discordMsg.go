@@ -18,21 +18,40 @@ import (
 
 // Protect against spam
 func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
-	/* Throw away messages from bots */
-	if m.Author.Bot {
-		return
-	}
+
+	message, _ := m.ContentWithMoreMentionsReplaced(s)
+	message = sclean.UnicodeCleanup(message)
 
 	messageHandlerLock.Lock()
 	defer messageHandlerLock.Unlock()
+
+	/* Protect players from dumb mistakes with registration codes, even on other maps */
+	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
+	if support.ProtectIdiots(message) {
+		replyChan := m.ChannelID
+
+		/* If they manage to post it into chat in Factorio on a different server,
+		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
+		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
+		embed := &discordgo.MessageEmbed{Title: "WARNING!!!", Description: m.Author.Username + ": " + buf, Color: glob.COLOR_RED}
+		disc.SmartWriteDiscordEmbed(replyChan, embed)
+
+		/* Delete message if possible */
+		err := s.ChannelMessageDelete(replyChan, m.ID)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
+	}
 
 	/* Ignore messages from self */
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
-	message, _ := m.ContentWithMoreMentionsReplaced(s)
-	message = sclean.UnicodeCleanup(message)
+	/* Throw away messages from bots */
+	if m.Author.Bot {
+		return
+	}
 
 	//Show attachments
 	if len(m.Attachments) > 0 {
@@ -77,32 +96,9 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 	glob.BootMessage = nil
 	glob.UpdateMessage = nil
 
-	/* Protect players from dumb mistakes with registration codes, even on other maps */
-	/* Do this before we reject bot messages, to catch factorio chat on different maps/channels */
-	if support.ProtectIdiots(message) {
-		replyChan := m.ChannelID
-
-		/* If they manage to post it into chat in Factorio on a different server,
-		the message will be seen in discord but not factorio... eh whatever it still gets invalidated */
-		buf := "You are supposed to type that into Factorio, not Discord... Invalidating code. Please read the directions more carefully..."
-		embed := &discordgo.MessageEmbed{Title: "WARNING!!!", Description: m.Author.Username + ": " + buf, Color: glob.COLOR_RED}
-		disc.SmartWriteDiscordEmbed(replyChan, embed)
-
-		/* Delete message if possible */
-		err := s.ChannelMessageDelete(replyChan, m.ID)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-	}
-
 	/* Command handling
 	 * Factorio channel ONLY */
 	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
-
-		/*
-		 * Chat message handling
-		 *  Don't bother if Factorio isn't running...
-		 */
 
 		/* Used for name matching */
 		alphafilter, _ := regexp.Compile("[^a-zA-Z]+")
