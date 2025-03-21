@@ -43,7 +43,6 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 		data := i.MessageComponentData()
 
 		for _, c := range data.Values {
-			//TODO clean these two options up
 			if strings.EqualFold(data.CustomID, "ChangeMap") {
 				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 

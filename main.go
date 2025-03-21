@@ -36,9 +36,9 @@ var (
 func main() {
 	glob.DoRegisterCommands = flag.Bool("regCommands", false, "Register discord commands")
 	glob.DoDeregisterCommands = flag.Bool("deregCommands", false, "Deregister discord commands and quit.")
-	glob.LocalTestMode = flag.Bool("localTest", false, "Turn off public/auth mode for testing")
-	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Turn off auto-launch")
-	glob.NoDiscord = flag.Bool("noDiscord", false, "Turn off Discord")
+	glob.LocalTestMode = flag.Bool("localTest", false, "Disable public/auth mode for testing")
+	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Disable auto-launch")
+	glob.NoDiscord = flag.Bool("noDiscord", false, "Disable Discord")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
