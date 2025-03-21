@@ -624,7 +624,7 @@ func UpdateChannelName() {
 	}
 
 	_, _, hourUPSAvr := GetFactUPS()
-	if math.Round(hourUPSAvr) <= 57 {
+	if hourUPSAvr > 1 && math.Round(hourUPSAvr) <= 57 {
 		icon = "⬜"
 		if cfg.Local.Options.CustomWhitelist {
 			icon = "🟥"
