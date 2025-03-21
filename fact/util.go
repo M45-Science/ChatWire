@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -37,7 +38,7 @@ var (
 	FactRunningLock sync.Mutex
 )
 
-func GetFactUPS() (int, int, int) {
+func GetFactUPS() (float64, float64, float64) {
 	TickHistoryLock.Lock()
 	var tenMin []TickInt
 	var thirtyMin []TickInt
@@ -77,7 +78,7 @@ func GetFactUPS() (int, int, int) {
 	}
 	TickHistoryLock.Unlock()
 
-	return int(tenMinAvr), int(thirtyMinAvr), int(oneHourAvr)
+	return (tenMinAvr), (thirtyMinAvr), (oneHourAvr)
 }
 
 func WriteBanBy(name, reason, banBy string) {
@@ -623,7 +624,7 @@ func UpdateChannelName() {
 	}
 
 	_, _, hourUPSAvr := GetFactUPS()
-	if hourUPSAvr < 58 {
+	if math.Round(hourUPSAvr) <= 57 {
 		icon = "⬜"
 		if cfg.Local.Options.CustomWhitelist {
 			icon = "🟥"
