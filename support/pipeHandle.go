@@ -699,7 +699,7 @@ func handleIncomingAnnounce(input *handleData) bool {
 			if glob.PausedForConnect {
 				if strings.EqualFold(glob.PausedFor, pName) {
 					glob.PausedConnectAttempt = true
-					fact.WriteFact("/gspeed 0.1")
+					fact.WriteFact("/aspeed 4")
 					msg := "Pausing game, requested by " + pName
 					fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 				}
