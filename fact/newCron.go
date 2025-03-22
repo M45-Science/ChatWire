@@ -21,8 +21,13 @@ func CheckMapReset() {
 		time.Minute * 30, time.Minute * 10, time.Minute * 5, time.Minute, time.Second * 30, time.Second * 10}
 	until := cfg.Local.Options.NextReset.Sub(time.Now().UTC().Round(time.Second)).Round(time.Second)
 
-	for _, time := range warnTimes {
-		if until == time {
+	for _, t := range warnTimes {
+		if until == t {
+			if NumPlayers == 0 {
+				if until < (time.Minute * 5) {
+					continue
+				}
+			}
 			warnMapReset()
 			break
 		}
