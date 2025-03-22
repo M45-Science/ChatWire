@@ -26,6 +26,13 @@ import (
 
 const modHistoryFile = "modUpdateHistory.dat"
 
+const (
+	BootName      = "Factorio Booted"
+	InstalledNote = "Installed"
+	AddedNote     = "Added by"
+	UpdatedNote   = "Updated"
+)
+
 func WriteModHistory() bool {
 	tempPath := modHistoryFile + ".tmp"
 	finalPath := modHistoryFile
@@ -507,9 +514,9 @@ func downloadMods(downloadList []downloadData) string {
 		}
 		shortBuf = shortBuf + dl.Name + "-" + dl.Data.Version
 
-		noteMsg := "Installed"
+		noteMsg := InstalledNote
 		if dl.OldFilename != "" {
-			noteMsg = "Updated"
+			noteMsg = UpdatedNote
 		}
 		newUpdate := ModHistoryItem{
 			Name: dl.Name, Notes: noteMsg, Date: time.Now(),
@@ -528,14 +535,21 @@ func AddModHistory(newItem ModHistoryItem) {
 
 	defer WriteModHistory()
 
-	if newItem.Notes == "Installed" {
+	if newItem.Notes == InstalledNote {
 		for i, item := range ModHistory.History {
-			if item.Name == newItem.Name && strings.HasPrefix(item.Notes, "Added by") {
+			if item.Name == newItem.Name && strings.HasPrefix(item.Notes, AddedNote) {
 				//Transfer notes
 				newItem.Notes = item.Notes
 				ModHistory.History[i] = newItem
 				return
 			}
+		}
+	}
+
+	if newItem.Name == BootName {
+		numItems := len(ModHistory.History) - 1
+		if ModHistory.History[numItems].Name == BootName {
+			//
 		}
 	}
 
