@@ -101,7 +101,7 @@ func parseResetDate(input string) string {
 	if err != nil {
 		return "Unable to parse date provided. Format is 'YYYY-MM-DD HH-MM-SS' (24-hour UTC)"
 	}
-	next := cfg.Local.Options.NextReset.UTC().Sub(time.Now().UTC())
+	next := parsedTime.Sub(time.Now().UTC())
 	if next < 0 {
 		return "That date is in the past, rejecting."
 	}
