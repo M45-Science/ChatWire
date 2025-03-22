@@ -83,9 +83,9 @@ const (
 
 	/* Throttle Discord chat */
 	CMSRate            = 1000 * time.Millisecond //Time we spend waiting for buffer to fill up once active
-	CMSRestTime        = 2000 * time.Millisecond //Time to sleep after sending a message
+	CMSRestTime        = 3000 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate        = 100 * time.Millisecond  //Time between polls
-	MaxDiscordAttempts = 95
+	MaxDiscordAttempts = 90
 )
 
 /* Factorio map preset names */
