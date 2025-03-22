@@ -77,7 +77,7 @@ func MainLoops() {
 				/* Just in case factorio hangs, bogs down or is flooded */
 				if nores == 120 {
 					msg := "Factorio unresponsive for over two minutes... rebooting."
-					cwlog.DoLogCW(msg)
+					fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
 				}
@@ -632,7 +632,7 @@ func MainLoops() {
 			fact.UpdateChannelName()
 			fact.DoUpdateChannelName()
 
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Minute * 6)
 		}
 	}()
 
@@ -688,7 +688,7 @@ func MainLoops() {
 					fact.WriteFact(glob.OnlineCommand)
 				}
 			}
-			time.Sleep(time.Minute * 15)
+			time.Sleep(time.Minute * 5)
 		}
 	}()
 
@@ -837,7 +837,7 @@ func checkFactUpdate() {
 			cwlog.DoLogCW(msg)
 
 			newHist := modupdate.ModHistoryItem{InfoItem: true,
-				Name: "Factorio Uopdated", Notes: fact.NewVersion, Date: time.Now()}
+				Name: "Factorio Updated", Notes: "To version: " + fact.NewVersion, Date: time.Now()}
 			modupdate.AddModHistory(newHist)
 		} else if err && !upToDate {
 			//glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
