@@ -184,9 +184,11 @@ func GenNewMap() string {
 
 	t := time.Now()
 	ourseed := int(t.UnixNano() - constants.CWEpoch)
+	haveSeed := false
 
 	//Use seed if specified, then clear it
 	if cfg.Local.Settings.Seed > 0 {
+		haveSeed = true
 		ourseed = cfg.Local.Settings.Seed
 		cfg.Local.Settings.Seed = 0
 		cfg.WriteLCfg()
@@ -211,7 +213,11 @@ func GenNewMap() string {
 
 	filename := util.GetSavesFolder() +
 		"/" + sName
-	factargs := []string{"--map-gen-seed", fmt.Sprintf("%v", ourseed), "--create", filename}
+	factargs := []string{"--create", filename}
+
+	if haveSeed { //If we have a custom seed, use it, otherwise let factorio randomize
+		factargs = append(factargs, "--map-gen-seed", fmt.Sprintf("%v", ourseed))
+	}
 
 	/* Append map gen if set */
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
