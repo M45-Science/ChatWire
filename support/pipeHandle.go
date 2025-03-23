@@ -682,6 +682,9 @@ func handleFactReady(input *handleData) bool {
 	return false
 }
 
+var lastConnectTime time.Time
+var lastConnector string
+
 func handleIncomingAnnounce(input *handleData) bool {
 	/********************************
 	 * Announce incoming connections
@@ -692,8 +695,15 @@ func handleIncomingAnnounce(input *handleData) bool {
 
 			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
-			fact.FactChat(fmsg)
-			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, dmsg)
+			cwlog.DoLogGame(dmsg)
+
+			if time.Since(lastConnectTime) > time.Second*30 || lastConnector != pName {
+				fact.FactChat(fmsg)
+				fact.CMS(cfg.Local.Channel.ChatChannel, dmsg)
+			}
+
+			lastConnectTime = time.Now()
+			lastConnector = pName
 
 			glob.PausedLock.Lock()
 			if glob.PausedForConnect {
