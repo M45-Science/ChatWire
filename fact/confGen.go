@@ -28,14 +28,14 @@ func GenerateFactorioConfig() bool {
 	servName := "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
 	/* Setup some defaults */
-	heartbeats := 60
+	heartbeats := 240
 	autosaves := 250
 	autosave_interval := 15
 	autokick := 30
 	maxUpload := 12500
 	maxUploadSlots := 2
 
-	if cfg.Local.Settings.Heartbeats > 6 && cfg.Local.Settings.Heartbeats < 240 {
+	if cfg.Local.Settings.Heartbeats >= 6 && cfg.Local.Settings.Heartbeats <= 240 {
 		heartbeats = cfg.Local.Settings.Heartbeats
 	}
 	if cfg.Global.Options.AutosaveMax > 0 {
