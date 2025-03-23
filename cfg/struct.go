@@ -79,9 +79,7 @@ type folderPaths struct {
 }
 
 type binaryPaths struct {
-	FactBinary   string
-	UpdaterShell string
-	Shell        string
+	FactBinary string
 }
 
 type urlPaths struct {
@@ -117,8 +115,7 @@ type local struct {
 	Callsign       string `form:"RO"`
 	Name           string
 	Port           int    `form:"RO"`
-	Comment        string `form:"-"`
-	RCONPass       string `form:"hidden" web:"Rcon Password"`
+	RCONPass       string `json:"-"`
 	LastSaveBackup int    `form:"RO" web:"Last Backup Slot"`
 
 	Settings settings

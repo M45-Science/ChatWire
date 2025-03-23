@@ -31,7 +31,6 @@ func WriteLCfg() bool {
 	finalPath := constants.CWLocalConfig
 
 	Local.Channel.Comment = "ChannelID, if blank will attempt to create a new channel."
-	Local.Comment = "RCONPass is random, generated each launch. Only here for other app to read."
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)

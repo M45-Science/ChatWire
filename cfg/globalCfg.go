@@ -133,12 +133,6 @@ func setGlobalDefaults() {
 	if Global.Paths.URLs.ModPackPath == "" {
 		Global.Paths.URLs.ModPackPath = "/modpack/"
 	}
-	if Global.Paths.Binaries.Shell == "" {
-		Global.Paths.Binaries.Shell = "/bin/bash"
-	}
-	if Global.Paths.Binaries.Shell == "" {
-		Global.Paths.Binaries.Shell = "/"
-	}
 	if Global.Paths.Binaries.FactBinary == "" {
 		Global.Paths.Binaries.FactBinary = "bin/x64/factorio"
 	}
