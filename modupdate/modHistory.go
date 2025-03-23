@@ -43,7 +43,7 @@ func ListHistory() string {
 			}
 			buf = buf + item.Version + "\n"
 		}
-		buf = buf + item.Date.UTC().Format("01-02-2006 15:04") + " UTC\n\n"
+		buf = buf + item.Date.UTC().Format("01-02-2006 15:04:05") + " UTC\n\n"
 	}
 	if buf == "" {
 		buf = "Mod history is empty."
