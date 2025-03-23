@@ -10,6 +10,19 @@ import (
 	"ChatWire/disc"
 )
 
+func TrimPrefixIgnoreCase(s, prefix string) string {
+	if strings.HasPrefix(strings.ToLower(s), strings.ToLower(prefix)) {
+		return s[len(prefix):]
+	}
+	return s
+}
+
+func ContainsIgnoreCase(s, substr string) bool {
+	return strings.Contains(
+		strings.ToLower(s), strings.ToLower(substr),
+	)
+}
+
 func GetFactorioFolder() string {
 	return cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +

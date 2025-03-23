@@ -2,14 +2,11 @@ package moderator
 
 import (
 	"ChatWire/constants"
-	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/util"
-	"bytes"
-	"encoding/json"
 	"os"
 	"strings"
 	"time"
@@ -80,7 +77,7 @@ func clearAllMods() string {
 		return "Unable to create a new mods folder: " + err.Error()
 	}
 
-	WriteModsList(modupdate.ModListData{})
+	modupdate.WriteModsList(modupdate.ModListData{})
 	return "All mods, settings and old mods were deleted."
 }
 
@@ -108,6 +105,8 @@ func addMod(i *discordgo.InteractionCreate, input string) string {
 			Name: mod, Notes: "Added by " + i.Member.User.Username, Date: time.Now()})
 
 		modList.Mods = append(modList.Mods, modupdate.ModData{Name: modName, Enabled: true})
+		modupdate.WriteModsList(modList)
+
 		if buf != "" {
 			buf = buf + ", "
 		}
@@ -115,8 +114,6 @@ func addMod(i *discordgo.InteractionCreate, input string) string {
 	}
 
 	if buf != "" {
-		modupdate.WriteModHistory()
-		WriteModsList(modList)
 		modupdate.CheckModUpdates(false)
 		return "Adding mods: " + buf
 	}
@@ -127,11 +124,11 @@ func addMod(i *discordgo.InteractionCreate, input string) string {
 func parseModName(input string) (string, bool) {
 	name := strings.TrimSpace(input)
 
-	if ContainsIgnoreCase(name, "factorio.com") {
-		temp := TrimPrefixIgnoreCase(name, "https")
-		temp = TrimPrefixIgnoreCase(temp, "http")
-		temp = TrimPrefixIgnoreCase(temp, "://mods.factorio.com/mod/")
-		temp = TrimPrefixIgnoreCase(temp, "://mods.factorio.com/download/")
+	if util.ContainsIgnoreCase(name, "factorio.com") {
+		temp := util.TrimPrefixIgnoreCase(name, "https")
+		temp = util.TrimPrefixIgnoreCase(temp, "http")
+		temp = util.TrimPrefixIgnoreCase(temp, "://mods.factorio.com/mod/")
+		temp = util.TrimPrefixIgnoreCase(temp, "://mods.factorio.com/download/")
 		var parts []string
 		if strings.Contains(temp, "?") {
 			parts = strings.Split(temp, "?")
@@ -299,57 +296,4 @@ func enableStr(b bool, pastTense bool) string {
 			return "disable"
 		}
 	}
-}
-
-func WriteModsList(modList modupdate.ModListData) bool {
-
-	finalPath := util.GetModsFolder() + constants.ModListName
-	tempPath := finalPath + ".tmp"
-
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(modList); err != nil {
-		cwlog.DoLogCW("writeModsList: enc.Encode failure")
-		return false
-	}
-
-	os.Mkdir(util.GetModsFolder(), 0755)
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModsList: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0755)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModsList: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModsList: Couldn't rename " + constants.ModListName + ".tmp file.")
-		return false
-	}
-
-	cwlog.DoLogCW("Wrote " + constants.ModListName)
-
-	return true
-}
-
-func TrimPrefixIgnoreCase(s, prefix string) string {
-	if strings.HasPrefix(strings.ToLower(s), strings.ToLower(prefix)) {
-		return s[len(prefix):]
-	}
-	return s
-}
-
-func ContainsIgnoreCase(s, substr string) bool {
-	return strings.Contains(
-		strings.ToLower(s), strings.ToLower(substr),
-	)
 }

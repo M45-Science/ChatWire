@@ -21,6 +21,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -33,7 +34,10 @@ const (
 	UpdatedNote   = "Updated"
 )
 
-func WriteModHistory() bool {
+func WriteModHistory() {
+	ModHistoryLock.Lock()
+	defer ModHistoryLock.Unlock()
+
 	tempPath := modHistoryFile + ".tmp"
 	finalPath := modHistoryFile
 
@@ -43,14 +47,14 @@ func WriteModHistory() bool {
 
 	if err := enc.Encode(ModHistory); err != nil {
 		cwlog.DoLogCW("writeModHistory: enc.Encode failure")
-		return false
+		return
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
 		cwlog.DoLogCW("writeModHistory: os.Create failure")
-		return false
+		return
 	}
 
 	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
@@ -63,13 +67,15 @@ func WriteModHistory() bool {
 
 	if err != nil {
 		cwlog.DoLogCW("writeModHistory't rename modHistory file.")
-		return false
+		return
 	}
 
-	return true
+	return
 }
 
 func ReadModHistory() bool {
+	ModHistoryLock.Lock()
+	defer ModHistoryLock.Unlock()
 
 	file, err := os.ReadFile(modHistoryFile)
 
@@ -221,7 +227,54 @@ func modInfoRead(modName string, rawData []byte) *modZipInfo {
 	return &modData
 }
 
+var modListFileLock sync.Mutex
+
+func WriteModsList(modList ModListData) bool {
+	modListFileLock.Lock()
+	defer modListFileLock.Unlock()
+
+	finalPath := util.GetModsFolder() + constants.ModListName
+	tempPath := finalPath + ".tmp"
+
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	enc.SetIndent("", "\t")
+
+	if err := enc.Encode(modList); err != nil {
+		cwlog.DoLogCW("writeModsList: enc.Encode failure")
+		return false
+	}
+
+	os.Mkdir(util.GetModsFolder(), 0755)
+	_, err := os.Create(tempPath)
+
+	if err != nil {
+		cwlog.DoLogCW("writeModsList: os.Create failure")
+		return false
+	}
+
+	err = os.WriteFile(tempPath, outbuf.Bytes(), 0755)
+
+	if err != nil {
+		cwlog.DoLogCW("writeModsList: WriteFile failure")
+	}
+
+	err = os.Rename(tempPath, finalPath)
+
+	if err != nil {
+		cwlog.DoLogCW("writeModsList: Couldn't rename " + constants.ModListName + ".tmp file.")
+		return false
+	}
+
+	cwlog.DoLogCW("Wrote " + constants.ModListName)
+
+	return true
+}
+
 func getModJSON(data []byte) []byte {
+	modListFileLock.Lock()
+	defer modListFileLock.Unlock()
+
 	// Create a reader from the byte array
 	byteReader := bytes.NewReader(data)
 
@@ -524,7 +577,6 @@ func downloadMods(downloadList []downloadData) string {
 			OldVersion: dl.OldVersion, OldFilename: dl.OldFilename,
 		}
 		AddModHistory(newUpdate)
-		WriteModHistory()
 	}
 
 	return shortBuf
@@ -532,8 +584,11 @@ func downloadMods(downloadList []downloadData) string {
 
 // Add mod history, merge "Added by" and "Installed" entries
 func AddModHistory(newItem ModHistoryItem) {
-
-	defer WriteModHistory()
+	ModHistoryLock.Lock()
+	defer func() {
+		ModHistoryLock.Unlock()
+		WriteModHistory()
+	}()
 
 	if newItem.Notes == InstalledNote {
 		for i, item := range ModHistory.History {
@@ -548,8 +603,8 @@ func AddModHistory(newItem ModHistoryItem) {
 
 	if newItem.Name == BootName {
 		numItems := len(ModHistory.History) - 1
-		if ModHistory.History[numItems].Name == BootName {
-			//
+		if numItems >= 0 && ModHistory.History[numItems].Name == BootName {
+			ModHistory.History[numItems] = newItem
 		}
 	}
 

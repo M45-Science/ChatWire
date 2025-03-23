@@ -1,6 +1,9 @@
 package modupdate
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 const (
 	EO_ERROR = iota
@@ -11,6 +14,7 @@ const (
 	EO_GREATER
 )
 
+var ModHistoryLock sync.Mutex
 var ModHistory ModHistoryData
 
 type ModHistoryData struct {

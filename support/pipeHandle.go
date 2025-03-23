@@ -872,7 +872,7 @@ func handleCrashes(input *handleData) bool {
 		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua error and will reboot.**")
 
-			newHist := modupdate.ModHistoryItem{Name: "Factorio closed with a lua error.", Date: time.Now()}
+			newHist := modupdate.ModHistoryItem{Name: "Factorio closed with a lua error.", Date: time.Now(), InfoItem: true}
 			modupdate.AddModHistory(newHist)
 
 			fact.SetFactRunning(false, true)
