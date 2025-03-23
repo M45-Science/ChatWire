@@ -830,8 +830,11 @@ func handleDesync(input *handleData) bool {
 			return true
 		}
 		if strings.Contains(input.noTimecode, "DesyncedWaitingForMap") {
-			cwlog.DoLogGame(input.noTimecode)
+			fact.CMS(cfg.Local.Channel.ChatChannel, "Desync: "+input.noTimecode)
 			cwlog.DoLogCW("desync: " + input.noTimecode)
+			newItem := modupdate.ModHistoryItem{InfoItem: true,
+				Name: "Desync", Notes: input.noTimecode, Date: time.Now()}
+			modupdate.AddModHistory(newItem)
 			return true
 		}
 	}
@@ -851,12 +854,20 @@ func handleCrashes(input *handleData) bool {
 
 		/* Mod load error */
 		if strings.Contains(input.noTimecode, "Failed to load mod") {
+			var newItem modupdate.ModHistoryItem
+
 			if input.wordListLen >= 10 {
 				modName := input.wordList[10]
 				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio failed loading game mod: "+modName)
+				newItem = modupdate.ModHistoryItem{InfoItem: true,
+					Name: "Mod load failed", Notes: input.noTimecode, Date: time.Now()}
 			} else {
 				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio failed loading game mods.")
+				newItem = modupdate.ModHistoryItem{InfoItem: true,
+					Name: "Loading game mods failed", Notes: input.noTimecode, Date: time.Now()}
 			}
+			modupdate.AddModHistory(newItem)
+
 			fact.SetAutolaunch(false, true)
 			fact.SetFactRunning(false, true)
 			return true
@@ -870,9 +881,9 @@ func handleCrashes(input *handleData) bool {
 		}
 		/* Mod Errors */
 		if strings.Contains(input.noTimecode, "caused a non-recoverable error.") {
-			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua error and will reboot.**")
+			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua-script error and will reboot.**")
 
-			newHist := modupdate.ModHistoryItem{Name: "Factorio closed with a lua error.", Date: time.Now(), InfoItem: true}
+			newHist := modupdate.ModHistoryItem{Name: "Factorio closed with a lua error.", Notes: input.noTimecode, Date: time.Now(), InfoItem: true}
 			modupdate.AddModHistory(newHist)
 
 			fact.SetFactRunning(false, true)
@@ -900,6 +911,10 @@ func handleCrashes(input *handleData) bool {
 		if strings.Contains(input.noTimecode, "Unexpected error occurred.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
 			fact.SetFactRunning(false, true)
+
+			newItem := modupdate.ModHistoryItem{InfoItem: true,
+				Name: "Factorio crashed", Notes: input.noTimecode, Date: time.Now()}
+			modupdate.AddModHistory(newItem)
 			return true
 		}
 		if strings.Contains(input.noTimecode, "CommandLineMultiplayer") {
@@ -945,12 +960,19 @@ func handleCrashes(input *handleData) bool {
 			}
 			if strings.Contains(input.noTimecode, "syntax error") || strings.Contains(input.noTimecode, "unexpected symbol") ||
 				strings.Contains(input.noTimecode, "expected") {
+				newItem := modupdate.ModHistoryItem{InfoItem: true,
+					Name: "Lua Syntax Error", Notes: input.noTimecode, Date: time.Now()}
+				modupdate.AddModHistory(newItem)
+
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua syntax error and will stop.**")
 				fact.SetAutolaunch(false, true)
 				fact.SetFactRunning(false, true)
 				return true
 			}
 			if strings.Contains(input.noTimecode, "Error while running command") {
+				newItem := modupdate.ModHistoryItem{InfoItem: true,
+					Name: "Lua Command Error", Notes: input.noTimecode, Date: time.Now()}
+				modupdate.AddModHistory(newItem)
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua command error.**")
 				fact.SetFactRunning(false, true)
 				return true
@@ -998,6 +1020,9 @@ func handleCrashes(input *handleData) bool {
 			}
 
 			if strings.Contains(input.noTimecode, "Exception at tick") {
+				newItem := modupdate.ModHistoryItem{InfoItem: true,
+					Name: "Factorio Crashed", Notes: input.noTimecode, Date: time.Now()}
+				modupdate.AddModHistory(newItem)
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
 				fact.SetFactRunning(false, true)
 			}
