@@ -69,8 +69,6 @@ func WriteModHistory() {
 		cwlog.DoLogCW("writeModHistory't rename modHistory file.")
 		return
 	}
-
-	return
 }
 
 func ReadModHistory() bool {
@@ -193,12 +191,6 @@ func GetModList() (ModListData, error) {
 	if err != nil {
 		return ModListData{}, err
 	}
-
-	/*
-		for _, item := range serverMods.Mods {
-			cwlog.DoLogCW("GetModList: %v : %v", item.Name, item.Enabled)
-		}
-	*/
 	return serverMods, nil
 }
 
@@ -605,6 +597,7 @@ func AddModHistory(newItem ModHistoryItem) {
 		numItems := len(ModHistory.History) - 1
 		if numItems >= 0 && ModHistory.History[numItems].Name == BootName {
 			ModHistory.History[numItems] = newItem
+			return
 		}
 	}
 
