@@ -74,10 +74,9 @@ func ModUpdateRollback(value uint64) string {
 			rollbackKey = 0
 
 			//perform rollback
-
 			cfg.Local.Options.ModUpdate = false
 			cfg.WriteLCfg()
-			return "(MOCK/TEST) Mod roll-back complete!\n**NOTICE: DISABLED AUTOMATIC MOD UPDATER!**"
+			return "(MOCKUP / TEST ONLY -- WIP) Mod roll-back complete!\n**NOTICE: DISABLED AUTOMATIC MOD UPDATER!**"
 		}
 		return "Invalid roll-back key"
 	}
