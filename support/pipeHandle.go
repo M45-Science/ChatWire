@@ -429,7 +429,8 @@ func handleActMsg(input *handleData) bool {
 							p.SusScore--
 						} else if strings.Contains(action, "mined") {
 							p.SusScore++
-						} else if strings.Contains(action, "deconstructing") {
+						} else if strings.Contains(action, "deconstructing") ||
+							strings.Contains(action, "deconstruction") {
 							if numWords > 3 {
 								areaString := words[4]
 								areaClean := strings.ReplaceAll(areaString, "sq", "")
