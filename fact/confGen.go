@@ -28,7 +28,7 @@ func GenerateFactorioConfig() bool {
 	servName := "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
 
 	/* Setup some defaults */
-	heartbeats := 240
+	heartbeats := 60
 	autosaves := 250
 	autosave_interval := 15
 	autokick := 30
