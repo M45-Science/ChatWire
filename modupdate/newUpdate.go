@@ -49,7 +49,7 @@ const resolveDepsDebug = false
 
 func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
 
-	if depth > 100 {
+	if depth > 10 {
 		return []downloadData{}, nil
 	}
 

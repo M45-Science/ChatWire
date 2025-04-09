@@ -649,7 +649,11 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 	return append(list, input)
 }
 
+var ModInfoLock sync.Mutex
+
 func DownloadModInfo(name string) (modPortalFullData, error) {
+	ModInfoLock.Lock()
+	defer ModInfoLock.Unlock()
 
 	if IsBaseMod(name) {
 		return modPortalFullData{}, nil
