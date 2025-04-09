@@ -9,13 +9,19 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
 const httpDownloadTimeout = time.Minute * 15
 const httpGetTimeout = time.Second * 30
 
+var HTTPLock sync.Mutex
+
 func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
+	HTTPLock.Lock()
+	time.Sleep(time.Second)
+	defer HTTPLock.Unlock()
 
 	//Change timeout based on request type
 	timeout := httpDownloadTimeout
