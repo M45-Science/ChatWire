@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -47,7 +48,7 @@ func CheckMods(force bool, reportNone bool) {
 
 const resolveDepsDebug = false
 
-func resolveDeps(parents []string, modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
+func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
 
 	if depth > 10 {
 		return []downloadData{}, nil
@@ -58,12 +59,14 @@ func resolveDeps(parents []string, modPortalData []modPortalFullData, wasDep boo
 
 		//Don't follow circular deps
 		circular := false
-		for _, parent := range parents {
+		depParentsLock.Lock()
+		for _, parent := range depParents {
 			if item.Name == parent {
 				circular = true
 				break
 			}
 		}
+		depParentsLock.Unlock()
 		if circular {
 			continue
 		}
@@ -148,8 +151,10 @@ func resolveDeps(parents []string, modPortalData []modPortalFullData, wasDep boo
 								}
 							}
 							//Recursively check dep's deps
-							parents = append(parents, item.Name)
-							dl, err := resolveDeps(parents, []modPortalFullData{depPortalInfo}, true, depth+1)
+							depParentsLock.Lock()
+							depParents = append(depParents, item.Name)
+							depParentsLock.Unlock()
+							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1)
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
@@ -183,6 +188,9 @@ func resolveDeps(parents []string, modPortalData []modPortalFullData, wasDep boo
 	//Return list of downloads
 	return downloadMods, nil
 }
+
+var depParents []string
+var depParentsLock sync.Mutex
 
 func CheckModUpdates(dryRun bool) (bool, error) {
 	// If needed, get Factorio version
@@ -225,7 +233,11 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps([]string{}, modPortalData, false, 0)
+	downloadList, err := resolveDeps(modPortalData, false, 0)
+	depParentsLock.Lock()
+	depParents = []string{}
+	depParentsLock.Unlock()
+
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
 		return false, err
