@@ -47,7 +47,7 @@ func CheckMods(force bool, reportNone bool) {
 
 const resolveDepsDebug = false
 
-func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
+func resolveDeps(parents []string, modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
 
 	if depth > 10 {
 		return []downloadData{}, nil
@@ -55,6 +55,18 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 
 	var downloadMods []downloadData
 	for _, item := range modPortalData {
+
+		//Don't follow circular deps
+		circular := false
+		for _, parent := range parents {
+			if item.Name == parent {
+				circular = true
+				break
+			}
+		}
+		if circular {
+			continue
+		}
 
 		candidate := modRelease{Version: "0.0.0"}
 		if item.installed.Version != "" {
@@ -93,10 +105,11 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 						if depInfo.incompatible {
 							continue
 						}
+						//We can ignore optional deps
 						if depInfo.optional {
-							//We can ignore optional deps
 							continue
 						}
+
 						//Check base mod version
 						if resolveDepsDebug {
 							cwlog.DoLogCW("dep name: %v, eq: %v, vers: %v :: inc: %v", depInfo.name, operatorToString(depInfo.equality), depInfo.version, depInfo.incompatible)
@@ -135,7 +148,8 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 								}
 							}
 							//Recursively check dep's deps
-							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1)
+							parents = append(parents, item.Name)
+							dl, err := resolveDeps(parents, []modPortalFullData{depPortalInfo}, true, depth+1)
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
@@ -211,7 +225,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps(modPortalData, false, 0)
+	downloadList, err := resolveDeps([]string{}, modPortalData, false, 0)
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
 		return false, err

@@ -20,7 +20,11 @@ var HTTPLock sync.Mutex
 
 func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 	HTTPLock.Lock()
-	time.Sleep(time.Second)
+	if noproxy {
+		time.Sleep(time.Millisecond * 200)
+	} else {
+		time.Sleep(time.Millisecond * 10)
+	}
 	defer HTTPLock.Unlock()
 
 	//Change timeout based on request type

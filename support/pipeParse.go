@@ -55,7 +55,7 @@ func HandleChat() {
 
 	/* Don't log if the game isn't set to run */
 	for glob.ServerRunning {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 10)
 
 		/* Check if there is anything in the input buffer */
 		if fact.GameBuffer != nil {
