@@ -69,7 +69,7 @@ func GenerateFactorioConfig() bool {
 	}
 
 	if cfg.Local.Options.SoftModOptions.FriendlyFire {
-		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE"))
+		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE: ON"))
 	}
 	if cfg.Local.Options.SoftModOptions.OneLife {
 		descrLines = append(descrLines, AddFactColor("red", "PERMADEATH"))
@@ -85,25 +85,31 @@ func GenerateFactorioConfig() bool {
 	if !cfg.Local.Settings.AutoPause {
 		descrLines = append(descrLines, AddFactColor("orange", "AUTO-PAUSE OFF"))
 	}
-	/*if cfg.Global.AuthServerBans {
+	if cfg.Global.Options.UseAuthserver {
 		descrLines = append(descrLines, "Auth-server bans enabled")
-	}*/
+	}
 	var tags []string
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
 		descrLines = append(descrLines, "Map generator: "+cfg.Local.Settings.MapGenerator)
 	} else if cfg.Local.Settings.MapPreset != "" && cfg.Local.Settings.MapPreset != "default" {
 		descrLines = append(descrLines, "Map preset: "+cfg.Local.Settings.MapPreset)
 	}
-	/*if cfg.Global.FactorioData.Username != "" {
-		descrLines = append(descrLines, "Server owner: "+cfg.Global.FactorioData.Username)
-	}*/
+	if cfg.Global.Factorio.Username != "" {
+		descrLines = append(descrLines, "Server owner: "+cfg.Global.Factorio.Username)
+	}
 	descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)))
+
+	ldesc := strings.Split(cfg.Local.Options.LocalDescription, "\n")
+	descrLines = append(descrLines, ldesc...)
+
+	supportersString := "\n[color=purple]Supporters: " + strings.Join(disc.RoleList.Patreons, ", ") + ", " + strings.Join(disc.RoleList.Supporters, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
+	descrLines = append(descrLines, supportersString)
 
 	gdesc := strings.Split(cfg.Global.Options.Description, "\n")
 	descrLines = append(descrLines, gdesc...)
 
-	ldesc := strings.Split(cfg.Local.Options.LocalDescription, "\n")
-	descrLines = append(descrLines, ldesc...)
+	//Final string
+	serverDescString := strings.Join(descrLines, "\n")
 
 	tags = append(tags, cfg.Global.GroupName)
 
@@ -118,8 +124,6 @@ func GenerateFactorioConfig() bool {
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 	tags = append(tags, "ChatWire")
-
-	serverDescString := strings.Join(descrLines, "\n") + "\n[color=purple]Supporters: " + strings.Join(disc.RoleList.Patreons, ", ") + ", " + strings.Join(disc.RoleList.Supporters, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
 
 	normalMode := true
 	if *glob.LocalTestMode {
