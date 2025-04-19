@@ -59,68 +59,93 @@ func GenerateFactorioConfig() bool {
 	}
 
 	if cfg.Local.Options.CustomWhitelist {
-		descrLines = append(descrLines, AddFactColor("red", "Whitelist: INVITE-ONLY"))
+		descrLines = append(descrLines, AddFactColor("red", "Whitelist: invite-only"))
 	} else if cfg.Local.Options.RegularsOnly {
-		descrLines = append(descrLines, AddFactColor("red", "Whitelist: REGULARS-ONLY"))
+		descrLines = append(descrLines, AddFactColor("orange", "Whitelist: regulars-only"))
 	} else if cfg.Local.Options.MembersOnly {
-		descrLines = append(descrLines, AddFactColor("red", "Whitelist: MEMBERS-ONLY"))
+		descrLines = append(descrLines, AddFactColor("yellow", "Whitelist: members-only"))
 	} else {
-		descrLines = append(descrLines, AddFactColor("green", "OPEN-TO-PUBLIC"))
+		descrLines = append(descrLines, AddFactColor("green", "No whitelist: public"))
+	}
+
+	if len(disc.RoleList.Patreons) > 0 || len(disc.RoleList.Supporters) > 0 {
+		supportersString := AddFactColor("purple", "Supporters: "+strings.Join(disc.RoleList.Patreons, ", ")+", "+strings.Join(disc.RoleList.Supporters, ", "))
+		descrLines = append(descrLines, supportersString)
+	}
+	if len(disc.RoleList.NitroBooster) > 0 {
+		nitrosString := AddFactColor("cyan", "Nitro Boosters: "+strings.Join(disc.RoleList.NitroBooster, ", "))
+		descrLines = append(descrLines, nitrosString)
+	}
+
+	if len(cfg.Local.Options.LocalDescription) > 0 {
+		ldesc := strings.Split(cfg.Local.Options.LocalDescription, "\n")
+		descrLines = append(descrLines, ldesc...)
 	}
 
 	if cfg.Local.Options.SoftModOptions.FriendlyFire {
-		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE: ON"))
+		descrLines = append(descrLines, AddFactColor("orange", "FRIENDLY FIRE: BLOCKED"))
 	}
-	if cfg.Local.Options.SoftModOptions.OneLife {
-		descrLines = append(descrLines, AddFactColor("red", "PERMADEATH"))
-		descrLines = append(descrLines, AddFactColor("red", "ONE-LIFE"))
-		descrLines = append(descrLines, AddFactColor("red", "NO-RESPAWN"))
-	}
-	if cfg.Local.Options.SoftModOptions.Cheats {
-		descrLines = append(descrLines, AddFactColor("yellow", "SANDBOX"))
-	}
-	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
-		descrLines = append(descrLines, AddFactColor("blue", "NO BLUEPRINTS"))
-	}
-	if !cfg.Local.Settings.AutoPause {
-		descrLines = append(descrLines, AddFactColor("orange", "AUTO-PAUSE OFF"))
-	}
+
 	if cfg.Global.Options.UseAuthserver {
 		descrLines = append(descrLines, "Auth-server bans enabled")
 	}
+
+	if cfg.Local.Options.SoftModOptions.OneLife {
+		descrLines = append(descrLines, AddFactColor("red", "Permadeath"))
+		descrLines = append(descrLines, AddFactColor("red", "One-life"))
+		descrLines = append(descrLines, AddFactColor("red", "No-respawn"))
+	}
+
+	if cfg.Local.Options.SoftModOptions.Cheats {
+		descrLines = append(descrLines, AddFactColor("yellow", "Sandbox"))
+	}
+
+	if cfg.Local.Options.SoftModOptions.DisableBlueprints {
+		descrLines = append(descrLines, AddFactColor("blue", "No blueprints"))
+	}
+
+	if !cfg.Local.Settings.AutoPause {
+		descrLines = append(descrLines, AddFactColor("orange", "Auto-pause off"))
+	}
+
 	var tags []string
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
 		descrLines = append(descrLines, "Map generator: "+cfg.Local.Settings.MapGenerator)
 	} else if cfg.Local.Settings.MapPreset != "" && cfg.Local.Settings.MapPreset != "default" {
 		descrLines = append(descrLines, "Map preset: "+cfg.Local.Settings.MapPreset)
 	}
+
+	if !strings.EqualFold(cfg.Local.Settings.Scenario, "none") && cfg.Local.Settings.Scenario != "" {
+		descrLines = append(descrLines, "Scenario: "+cfg.Local.Settings.Scenario)
+	}
+
+	if cfg.Global.Paths.URLs.Domain != "" {
+		descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)))
+	}
+
 	if cfg.Global.Factorio.Username != "" {
 		descrLines = append(descrLines, "Server owner: "+cfg.Global.Factorio.Username)
 	}
-	descrLines = append(descrLines, AddFactColor("green", fmt.Sprintf("Direct connect: %v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)))
 
-	ldesc := strings.Split(cfg.Local.Options.LocalDescription, "\n")
-	descrLines = append(descrLines, ldesc...)
-
-	supportersString := "\n[color=purple]Supporters: " + strings.Join(disc.RoleList.Patreons, ", ") + ", " + strings.Join(disc.RoleList.Supporters, ", ") + "[/color]\n[color=cyan]Nitro Boosters: " + strings.Join(disc.RoleList.NitroBooster, ", ") + "[/color]\n"
-	descrLines = append(descrLines, supportersString)
-
-	gdesc := strings.Split(cfg.Global.Options.Description, "\n")
-	descrLines = append(descrLines, gdesc...)
+	if len(cfg.Global.Options.Description) > 0 {
+		gdesc := strings.Split(cfg.Global.Options.Description, "\n")
+		descrLines = append(descrLines, gdesc...)
+	}
 
 	//Final string
 	serverDescString := strings.Join(descrLines, "\n")
 
+	//TAGS
 	tags = append(tags, cfg.Global.GroupName)
 
 	if cfg.Local.Options.CustomWhitelist {
 		tags = append(tags, "INVITE-ONLY")
 	} else if cfg.Local.Options.MembersOnly {
-		tags = append(tags, "MEMBERS-ONLY")
+		tags = append(tags, "Members-Only")
 	} else if cfg.Local.Options.RegularsOnly {
-		tags = append(tags, "REGULARS-ONLY")
+		tags = append(tags, "Regulars-Only")
 	} else {
-		tags = append(tags, "PUBLIC")
+		tags = append(tags, "Public")
 	}
 	tags = append(tags, cfg.Global.Paths.URLs.Domain)
 	tags = append(tags, "ChatWire")
