@@ -80,6 +80,8 @@ func StartGameLog() {
 	os.Remove("log/newest.log")
 	time.Sleep(100 * time.Millisecond)
 	os.Symlink(path.Base(glob.GameLogName), "log/newest.log")
+	os.Symlink("factorio/factorio-current.log", "log/factorio-current.log")
+	os.Symlink("factorio/factorio-previous.log", "log/factorio-previous.log")
 
 	/* Handle file errors */
 	if erra != nil {
