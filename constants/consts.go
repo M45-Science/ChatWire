@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2677-04-10.2025-1052"
+	Version            = "2678-04-19.2025-1030"
 	CWEpoch            = 1653239822390688174 //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -82,8 +82,8 @@ const (
 	WatchdogInterval = time.Second
 
 	/* Throttle Discord chat */
-	CMSRate            = 1000 * time.Millisecond //Time we spend waiting for buffer to fill up once active
-	CMSRestTime        = 3000 * time.Millisecond //Time to sleep after sending a message
+	CMSRate            = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
+	CMSRestTime        = 3500 * time.Millisecond //Time to sleep after sending a message
 	CMSPollRate        = 100 * time.Millisecond  //Time between polls
 	MaxDiscordAttempts = 90
 )
