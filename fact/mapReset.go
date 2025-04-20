@@ -165,6 +165,8 @@ func Map_reset(doReport bool) {
 }
 
 func GenNewMap() string {
+	SetResetDate()
+
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
@@ -184,6 +186,7 @@ func GenNewMap() string {
 
 	t := time.Now()
 	ourseed := int(t.UnixNano() - constants.CWEpoch)
+	cfg.Local.Options.Speed = 1
 	haveSeed := false
 
 	//Use seed if specified, then clear it
