@@ -28,21 +28,13 @@ func CheckMods(force bool, reportNone bool) {
 	}
 
 	updated, err := CheckModUpdates(false)
-	if reportNone {
-		title := modUpdateTitle
-		buf := ""
+	if reportNone || updated {
 		if err != nil {
-			buf = err.Error()
-			title = "Error"
-		}
-		if buf != "" {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, title, buf, glob.COLOR_CYAN)
+			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Warning:", err.Error(), glob.COLOR_CYAN)
 		}
 	}
-	if updated && err == nil {
-		if fact.FactIsRunning {
-			fact.QueueFactReboot = true
-		}
+	if updated && fact.FactIsRunning {
+		fact.QueueFactReboot = true
 	}
 }
 
