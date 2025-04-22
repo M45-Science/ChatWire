@@ -6,6 +6,8 @@
 [![CodeQL](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
 [![BinaryBuild](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml)
 
+[Command Overview](https://m45sci.xyz/help-discord-staff.html)
+
 ### Requirements:
 Linux<br>
 Golang 1.23+<br>
