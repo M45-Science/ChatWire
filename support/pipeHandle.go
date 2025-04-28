@@ -403,9 +403,6 @@ func handleActMsg(input *handleData) bool {
 			pname := input.wordList[1]
 			action := input.wordList[2]
 
-			words := input.wordList[3:]
-			numWords := len(words) - 1
-
 			if pname == "" {
 				return true
 			}
@@ -429,14 +426,8 @@ func handleActMsg(input *handleData) bool {
 							p.SusScore--
 						} else if strings.Contains(action, "mined") {
 							p.SusScore++
-						} else if strings.Contains(action, "deconstructing") ||
-							strings.Contains(action, "deconstruction") {
-							if numWords > 3 {
-								areaString := words[4]
-								areaClean := strings.ReplaceAll(areaString, "sq", "")
-								area, _ := strconv.Atoi(areaClean)
-								p.SusScore += int64(area / 200)
-							}
+						} else if strings.Contains(action, "decon") {
+							p.SusScore += 2
 						}
 
 						thresh := int64(constants.SusWarningThresh)
