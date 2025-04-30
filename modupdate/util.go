@@ -400,11 +400,23 @@ func MergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 		}
 	}
 
-	/*
-		for _, item := range installedMods {
-			cwlog.DoLogCW("mergeModLists: %v-%v", item.Name, item.Version)
+	baseMods := []string{"base", "elevated-rails", "quality", "space-age"}
+	for _, bmod := range baseMods {
+		found := false
+		for _, mod := range installedMods {
+			if mod.Name == bmod {
+				found = true
+				break
+			}
 		}
-	*/
+		if !found {
+			if bmod == "base" {
+				installedMods = append(installedMods, modZipInfo{Name: bmod, Enabled: true})
+			} else {
+				installedMods = append(installedMods, modZipInfo{Name: bmod, Enabled: false})
+			}
+		}
+	}
 
 	return installedMods
 }
