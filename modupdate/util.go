@@ -415,6 +415,7 @@ func MergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 			} else {
 				installedMods = append(installedMods, modZipInfo{Name: bmod, Enabled: false})
 			}
+			WriteModHistory()
 		}
 	}
 
