@@ -174,7 +174,7 @@ func listMods() string {
 		if item.Name == "base" {
 			continue
 		}
-		if item.Enabled {
+		if !item.Enabled {
 			continue
 		}
 		if ebuf != "" {
@@ -182,7 +182,7 @@ func listMods() string {
 		}
 		if modupdate.IsBaseMod(item.Name) {
 			ebuf = ebuf + item.Name + " (base mod)"
-		} else if item.Version != constants.Unknown {
+		} else if item.Version != "" {
 			ebuf = ebuf + item.Name + "-" + item.Version
 		} else {
 			ebuf = ebuf + item.Name
@@ -194,7 +194,7 @@ func listMods() string {
 		if item.Name == "base" {
 			continue
 		}
-		if !item.Enabled {
+		if item.Enabled {
 			continue
 		}
 		if dbuf != "" {
@@ -264,6 +264,7 @@ func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 						Name: mod.Name, Notes: enableStr(value, true) + " by " + i.Member.User.Username, Date: time.Now()})
 
 					dirty = true
+
 				} else {
 					emsg = emsg + "The mod '" + mod.Name + "' was already " + enableStr(value, true) + "!"
 				}
@@ -277,6 +278,12 @@ func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 	}
 	if dirty {
 		modupdate.WriteModHistory()
+		outMods := []modupdate.ModData{}
+		for _, item := range mergedMods {
+			outMods = append(outMods, modupdate.ModData{Name: item.Name, Enabled: item.Enabled})
+		}
+		outputList := modupdate.ModListData{Mods: outMods}
+		modupdate.WriteModsList(outputList)
 	}
 	return emsg
 }

@@ -41,12 +41,12 @@ type downloadData struct {
 }
 
 type ModListData struct {
-	Mods []ModData
+	Mods []ModData `json:"mods"`
 }
 
 type ModData struct {
-	Name    string
-	Enabled bool
+	Name    string `json:"name"`
+	Enabled bool   `json:"enabled"`
 }
 
 type intVersion struct {

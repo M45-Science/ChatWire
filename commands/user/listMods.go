@@ -27,7 +27,7 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if item.Name == "base" {
 			continue
 		}
-		if item.Enabled {
+		if !item.Enabled {
 			continue
 		}
 		if buf != "" {

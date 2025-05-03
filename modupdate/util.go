@@ -380,23 +380,24 @@ func MergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 			}
 		}
 		if !dupe {
-			installedMods = append(installedMods, modFile)
+			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Enabled: true})
 		}
 	}
-	for _, modFile := range jsonModList.Mods {
+	for _, mod := range jsonModList.Mods {
 		dupe := false
-		for _, item := range installedMods {
-			if item.Name == modFile.Name {
+		for i, item := range installedMods {
+			if item.Name == mod.Name {
 				dupe = true
+				installedMods[i].Enabled = mod.Enabled
 				break
 			}
 		}
 		if !dupe {
 			vers := "0.0.0"
-			if IsBaseMod(modFile.Name) {
+			if IsBaseMod(mod.Name) {
 				vers = fact.FactorioVersion
 			}
-			installedMods = append(installedMods, modZipInfo{Name: modFile.Name, Version: vers})
+			installedMods = append(installedMods, modZipInfo{Name: mod.Name, Version: vers, Enabled: mod.Enabled})
 		}
 	}
 
