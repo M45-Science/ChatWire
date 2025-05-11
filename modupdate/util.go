@@ -546,6 +546,7 @@ func downloadMods(downloadList []downloadData) string {
 				continue
 			}
 		}
+		//cwlog.DoLogCW("### OldFilename: %v", dl.OldFilename)
 
 		downloadList[d].Complete = true
 
@@ -614,6 +615,22 @@ func AddModHistory(newItem ModHistoryItem) {
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
+	modFiles, _ := GetModFiles()
+
+	modList, _ := GetModList()
+	mergedMods := MergeModLists(modFiles, modList)
+
+	//Make sure we aren't downloading a mod update we already have
+	for _, item := range mergedMods {
+		if item.Name == input.Name {
+			newer, err := checkVersion(EO_GREATEREQ, item.Version, input.Version)
+			if err == nil && newer {
+				//cwlog.DoLogCW("Skipping mod '%v', mod dupe with older version.", item.Name)
+				return list
+			}
+		}
+	}
+
 	for i, item := range list {
 		if item.Name == input.Name {
 			//Check versions
