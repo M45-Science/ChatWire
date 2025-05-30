@@ -71,7 +71,7 @@ func VoteMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+	if disc.CheckVeteran(i) || disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 		fact.ShowMapList(i, true)
 	} else {
 		buf := fmt.Sprintf("Sorry, you must have the `%v` role to use this command, see the /register command.", cfg.Global.Discord.Roles.Regular)

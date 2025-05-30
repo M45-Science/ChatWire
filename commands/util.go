@@ -53,7 +53,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					break
 				}
 			} else if strings.EqualFold(data.CustomID, "VoteMap") {
-				if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+				if disc.CheckVeteran(i) || disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 					buf := fmt.Sprintf("Submitting vote for %v, one moment please.", c)
 					disc.InteractionEphemeralResponse(i, "Notice:", buf)

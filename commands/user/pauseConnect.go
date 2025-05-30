@@ -15,7 +15,7 @@ import (
 func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	/* regular, mod or admin */
-	if disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
+	if disc.CheckVeteran(i) || disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
 		/* Lock */
 		glob.PausedLock.Lock()

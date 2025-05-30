@@ -35,7 +35,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 	}
 
 	/* Only if allowed */
-	if !disc.CheckRegular(i) && !disc.CheckModerator(i) && !disc.CheckAdmin(i) {
+	if !disc.CheckVeteran(i) && !disc.CheckRegular(i) && !disc.CheckModerator(i) && !disc.CheckAdmin(i) {
 		buf := "You must have the `" + strings.ToUpper(cfg.Global.Discord.Roles.Regular) + "` Discord role to use this command. See /register and the read-this-first channel for more info."
 		disc.InteractionEphemeralResponse(i, "Status", buf)
 		return
