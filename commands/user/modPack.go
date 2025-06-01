@@ -27,6 +27,10 @@ var (
 	lastRun     time.Time
 )
 
+func init() {
+	lastRun = time.Now().Add(-(constants.ModPackCooldownMin * time.Minute))
+}
+
 /* executes /online on the server, response handled in chat.go */
 func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	modPackLock.Lock()
@@ -134,42 +138,52 @@ func makeZipFromFileList(files []string, dest string) bool {
 	mitem := cfg.ModPackData{Path: dest, Created: time.Now()}
 	cfg.Local.ModPackList = append(cfg.Local.ModPackList, mitem)
 	cfg.WriteLCfg()
-
-	info, err := archive.Stat()
-	if err != nil {
-		cwlog.DoLogCW(err.Error())
-		return true
-	}
-	header, err := zip.FileInfoHeader(info)
-	if err != nil {
-		cwlog.DoLogCW(err.Error())
-		return true
-	}
-	header.Method = zip.Store
 	zipWriter := zip.NewWriter(archive)
 
 	for _, file := range files {
-
-		f1, err := os.Open(file)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-			return true
+		fileLower := strings.ToLower(file)
+		if strings.HasSuffix(fileLower, ".zip") || strings.HasSuffix(fileLower, ".json") || strings.HasSuffix(fileLower, ".dat") {
+			addFileToZip(zipWriter, file)
 		}
-
-		w1, err := zipWriter.Create(filepath.Base(file))
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-			f1.Close()
-			return true
-		}
-
-		if _, err := io.Copy(w1, f1); err != nil {
-			cwlog.DoLogCW(err.Error())
-			f1.Close()
-			return true
-		}
-		f1.Close()
 	}
 	zipWriter.Close()
 	return false
+}
+
+// addFileToZip adds an individual file to the zip using Store (no compression)
+func addFileToZip(zipWriter *zip.Writer, filename string) error {
+	// Open the file
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Get file info (needed for header)
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
+	// Create the zip header
+	header, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return err
+	}
+
+	// Use relative path in archive
+	header.Name = filepath.Base(filename)
+
+	// Set compression method to Store (no compression)
+	header.Method = zip.Store
+
+	// Create writer for the file in zip
+	writer, err := zipWriter.CreateHeader(header)
+	if err != nil {
+		return err
+	}
+
+	// Copy file contents to zip
+	_, err = io.Copy(writer, file)
+	return err
 }
