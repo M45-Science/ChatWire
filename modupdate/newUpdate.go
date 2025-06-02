@@ -55,6 +55,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 		for _, parent := range depParents {
 			if item.Name == parent {
 				circular = true
+				break
 			}
 		}
 		depParentsLock.Unlock()
