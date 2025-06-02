@@ -353,6 +353,7 @@ func GetModFiles() ([]modZipInfo, error) {
 
 	//Find all mods, read info.json inside each
 	var modFileList []modZipInfo
+	var modMap map[string]*modZipInfo = map[string]*modZipInfo{}
 	for _, mod := range modList {
 		if strings.HasSuffix(mod.Name(), ".zip") {
 			modInfo := modInfoRead(mod.Name(), nil)
@@ -361,8 +362,20 @@ func GetModFiles() ([]modZipInfo, error) {
 			}
 			modInfo.Filename = mod.Name()
 			//cwlog.DoLogCW("GetModFiles: " + mod.Name())
-			modFileList = append(modFileList, *modInfo)
+			if modMap[modInfo.Name] != nil {
+				greater, err := checkVersion(EO_GREATER, modMap[modInfo.Name].Version, modInfo.Version)
+				if err == nil && greater {
+					cwlog.DoLogCW("Found newer version of mod: %v: %v -> %v", modInfo.Name, modMap[modInfo.Name].Version, modInfo.Version)
+					modMap[modInfo.Name] = modInfo
+				}
+			} else {
+				modMap[modInfo.Name] = modInfo
+			}
 		}
+	}
+
+	for _, item := range modMap {
+		modFileList = append(modFileList, *item)
 	}
 
 	return modFileList, nil
@@ -623,8 +636,8 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 	//Make sure we aren't downloading a mod update we already have
 	for _, item := range mergedMods {
 		if item.Name == input.Name {
-			newer, err := checkVersion(EO_GREATEREQ, item.Version, input.Version)
-			if err == nil && newer {
+			same, err := checkVersion(EO_EQUAL, item.Version, input.Version)
+			if err == nil && same {
 				//cwlog.DoLogCW("Skipping mod '%v', mod dupe with older version.", item.Name)
 				return list
 			}
