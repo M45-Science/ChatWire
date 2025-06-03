@@ -278,6 +278,9 @@ func checkIncompatible(installed []modZipInfo, downloadList []downloadData) (boo
 
 	combined := []incMod{}
 	for _, imod := range installed {
+		if !imod.Enabled {
+			continue
+		}
 		combined = append(combined, incMod{Name: imod.Name, Version: imod.Version, Deps: imod.Dependencies})
 	}
 	for _, dmod := range downloadList {
@@ -291,11 +294,14 @@ func checkIncompatible(installed []modZipInfo, downloadList []downloadData) (boo
 			}
 			for _, depA := range itemA.Deps {
 				depInfo := parseDep(depA)
+				if depInfo.optional {
+					continue
+				}
 				if depInfo.incompatible {
 					if itemB.Name == depInfo.name {
 						good, _ := checkVersion(depInfo.equality, depInfo.version, itemB.Version)
 						if !good {
-							emsg := fmt.Sprintf("checkIncompatible: %v-%v not compatible with %v-%v! Auto-update disabled.", itemA.Name, itemA.Version, itemB.Name, itemB.Version)
+							emsg := fmt.Sprintf("checkIncompatible: %v-%v not compatible with %v-%v (%v)! Auto-update disabled.", itemA.Name, itemA.Version, itemB.Name, itemB.Version, depInfo.name)
 							cwlog.DoLogCW(emsg)
 							cfg.Local.Options.ModUpdate = false
 							cfg.WriteLCfg()
