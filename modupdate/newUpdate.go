@@ -293,15 +293,12 @@ func checkIncompatible(installed []modZipInfo, downloadList []downloadData) (boo
 				depInfo := parseDep(depA)
 				if depInfo.incompatible {
 					if itemB.Name == depInfo.name {
-						good, err := checkVersion(depInfo.equality, depInfo.version, itemB.Version)
-						if err != nil {
-							emsg := fmt.Sprintf("checkIncompatible: %v: %v", depA, err)
-							cwlog.DoLogCW(emsg)
-							return true, errors.New(emsg)
-						}
+						good, _ := checkVersion(depInfo.equality, depInfo.version, itemB.Version)
 						if !good {
-							emsg := fmt.Sprintf("checkIncompatible: %v-%v not compatible with %v-%v!", itemA.Name, itemB.Version, itemB.Name, itemB.Version)
+							emsg := fmt.Sprintf("checkIncompatible: %v-%v not compatible with %v-%v! Auto-update disabled.", itemA.Name, itemA.Version, itemB.Name, itemB.Version)
 							cwlog.DoLogCW(emsg)
+							cfg.Local.Options.ModUpdate = false
+							cfg.WriteLCfg()
 							return true, errors.New(emsg)
 						}
 					}
@@ -318,7 +315,7 @@ func parseDep(input string) depRequires {
 
 	input = strings.TrimSpace(input)
 	//Mark incompatible
-	if strings.HasPrefix(input, "!") {
+	if strings.ContainsAny(input, "!") {
 		incompatible = true
 	}
 	//Mark optional

@@ -628,19 +628,11 @@ func AddModHistory(newItem ModHistoryItem) {
 }
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
-	modFiles, _ := GetModFiles()
-
-	modList, _ := GetModList()
-	mergedMods := MergeModLists(modFiles, modList)
 
 	//Make sure we aren't downloading a mod update we already have
-	for _, item := range mergedMods {
+	for _, item := range list {
 		if item.Name == input.Name {
-			same, err := checkVersion(EO_EQUAL, item.Version, input.Version)
-			if err == nil && same {
-				//cwlog.DoLogCW("Skipping mod '%v', mod dupe with older version.", item.Name)
-				return list
-			}
+			return list
 		}
 	}
 
