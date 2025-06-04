@@ -356,3 +356,29 @@ func parseDep(input string) depRequires {
 
 	return depRequires{name: name, equality: parseOperator(equality), version: version, optional: optional, incompatible: incompatible}
 }
+
+// addDownload checks for duplicate downloads and replaces older entries.
+func addDownload(input downloadData, list []downloadData) []downloadData {
+	for i, item := range list {
+		if item.Name == input.Name {
+			newer, err := checkVersion(EO_GREATER, item.Data.Version, input.Data.Version)
+			if err != nil {
+				cwlog.DoLogCW("addDownload: Unable to parse version")
+				return list
+			}
+			if newer {
+				list[i] = input
+				if resolveDepsDebug {
+					cwlog.DoLogCW("Added newer download: %v-%v", input.Name, input.Version)
+				}
+			} else if resolveDepsDebug {
+				cwlog.DoLogCW("DID NOT ADD download: %v-%v", input.Name, input.Version)
+			}
+			return list
+		}
+	}
+	if resolveDepsDebug {
+		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
+	}
+	return append(list, input)
+}
