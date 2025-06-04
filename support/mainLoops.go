@@ -139,7 +139,7 @@ func MainLoops() {
 						for _, line := range factmsg {
 							oldlen := len(buf) + 1
 							addlen := len(line)
-							if oldlen+addlen >= 2000 {
+                                                       if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 								glob.BootMessage = nil
 								glob.UpdateMessage = nil
@@ -159,7 +159,7 @@ func MainLoops() {
 						for _, line := range moder {
 							oldlen := len(buf) + 1
 							addlen := len(line)
-							if oldlen+addlen >= 2000 {
+                                                       if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
 								buf = line
 							} else {

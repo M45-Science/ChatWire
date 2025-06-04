@@ -19,7 +19,7 @@ var (
 	FactorioVersion = constants.Unknown
 
 	NewVersion   = constants.Unknown
-	NewPatchName = constants.Unknown
+	newPatchName = constants.Unknown
 	LastSaveName = constants.Unknown
 
 	/* Factorio in-game time data */

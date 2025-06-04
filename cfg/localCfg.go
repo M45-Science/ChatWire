@@ -1,11 +1,12 @@
 package cfg
 
 import (
+	"encoding/json"
+
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
-	"bytes"
-	"encoding/json"
+	"ChatWire/util"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
 
+// GetGameLogURL builds the web URL to the current game log.
 func GetGameLogURL() string {
 	if Global.Paths.URLs.LogsPathWeb == "" {
 		return ""
@@ -26,38 +28,15 @@ func GetGameLogURL() string {
 		strings.TrimPrefix(glob.GameLogName, "log/"))
 }
 
+// WriteLCfg writes the local configuration to disk.
+// It returns true on success.
 func WriteLCfg() bool {
-	tempPath := constants.CWLocalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWLocalConfig
 
 	Local.Channel.Comment = "ChannelID, if blank will attempt to create a new channel."
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(Local); err != nil {
-		cwlog.DoLogCW("WriteLCfg: enc.Encode failure")
-		return false
-	}
-
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteLCfg: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteLCfg: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename Lcfg file.")
+	if err := util.WriteJSONAtomic(finalPath, Local, 0644); err != nil {
+		cwlog.DoLogCW("WriteLCfg: " + err.Error())
 		return false
 	}
 
@@ -119,6 +98,7 @@ func setLocalDefaults() {
 	}
 }
 
+// ReadLCfg loads the local configuration from disk, creating defaults if needed.
 func ReadLCfg() bool {
 
 	_, err := os.Stat(constants.CWLocalConfig)
@@ -126,7 +106,7 @@ func ReadLCfg() bool {
 
 	if notfound {
 		cwlog.DoLogCW("ReadLCfg: os.Stat failed, auto-defaults generated.")
-		newcfg := CreateLCfg()
+		newcfg := createLCfg()
 		Local = newcfg
 		setLocalDefaults()
 		if !Local.Settings.AutoPause {
@@ -135,54 +115,52 @@ func ReadLCfg() bool {
 		Local.Settings.AdminOnlyPause = true
 		WriteLCfg() /* Write the defaults */
 		return true
-	} else { /* Just read the config */
+	}
 
-		file, err := os.ReadFile(constants.CWLocalConfig)
+	file, err := os.ReadFile(constants.CWLocalConfig)
+	if file != nil && err == nil {
+		newcfg := createLCfg()
 
-		if file != nil && err == nil {
-			newcfg := CreateLCfg()
-
-			err := json.Unmarshal([]byte(file), &newcfg)
-			if err != nil {
-				cwlog.DoLogCW("ReadLCfg: Unmarshal failure")
-				cwlog.DoLogCW(err.Error())
-				return false
-			}
-
-			Local = newcfg
-			setLocalDefaults()
-
-			/* Automatic local defaults */
-			found := false
-			for _, t := range constants.MapTypes {
-				if strings.EqualFold(Local.Settings.MapPreset, t) {
-					found = true
-				}
-			}
-			if !found {
-				Local.Settings.MapPreset = constants.MapTypes[1]
-				cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.Settings.MapPreset)
-			}
-
-			//Migrate old setting
-			if newcfg.Options.Whitelist {
-				newcfg.Options.MembersOnly = true
-				newcfg.Options.Whitelist = false
-			}
-			if newcfg.Options.RegularsOnly {
-				newcfg.Options.MembersOnly = false
-			}
-
-			return true
-		} else {
-			cwlog.DoLogCW("ReadLCfg: ReadFile failure")
+		err := json.Unmarshal([]byte(file), &newcfg)
+		if err != nil {
+			cwlog.DoLogCW("ReadLCfg: Unmarshal failure")
+			cwlog.DoLogCW(err.Error())
 			return false
 		}
 
+		Local = newcfg
+		setLocalDefaults()
+
+		/* Automatic local defaults */
+		found := false
+		for _, t := range constants.MapTypes {
+			if strings.EqualFold(Local.Settings.MapPreset, t) {
+				found = true
+			}
+		}
+		if !found {
+			Local.Settings.MapPreset = constants.MapTypes[1]
+			cwlog.DoLogCW("ReadLCfg: MapPreset not valid, setting to " + Local.Settings.MapPreset)
+		}
+
+		//Migrate old setting
+		if newcfg.Options.Whitelist {
+			newcfg.Options.MembersOnly = true
+			newcfg.Options.Whitelist = false
+		}
+		if newcfg.Options.RegularsOnly {
+			newcfg.Options.MembersOnly = false
+		}
+
+		return true
 	}
+
+	cwlog.DoLogCW("ReadLCfg: ReadFile failure")
+	return false
 }
 
-func CreateLCfg() local {
+// createLCfg returns a new empty local configuration structure.
+func createLCfg() local {
 	newcfg := local{}
 	return newcfg
 }

@@ -15,14 +15,13 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/util"
 )
 
 /* Generate a server-settings.json file for Factorio */
 func GenerateFactorioConfig() bool {
 
 	tempPath := constants.ServSettingsName + ".tmp"
-	finalPath := util.GetFactorioFolder() +
+	finalPath := cfg.GetFactorioFolder() +
 		constants.ServSettingsName
 
 	servName := "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name
@@ -235,14 +234,7 @@ func GenerateFactorioConfig() bool {
 		return false
 	}
 
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("GenerateFactorioConfig: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("GenerateFactorioConfig: WriteFile failure")

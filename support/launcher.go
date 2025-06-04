@@ -22,7 +22,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
-	"ChatWire/util"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -142,9 +141,8 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 	return true
 }
 
-/* Find the newest save game */
 func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 
@@ -316,7 +314,7 @@ func injectSoftMod(fileName, folderName string) {
 		}
 
 		/* Add old save files into zip */
-		path := util.GetSavesFolder()
+		path := cfg.GetSavesFolder()
 
 		newZipFile, err := os.Create(path + constants.TempSaveName)
 		if err != nil {
@@ -407,7 +405,7 @@ func launchFactorio() {
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
 
-	/* Clear this so we know if the the loaded map has our soft mod or not */
+	/* Clear this so we know if the loaded map has our soft mod or not */
 	glob.SoftModVersion = constants.Unknown
 	glob.OnlineCommand = constants.OnlineCommand
 	fact.OnlinePlayersLock.Lock()
@@ -663,7 +661,7 @@ func ConfigSoftMod() {
 }
 
 func GetModFiles() []string {
-	modPath := util.GetModsFolder()
+	modPath := cfg.GetModsFolder()
 
 	modList, errm := os.ReadDir(modPath)
 	modStrings := []string{}

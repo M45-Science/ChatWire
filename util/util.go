@@ -4,12 +4,10 @@ import (
 	"os"
 	"strings"
 
-	"ChatWire/cfg"
-	"ChatWire/constants"
 	"ChatWire/cwlog"
-	"ChatWire/disc"
 )
 
+// TrimPrefixIgnoreCase removes prefix from s in a case-insensitive manner.
 func TrimPrefixIgnoreCase(s, prefix string) string {
 	if strings.HasPrefix(strings.ToLower(s), strings.ToLower(prefix)) {
 		return s[len(prefix):]
@@ -17,82 +15,15 @@ func TrimPrefixIgnoreCase(s, prefix string) string {
 	return s
 }
 
+// ContainsIgnoreCase reports whether substr is within s ignoring case.
 func ContainsIgnoreCase(s, substr string) bool {
 	return strings.Contains(
 		strings.ToLower(s), strings.ToLower(substr),
 	)
 }
 
-func GetFactorioFolder() string {
-	return cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/"
-}
-
-func GetModsFolder() string {
-	//Mod folder path
-	return cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
-}
-
-func GetSavesFolder() string {
-	return cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		cfg.Global.Paths.Folders.Saves
-}
-
-/*  IsPatreon checks if player has patreon role */
-func IsPatreon(id string) bool {
-	if id == "" || disc.DS == nil {
-		return false
-	}
-	g := disc.Guild
-
-	if g != nil {
-		for _, m := range g.Members {
-			if m.User.ID == id {
-				for _, r := range m.Roles {
-					if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Patreon) {
-						return true
-					} else if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Supporter) {
-						return true
-					}
-				}
-			}
-		}
-	}
-	return false
-}
-
-/*  IsNitro checks if player has nitro role */
-func IsNitro(id string) bool {
-	if id == "" || disc.DS == nil {
-		return false
-	}
-	g := disc.Guild
-
-	if g != nil {
-		for _, m := range g.Members {
-			if m.User.ID == id {
-				for _, r := range m.Roles {
-					if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.Nitro) {
-						return true
-					}
-				}
-			}
-		}
-	}
-	return false
-}
-
-/* Convert string to bool
- * True, error */
+// StringToBool converts a string to a boolean. The second return value
+// indicates whether the conversion failed.
 func StringToBool(txt string) (bool, bool) {
 	if strings.ToLower(txt) == "true" ||
 		strings.ToLower(txt) == "t" ||
@@ -117,16 +48,15 @@ func StringToBool(txt string) (bool, bool) {
 	return false, true
 }
 
-/* Bool to string */
+// BoolToOnOff converts a boolean to the strings "on" or "off".
 func BoolToOnOff(b bool) string {
 	if b {
 		return "on"
-	} else {
-		return "off"
 	}
+	return "off"
 }
 
-/* Delete old signal files */
+// ClearOldSignals removes leftover signal files from previous runs.
 func ClearOldSignals() {
 	if err := os.Remove(".qrestart"); err == nil {
 		cwlog.DoLogCW("old .qrestart removed.")

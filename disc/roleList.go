@@ -1,7 +1,6 @@
 package disc
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"strings"
@@ -9,6 +8,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/util"
 )
 
 /* Discord role member-lists */
@@ -18,39 +18,14 @@ var (
 )
 
 /* Cache a list of players with specific Discord roles */
-func WriteRoleList() bool {
+func writeRoleList() bool {
 
-	tempPath := constants.RoleListFile + "." + cfg.Local.Callsign + ".tmp"
 	finalPath := constants.RoleListFile
-
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
 
 	RoleList.Version = "0.0.1"
 
-	if err := enc.Encode(RoleList); err != nil {
-		cwlog.DoLogCW("Writecfg.RoleList: enc.Encode failure")
-		return false
-	}
-
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Writecfg.RoleList: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("Writecfg.RoleList: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename RoleList file.")
+	if err := util.WriteJSONAtomic(finalPath, RoleList, 0644); err != nil {
+		cwlog.DoLogCW("Writecfg.RoleList: " + err.Error())
 		return false
 	}
 
@@ -58,7 +33,7 @@ func WriteRoleList() bool {
 }
 
 /* Create a new RoleList */
-func CreateRoleList() RoleListData {
+func createRoleList() RoleListData {
 	newcfg := RoleListData{Version: "0.0.1"}
 	return newcfg
 }
@@ -71,10 +46,10 @@ func ReadRoleList() bool {
 
 	if notfound {
 		cwlog.DoLogCW("ReadGCfg: os.Stat failed, auto-defaults generated.")
-		newcfg := CreateRoleList()
+		newcfg := createRoleList()
 		RoleList = newcfg
 
-		_, err := os.Create(constants.RoleListFile)
+		err := os.WriteFile(constants.RoleListFile, []byte("{}"), 0644)
 		if err != nil {
 			cwlog.DoLogCW("Could not create RoleList.")
 			return false
@@ -84,7 +59,7 @@ func ReadRoleList() bool {
 		file, err := os.ReadFile(constants.RoleListFile)
 
 		if file != nil && err == nil {
-			newcfg := CreateRoleList()
+			newcfg := createRoleList()
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
@@ -166,7 +141,7 @@ func UpdateRoleList() {
 		}
 		if foundChange {
 			RoleListUpdated = true
-			WriteRoleList()
+			writeRoleList()
 		}
 	}
 }

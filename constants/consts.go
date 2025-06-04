@@ -37,6 +37,11 @@ const (
 	ModPackCooldownMin  = 5
 	MaxModPacks         = 4
 	ErrMsgDelay         = time.Second * 3
+	// Default offset added to Factorio server port for RCON
+	RconPortOffset = 10000
+
+	// Minimum bytes required in level.dat0 to consider a save valid
+	LevelDatMinSize = 50 * 1024
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 30
@@ -84,8 +89,24 @@ const (
 	/* Throttle Discord chat */
 	CMSRate            = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
 	CMSRestTime        = 3500 * time.Millisecond //Time to sleep after sending a message
-	CMSPollRate        = 100 * time.Millisecond  //Time between polls
-	MaxDiscordAttempts = 90
+        CMSPollRate        = 100 * time.Millisecond  //Time between polls
+        MaxDiscordAttempts = 90
+
+	/* Discord limits */
+	MaxDiscordMsgLen = 2000
+	
+	/* Auto port assignment */
+	AlphaStartValue = 10000
+	
+	/* Mod history settings */
+	ModHistoryKeyStart = 10000
+	ModHistoryMaxKey   = 99999
+	MaxModHistory      = 250
+	ModHistoryPageSize = 25
+	
+	/* Moderator uploads */
+	MaxModSettingsSize = 1024 * 1024 //1MB
+	MaxModListSize     = 1024 * 1024 //1MB
 )
 
 /* Factorio map preset names */

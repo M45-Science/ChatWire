@@ -20,10 +20,9 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/util"
 )
 
-func GetMapTypeNum(mapt string) int {
+func getMapTypeNum(mapt string) int {
 	i := 0
 
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
@@ -37,7 +36,7 @@ func GetMapTypeNum(mapt string) int {
 	return -1
 }
 
-func GetMapTypeName(num int) string {
+func getMapTypeName(num int) string {
 
 	numMaps := len(constants.MapTypes)
 	if num >= 0 && num < numMaps {
@@ -94,19 +93,20 @@ func Map_reset(doReport bool) {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ModsFolder + "/"
 
-	files, err := os.ReadDir(qPath)
+	_, err := os.Stat(qPath)
 	if err != nil {
-		cwlog.DoLogCW(err.Error())
-	}
-	_, err = os.Stat(qPath)
-	notfound := os.IsNotExist(err)
-
-	if notfound {
-		_, err = os.Create(qPath)
-		if err != nil {
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(qPath, os.ModePerm); err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+		} else {
 			cwlog.DoLogCW(err.Error())
 		}
 	} else {
+		files, err := os.ReadDir(qPath)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
+		}
 		for _, f := range files {
 			if strings.EqualFold(f.Name(), constants.ModSettingsName) {
 				err := os.Rename(qPath+f.Name(), modPath+f.Name())
@@ -173,7 +173,7 @@ func GenNewMap() string {
 	cfg.Local.Options.SkipReset = false //Turn off skip reset
 	cfg.WriteLCfg()
 
-	genpath := util.GetSavesFolder()
+	genpath := cfg.GetSavesFolder()
 	flist, err := filepath.Glob(genpath + "/gen-*.zip")
 	if err != nil {
 		panic(err)
@@ -211,10 +211,10 @@ func GenNewMap() string {
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
-	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%02d%v", getMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	sName := "gen-" + ourcode + ".zip"
 
-	filename := util.GetSavesFolder() +
+	filename := cfg.GetSavesFolder() +
 		"/" + sName
 	factargs := []string{"--create", filename}
 

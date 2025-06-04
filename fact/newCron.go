@@ -108,12 +108,12 @@ func HasResetTime() bool {
 	return cfg.Local.Options.NextReset.Unix() > 0
 }
 
-func DisableNextReset() {
+func disableNextReset() {
 	cfg.Local.Options.NextReset = time.Time{}
 	cfg.WriteLCfg()
 }
 
-func DisableResetSchedule() {
+func disableResetSchedule() {
 	cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
 	cfg.WriteLCfg()
 }
@@ -159,34 +159,34 @@ func FormatResetInterval() string {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v month%v", i.Months, Plural(i.Months))
+		buf = buf + fmt.Sprintf("%v month%v", i.Months, plural(i.Months))
 	}
 	if i.Weeks > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v week%v", i.Weeks, Plural(i.Weeks))
+		buf = buf + fmt.Sprintf("%v week%v", i.Weeks, plural(i.Weeks))
 	}
 	if i.Days > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v day%v", i.Days, Plural(i.Days))
+		buf = buf + fmt.Sprintf("%v day%v", i.Days, plural(i.Days))
 	}
 	if i.Hours > 0 {
 		if !first {
 			buf = buf + ", "
 		}
 		first = false
-		buf = buf + fmt.Sprintf("%v hour%v", i.Hours, Plural(i.Hours))
+		buf = buf + fmt.Sprintf("%v hour%v", i.Hours, plural(i.Hours))
 	}
 
 	return "Every " + buf
 }
 
-func Plural(i int) string {
+func plural(i int) string {
 	if i > 1 {
 		return "s"
 	}

@@ -8,7 +8,6 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
-	"ChatWire/util"
 	"bytes"
 	"encoding/binary"
 	"os"
@@ -26,7 +25,7 @@ func handleModList(modListBytes []byte) {
 		return
 	}
 	if len(modListBytes) > 0 {
-		savePath := util.GetModsFolder()
+		savePath := cfg.GetModsFolder()
 		modListPath := savePath + constants.ModListName
 
 		err := os.WriteFile(modListPath, modListBytes, 0655)
@@ -91,7 +90,7 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 		return nil
 	}
 	if name == typeName {
-		if len(data) > MaxModSettingsSize {
+               if len(data) > constants.MaxModSettingsSize {
 			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status",
 				"**The "+typeName+" is too large, skipping... **", glob.COLOR_RED)
 			return nil
@@ -115,7 +114,7 @@ func insertModSettings(modSettingsData []byte) bool {
 			return true
 		}
 
-		modPath := util.GetModsFolder()
+		modPath := cfg.GetModsFolder()
 		msPath := modPath + constants.ModSettingsName
 		err := os.WriteFile(msPath, modSettingsData, 0644)
 		if err != nil {

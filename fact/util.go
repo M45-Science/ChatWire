@@ -23,12 +23,10 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-	"ChatWire/util"
 )
 
 const (
-	MaxZipSize       = 1024 * 1024 * 1024 //1gb
-	maxDiscordMsgLen = 2000
+       MaxZipSize = 1024 * 1024 * 1024 //1gb
 )
 
 var (
@@ -149,7 +147,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 				defer fc.Close()
 				if strings.HasSuffix(file.Name, "level.dat0") {
 					content, err := io.ReadAll(fc)
-					if len(content) > (50*1024) && err == nil {
+					if len(content) > constants.LevelDatMinSize && err == nil {
 						return true, filepath.Dir(file.Name)
 					} else {
 						return false, ""
@@ -249,7 +247,7 @@ func WhitelistPlayer(pname string, level int) {
 /* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
 
-	wpath := util.GetFactorioFolder() +
+	wpath := cfg.GetFactorioFolder() +
 		constants.AdminlistName
 
 	glob.PlayerListLock.RLock()
@@ -276,14 +274,7 @@ func WriteAdminlist() int {
 	buf = buf + "\n]\n"
 	glob.PlayerListLock.RUnlock()
 
-	_, err := os.Create(wpath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteAdminlist: os.Create failure")
-		return -1
-	}
-
-	err = os.WriteFile(wpath, []byte(buf), 0644)
+	err := os.WriteFile(wpath, []byte(buf), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteAdminlist: WriteFile failure")
@@ -295,7 +286,7 @@ func WriteAdminlist() int {
 /* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
-	wpath := util.GetFactorioFolder() +
+	wpath := cfg.GetFactorioFolder() +
 		constants.WhitelistName
 
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
@@ -362,14 +353,7 @@ func WriteWhitelist() int {
 		buf = buf + "\n]\n"
 		glob.PlayerListLock.RUnlock()
 
-		_, err := os.Create(wpath)
-
-		if err != nil {
-			cwlog.DoLogCW("WriteWhitelist: os.Create failure")
-			return -1
-		}
-
-		err = os.WriteFile(wpath, []byte(buf), 0644)
+		err := os.WriteFile(wpath, []byte(buf), 0644)
 
 		if err != nil {
 			cwlog.DoLogCW("WriteWhitelist: WriteFile failure")
@@ -447,7 +431,7 @@ func WriteFact(format string, args ...interface{}) {
 
 		plen := len(buf)
 
-		if plen > 2000 {
+               if plen > constants.MaxDiscordMsgLen {
 			cwlog.DoLogCW("Message to Factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
@@ -709,7 +693,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -793,7 +777,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 			saveName := strings.TrimSuffix(fName, ".zip")
 			step++
 
-			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
+			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
 			if err != nil {
 				panic(err)
 			}
@@ -876,7 +860,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -983,7 +967,7 @@ func DoChangeMap(arg string) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)
@@ -1280,7 +1264,7 @@ func GetUpdateCachePath() string {
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
-	text = sclean.TruncateStringEllipsis(text, maxDiscordMsgLen)
+       text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
 	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 

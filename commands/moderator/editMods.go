@@ -1,6 +1,7 @@
 package moderator
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -37,10 +38,10 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "list-mods":
 			tmsg = tmsg + listMods()
 		case "enable-mod":
-			msg = ToggleMod(i, option.StringValue(), true)
+			msg = toggleMod(i, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
 		case "disable-mod":
-			msg = ToggleMod(i, option.StringValue(), false)
+			msg = toggleMod(i, option.StringValue(), false)
 			tmsg = tmsg + msg + "\n"
 		case "add-mod":
 			tmsg = tmsg + addMod(i, option.StringValue())
@@ -68,11 +69,11 @@ func clearAllMods() string {
 		emsg := "Factorio is currently running. You must stop Factorio first."
 		return emsg
 	}
-	err := os.RemoveAll(util.GetModsFolder())
+	err := os.RemoveAll(cfg.GetModsFolder())
 	if err != nil {
 		return "Unable to delete mods folder: " + err.Error()
 	}
-	err = os.Mkdir(util.GetModsFolder(), 0755)
+	err = os.Mkdir(cfg.GetModsFolder(), 0755)
 	if err != nil {
 		return "Unable to create a new mods folder: " + err.Error()
 	}
@@ -226,7 +227,7 @@ func listMods() string {
 	return ebuf + dbuf
 }
 
-func ToggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
+func toggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 	if fact.FactorioBooted || fact.FactIsRunning {
 		emsg := "Factorio is currently running. You must stop Factorio first."
 		return emsg
