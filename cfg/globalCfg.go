@@ -1,7 +1,6 @@
 package cfg
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"os/user"
@@ -10,6 +9,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 var (
@@ -22,7 +22,6 @@ var (
 // WriteGCfg writes the global configuration to disk.
 // It returns true on success.
 func WriteGCfg() bool {
-	tempPath := constants.CWGlobalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWGlobalConfig
 
 	Global.Discord.Comment = "RoleID to ping for suspicious activity, if any."
@@ -30,25 +29,8 @@ func WriteGCfg() bool {
 	Global.Discord.Roles.RoleCache.Comment = "Cached Role IDs, in case lookup is slow or fails."
 	Global.Options.Comment = "RoleID to ping on map resets, if any."
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(Global); err != nil {
-		cwlog.DoLogCW("WriteGCfg: enc.Encode failure")
-		return false
-	}
-
-	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteGCfg: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename Gcfg file.")
+	if err := util.WriteJSONAtomic(finalPath, Global, 0644); err != nil {
+		cwlog.DoLogCW("WriteGCfg: " + err.Error())
 		return false
 	}
 

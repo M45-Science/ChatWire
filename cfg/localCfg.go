@@ -1,11 +1,12 @@
 package cfg
 
 import (
+	"encoding/json"
+
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
-	"bytes"
-	"encoding/json"
+	"ChatWire/util"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -30,30 +31,12 @@ func GetGameLogURL() string {
 // WriteLCfg writes the local configuration to disk.
 // It returns true on success.
 func WriteLCfg() bool {
-	tempPath := constants.CWLocalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWLocalConfig
 
 	Local.Channel.Comment = "ChannelID, if blank will attempt to create a new channel."
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(Local); err != nil {
-		cwlog.DoLogCW("WriteLCfg: enc.Encode failure")
-		return false
-	}
-
-	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteLCfg: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename Lcfg file.")
+	if err := util.WriteJSONAtomic(finalPath, Local, 0644); err != nil {
+		cwlog.DoLogCW("WriteLCfg: " + err.Error())
 		return false
 	}
 

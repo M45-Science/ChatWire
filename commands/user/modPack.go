@@ -19,7 +19,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
-	"ChatWire/util"
 )
 
 var (
@@ -58,7 +57,7 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	modPath := util.GetModsFolder()
+	modPath := cfg.GetModsFolder()
 	var modsList []string = []string{}
 	modFiles := 0
 	for _, item := range jfile.Mods {

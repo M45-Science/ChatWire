@@ -23,7 +23,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-	"ChatWire/util"
 )
 
 const (
@@ -249,7 +248,7 @@ func WhitelistPlayer(pname string, level int) {
 /* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
 
-	wpath := util.GetFactorioFolder() +
+	wpath := cfg.GetFactorioFolder() +
 		constants.AdminlistName
 
 	glob.PlayerListLock.RLock()
@@ -288,7 +287,7 @@ func WriteAdminlist() int {
 /* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
-	wpath := util.GetFactorioFolder() +
+	wpath := cfg.GetFactorioFolder() +
 		constants.WhitelistName
 
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
@@ -695,7 +694,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -862,7 +861,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -969,7 +968,7 @@ func DoChangeMap(arg string) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)

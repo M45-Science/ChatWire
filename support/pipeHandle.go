@@ -21,7 +21,6 @@ import (
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/sclean"
-	"ChatWire/util"
 )
 
 /* Protect players from dumb mistakes with registration codes */
@@ -343,10 +342,10 @@ func handlePlayerJoin(input *handleData) bool {
 				/* Give people patreon/nitro tags in-game. */
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				if did != "" {
-					if util.IsPatreon(did) {
+					if disc.IsPatreon(did) {
 						fact.WriteFact("/patreon %s", pname)
 					}
-					if util.IsNitro(did) {
+					if disc.IsNitro(did) {
 						fact.WriteFact("/nitro %s", pname)
 					}
 				}
@@ -773,7 +772,7 @@ func handleExitSave(input *handleData) bool {
 			}
 
 			/* Path for backup save */
-			newPath := util.GetSavesFolder() + "/"
+			newPath := cfg.GetSavesFolder() + "/"
 			/* Name for backup save */
 			newName := fmt.Sprintf("bak-%v.zip", cfg.Local.LastSaveBackup)
 

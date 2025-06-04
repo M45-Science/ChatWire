@@ -20,7 +20,6 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/util"
 )
 
 func GetMapTypeNum(mapt string) int {
@@ -174,7 +173,7 @@ func GenNewMap() string {
 	cfg.Local.Options.SkipReset = false //Turn off skip reset
 	cfg.WriteLCfg()
 
-	genpath := util.GetSavesFolder()
+	genpath := cfg.GetSavesFolder()
 	flist, err := filepath.Glob(genpath + "/gen-*.zip")
 	if err != nil {
 		panic(err)
@@ -215,7 +214,7 @@ func GenNewMap() string {
 	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	sName := "gen-" + ourcode + ".zip"
 
-	filename := util.GetSavesFolder() +
+	filename := cfg.GetSavesFolder() +
 		"/" + sName
 	factargs := []string{"--create", filename}
 

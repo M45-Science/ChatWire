@@ -117,7 +117,7 @@ func IsBaseMod(dep string) bool {
 }
 
 func GetModList() (ModListData, error) {
-	path := util.GetModsFolder() + constants.ModListName
+	path := cfg.GetModsFolder() + constants.ModListName
 
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -135,7 +135,7 @@ func GetModList() (ModListData, error) {
 func modInfoRead(modName string, rawData []byte) *modZipInfo {
 	var err error
 	if rawData == nil {
-		path := util.GetModsFolder() + "/" + modName
+		path := cfg.GetModsFolder() + "/" + modName
 
 		rawData, err = os.ReadFile(path)
 		if err != nil {
@@ -163,10 +163,10 @@ func WriteModsList(modList ModListData) bool {
 	modListFileLock.Lock()
 	defer modListFileLock.Unlock()
 
-	finalPath := util.GetModsFolder() + constants.ModListName
-	os.Mkdir(util.GetModsFolder(), 0755)
+	finalPath := cfg.GetModsFolder() + constants.ModListName
+	os.Mkdir(cfg.GetModsFolder(), 0755)
 
-	if err := writeJSONAtomic(finalPath, modList, 0755); err != nil {
+	if err := util.WriteJSONAtomic(finalPath, modList, 0755); err != nil {
 		cwlog.DoLogCW("writeModsList: " + err.Error())
 		return false
 	}
@@ -257,7 +257,7 @@ func checkSHA1(data []byte, checkHash string) bool {
 
 func GetModFiles() ([]modZipInfo, error) {
 	//Read mods directory
-	modList, err := os.ReadDir(util.GetModsFolder())
+	modList, err := os.ReadDir(cfg.GetModsFolder())
 	if err != nil {
 		emsg := "checkModUpdates: Unable to read mods dir: " + err.Error()
 		return nil, errors.New(emsg)
@@ -349,7 +349,7 @@ func getDownloadCount(downloadList []downloadData) int {
 
 func downloadMods(downloadList []downloadData) string {
 
-	modPath := util.GetModsFolder()
+	modPath := cfg.GetModsFolder()
 
 	//Show download status
 	downloadCount := getDownloadCount(downloadList)
