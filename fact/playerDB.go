@@ -451,17 +451,6 @@ func WritePlayers() {
 	defer glob.PlayerListWriteLock.Unlock()
 
 	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-	pdb, err := os.Create(dbPath)
-	if err != nil {
-		cwlog.DoLogCW("Couldn't write db file, path: %v", dbPath)
-		return
-	}
-	/*  close pdb on exit and check for its returned error */
-	defer func() {
-		if err := pdb.Close(); err != nil {
-			panic(err)
-		}
-	}()
 
 	glob.PlayerListLock.RLock()
 
@@ -474,7 +463,7 @@ func WritePlayers() {
 	glob.PlayerListLock.RUnlock()
 
 	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
-	err = os.WriteFile(nfilename, outbuf.Bytes(), 0644)
+	err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("Couldn't write db temp file.")
