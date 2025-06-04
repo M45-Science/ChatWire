@@ -148,7 +148,7 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 				defer fc.Close()
 				if strings.HasSuffix(file.Name, "level.dat0") {
 					content, err := io.ReadAll(fc)
-					if len(content) > (50*1024) && err == nil {
+					if len(content) > constants.LevelDatMinSize && err == nil {
 						return true, filepath.Dir(file.Name)
 					} else {
 						return false, ""
