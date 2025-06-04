@@ -34,14 +34,7 @@ func WriteRoleList() bool {
 		return false
 	}
 
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Writecfg.RoleList: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("Writecfg.RoleList: WriteFile failure")
@@ -74,7 +67,7 @@ func ReadRoleList() bool {
 		newcfg := CreateRoleList()
 		RoleList = newcfg
 
-		_, err := os.Create(constants.RoleListFile)
+		err := os.WriteFile(constants.RoleListFile, []byte("{}"), 0644)
 		if err != nil {
 			cwlog.DoLogCW("Could not create RoleList.")
 			return false

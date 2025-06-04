@@ -50,14 +50,7 @@ func WriteModHistory() {
 		return
 	}
 
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModHistory: os.Create failure")
-		return
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("writeModHistory: WriteFile failure")
@@ -238,14 +231,7 @@ func WriteModsList(modList ModListData) bool {
 	}
 
 	os.Mkdir(util.GetModsFolder(), 0755)
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModsList: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0755)
+	err := os.WriteFile(tempPath, outbuf.Bytes(), 0755)
 
 	if err != nil {
 		cwlog.DoLogCW("writeModsList: WriteFile failure")

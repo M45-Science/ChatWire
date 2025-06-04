@@ -102,7 +102,7 @@ func Map_reset(doReport bool) {
 	notfound := os.IsNotExist(err)
 
 	if notfound {
-		_, err = os.Create(qPath)
+		err = os.MkdirAll(qPath, os.ModePerm)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
