@@ -10,7 +10,7 @@ import (
 )
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */
-func GetMapGenNames() []string {
+func getMapGenNames() []string {
 	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.MapGenerators
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -30,13 +30,13 @@ func GetMapGenNames() []string {
 }
 
 /* See if this map gen exists */
-func CheckMapGen(text string) bool {
+func checkMapGen(text string) bool {
 
 	/* Allow no generator */
 	if text == "" || text == "none" {
 		return true
 	}
-	genNames := GetMapGenNames()
+	genNames := getMapGenNames()
 	for _, name := range genNames {
 		if strings.EqualFold(name, text) {
 			return true
@@ -45,7 +45,7 @@ func CheckMapGen(text string) bool {
 	return false
 }
 
-func CheckMapTypes(text string) bool {
+func checkMapTypes(text string) bool {
 
 	names := constants.MapTypes
 	for _, name := range names {

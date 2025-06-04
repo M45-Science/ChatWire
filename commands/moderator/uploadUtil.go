@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	UploadLock                           sync.Mutex
+	uploadLock                           sync.Mutex
 	foundOption, foundSave, foundModList bool
 )
 

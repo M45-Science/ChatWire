@@ -27,7 +27,7 @@ func ExpandTime(input int64) time.Time {
 	return out
 }
 
-func CompactTime(input int64) int64 {
+func compactTime(input int64) int64 {
 	return (input - constants.SeenEpoch) / constants.SeenDivisor
 }
 
@@ -55,7 +55,7 @@ func WatchDatabaseFile() {
 			}
 
 			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				SetPlayerListUpdated()
+				setPlayerListUpdated()
 				break
 			}
 		}
@@ -63,7 +63,7 @@ func WatchDatabaseFile() {
 }
 
 /* Check if DB has been updated */
-func IsPlayerListUpdated() bool {
+func isPlayerListUpdated() bool {
 	glob.PlayerListUpdatedLock.Lock()
 	reply := glob.PlayerListUpdated
 	glob.PlayerListUpdatedLock.Unlock()
@@ -72,7 +72,7 @@ func IsPlayerListUpdated() bool {
 }
 
 /* Set DB as updated */
-func SetPlayerListUpdated() {
+func setPlayerListUpdated() {
 	glob.PlayerListUpdatedLock.Lock()
 	glob.PlayerListUpdated = true
 	glob.PlayerListUpdatedLock.Unlock()
@@ -86,7 +86,7 @@ func SetPlayerListDirty() {
 }
 
 /* Mark DB as SeenDirty (low priority) */
-func SetPlayerListSeenDirty() {
+func setPlayerListSeenDirty() {
 	glob.PlayerListSeenDirtyLock.Lock()
 	glob.PlayerListSeenDirty = true
 	glob.PlayerListSeenDirtyLock.Unlock()
@@ -190,7 +190,7 @@ func UpdateSeen(pname string) {
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].LastSeen = compactNow()
 
-		SetPlayerListSeenDirty()
+		setPlayerListSeenDirty()
 		return
 	}
 }
@@ -215,7 +215,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 			SetPlayerListDirty()
 			WhitelistPlayer(pname, level)
 		} else {
-			SetPlayerListSeenDirty()
+			setPlayerListSeenDirty()
 		}
 
 		/* Delete discord id upon delete */
@@ -248,7 +248,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func AddPlayer(iname string, level int, id string, creation int64, seen int64, reason string, susScore int64, mins int64, doBan bool) bool {
+func addPlayer(iname string, level int, id string, creation int64, seen int64, reason string, susScore int64, mins int64, doBan bool) bool {
 	if iname == "" || len(iname) > constants.MaxNameLength {
 		return false
 	}
@@ -330,7 +330,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 		/* Found in list */
 		glob.PlayerList[pname].LastSeen = compactNow()
 		level := glob.PlayerList[pname].Level
-		SetPlayerListSeenDirty()
+		setPlayerListSeenDirty()
 		return level
 	}
 
@@ -428,9 +428,9 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 					tempData[pname].Level = 3
 				}
 				if bootMode {
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
+					didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
 				} else if !bootMode {
-					didBan = AddPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
+					didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
 				}
 				if didBan {
 					banCount++

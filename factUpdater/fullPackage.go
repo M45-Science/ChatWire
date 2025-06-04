@@ -42,13 +42,13 @@ func fullPackage(info *InfoData) error {
 	cwlog.DoLogCW("Download of %v complete, verifying...", filename)
 
 	fakeName := fmt.Sprintf("factorio-%v_%v_%v.tar.xz", info.Build, strings.TrimSuffix(info.Distro, "64"), info.VersInt.IntToString())
-	hash, err := GetSHA256(fakeName)
+	hash, err := getSHA256(fakeName)
 	if err != nil {
 		emsg := "unable to get SHA256 data: " + err.Error()
 		cwlog.DoLogCW(emsg)
 		return errors.New(emsg)
 	}
-	if !CheckSHA256(data, hash) {
+	if !checkSHA256(data, hash) {
 		emsg := "the download has an invalid checksum"
 		cwlog.DoLogCW(emsg)
 		return errors.New(emsg)
@@ -105,7 +105,7 @@ func fullPackage(info *InfoData) error {
 	return nil
 }
 
-func GetSHA256(filename string) (string, error) {
+func getSHA256(filename string) (string, error) {
 	data, _, err := HttpGet(false, sha256URL, false)
 	if err != nil {
 		emsg := "Unable to fetch SHA256 sum data: " + err.Error()
@@ -135,7 +135,7 @@ func GetSHA256(filename string) (string, error) {
 	return "", errors.New(emsg)
 }
 
-func CheckSHA256(data []byte, checkHash string) bool {
+func checkSHA256(data []byte, checkHash string) bool {
 
 	hash := sha256.New()
 	hash.Write([]byte(data))

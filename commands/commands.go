@@ -23,7 +23,7 @@ func init() {
 	}
 }
 
-var CL []glob.CommandData
+var cl []glob.CommandData
 
 var cmds = []glob.CommandData{
 
