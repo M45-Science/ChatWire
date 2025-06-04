@@ -35,14 +35,7 @@ func WriteGCfg() bool {
 		return false
 	}
 
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteGCfg: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteGCfg: WriteFile failure")
@@ -62,8 +55,7 @@ func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
 		Global.Paths.DataFiles.DBFile = "playerdb.json"
-		_, err := os.Create(Global.Paths.DataFiles.DBFile)
-		if err != nil {
+		if err := os.WriteFile(Global.Paths.DataFiles.DBFile, []byte("{}"), 0644); err != nil {
 			cwlog.DoLogCW("setGlobalDefaults: Could not create " + Global.Paths.DataFiles.DBFile)
 		}
 	}
