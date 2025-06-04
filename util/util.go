@@ -10,6 +10,7 @@ import (
 	"ChatWire/disc"
 )
 
+// TrimPrefixIgnoreCase removes prefix from s in a case-insensitive manner.
 func TrimPrefixIgnoreCase(s, prefix string) string {
 	if strings.HasPrefix(strings.ToLower(s), strings.ToLower(prefix)) {
 		return s[len(prefix):]
@@ -17,12 +18,15 @@ func TrimPrefixIgnoreCase(s, prefix string) string {
 	return s
 }
 
+// ContainsIgnoreCase reports whether substr is within s ignoring case.
 func ContainsIgnoreCase(s, substr string) bool {
 	return strings.Contains(
 		strings.ToLower(s), strings.ToLower(substr),
 	)
 }
 
+// GetFactorioFolder returns the path to the Factorio installation for the
+// current server.
 func GetFactorioFolder() string {
 	return cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -30,8 +34,8 @@ func GetFactorioFolder() string {
 		cfg.Global.Paths.Folders.FactorioDir + "/"
 }
 
+// GetModsFolder returns the path to the mod directory.
 func GetModsFolder() string {
-	//Mod folder path
 	return cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
 		cfg.Local.Callsign + "/" +
@@ -39,6 +43,7 @@ func GetModsFolder() string {
 		constants.ModsFolder + "/"
 }
 
+// GetSavesFolder returns the path to the saves directory.
 func GetSavesFolder() string {
 	return cfg.Global.Paths.Folders.ServersRoot +
 		cfg.Global.Paths.ChatWirePrefix +
@@ -47,7 +52,7 @@ func GetSavesFolder() string {
 		cfg.Global.Paths.Folders.Saves
 }
 
-/*  IsPatreon checks if player has patreon role */
+// IsPatreon checks if player has the Patreon role.
 func IsPatreon(id string) bool {
 	if id == "" || disc.DS == nil {
 		return false
@@ -70,7 +75,7 @@ func IsPatreon(id string) bool {
 	return false
 }
 
-/*  IsNitro checks if player has nitro role */
+// IsNitro checks if player has the Nitro role.
 func IsNitro(id string) bool {
 	if id == "" || disc.DS == nil {
 		return false
@@ -91,8 +96,8 @@ func IsNitro(id string) bool {
 	return false
 }
 
-/* Convert string to bool
- * True, error */
+// StringToBool converts a string to a boolean. The second return value
+// indicates whether the conversion failed.
 func StringToBool(txt string) (bool, bool) {
 	if strings.ToLower(txt) == "true" ||
 		strings.ToLower(txt) == "t" ||
@@ -117,16 +122,15 @@ func StringToBool(txt string) (bool, bool) {
 	return false, true
 }
 
-/* Bool to string */
+// BoolToOnOff converts a boolean to the strings "on" or "off".
 func BoolToOnOff(b bool) string {
 	if b {
 		return "on"
-	} else {
-		return "off"
 	}
+	return "off"
 }
 
-/* Delete old signal files */
+// ClearOldSignals removes leftover signal files from previous runs.
 func ClearOldSignals() {
 	if err := os.Remove(".qrestart"); err == nil {
 		cwlog.DoLogCW("old .qrestart removed.")
