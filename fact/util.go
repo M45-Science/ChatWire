@@ -26,8 +26,7 @@ import (
 )
 
 const (
-	MaxZipSize       = 1024 * 1024 * 1024 //1gb
-	maxDiscordMsgLen = 2000
+       MaxZipSize = 1024 * 1024 * 1024 //1gb
 )
 
 var (
@@ -432,7 +431,7 @@ func WriteFact(format string, args ...interface{}) {
 
 		plen := len(buf)
 
-		if plen > 2000 {
+               if plen > constants.MaxDiscordMsgLen {
 			cwlog.DoLogCW("Message to Factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
@@ -1265,7 +1264,7 @@ func GetUpdateCachePath() string {
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
-	text = sclean.TruncateStringEllipsis(text, maxDiscordMsgLen)
+       text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
 	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 

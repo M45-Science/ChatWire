@@ -1,14 +1,12 @@
 package moderator
 
 import (
-	"ChatWire/fact"
-	"sync"
+       "ChatWire/fact"
+       "sync"
 )
 
 const (
-	saveGameName       = "save-game"
-	MaxModSettingsSize = 1024 * 1024 //1MB
-	MaxModListSize     = 1024 * 1024 //1MB
+       saveGameName = "save-game"
 )
 
 var (

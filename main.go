@@ -275,7 +275,7 @@ func initMaps() {
 	glob.PassList = make(map[string]*glob.PassData)
 
 	/* Generate number to alpha map, used for auto port assignment */
-	pos := 10000
+pos := constants.AlphaStartValue
 	for i := 'a'; i <= 'z'; i++ {
 		glob.AlphaValue[string(i)] = pos
 		pos++
