@@ -1,6 +1,7 @@
 package moderator
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -68,11 +69,11 @@ func clearAllMods() string {
 		emsg := "Factorio is currently running. You must stop Factorio first."
 		return emsg
 	}
-	err := os.RemoveAll(util.GetModsFolder())
+	err := os.RemoveAll(cfg.GetModsFolder())
 	if err != nil {
 		return "Unable to delete mods folder: " + err.Error()
 	}
-	err = os.Mkdir(util.GetModsFolder(), 0755)
+	err = os.Mkdir(cfg.GetModsFolder(), 0755)
 	if err != nil {
 		return "Unable to create a new mods folder: " + err.Error()
 	}

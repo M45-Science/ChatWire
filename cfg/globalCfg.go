@@ -1,7 +1,6 @@
 package cfg
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"os/user"
@@ -10,15 +9,19 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 var (
-	Local  local
+	// Local holds local server configuration.
+	Local local
+	// Global holds global configuration shared across servers.
 	Global global
 )
 
+// WriteGCfg writes the global configuration to disk.
+// It returns true on success.
 func WriteGCfg() bool {
-	tempPath := constants.CWGlobalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWGlobalConfig
 
 	Global.Discord.Comment = "RoleID to ping for suspicious activity, if any."
@@ -26,32 +29,8 @@ func WriteGCfg() bool {
 	Global.Discord.Roles.RoleCache.Comment = "Cached Role IDs, in case lookup is slow or fails."
 	Global.Options.Comment = "RoleID to ping on map resets, if any."
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(Global); err != nil {
-		cwlog.DoLogCW("WriteGCfg: enc.Encode failure")
-		return false
-	}
-
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteGCfg: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteGCfg: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename Gcfg file.")
+	if err := util.WriteJSONAtomic(finalPath, Global, 0644); err != nil {
+		cwlog.DoLogCW("WriteGCfg: " + err.Error())
 		return false
 	}
 
@@ -62,8 +41,7 @@ func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
 		Global.Paths.DataFiles.DBFile = "playerdb.json"
-		_, err := os.Create(Global.Paths.DataFiles.DBFile)
-		if err != nil {
+		if err := os.WriteFile(Global.Paths.DataFiles.DBFile, []byte("{}"), 0644); err != nil {
 			cwlog.DoLogCW("setGlobalDefaults: Could not create " + Global.Paths.DataFiles.DBFile)
 		}
 	}
@@ -163,6 +141,8 @@ func setGlobalDefaults() {
 	}
 }
 
+// ReadGCfg loads the global configuration from disk.
+// It creates a default configuration when none exists.
 func ReadGCfg() bool {
 
 	_, err := os.Stat(constants.CWGlobalConfig)
@@ -176,30 +156,29 @@ func ReadGCfg() bool {
 		setGlobalDefaults()
 		WriteGCfg()
 		return true
-	} else { /* Otherwise just read in the config */
-		file, err := os.ReadFile(constants.CWGlobalConfig)
+	}
 
-		if file != nil && err == nil {
-			newcfg := createGCfg()
-
-			err := json.Unmarshal([]byte(file), &newcfg)
-			if err != nil {
-				cwlog.DoLogCW("ReadGCfg: Unmarshal failure")
-				cwlog.DoLogCW(err.Error())
-				return false
-			}
-
-			Global = newcfg
-			setGlobalDefaults()
-
-			return true
-		} else {
-			cwlog.DoLogCW("ReadGCfg: ReadFile failure")
+	file, err := os.ReadFile(constants.CWGlobalConfig)
+	if file != nil && err == nil {
+		newcfg := createGCfg()
+		err := json.Unmarshal([]byte(file), &newcfg)
+		if err != nil {
+			cwlog.DoLogCW("ReadGCfg: Unmarshal failure")
+			cwlog.DoLogCW(err.Error())
 			return false
 		}
+
+		Global = newcfg
+		setGlobalDefaults()
+
+		return true
 	}
+
+	cwlog.DoLogCW("ReadGCfg: ReadFile failure")
+	return false
 }
 
+// createGCfg returns a new empty global configuration structure.
 func createGCfg() global {
 	newcfg := global{}
 	return newcfg

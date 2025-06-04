@@ -8,7 +8,6 @@ import (
 	"ChatWire/glob"
 	"ChatWire/sclean"
 	"ChatWire/support"
-	"ChatWire/util"
 	"fmt"
 	"regexp"
 	"strings"
@@ -146,7 +145,7 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 			namePrefix = "(Admin) "
 		} else if disc.CheckModerator(interaction) {
 			namePrefix = "(Moderator) "
-		} else if util.IsPatreon(m.Author.ID) || disc.CheckSupporter(interaction) {
+		} else if disc.IsPatreon(m.Author.ID) || disc.CheckSupporter(interaction) {
 			namePrefix = "(Supporter) "
 		} else if disc.CheckVeteran(interaction) {
 			namePrefix = "(Veteran) "

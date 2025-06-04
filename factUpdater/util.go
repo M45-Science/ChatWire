@@ -56,8 +56,14 @@ func (input versionInts) IntToString() string {
 	return fmt.Sprintf("%v.%v.%v", input.A, input.B, input.C)
 }
 
-func isVersionNewerThan(VA, VB versionInts) bool {
-	return VA.A >= VB.A && VA.B >= VB.B && VA.C > VB.C
+func isVersionNewerThan(a, b versionInts) bool {
+	if a.A != b.A {
+		return a.A > b.A
+	}
+	if a.B != b.B {
+		return a.B > b.B
+	}
+	return a.C > b.C
 }
 
 func isVersionEqual(VA, VB versionInts) bool {

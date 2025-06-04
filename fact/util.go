@@ -23,7 +23,6 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
-	"ChatWire/util"
 )
 
 const (
@@ -249,7 +248,7 @@ func WhitelistPlayer(pname string, level int) {
 /* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
 
-	wpath := util.GetFactorioFolder() +
+	wpath := cfg.GetFactorioFolder() +
 		constants.AdminlistName
 
 	glob.PlayerListLock.RLock()
@@ -276,14 +275,7 @@ func WriteAdminlist() int {
 	buf = buf + "\n]\n"
 	glob.PlayerListLock.RUnlock()
 
-	_, err := os.Create(wpath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteAdminlist: os.Create failure")
-		return -1
-	}
-
-	err = os.WriteFile(wpath, []byte(buf), 0644)
+	err := os.WriteFile(wpath, []byte(buf), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteAdminlist: WriteFile failure")
@@ -295,7 +287,7 @@ func WriteAdminlist() int {
 /* Write a full whitelist for a server, before it boots */
 func WriteWhitelist() int {
 
-	wpath := util.GetFactorioFolder() +
+	wpath := cfg.GetFactorioFolder() +
 		constants.WhitelistName
 
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
@@ -362,14 +354,7 @@ func WriteWhitelist() int {
 		buf = buf + "\n]\n"
 		glob.PlayerListLock.RUnlock()
 
-		_, err := os.Create(wpath)
-
-		if err != nil {
-			cwlog.DoLogCW("WriteWhitelist: os.Create failure")
-			return -1
-		}
-
-		err = os.WriteFile(wpath, []byte(buf), 0644)
+		err := os.WriteFile(wpath, []byte(buf), 0644)
 
 		if err != nil {
 			cwlog.DoLogCW("WriteWhitelist: WriteFile failure")
@@ -709,7 +694,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -793,7 +778,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 			saveName := strings.TrimSuffix(fName, ".zip")
 			step++
 
-			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
+			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
 			if err != nil {
 				panic(err)
 			}
@@ -876,7 +861,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
 	/* We can't read saves dir */
@@ -983,7 +968,7 @@ func DoChangeMap(arg string) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	/* Check if file is valid and found */
 	saveStr := fmt.Sprintf("%v.zip", arg)

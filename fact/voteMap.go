@@ -1,7 +1,6 @@
 package fact
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -41,7 +40,7 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		return
 	}
 
-	path := util.GetSavesFolder()
+	path := cfg.GetSavesFolder()
 
 	/* Check if file is valid and found */
 	autoSaveStr := fmt.Sprintf("%v.zip", arg)
@@ -298,38 +297,12 @@ func TallyMapVotes() (string, int) {
 
 /* Expects locked votebox */
 func WriteVotes() bool {
-
 	finalPath := constants.VoteFile
-	tempPath := constants.VoteFile + "." + cfg.Local.Callsign + ".tmp"
-
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
 
 	glob.VoteBox.Version = "0.0.1"
 
-	if err := enc.Encode(glob.VoteBox); err != nil {
-		cwlog.DoLogCW("WriteVotes: enc.Encode failure")
-		return false
-	}
-
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteVotes: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteVotes: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename VoteFile file.")
+	if err := util.WriteJSONAtomic(finalPath, glob.VoteBox, 0644); err != nil {
+		cwlog.DoLogCW("WriteVotes: " + err.Error())
 		return false
 	}
 
