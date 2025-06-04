@@ -779,7 +779,7 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 			saveName := strings.TrimSuffix(fName, ".zip")
 			step++
 
-			units, err := durafmt.DefaultUnitsCoder.Decode("y:yrs,w:wks,d:days,h:hrs,m:mins,s:secs,ms:ms,μs:μs")
+			units, err := durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
 			if err != nil {
 				panic(err)
 			}
