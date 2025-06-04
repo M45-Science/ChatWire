@@ -90,7 +90,7 @@ func handleDataFile(attachmentUrl, typeName string) []byte {
 		return nil
 	}
 	if name == typeName {
-		if len(data) > MaxModSettingsSize {
+               if len(data) > constants.MaxModSettingsSize {
 			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status",
 				"**The "+typeName+" is too large, skipping... **", glob.COLOR_RED)
 			return nil

@@ -1,34 +1,28 @@
 package modupdate
 
 import (
-	"ChatWire/cfg"
-	"ChatWire/cwlog"
-	"ChatWire/util"
-	"encoding/json"
-	"fmt"
-	"math/rand/v2"
-	"os"
-	"strconv"
-	"strings"
+       "ChatWire/cfg"
+       "ChatWire/constants"
+       "ChatWire/cwlog"
+       "ChatWire/util"
+       "encoding/json"
+       "fmt"
+       "math/rand/v2"
+       "os"
+       "strconv"
+       "strings"
 )
 
 var (
-	rollbackList []ModHistoryItem
-	rollbackKey  int
-)
-
-const (
-	keyStart      = 10000
-	maxKey        = 99999
-	maxModHistory = 250
-	maxItemsPage  = 25
+       rollbackList []ModHistoryItem
+       rollbackKey  int
 )
 
 func ListHistory() string {
 	buf := ""
 
-	for i, item := range ModHistory.History {
-		if i > maxItemsPage {
+       for i, item := range ModHistory.History {
+               if i > constants.ModHistoryPageSize {
 			buf = buf + "\n...\n"
 			break
 		}
@@ -73,8 +67,8 @@ func ModUpdateRollback(value uint64) string {
 	 * Apply changes and disable mod update automatically and NOTE UPDATES ARE DISABLED
 	 */
 
-	buf := ""
-	if value >= 10000 {
+       buf := ""
+       if value >= constants.ModHistoryKeyStart {
 		if int(value) == rollbackKey {
 			rollbackKey = 0
 
@@ -89,8 +83,8 @@ func ModUpdateRollback(value uint64) string {
 	numHist := uint64(len(ModHistory.History))
 
 	//Unlikely but better to be safe
-	if numHist > maxModHistory {
-		numHist = maxModHistory
+       if numHist > constants.MaxModHistory {
+               numHist = constants.MaxModHistory
 	}
 
 	if value < 1 || value > numHist {
@@ -114,8 +108,8 @@ func ModUpdateRollback(value uint64) string {
 			buf = buf + "Remove " + item.Name + "-" + item.Version + "\n"
 		}
 	}
-	if rollbackList != nil {
-		rollbackKey = keyStart + rand.IntN(maxKey-keyStart)
+       if rollbackList != nil {
+               rollbackKey = constants.ModHistoryKeyStart + rand.IntN(constants.ModHistoryMaxKey-constants.ModHistoryKeyStart)
 		buf = "**Roll-back to #" + strconv.FormatUint(value, 10) + ": ACTION LIST:**\n\n" + buf
 		buf = buf + "\n**To perform the roll-back type: `/editmods mod-update-rollback:" + strconv.FormatUint(uint64(rollbackKey), 10) + "`**\n"
 	}
