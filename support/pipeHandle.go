@@ -124,19 +124,34 @@ func handlePlayerReport(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[REPORT]") {
 		cwlog.DoLogGame(input.line)
 		if input.wordListLen >= 3 {
-			pingStr := ""
-			if cfg.Global.Discord.SusPingRole != "" {
-				pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
-			}
-			buf := ""
-			if cfg.GetGameLogURL() == "" {
-				buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\n%v",
-					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), pingStr)
+			msg := strings.Join(input.wordList[1:], " ")
+			lmsg := strings.ToLower(msg)
+			if strings.HasSuffix(lmsg, "has been banished.") {
+				pingStr := ""
+				if cfg.Global.Discord.BanishPingRole != "" {
+					pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.BanishPingRole)
+				}
+				sbuf := cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + msg
+				if pingStr != "" {
+					fact.CMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("%v\n%v", sbuf, pingStr))
+				} else {
+					fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
+				}
 			} else {
-				buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
-					cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), cfg.GetGameLogURL(), pingStr)
+				pingStr := ""
+				if cfg.Global.Discord.SusPingRole != "" {
+					pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
+				}
+				buf := ""
+				if cfg.GetGameLogURL() == "" {
+					buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\n%v",
+						cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), pingStr)
+				} else {
+					buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
+						cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), cfg.GetGameLogURL(), pingStr)
+				}
+				fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, buf)
 			}
-			fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, buf)
 		}
 		return true
 	}
