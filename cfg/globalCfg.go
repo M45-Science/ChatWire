@@ -13,10 +13,14 @@ import (
 )
 
 var (
-	Local  local
+	// Local holds local server configuration.
+	Local local
+	// Global holds global configuration shared across servers.
 	Global global
 )
 
+// WriteGCfg writes the global configuration to disk.
+// It returns true on success.
 func WriteGCfg() bool {
 	tempPath := constants.CWGlobalConfig + "." + Local.Callsign + ".tmp"
 	finalPath := constants.CWGlobalConfig
@@ -155,6 +159,8 @@ func setGlobalDefaults() {
 	}
 }
 
+// ReadGCfg loads the global configuration from disk.
+// It creates a default configuration when none exists.
 func ReadGCfg() bool {
 
 	_, err := os.Stat(constants.CWGlobalConfig)
@@ -162,37 +168,36 @@ func ReadGCfg() bool {
 
 	if notfound {
 		cwlog.DoLogCW("ReadGCfg: os.Stat failed, auto-defaults generated.")
-		newcfg := CreateGCfg()
+		newcfg := createGCfg()
 		Global = newcfg
 
 		setGlobalDefaults()
 		WriteGCfg()
 		return true
-	} else { /* Otherwise just read in the config */
-		file, err := os.ReadFile(constants.CWGlobalConfig)
+	}
 
-		if file != nil && err == nil {
-			newcfg := CreateGCfg()
-
-			err := json.Unmarshal([]byte(file), &newcfg)
-			if err != nil {
-				cwlog.DoLogCW("ReadGCfg: Unmarshal failure")
-				cwlog.DoLogCW(err.Error())
-				return false
-			}
-
-			Global = newcfg
-			setGlobalDefaults()
-
-			return true
-		} else {
-			cwlog.DoLogCW("ReadGCfg: ReadFile failure")
+	file, err := os.ReadFile(constants.CWGlobalConfig)
+	if file != nil && err == nil {
+		newcfg := createGCfg()
+		err := json.Unmarshal([]byte(file), &newcfg)
+		if err != nil {
+			cwlog.DoLogCW("ReadGCfg: Unmarshal failure")
+			cwlog.DoLogCW(err.Error())
 			return false
 		}
+
+		Global = newcfg
+		setGlobalDefaults()
+
+		return true
 	}
+
+	cwlog.DoLogCW("ReadGCfg: ReadFile failure")
+	return false
 }
 
-func CreateGCfg() global {
+// createGCfg returns a new empty global configuration structure.
+func createGCfg() global {
 	newcfg := global{}
 	return newcfg
 }

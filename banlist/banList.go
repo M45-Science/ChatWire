@@ -17,7 +17,9 @@ import (
 )
 
 var (
-	BanList     []banDataType
+	// BanList holds the current list of bans loaded from disk.
+	BanList []banDataType
+	// banListLock protects access to BanList.
 	banListLock sync.Mutex
 )
 
@@ -27,6 +29,8 @@ type banDataType struct {
 	Revoked  bool   `json:"-"`
 }
 
+// CheckBanList returns true if the provided username is currently banned.
+// A warning is optionally sent when doWarn is true.
 func CheckBanList(name string, doWarn bool) bool {
 	pname := strings.ToLower(name)
 	banListLock.Lock()
@@ -70,6 +74,7 @@ func CheckBanList(name string, doWarn bool) bool {
 	return false
 }
 
+// WatchBanFile monitors the ban file for changes and reloads it when modified.
 func WatchBanFile() {
 	for glob.ServerRunning {
 
@@ -102,6 +107,8 @@ func WatchBanFile() {
 	}
 }
 
+// ReadBanFile loads the ban file from disk. When firstboot is true the
+// notifications for changes are suppressed.
 func ReadBanFile(firstboot bool) {
 	banListLock.Lock()
 	defer banListLock.Unlock()
