@@ -40,6 +40,9 @@ const (
 	// Default offset added to Factorio server port for RCON
 	RconPortOffset = 10000
 
+	// Minimum bytes required in level.dat0 to consider a save valid
+	LevelDatMinSize = 50 * 1024
+
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 30
 	SpamScoreWarning = 15
