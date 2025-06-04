@@ -41,14 +41,7 @@ func WriteLCfg() bool {
 		return false
 	}
 
-	_, err := os.Create(tempPath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteLCfg: os.Create failure")
-		return false
-	}
-
-	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
+	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteLCfg: WriteFile failure")

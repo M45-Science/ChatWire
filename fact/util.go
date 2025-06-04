@@ -276,14 +276,7 @@ func WriteAdminlist() int {
 	buf = buf + "\n]\n"
 	glob.PlayerListLock.RUnlock()
 
-	_, err := os.Create(wpath)
-
-	if err != nil {
-		cwlog.DoLogCW("WriteAdminlist: os.Create failure")
-		return -1
-	}
-
-	err = os.WriteFile(wpath, []byte(buf), 0644)
+	err := os.WriteFile(wpath, []byte(buf), 0644)
 
 	if err != nil {
 		cwlog.DoLogCW("WriteAdminlist: WriteFile failure")
@@ -362,14 +355,7 @@ func WriteWhitelist() int {
 		buf = buf + "\n]\n"
 		glob.PlayerListLock.RUnlock()
 
-		_, err := os.Create(wpath)
-
-		if err != nil {
-			cwlog.DoLogCW("WriteWhitelist: os.Create failure")
-			return -1
-		}
-
-		err = os.WriteFile(wpath, []byte(buf), 0644)
+		err := os.WriteFile(wpath, []byte(buf), 0644)
 
 		if err != nil {
 			cwlog.DoLogCW("WriteWhitelist: WriteFile failure")
