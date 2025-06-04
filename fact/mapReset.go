@@ -23,7 +23,7 @@ import (
 	"ChatWire/util"
 )
 
-func GetMapTypeNum(mapt string) int {
+func getMapTypeNum(mapt string) int {
 	i := 0
 
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
@@ -37,7 +37,7 @@ func GetMapTypeNum(mapt string) int {
 	return -1
 }
 
-func GetMapTypeName(num int) string {
+func getMapTypeName(num int) string {
 
 	numMaps := len(constants.MapTypes)
 	if num >= 0 && num < numMaps {
@@ -211,7 +211,7 @@ func GenNewMap() string {
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
-	ourcode := fmt.Sprintf("%02d%v", GetMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%02d%v", getMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	sName := "gen-" + ourcode + ".zip"
 
 	filename := util.GetSavesFolder() +

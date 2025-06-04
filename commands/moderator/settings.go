@@ -190,7 +190,7 @@ var SettingList = []SettingListData{
 		MaxStrLen:    64,
 		MinStrLen:    1,
 		ValidStrings: constants.MapTypes,
-		CheckString:  CheckMapTypes,
+		CheckString:  checkMapTypes,
 
 		SData: &cfg.Local.Settings.MapPreset,
 	},
@@ -203,8 +203,8 @@ var SettingList = []SettingListData{
 		MinStrLen: 1,
 		MaxStrLen: 64,
 
-		CheckString: CheckMapGen,
-		ListString:  GetMapGenNames,
+		CheckString: checkMapGen,
+		ListString:  getMapGenNames,
 
 		SData: &cfg.Local.Settings.MapGenerator,
 	},

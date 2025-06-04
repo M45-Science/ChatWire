@@ -44,7 +44,7 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 
 	fileName := ""
 	if optionalFileName == "" {
-		_, fileName, _ = GetSaveGame(true)
+		_, fileName, _ = getSaveGame(true)
 	} else {
 		fileName = optionalFileName
 	}
@@ -143,7 +143,7 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 }
 
 /* Find the newest save game */
-func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
+func getSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string) {
 	path := util.GetSavesFolder()
 
 	files, err := os.ReadDir(path)
@@ -429,7 +429,7 @@ func launchFactorio() {
 	}
 
 	/* Find, test and load newest save game available */
-	found, fileName, folderName := GetSaveGame(true)
+	found, fileName, folderName := getSaveGame(true)
 	if !found {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to access save-games.", glob.COLOR_RED)
 		fact.SetAutolaunch(false, true)
@@ -505,7 +505,7 @@ func launchFactorio() {
 		tempargs = append(tempargs, "true")
 	}
 
-	modFiles := GetModFiles()
+	modFiles := getModFiles()
 	if len(modFiles) > 0 {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Loading mods...", glob.COLOR_GREEN)
 	}
@@ -662,7 +662,7 @@ func ConfigSoftMod() {
 
 }
 
-func GetModFiles() []string {
+func getModFiles() []string {
 	modPath := util.GetModsFolder()
 
 	modList, errm := os.ReadDir(modPath)

@@ -170,7 +170,7 @@ func ReadGCfg() bool {
 
 	if notfound {
 		cwlog.DoLogCW("ReadGCfg: os.Stat failed, auto-defaults generated.")
-		newcfg := CreateGCfg()
+		newcfg := createGCfg()
 		Global = newcfg
 
 		setGlobalDefaults()
@@ -180,7 +180,7 @@ func ReadGCfg() bool {
 		file, err := os.ReadFile(constants.CWGlobalConfig)
 
 		if file != nil && err == nil {
-			newcfg := CreateGCfg()
+			newcfg := createGCfg()
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
@@ -200,7 +200,7 @@ func ReadGCfg() bool {
 	}
 }
 
-func CreateGCfg() global {
+func createGCfg() global {
 	newcfg := global{}
 	return newcfg
 }

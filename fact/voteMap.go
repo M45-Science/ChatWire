@@ -349,7 +349,7 @@ func ReadVotes() bool {
 		file, err := os.ReadFile(constants.VoteFile)
 
 		if file != nil && err == nil {
-			temp := CreateVoteContainer()
+			temp := createVoteContainer()
 
 			err := json.Unmarshal([]byte(file), &temp)
 			if err != nil {
@@ -368,7 +368,7 @@ func ReadVotes() bool {
 	}
 }
 
-func CreateVoteContainer() glob.VoteContainerData {
+func createVoteContainer() glob.VoteContainerData {
 
 	temp := glob.VoteContainerData{
 		Version:       "0.0.1",

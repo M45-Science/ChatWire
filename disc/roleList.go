@@ -18,7 +18,7 @@ var (
 )
 
 /* Cache a list of players with specific Discord roles */
-func WriteRoleList() bool {
+func writeRoleList() bool {
 
 	tempPath := constants.RoleListFile + "." + cfg.Local.Callsign + ".tmp"
 	finalPath := constants.RoleListFile
@@ -58,7 +58,7 @@ func WriteRoleList() bool {
 }
 
 /* Create a new RoleList */
-func CreateRoleList() RoleListData {
+func createRoleList() RoleListData {
 	newcfg := RoleListData{Version: "0.0.1"}
 	return newcfg
 }
@@ -71,7 +71,7 @@ func ReadRoleList() bool {
 
 	if notfound {
 		cwlog.DoLogCW("ReadGCfg: os.Stat failed, auto-defaults generated.")
-		newcfg := CreateRoleList()
+		newcfg := createRoleList()
 		RoleList = newcfg
 
 		_, err := os.Create(constants.RoleListFile)
@@ -84,7 +84,7 @@ func ReadRoleList() bool {
 		file, err := os.ReadFile(constants.RoleListFile)
 
 		if file != nil && err == nil {
-			newcfg := CreateRoleList()
+			newcfg := createRoleList()
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
@@ -166,7 +166,7 @@ func UpdateRoleList() {
 		}
 		if foundChange {
 			RoleListUpdated = true
-			WriteRoleList()
+			writeRoleList()
 		}
 	}
 }

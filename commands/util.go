@@ -18,11 +18,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var CommandLock sync.Mutex
+var commandLock sync.Mutex
 
 func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
-	CommandLock.Lock()
-	defer CommandLock.Unlock()
+	commandLock.Lock()
+	defer commandLock.Unlock()
 
 	/* Ignore appid that aren't relevant to us */
 	if i.AppID != cfg.Global.Discord.Application {
@@ -67,7 +67,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 	} else if i.Type == discordgo.InteractionApplicationCommand {
 		data := i.ApplicationCommandData()
 
-		for _, c := range CL {
+		for _, c := range cl {
 
 			/* Hanadle PrimaryOnly commands if we are the primary, otherwise only allow commands from our channel */
 			if !c.PrimaryOnly && !strings.EqualFold(i.ChannelID, cfg.Local.Channel.ChatChannel) && !c.Global {
@@ -80,7 +80,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 
 				if c.AdminOnly {
 					if disc.CheckAdmin(i) {
-						RunCommand(&c, i)
+						runCommand(&c, i)
 						var options []string
 						for _, o := range c.AppCmd.Options {
 							options = append(options, o.Name)
@@ -95,7 +95,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 						cwlog.DoLogCW("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name)
-						RunCommand(&c, i)
+						runCommand(&c, i)
 						return
 					} else {
 						disc.InteractionEphemeralResponse(i, "Error", "You must be a moderator to use this command.")
@@ -104,7 +104,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 					}
 				} else if !c.AdminOnly && !c.ModeratorOnly {
 					cwlog.DoLogCW("%s: command: %s", i.Member.User.Username, data.Name)
-					RunCommand(&c, i)
+					runCommand(&c, i)
 					return
 				}
 			}
@@ -112,7 +112,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
-func RunCommand(c *glob.CommandData, i *discordgo.InteractionCreate) {
+func runCommand(c *glob.CommandData, i *discordgo.InteractionCreate) {
 	if c.Function == nil {
 		support.RunCommandOptions(c, i)
 	} else {
@@ -147,13 +147,13 @@ var playerPerms int64 = discordgo.PermissionUseSlashCommands //Use slash command
 func RegisterCommands() {
 
 	/* Bypasses init loop compile error. */
-	CL = cmds
+	cl = cmds
 
 	if *glob.DoRegisterCommands {
 		cwlog.DoLogCW("Bulk registering commands!")
 
 		cmdList := []*discordgo.ApplicationCommand{}
-		for i, o := range CL {
+		for i, o := range cl {
 
 			if o.Disabled {
 				continue
@@ -164,10 +164,10 @@ func RegisterCommands() {
 			}
 
 			if strings.EqualFold(o.AppCmd.Name, "config-server") {
-				LinkConfigData(i, false)
+				linkConfigData(i, false)
 			}
 			if strings.EqualFold(o.AppCmd.Name, "config-global") {
-				LinkConfigData(i, true)
+				linkConfigData(i, true)
 			}
 
 			if o.AdminOnly {
@@ -187,7 +187,7 @@ func RegisterCommands() {
 				Options: []*discordgo.ApplicationCommandOption{},
 			}
 
-			for _, option := range CL[i].AppCmd.Options {
+			for _, option := range cl[i].AppCmd.Options {
 				var choiceList []*discordgo.ApplicationCommandOptionChoice
 				for _, choice := range option.Choices {
 					choiceList = append(choiceList, &discordgo.ApplicationCommandOptionChoice{Name: choice.Name, Value: choice.Value})
@@ -243,7 +243,7 @@ func filterDesc(desc string) string {
 	}
 }
 
-func LinkConfigData(p int, gconfig bool) {
+func linkConfigData(p int, gconfig bool) {
 
 	var selection []moderator.SettingListData
 	if gconfig {
@@ -268,14 +268,14 @@ func LinkConfigData(p int, gconfig bool) {
 				}
 
 				if len(choices) > 0 {
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+					cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 						Choices:     choices,
 					})
 				} else {
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+					cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
@@ -293,21 +293,21 @@ func LinkConfigData(p int, gconfig bool) {
 
 				if len(choices) > 0 {
 
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+					cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 						Choices:     choices,
 					})
 				} else {
-					CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+					cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 						Type:        discordgo.ApplicationCommandOptionString,
 						Name:        filterName(o.Name),
 						Description: filterDesc(o.Desc),
 					})
 				}
 			} else {
-				CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+				cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        filterName(o.Name),
 					Description: filterDesc(o.Desc),
@@ -315,7 +315,7 @@ func LinkConfigData(p int, gconfig bool) {
 			}
 
 		} else if o.Type == moderator.TYPE_INT {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+			cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
@@ -323,13 +323,13 @@ func LinkConfigData(p int, gconfig bool) {
 				MaxValue:    glob.Ptr(float64(o.MaxInt)),
 			})
 		} else if o.Type == moderator.TYPE_BOOL {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+			cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
 			})
 		} else if o.Type == moderator.TYPE_F32 {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+			cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
@@ -337,7 +337,7 @@ func LinkConfigData(p int, gconfig bool) {
 				MaxValue:    glob.Ptr(float64(o.MaxF32)),
 			})
 		} else if o.Type == moderator.TYPE_F64 {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+			cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),
@@ -345,7 +345,7 @@ func LinkConfigData(p int, gconfig bool) {
 				MaxValue:    glob.Ptr(o.MaxF64),
 			})
 		} else if o.Type == moderator.TYPE_CHANNEL {
-			CL[p].AppCmd.Options = append(CL[p].AppCmd.Options, glob.OptionData{
+			cl[p].AppCmd.Options = append(cl[p].AppCmd.Options, glob.OptionData{
 				Type:        discordgo.ApplicationCommandOptionChannel,
 				Name:        filterName(o.Name),
 				Description: filterDesc(o.Desc),

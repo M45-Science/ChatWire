@@ -93,7 +93,7 @@ func IsNitro(id string) bool {
 
 /* Convert string to bool
  * True, error */
-func StringToBool(txt string) (bool, bool) {
+func stringToBool(txt string) (bool, bool) {
 	if strings.ToLower(txt) == "true" ||
 		strings.ToLower(txt) == "t" ||
 		strings.ToLower(txt) == "yes" ||

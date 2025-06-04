@@ -126,7 +126,7 @@ func ReadLCfg() bool {
 
 	if notfound {
 		cwlog.DoLogCW("ReadLCfg: os.Stat failed, auto-defaults generated.")
-		newcfg := CreateLCfg()
+		newcfg := createLCfg()
 		Local = newcfg
 		setLocalDefaults()
 		if !Local.Settings.AutoPause {
@@ -140,7 +140,7 @@ func ReadLCfg() bool {
 		file, err := os.ReadFile(constants.CWLocalConfig)
 
 		if file != nil && err == nil {
-			newcfg := CreateLCfg()
+			newcfg := createLCfg()
 
 			err := json.Unmarshal([]byte(file), &newcfg)
 			if err != nil {
@@ -182,7 +182,7 @@ func ReadLCfg() bool {
 	}
 }
 
-func CreateLCfg() local {
+func createLCfg() local {
 	newcfg := local{}
 	return newcfg
 }
