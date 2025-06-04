@@ -407,7 +407,7 @@ func launchFactorio() {
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
 
-	/* Clear this so we know if the the loaded map has our soft mod or not */
+	/* Clear this so we know if the loaded map has our soft mod or not */
 	glob.SoftModVersion = constants.Unknown
 	glob.OnlineCommand = constants.OnlineCommand
 	fact.OnlinePlayersLock.Lock()
