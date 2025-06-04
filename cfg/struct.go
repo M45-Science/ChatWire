@@ -23,6 +23,7 @@ type discord struct {
 	Roles           roles
 	Comment         string `form:"-"`
 	SusPingRole     string `web:"Suspicious Ping RoleID"`
+	BanishPingRole  string `web:"Banish Ping RoleID"`
 }
 
 type roles struct {

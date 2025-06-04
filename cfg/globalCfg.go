@@ -24,7 +24,7 @@ var (
 func WriteGCfg() bool {
 	finalPath := constants.CWGlobalConfig
 
-	Global.Discord.Comment = "RoleID to ping for suspicious activity, if any."
+	Global.Discord.Comment = "RoleIDs to ping for suspicious or banishment events, if any."
 	Global.Discord.Roles.Comment = "These are role names, ChatWire will auto-resolve the IDs and cache them."
 	Global.Discord.Roles.RoleCache.Comment = "Cached Role IDs, in case lookup is slow or fails."
 	Global.Options.Comment = "RoleID to ping on map resets, if any."
