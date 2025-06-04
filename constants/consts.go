@@ -37,6 +37,8 @@ const (
 	ModPackCooldownMin  = 5
 	MaxModPacks         = 4
 	ErrMsgDelay         = time.Second * 3
+	// Default offset added to Factorio server port for RCON
+	RconPortOffset = 10000
 
 	/* Spam auto-ban settings */
 	SpamScoreLimit   = 30

@@ -57,7 +57,8 @@ func setGlobalDefaults() {
 		Global.Paths.URLs.Domain = "localhost"
 	}
 	if Global.Options.RconOffset == 0 {
-		Global.Options.RconOffset = 10000
+		// Apply default RCON port offset
+		Global.Options.RconOffset = constants.RconPortOffset
 	}
 	if Global.GroupName == "" {
 		Global.GroupName = glob.RandomBase64String(3)
