@@ -615,34 +615,26 @@ func AddModHistory(newItem ModHistoryItem) {
 
 func addDownload(input downloadData, list []downloadData) []downloadData {
 
-	//Make sure we aren't downloading a mod update we already have
-	for _, item := range list {
-		if item.Name == input.Name {
-			return list
-		}
-	}
-
+	// Check if this mod is already scheduled for download
 	for i, item := range list {
 		if item.Name == input.Name {
-			//Check versions
+			// Compare versions and replace if the new one is newer
 			newer, err := checkVersion(EO_GREATER, item.Data.Version, input.Data.Version)
 			if err != nil {
 				cwlog.DoLogCW("addDownload: Unable to parse version")
 				return list
 			}
 			if newer {
-				//Already in list and newer, replace
 				list[i] = input
 				if resolveDepsDebug {
 					cwlog.DoLogCW("Added newer download: %v-%v", input.Name, input.Version)
 				}
 			} else {
-				//Already here, but older, skip it
 				if resolveDepsDebug {
 					cwlog.DoLogCW("DID NOT ADD download: %v-%v", input.Name, input.Version)
 				}
-				return list
 			}
+			return list
 		}
 	}
 
