@@ -450,9 +450,8 @@ func WritePlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-
 	glob.PlayerListLock.RLock()
+	defer glob.PlayerListLock.RUnlock()
 
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
@@ -460,7 +459,6 @@ func WritePlayers() {
 		cwlog.DoLogCW("WritePlayers: enc.Encode failure")
 		return
 	}
-	glob.PlayerListLock.RUnlock()
 
 	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
 	err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
