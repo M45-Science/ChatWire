@@ -55,4 +55,4 @@ Launch params:<br>
 
 ### Discord bot perms:
 The bot needs presence intent, server members intent, message content intent
-Perms: view channels, manage channels, Mange roles, send messages, emebed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.
+Perms: view channels, manage channels, Manage roles, send messages, embed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.
