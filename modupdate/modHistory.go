@@ -2,9 +2,13 @@ package modupdate
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
+	"encoding/json"
 	"fmt"
 	"math/rand/v2"
+	"os"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -119,4 +123,74 @@ func ModUpdateRollback(value uint64) string {
 		buf = "Unexpected error.\n"
 	}
 	return buf
+}
+
+// WriteModHistory persists the global ModHistory to disk.
+func WriteModHistory() {
+	ModHistoryLock.Lock()
+	defer ModHistoryLock.Unlock()
+
+	if err := writeJSONAtomic(modHistoryFile, ModHistory, 0644); err != nil {
+		cwlog.DoLogCW("writeModHistory: " + err.Error())
+	}
+}
+
+// ReadModHistory loads mod history from disk.
+func ReadModHistory() bool {
+	ModHistoryLock.Lock()
+	defer ModHistoryLock.Unlock()
+
+	file, err := os.ReadFile(modHistoryFile)
+	if err != nil || file == nil {
+		cwlog.DoLogCW("readModHistory: ReadFile failure")
+		return false
+	}
+
+	newHist := ModHistoryData{}
+	if err := json.Unmarshal(file, &newHist); err != nil {
+		cwlog.DoLogCW("readModHistory: Unmarshal failure")
+		cwlog.DoLogCW(err.Error())
+		return false
+	}
+
+	ModHistory = newHist
+	return true
+}
+
+// AddModHistory merges "Added by" and "Installed" entries and saves the update.
+func AddModHistory(newItem ModHistoryItem) {
+	ModHistoryLock.Lock()
+	defer func() {
+		ModHistoryLock.Unlock()
+		WriteModHistory()
+	}()
+
+	if newItem.Notes == InstalledNote {
+		for i, item := range ModHistory.History {
+			if item.Name == newItem.Name && strings.HasPrefix(item.Notes, AddedNote) {
+				newItem.Notes = item.Notes
+				ModHistory.History[i] = newItem
+				return
+			}
+		}
+	}
+
+	if newItem.Name == BootName {
+		numItems := len(ModHistory.History) - 1
+		if numItems >= 0 && ModHistory.History[numItems].Name == BootName {
+			ModHistory.History[numItems] = newItem
+			return
+		}
+	}
+
+	for _, item := range ModHistory.History {
+		if item.InfoItem {
+			continue
+		}
+		if item.Name == newItem.Name && item.Version == newItem.Version {
+			return
+		}
+	}
+
+	ModHistory.History = append(ModHistory.History, newItem)
 }

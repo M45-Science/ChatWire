@@ -34,61 +34,6 @@ const (
 	UpdatedNote   = "Updated"
 )
 
-func WriteModHistory() {
-	ModHistoryLock.Lock()
-	defer ModHistoryLock.Unlock()
-
-	tempPath := modHistoryFile + ".tmp"
-	finalPath := modHistoryFile
-
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(ModHistory); err != nil {
-		cwlog.DoLogCW("writeModHistory: enc.Encode failure")
-		return
-	}
-
-	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModHistory: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModHistory't rename modHistory file.")
-		return
-	}
-}
-
-func ReadModHistory() bool {
-	ModHistoryLock.Lock()
-	defer ModHistoryLock.Unlock()
-
-	file, err := os.ReadFile(modHistoryFile)
-
-	if file != nil && err == nil {
-		newHist := ModHistoryData{}
-
-		err := json.Unmarshal([]byte(file), &newHist)
-		if err != nil {
-			cwlog.DoLogCW("readModHistory: Unmarshal failure")
-			cwlog.DoLogCW(err.Error())
-			return false
-		}
-
-		ModHistory = newHist
-
-		return true
-	} else {
-		cwlog.DoLogCW("readModHistory: ReadFile failure")
-		return false
-	}
-}
-
 func checkVersion(operator int, local, remote string) (bool, error) {
 
 	cInt, err := versionToInt(local)
@@ -219,33 +164,14 @@ func WriteModsList(modList ModListData) bool {
 	defer modListFileLock.Unlock()
 
 	finalPath := util.GetModsFolder() + constants.ModListName
-	tempPath := finalPath + ".tmp"
-
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-
-	if err := enc.Encode(modList); err != nil {
-		cwlog.DoLogCW("writeModsList: enc.Encode failure")
-		return false
-	}
-
 	os.Mkdir(util.GetModsFolder(), 0755)
-	err := os.WriteFile(tempPath, outbuf.Bytes(), 0755)
 
-	if err != nil {
-		cwlog.DoLogCW("writeModsList: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("writeModsList: Couldn't rename " + constants.ModListName + ".tmp file.")
+	if err := writeJSONAtomic(finalPath, modList, 0755); err != nil {
+		cwlog.DoLogCW("writeModsList: " + err.Error())
 		return false
 	}
 
 	cwlog.DoLogCW("Wrote " + constants.ModListName)
-
 	return true
 }
 
@@ -567,89 +493,6 @@ func downloadMods(downloadList []downloadData) string {
 	}
 
 	return shortBuf
-}
-
-// Add mod history, merge "Added by" and "Installed" entries
-func AddModHistory(newItem ModHistoryItem) {
-	ModHistoryLock.Lock()
-	defer func() {
-		ModHistoryLock.Unlock()
-		WriteModHistory()
-	}()
-
-	if newItem.Notes == InstalledNote {
-		for i, item := range ModHistory.History {
-			if item.Name == newItem.Name && strings.HasPrefix(item.Notes, AddedNote) {
-				//Transfer notes
-				newItem.Notes = item.Notes
-				ModHistory.History[i] = newItem
-				return
-			}
-		}
-	}
-
-	if newItem.Name == BootName {
-		numItems := len(ModHistory.History) - 1
-		if numItems >= 0 && ModHistory.History[numItems].Name == BootName {
-			ModHistory.History[numItems] = newItem
-			return
-		}
-	}
-
-	for _, item := range ModHistory.History {
-		if item.InfoItem {
-			continue
-		}
-		if item.Name == newItem.Name {
-			if item.Version == newItem.Version {
-				//Duplicate entry
-				return
-			}
-		}
-	}
-
-	ModHistory.History =
-		append(ModHistory.History, newItem)
-
-}
-
-func addDownload(input downloadData, list []downloadData) []downloadData {
-
-	//Make sure we aren't downloading a mod update we already have
-	for _, item := range list {
-		if item.Name == input.Name {
-			return list
-		}
-	}
-
-	for i, item := range list {
-		if item.Name == input.Name {
-			//Check versions
-			newer, err := checkVersion(EO_GREATER, item.Data.Version, input.Data.Version)
-			if err != nil {
-				cwlog.DoLogCW("addDownload: Unable to parse version")
-				return list
-			}
-			if newer {
-				//Already in list and newer, replace
-				list[i] = input
-				if resolveDepsDebug {
-					cwlog.DoLogCW("Added newer download: %v-%v", input.Name, input.Version)
-				}
-			} else {
-				//Already here, but older, skip it
-				if resolveDepsDebug {
-					cwlog.DoLogCW("DID NOT ADD download: %v-%v", input.Name, input.Version)
-				}
-				return list
-			}
-		}
-	}
-
-	if resolveDepsDebug {
-		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
-	}
-	return append(list, input)
 }
 
 var ModInfoLock sync.Mutex
