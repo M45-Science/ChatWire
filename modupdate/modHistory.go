@@ -3,6 +3,7 @@ package modupdate
 import (
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
+	"ChatWire/util"
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
@@ -130,7 +131,7 @@ func WriteModHistory() {
 	ModHistoryLock.Lock()
 	defer ModHistoryLock.Unlock()
 
-	if err := writeJSONAtomic(modHistoryFile, ModHistory, 0644); err != nil {
+	if err := util.WriteJSONAtomic(modHistoryFile, ModHistory, 0644); err != nil {
 		cwlog.DoLogCW("writeModHistory: " + err.Error())
 	}
 }

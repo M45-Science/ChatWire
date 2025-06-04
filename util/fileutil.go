@@ -1,4 +1,4 @@
-package modupdate
+package util
 
 import (
 	"bytes"
@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// writeJSONAtomic writes data to path as JSON using a temporary file.
-func writeJSONAtomic(path string, data interface{}, perm os.FileMode) error {
+// WriteJSONAtomic writes data to path as JSON using a temporary file.
+func WriteJSONAtomic(path string, data interface{}, perm os.FileMode) error {
 	tempPath := path + ".tmp"
 
 	outbuf := new(bytes.Buffer)

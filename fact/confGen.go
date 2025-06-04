@@ -15,14 +15,13 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/util"
 )
 
 /* Generate a server-settings.json file for Factorio */
 func GenerateFactorioConfig() bool {
 
 	tempPath := constants.ServSettingsName + ".tmp"
-	finalPath := util.GetFactorioFolder() +
+	finalPath := cfg.GetFactorioFolder() +
 		constants.ServSettingsName
 
 	servName := "~[" + cfg.Global.GroupName + "] " + strings.ToUpper(cfg.Local.Callsign) + "-" + cfg.Local.Name

@@ -1,7 +1,6 @@
 package disc
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"strings"
@@ -9,6 +8,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
+	"ChatWire/util"
 )
 
 /* Discord role member-lists */
@@ -20,30 +20,12 @@ var (
 /* Cache a list of players with specific Discord roles */
 func WriteRoleList() bool {
 
-	tempPath := constants.RoleListFile + "." + cfg.Local.Callsign + ".tmp"
 	finalPath := constants.RoleListFile
-
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
 
 	RoleList.Version = "0.0.1"
 
-	if err := enc.Encode(RoleList); err != nil {
-		cwlog.DoLogCW("Writecfg.RoleList: enc.Encode failure")
-		return false
-	}
-
-	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("Writecfg.RoleList: WriteFile failure")
-	}
-
-	err = os.Rename(tempPath, finalPath)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename RoleList file.")
+	if err := util.WriteJSONAtomic(finalPath, RoleList, 0644); err != nil {
+		cwlog.DoLogCW("Writecfg.RoleList: " + err.Error())
 		return false
 	}
 
