@@ -22,6 +22,17 @@ cw.lock, ../playerdb.json<br>
 ../map-gen-json/, ./logs/, ../update-cache/, ../public_html/archive/<br>
 `Discord token, appid,  guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
+### Building ChatWire:<br>
+```bash
+git clone https://github.com/Distortions81/M45-ChatWire.git
+cd M45-ChatWire
+go build
+```
+This produces the `ChatWire` binary in the current directory.<br>
+Launching the binary for the first time will create `cw-local-config.json` and `../cw-global-config.json`.<br>
+Edit these files to provide your Discord credentials, Factorio token and server paths.<br>
+After configuring run `<code>./ChatWire -regCommands</code>` to register slash commands.<br>
+<br>
 ### Default path layout:<br>
 A 'base' folder the chatwire folder resides in.<br>
 `~/factServers/`<br>
