@@ -22,6 +22,7 @@ const (
 	ServSettingsName    = "server-settings.json"
 	ModSettingsName     = "mod-settings.dat"
 	ModListName         = "mod-list.json"
+	ModVersionsName     = "mod-versions.json"
 	ModsQueueFolder     = "mods-queue"
 	ModsFolder          = "mods"
 	OldModsDir          = "old"

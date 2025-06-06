@@ -449,23 +449,11 @@ func downloadMods(downloadList []downloadData) string {
 			continue
 		}
 
-		//Create old mods directory if needed
-		_, err = os.Stat(modPath + constants.OldModsDir)
-		if os.IsNotExist(err) {
-			err = os.Mkdir(modPath+constants.OldModsDir, os.ModePerm)
-			if err != nil {
-				emsg := "Unable to create old mods directory."
-				cwlog.DoLogCW(emsg)
-				errorLog = emsg
-				continue
-			}
-		}
-
-		//Move old mod file into old directory, if we had one
+		//Delete old mod file, if we had one
 		if dl.OldFilename != "" {
-			err = os.Rename(modPath+dl.OldFilename, modPath+constants.OldModsDir+"/"+dl.OldFilename)
-			if err != nil {
-				emsg := "Unable to move old mod file in mods directory"
+			err = os.Remove(modPath + dl.OldFilename)
+			if err != nil && !os.IsNotExist(err) {
+				emsg := "Unable to remove old mod file"
 				cwlog.DoLogCW(emsg)
 				errorLog = emsg
 				continue

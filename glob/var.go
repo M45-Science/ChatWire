@@ -55,6 +55,8 @@ var (
 
 	/* Increasing relaunch delay */
 	RelaunchThrottle = 0
+	CrashLoopCount   = 0
+	LastCrash        time.Time
 
 	/* Player database */
 	PlayerList          map[string]*PlayerData
