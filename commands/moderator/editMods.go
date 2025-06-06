@@ -204,7 +204,7 @@ func listMods() string {
 		if modupdate.IsBaseMod(item.Name) {
 			dbuf = dbuf + item.Name + " (base mod)"
 		} else if item.Version != constants.Unknown {
-			dbuf = dbuf + item.Name + "-" + item.Version
+			dbuf = dbuf + item.Name + " (" + item.Version + ")"
 		} else {
 			dbuf = dbuf + item.Name
 		}
@@ -256,7 +256,7 @@ func toggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 			if mod.Name == "base" {
 				continue
 			}
-			if mod.Name == part {
+			if strings.EqualFold(mod.Name, part) {
 				if mod.Enabled != value {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
 					mergedMods[m].Enabled = value

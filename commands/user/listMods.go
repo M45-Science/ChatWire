@@ -37,7 +37,7 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		if modupdate.IsBaseMod(item.Name) {
 			buf = buf + item.Name + " (base mod)"
 		} else if item.Version != constants.Unknown {
-			buf = buf + item.Name + "-" + item.Version
+			buf = buf + item.Name + " (" + item.Version + ")"
 		} else {
 			buf = buf + item.Name
 		}
