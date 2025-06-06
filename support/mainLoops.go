@@ -367,61 +367,15 @@ func MainLoops() {
 
 			/* Update role IDs */
 			if disc.Guild != nil {
+				roleMap := buildRoleMap()
+
 				changed := false
-				/* TODO: Clean up dupe code. This started off simple and grew */
 				for _, role := range disc.Guild.Roles {
-					if cfg.Global.Discord.Roles.Admin != "" &&
-						role.Name == cfg.Global.Discord.Roles.Admin &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Admin != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Admin = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Moderator != "" &&
-						role.Name == cfg.Global.Discord.Roles.Moderator &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Moderator != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Moderator = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Veteran != "" &&
-						role.Name == cfg.Global.Discord.Roles.Veteran &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Veteran != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Veteran = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Regular != "" &&
-						role.Name == cfg.Global.Discord.Roles.Regular &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Regular != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Regular = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Member != "" &&
-						role.Name == cfg.Global.Discord.Roles.Member &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Member != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Member = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.New != "" &&
-						role.Name == cfg.Global.Discord.Roles.New &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.New != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.New = role.ID
-						changed = true
-					} else if cfg.Global.Discord.Roles.Patreon != "" &&
-						role.Name == cfg.Global.Discord.Roles.Patreon &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Patreon != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Patreon = role.ID
-						changed = true
-					} else if cfg.Global.Discord.Roles.Nitro != "" &&
-						role.Name == cfg.Global.Discord.Roles.Nitro &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Nitro != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Nitro = role.ID
-						changed = true
-					} else if cfg.Global.Discord.Roles.Supporter != "" &&
-						role.Name == cfg.Global.Discord.Roles.Supporter &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Supporter != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Supporter = role.ID
+					if updateRoleCache(role, roleMap) {
 						changed = true
 					}
 				}
+
 				if changed {
 					cwlog.DoLogCW("Role IDs updated.")
 					cfg.WriteGCfg()
