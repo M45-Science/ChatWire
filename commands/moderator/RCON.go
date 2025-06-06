@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Distortions81/rcon"
+	"github.com/M45-Science/rcon"
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
