@@ -567,10 +567,10 @@ func launchFactorio() {
 	fact.FactorioBooted = false
 
 	//Reset relaunch throttle
-	if time.Since(fact.FactorioBootedAt) > time.Hour {
+	if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) > time.Hour {
 		glob.RelaunchThrottle = 0
 	}
-	fact.FactorioBootedAt = time.Time{}
+	fact.FactorioBootedAt = time.Now()
 
 	fact.Gametime = (constants.Unknown)
 	glob.NoResponseCount = 0
