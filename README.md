@@ -1,4 +1,4 @@
-<img src="img-source/logo.png" alt="ChatWire Logo" width="400">
+<img src="img-source/logo-readme.png" alt="ChatWire Logo" width="400" height="137">
 
 # ChatWire
 
