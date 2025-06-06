@@ -340,87 +340,83 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 	didBan := false
 	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-	if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
-		filedata, err := os.ReadFile(dbPath)
+	filedata, err := os.ReadFile(dbPath)
+	if err != nil {
+		cwlog.DoLogCW("Couldn't read db file, path: %v", dbPath)
+		return
+	}
+
+	if filedata != nil {
+
+		var tempData = make(map[string]*glob.PlayerData)
+		err = json.Unmarshal(filedata, &tempData)
 		if err != nil {
-			cwlog.DoLogCW("Couldn't read db file, path: %v", dbPath)
-			return
+			cwlog.DoLogCW(err.Error())
 		}
 
-		if filedata != nil {
+		banCount := 0
+		doBan := true
+		//Add name back in, makes db file smaller
+		glob.PlayerListLock.Lock()
+		var removed int
 
-			var tempData = make(map[string]*glob.PlayerData)
-			err = json.Unmarshal(filedata, &tempData)
-			if err != nil {
-				cwlog.DoLogCW(err.Error())
-			}
+		for pname := range tempData {
 
-			banCount := 0
-			doBan := true
-			//Add name back in, makes db file smaller
-			glob.PlayerListLock.Lock()
-			var removed int
-
-			for pname := range tempData {
-
-				if clearBans {
-					if tempData[pname].Level < 0 {
-						removed++
-						defer delete(tempData, pname)
-						continue
-					}
-				}
-				//DB cleaning
-				if minimize {
-					//Get rid of new/deleted
-					if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
-						removed++
-						defer delete(tempData, pname)
-						continue
-					}
-					//Delete unneeded data from member/reg/moderator
-					if tempData[pname].Level > 0 {
-						tempData[pname].SusScore = 0
-						tempData[pname].BanReason = ""
-						tempData[pname].SpamScore = 0
-					}
-					//Check discord id, fixed if needed.
-					ID, err := strconv.ParseUint(tempData[pname].ID, 10, 64)
-					//There are some old DBs that had ban reasons in the ID field, fix them.
-					if ID == 0 || err != nil {
-						tempData[pname].BanReason = tempData[pname].ID
-						tempData[pname].ID = ""
-					}
-					//Delete id "0"
-					if tempData[pname].ID == "0" {
-						tempData[pname].ID = ""
-					}
-				}
-
-				if banCount > 5 {
-					doBan = false
-				}
-				didBan = false
-				//Autopromote to veteran
-				if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
-					tempData[pname].Level = 3
-				}
-				if bootMode {
-					didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
-				} else if !bootMode {
-					didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
-				}
-				if didBan {
-					banCount++
+			if clearBans {
+				if tempData[pname].Level < 0 {
+					removed++
+					delete(tempData, pname)
+					continue
 				}
 			}
-			if removed > 0 {
-				cwlog.DoLogCW("Removed: %v entries.\n", removed)
+			//DB cleaning
+			if minimize {
+				//Get rid of new/deleted
+				if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
+					removed++
+					delete(tempData, pname)
+					continue
+				}
+				//Delete unneeded data from member/reg/moderator
+				if tempData[pname].Level > 0 {
+					tempData[pname].SusScore = 0
+					tempData[pname].BanReason = ""
+					tempData[pname].SpamScore = 0
+				}
+				//Check discord id, fixed if needed.
+				ID, err := strconv.ParseUint(tempData[pname].ID, 10, 64)
+				//There are some old DBs that had ban reasons in the ID field, fix them.
+				if ID == 0 || err != nil {
+					tempData[pname].BanReason = tempData[pname].ID
+					tempData[pname].ID = ""
+				}
+				//Delete id "0"
+				if tempData[pname].ID == "0" {
+					tempData[pname].ID = ""
+				}
 			}
-			glob.PlayerListLock.Unlock()
+
+			if banCount > 5 {
+				doBan = false
+			}
+			didBan = false
+			//Autopromote to veteran
+			if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
+				tempData[pname].Level = 3
+			}
+			if bootMode {
+				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
+			} else {
+				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
+			}
+			if didBan {
+				banCount++
+			}
 		}
-	} else {
-		loadPlayersSQLite(bootMode, minimize, clearBans)
+		if removed > 0 {
+			cwlog.DoLogCW("Removed: %v entries.\n", removed)
+		}
+		glob.PlayerListLock.Unlock()
 	}
 }
 
@@ -429,34 +425,30 @@ func WritePlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
-		glob.PlayerListLock.RLock()
-		defer glob.PlayerListLock.RUnlock()
+	glob.PlayerListLock.RLock()
+	defer glob.PlayerListLock.RUnlock()
 
-		outbuf := new(bytes.Buffer)
-		enc := json.NewEncoder(outbuf)
-		if err := enc.Encode(glob.PlayerList); err != nil {
-			cwlog.DoLogCW("WritePlayers: enc.Encode failure")
-			return
-		}
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
+	if err := enc.Encode(glob.PlayerList); err != nil {
+		cwlog.DoLogCW("WritePlayers: enc.Encode failure")
+		return
+	}
 
-		nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
-		err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
+	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
+	err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
 
-		if err != nil {
-			cwlog.DoLogCW("Couldn't write db temp file.")
-			return
-		}
+	if err != nil {
+		cwlog.DoLogCW("Couldn't write db temp file.")
+		return
+	}
 
-		oldName := nfilename
-		newName := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-		err = os.Rename(oldName, newName)
+	oldName := nfilename
+	newName := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
+	err = os.Rename(oldName, newName)
 
-		if err != nil {
-			cwlog.DoLogCW("Couldn't rename db temp file.")
-			return
-		}
-	} else {
-		writePlayersSQLite()
+	if err != nil {
+		cwlog.DoLogCW("Couldn't rename db temp file.")
+		return
 	}
 }

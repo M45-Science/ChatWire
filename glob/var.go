@@ -34,8 +34,6 @@ var (
 	NoAutoLaunch         *bool
 	NoDiscord            *bool
 	ProxyURL             *string
-	MigrateJSONToSQLite  *bool
-	MigrateSQLiteToJSON  *bool
 
 	/* Vote map */
 	VoteBox     VoteContainerData
