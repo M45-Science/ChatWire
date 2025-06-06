@@ -1,28 +1,29 @@
 package modupdate
 
 import (
-       "ChatWire/cfg"
-       "ChatWire/constants"
-       "ChatWire/cwlog"
-       "ChatWire/util"
-       "encoding/json"
-       "fmt"
-       "math/rand/v2"
-       "os"
-       "strconv"
-       "strings"
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/util"
+	"encoding/json"
+	"fmt"
+	"math/rand/v2"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 var (
-       rollbackList []ModHistoryItem
-       rollbackKey  int
+	rollbackList []ModHistoryItem
+	rollbackKey  int
 )
 
 func ListHistory() string {
 	buf := ""
 
-       for i, item := range ModHistory.History {
-               if i > constants.ModHistoryPageSize {
+	for i, item := range ModHistory.History {
+		if i > constants.ModHistoryPageSize {
 			buf = buf + "\n...\n"
 			break
 		}
@@ -67,15 +68,15 @@ func ModUpdateRollback(value uint64) string {
 	 * Apply changes and disable mod update automatically and NOTE UPDATES ARE DISABLED
 	 */
 
-       buf := ""
-       if value >= constants.ModHistoryKeyStart {
+	buf := ""
+	if value >= constants.ModHistoryKeyStart {
 		if int(value) == rollbackKey {
 			rollbackKey = 0
 
-			//perform rollback
+			msg := performRollback()
 			cfg.Local.Options.ModUpdate = false
 			cfg.WriteLCfg()
-			return "(MOCKUP / TEST ONLY -- WIP) Mod roll-back complete!\n**NOTICE: DISABLED AUTOMATIC MOD UPDATER!**"
+			return msg + "\n**NOTICE: DISABLED AUTOMATIC MOD UPDATER!**"
 		}
 		return "Invalid roll-back key"
 	}
@@ -83,8 +84,8 @@ func ModUpdateRollback(value uint64) string {
 	numHist := uint64(len(ModHistory.History))
 
 	//Unlikely but better to be safe
-       if numHist > constants.MaxModHistory {
-               numHist = constants.MaxModHistory
+	if numHist > constants.MaxModHistory {
+		numHist = constants.MaxModHistory
 	}
 
 	if value < 1 || value > numHist {
@@ -101,6 +102,14 @@ func ModUpdateRollback(value uint64) string {
 	for x := value - 1; x < numHist; x++ {
 		item := ModHistory.History[x]
 
+		if item.OldFilename == "" {
+			oldFile, oldVer := findOlderModFile(item.Name, item.Version)
+			if oldFile != "" {
+				item.OldFilename = oldFile
+				item.OldVersion = oldVer
+			}
+		}
+
 		rollbackList = append(rollbackList, item)
 		if item.OldFilename != "" {
 			buf = buf + "Downgrade " + item.Name + ": " + item.Version + " --> " + item.OldVersion + "\n"
@@ -108,8 +117,8 @@ func ModUpdateRollback(value uint64) string {
 			buf = buf + "Remove " + item.Name + "-" + item.Version + "\n"
 		}
 	}
-       if rollbackList != nil {
-               rollbackKey = constants.ModHistoryKeyStart + rand.IntN(constants.ModHistoryMaxKey-constants.ModHistoryKeyStart)
+	if rollbackList != nil {
+		rollbackKey = constants.ModHistoryKeyStart + rand.IntN(constants.ModHistoryMaxKey-constants.ModHistoryKeyStart)
 		buf = "**Roll-back to #" + strconv.FormatUint(value, 10) + ": ACTION LIST:**\n\n" + buf
 		buf = buf + "\n**To perform the roll-back type: `/editmods mod-update-rollback:" + strconv.FormatUint(uint64(rollbackKey), 10) + "`**\n"
 	}
@@ -188,4 +197,121 @@ func AddModHistory(newItem ModHistoryItem) {
 	}
 
 	ModHistory.History = append(ModHistory.History, newItem)
+}
+
+func performRollback() string {
+	if len(rollbackList) == 0 {
+		return "No roll-back data available."
+	}
+
+	modPath := cfg.GetModsFolder()
+	modList, _ := GetModList()
+	actions := ""
+
+	for i := len(rollbackList) - 1; i >= 0; i-- {
+		item := rollbackList[i]
+		if item.InfoItem || item.Name == BootName {
+			continue
+		}
+
+		if item.OldFilename == "" {
+			oldFile, oldVer := findOlderModFile(item.Name, item.Version)
+			if oldFile != "" {
+				item.OldFilename = oldFile
+				item.OldVersion = oldVer
+				rollbackList[i] = item
+			}
+		}
+
+		if item.OldFilename != "" {
+			_ = os.Rename(modPath+item.Filename, modPath+constants.OldModsDir+"/"+item.Filename)
+			src := filepath.Join(modPath, constants.OldModsDir, item.OldFilename)
+			if _, err := os.Stat(src); err != nil {
+				src = filepath.Join(modPath, item.OldFilename)
+			}
+			_ = os.Rename(src, modPath+item.OldFilename)
+			actions = actions + fmt.Sprintf("Downgraded %v to %v\n", item.Name, item.OldVersion)
+		} else {
+			_ = os.Remove(modPath + item.Filename)
+			for m, md := range modList.Mods {
+				if md.Name == item.Name {
+					modList.Mods = append(modList.Mods[:m], modList.Mods[m+1:]...)
+					break
+				}
+			}
+			actions = actions + fmt.Sprintf("Removed %v\n", item.Name)
+		}
+	}
+
+	WriteModsList(modList)
+
+	cut := len(ModHistory.History) - len(rollbackList)
+	if cut < 0 {
+		cut = 0
+	}
+	ModHistory.History = ModHistory.History[:cut]
+	WriteModHistory()
+
+	rollbackList = nil
+
+	if actions == "" {
+		actions = "No changes applied."
+	}
+	return "Mod roll-back complete!\n" + actions
+}
+
+// findOlderModFile searches the mods and old mods directories for an older
+// version of a mod. It returns the filename and version if found.
+func findOlderModFile(name, current string) (string, string) {
+	modPath := cfg.GetModsFolder()
+	dirs := []string{modPath, filepath.Join(modPath, constants.OldModsDir)}
+	bestFile := ""
+	bestVer := ""
+
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			ver := parseModFileVersion(name, filepath.Join(dir, entry.Name()))
+			if ver == "" {
+				continue
+			}
+			if current != "" {
+				older, err := checkVersion(EO_LESS, current, ver)
+				if err != nil || !older {
+					continue
+				}
+			}
+			if bestVer == "" {
+				bestVer = ver
+				bestFile = entry.Name()
+			} else {
+				greater, err := checkVersion(EO_GREATER, bestVer, ver)
+				if err == nil && greater {
+					bestVer = ver
+					bestFile = entry.Name()
+				}
+			}
+		}
+	}
+
+	return bestFile, bestVer
+}
+
+// parseModFileVersion extracts the version from a mod filename.
+func parseModFileVersion(name, path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	info := modInfoRead("", data)
+	if info == nil || info.Name != name {
+		return ""
+	}
+	return info.Version
 }
