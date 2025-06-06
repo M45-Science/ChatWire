@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -100,6 +101,14 @@ func ModUpdateRollback(value uint64) string {
 	rollbackList = []ModHistoryItem{}
 	for x := value - 1; x < numHist; x++ {
 		item := ModHistory.History[x]
+
+		if item.OldFilename == "" {
+			oldFile, oldVer := findOlderModFile(item.Name, item.Version)
+			if oldFile != "" {
+				item.OldFilename = oldFile
+				item.OldVersion = oldVer
+			}
+		}
 
 		rollbackList = append(rollbackList, item)
 		if item.OldFilename != "" {
@@ -205,9 +214,22 @@ func performRollback() string {
 			continue
 		}
 
+		if item.OldFilename == "" {
+			oldFile, oldVer := findOlderModFile(item.Name, item.Version)
+			if oldFile != "" {
+				item.OldFilename = oldFile
+				item.OldVersion = oldVer
+				rollbackList[i] = item
+			}
+		}
+
 		if item.OldFilename != "" {
 			_ = os.Rename(modPath+item.Filename, modPath+constants.OldModsDir+"/"+item.Filename)
-			_ = os.Rename(modPath+constants.OldModsDir+"/"+item.OldFilename, modPath+item.OldFilename)
+			src := filepath.Join(modPath, constants.OldModsDir, item.OldFilename)
+			if _, err := os.Stat(src); err != nil {
+				src = filepath.Join(modPath, item.OldFilename)
+			}
+			_ = os.Rename(src, modPath+item.OldFilename)
 			actions = actions + fmt.Sprintf("Downgraded %v to %v\n", item.Name, item.OldVersion)
 		} else {
 			_ = os.Remove(modPath + item.Filename)
@@ -236,4 +258,56 @@ func performRollback() string {
 		actions = "No changes applied."
 	}
 	return "Mod roll-back complete!\n" + actions
+}
+
+// findOlderModFile searches the mods and old mods directories for an older
+// version of a mod. It returns the filename and version if found.
+func findOlderModFile(name, current string) (string, string) {
+	modPath := cfg.GetModsFolder()
+	dirs := []string{modPath, filepath.Join(modPath, constants.OldModsDir)}
+	bestFile := ""
+	bestVer := ""
+
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			ver := parseModFileVersion(name, entry.Name())
+			if ver == "" {
+				continue
+			}
+			if current != "" {
+				older, err := checkVersion(EO_LESS, current, ver)
+				if err != nil || !older {
+					continue
+				}
+			}
+			if bestVer == "" {
+				bestVer = ver
+				bestFile = entry.Name()
+			} else {
+				greater, err := checkVersion(EO_GREATER, bestVer, ver)
+				if err == nil && greater {
+					bestVer = ver
+					bestFile = entry.Name()
+				}
+			}
+		}
+	}
+
+	return bestFile, bestVer
+}
+
+// parseModFileVersion extracts the version from a mod filename.
+func parseModFileVersion(name, filename string) string {
+	if !strings.HasPrefix(filename, name+"_") || !strings.HasSuffix(filename, ".zip") {
+		return ""
+	}
+	base := strings.TrimSuffix(filename, ".zip")
+	return strings.TrimPrefix(base, name+"_")
 }
