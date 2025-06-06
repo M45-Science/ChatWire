@@ -11,7 +11,7 @@ import (
 	"ChatWire/util"
 )
 
-/* Discord role member-lists */
+// RoleList contains cached Discord role member lists.
 var (
 	RoleList        RoleListData
 	RoleListUpdated bool
@@ -38,7 +38,7 @@ func createRoleList() RoleListData {
 	return newcfg
 }
 
-/* Read in cached list of Discord players with specific roles */
+// ReadRoleList loads RoleList from disk or creates a new list if none exists.
 func ReadRoleList() bool {
 
 	_, err := os.Stat(constants.RoleListFile)

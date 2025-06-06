@@ -9,28 +9,31 @@ import (
 )
 
 var (
-	/* Discord data */
-	Guild     *discordgo.Guild
+	// Guild is the Discord guild ChatWire is connected to.
+	Guild *discordgo.Guild
+	// Guildname is the name of the connected guild.
 	Guildname = constants.Unknown
-	DS        *discordgo.Session
+	// DS is the active Discord session.
+	DS *discordgo.Session
 
-	/*To-Discord message buffer*/
+	// CMSBuffer holds queued messages destined for Discord.
 	CMSBuffer     []CMSBuf
 	CMSBufferLock sync.Mutex
 
-	/* Channel name data */
-	OldChanName       = constants.Unknown
+	// OldChanName caches the previous channel name during updates.
+	OldChanName = constants.Unknown
+	// NewChanName caches the new channel name during updates.
 	NewChanName       = constants.Unknown
 	UpdateChannelLock sync.Mutex
 )
 
-/* To-Discord message buffer */
+// CMSBuf represents a queued Discord message.
 type CMSBuf struct {
 	Channel string
 	Text    string
 }
 
-/* Cache of Players with specific Discord roles*/
+// RoleListData caches lists of Discord users for specific roles.
 type RoleListData struct {
 	Version      string
 	Patreons     []string

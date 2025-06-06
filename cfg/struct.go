@@ -126,6 +126,7 @@ type local struct {
 	ModPackList []ModPackData `form:"-"`
 }
 
+// ModPackData lists a discovered mod pack.
 type ModPackData struct {
 	Path    string
 	Created time.Time
@@ -149,6 +150,7 @@ type channel struct {
 	ChatChannel string `web:"Channel ID"`
 }
 
+// ResetInterval defines the time duration between automatic map resets.
 type ResetInterval struct {
 	Months, Weeks, Days, Hours int
 }

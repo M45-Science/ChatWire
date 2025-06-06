@@ -19,7 +19,6 @@ var (
 	FactorioVersion = constants.Unknown
 
 	NewVersion   = constants.Unknown
-	newPatchName = constants.Unknown
 	LastSaveName = constants.Unknown
 
 	/* Factorio in-game time data */
@@ -55,13 +54,8 @@ var (
 	OnlinePlayersLock sync.RWMutex
 
 	/* Slow-connect status */
-	SlowConnectLock   sync.Mutex
-	SlowConnectTimer  int64 = 0
-	SlowConnectEvents       = 0
-
-	/*  Map gen data */
-	LastMapSeed int = 0
-	LastMapCode     = ""
+	SlowConnectLock  sync.Mutex
+	SlowConnectTimer int64
 )
 
 type TickInt struct {

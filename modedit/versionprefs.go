@@ -9,10 +9,12 @@ import (
 	"ChatWire/constants"
 )
 
+// VersionPrefs describes preferred versions for mods.
 type VersionPrefs struct {
 	Mods []ModVersion `json:"mods"`
 }
 
+// ModVersion stores a single mod name and preferred version.
 type ModVersion struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`

@@ -26,7 +26,7 @@ import (
 )
 
 const (
-       MaxZipSize = 1024 * 1024 * 1024 //1gb
+	MaxZipSize = 1024 * 1024 * 1024 //1gb
 )
 
 var (
@@ -214,14 +214,6 @@ func SetFactRunning(run, report bool) {
 		}
 		UpdateChannelName()
 		return
-	}
-}
-
-func GetGuildName() string {
-	if disc.Guild == nil {
-		return constants.Unknown
-	} else {
-		return disc.Guildname
 	}
 }
 
@@ -1255,16 +1247,10 @@ func GetFactorioBinary() string {
 	return bloc
 }
 
-func GetUpdateCachePath() string {
-	return cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" + "UpdateCache/"
-}
-
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
-       text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
+	text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
 	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 
