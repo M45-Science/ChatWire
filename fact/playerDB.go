@@ -13,6 +13,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
+	"ChatWire/watcher"
 )
 
 /* Local use only */
@@ -33,33 +34,11 @@ func compactTime(input int64) int64 {
 
 /* Screw fsnotify */
 func WatchDatabaseFile() {
-	for glob.ServerRunning {
-		time.Sleep(time.Second * 5)
+	filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-		filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-		initialStat, erra := os.Stat(filePath)
-
-		if erra != nil {
-			//cwlog.DoLogCW("WatchDatabaseFile: stat")
-			time.Sleep(time.Minute)
-			continue
-		}
-
-		for glob.ServerRunning && initialStat != nil {
-			time.Sleep(5 * time.Second)
-
-			stat, errb := os.Stat(filePath)
-			if errb != nil {
-				//cwlog.DoLogCW("WatchDatabaseFile: restat")
-				break
-			}
-
-			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				setPlayerListUpdated()
-				break
-			}
-		}
-	}
+	watcher.Watch(filePath, 5*time.Second, &glob.ServerRunning, func() {
+		setPlayerListUpdated()
+	})
 }
 
 /* Check if DB has been updated */
