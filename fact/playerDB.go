@@ -340,15 +340,14 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 	didBan := false
 	dbPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-	filedata, err := os.ReadFile(dbPath)
-	if err != nil {
-		cwlog.DoLogCW("Couldn't read db file, path: %v", dbPath)
-		return
-	}
+	if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
+		filedata, err := os.ReadFile(dbPath)
+		if err != nil {
+			cwlog.DoLogCW("Couldn't read db file, path: %v", dbPath)
+			return
+		}
 
-	if filedata != nil {
-
-		if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
+		if filedata != nil {
 
 			var tempData = make(map[string]*glob.PlayerData)
 			err = json.Unmarshal(filedata, &tempData)
@@ -420,40 +419,44 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			}
 			glob.PlayerListLock.Unlock()
 		}
+	} else {
+		loadPlayersSQLite(bootMode, minimize, clearBans)
 	}
 }
 
 /* Save database */
 func WritePlayers() {
-	/* Write to file */
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	glob.PlayerListLock.RLock()
-	defer glob.PlayerListLock.RUnlock()
+	if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
+		glob.PlayerListLock.RLock()
+		defer glob.PlayerListLock.RUnlock()
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	if err := enc.Encode(glob.PlayerList); err != nil {
-		cwlog.DoLogCW("WritePlayers: enc.Encode failure")
-		return
+		outbuf := new(bytes.Buffer)
+		enc := json.NewEncoder(outbuf)
+		if err := enc.Encode(glob.PlayerList); err != nil {
+			cwlog.DoLogCW("WritePlayers: enc.Encode failure")
+			return
+		}
+
+		nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
+		err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
+
+		if err != nil {
+			cwlog.DoLogCW("Couldn't write db temp file.")
+			return
+		}
+
+		oldName := nfilename
+		newName := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
+		err = os.Rename(oldName, newName)
+
+		if err != nil {
+			cwlog.DoLogCW("Couldn't rename db temp file.")
+			return
+		}
+	} else {
+		writePlayersSQLite()
 	}
-
-	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
-	err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't write db temp file.")
-		return
-	}
-
-	oldName := nfilename
-	newName := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-	err = os.Rename(oldName, newName)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename db temp file.")
-		return
-	}
-
 }

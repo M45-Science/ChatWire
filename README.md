@@ -18,7 +18,7 @@ Needs permissions to create files and directories in its own directory, and **up
 <br>
 Some dirs and files that can be auto-created:<br>
 cw-local-config.json, ../cw-global-config.json<br>
-cw.lock, ../playerdb.json<br>
+cw.lock, ../playerdb.sqlite<br>
 ../map-gen-json/, ./logs/, ../update-cache/, ../public_html/archive/<br>
 `Discord token, appid,  guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>

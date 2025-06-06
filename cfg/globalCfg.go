@@ -42,9 +42,11 @@ func WriteGCfg() bool {
 func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
-		Global.Paths.DataFiles.DBFile = "playerdb.json"
-		if err := os.WriteFile(Global.Paths.DataFiles.DBFile, []byte("{}"), 0644); err != nil {
-			cwlog.DoLogCW("setGlobalDefaults: Could not create " + Global.Paths.DataFiles.DBFile)
+		Global.Paths.DataFiles.DBFile = "playerdb.sqlite"
+		if _, err := os.Stat(Global.Paths.DataFiles.DBFile); os.IsNotExist(err) {
+			if _, err := os.Create(Global.Paths.DataFiles.DBFile); err != nil {
+				cwlog.DoLogCW("setGlobalDefaults: Could not create " + Global.Paths.DataFiles.DBFile)
+			}
 		}
 	}
 	if Global.Paths.Folders.MapGenerators == "" {
