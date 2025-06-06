@@ -209,7 +209,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		err := DS.GuildMemberRoleAdd(gid, uid, rid)
 
 		if err != nil {
-			if !strings.Contains(err.Error(), "Unknown Member") {
+			if !strings.Contains(strings.ToLower(err.Error()), "unknown member") {
 				cwlog.DoLogCW("SmartRoleAdd: ERROR: %v", err)
 			} else {
 				return nil
