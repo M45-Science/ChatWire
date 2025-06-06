@@ -42,8 +42,6 @@ func main() {
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
-	glob.MigrateJSONToSQLite = flag.Bool("jsonToSQLite", false, "Migrate JSON database to SQLite and exit.")
-	glob.MigrateSQLiteToJSON = flag.Bool("sqliteToJSON", false, "Migrate SQLite database to JSON and exit.")
 	flag.Parse()
 
 	/* Start cw logs */
@@ -58,17 +56,6 @@ func main() {
 	initMaps()
 	readConfigs()
 	modupdate.ReadModHistory()
-
-	if *glob.MigrateJSONToSQLite {
-		fact.MigrateJSONToSQLite()
-		fmt.Println("Database migrated to SQLite.")
-		return
-	}
-	if *glob.MigrateSQLiteToJSON {
-		fact.MigrateSQLiteToJSON()
-		fmt.Println("Database migrated to JSON.")
-		return
-	}
 
 	if *cleanDB || *cleanBans {
 		fact.LoadPlayers(false, true, *cleanBans)

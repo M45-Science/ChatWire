@@ -9,7 +9,7 @@ composite.json
 server-banlist.json
 /factorio
 cpufile.prof
-playerdb.sqlite
+playerdb.json
 factorio.tar
 .VSCodeCounter
 .vscode
