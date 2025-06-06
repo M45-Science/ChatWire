@@ -67,3 +67,27 @@ Launch params:<br>
 ### Discord bot perms:
 The bot needs presence intent, server members intent, message content intent
 Perms: view channels, manage channels, Manage roles, send messages, embed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.
+
+### Development and Testing
+
+Run `go fmt` to format the code and `go vet` for linting before committing. Tests can be executed with:
+```bash
+go fmt ./...
+go vet ./...
+go test ./...
+```
+These are the same checks executed by the CI pipeline.
+
+### Regenerating configuration
+
+If you need to reset the configuration files, delete `cw-local-config.json` and `../cw-global-config.json` and start ChatWire again. Fresh copies will be generated automatically. You can also reload the configs at runtime using the `ReloadConfig` moderator command.
+
+### Running the bot locally
+
+Build the binary and register the Discord slash commands:
+```bash
+go build
+./ChatWire -regCommands
+./ChatWire
+```
+Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
