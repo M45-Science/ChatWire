@@ -20,10 +20,10 @@ func DoLogCW(format string, args ...interface{}) {
 	_, filename, line, _ := runtime.Caller(1)
 
 	var text string
-	if args == nil {
+	if len(args) == 0 {
 		text = format
 	} else {
-		text = fmt.Sprintf(format, args...)
+		text = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())
@@ -45,10 +45,10 @@ func DoLogGame(format string, args ...interface{}) {
 	ctime := time.Now()
 
 	var text string
-	if args == nil {
+	if len(args) == 0 {
 		text = format
 	} else {
-		text = fmt.Sprintf(format, args...)
+		text = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())

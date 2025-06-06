@@ -414,10 +414,10 @@ func QuitFactorio(message string) {
 func WriteFact(format string, args ...interface{}) {
 
 	var input string
-	if args == nil {
+	if len(args) == 0 {
 		input = format
 	} else {
-		input = fmt.Sprintf(format, args...)
+		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	PipeLock.Lock()
@@ -431,7 +431,7 @@ func WriteFact(format string, args ...interface{}) {
 
 		plen := len(buf)
 
-               if plen > constants.MaxDiscordMsgLen {
+		if plen > constants.MaxDiscordMsgLen {
 			cwlog.DoLogCW("Message to Factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
@@ -1081,10 +1081,10 @@ func IsPlayerOnline(who string) bool {
 func FactChat(format string, args ...interface{}) {
 
 	var input string
-	if args == nil {
+	if len(args) == 0 {
 		input = format
 	} else {
-		input = fmt.Sprintf(format, args...)
+		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	if input == "" {
@@ -1124,10 +1124,10 @@ func FactChat(format string, args ...interface{}) {
 func FactWhisper(player, format string, args ...interface{}) {
 
 	var input string
-	if args == nil {
+	if len(args) == 0 {
 		input = format
 	} else {
-		input = fmt.Sprintf(format, args...)
+		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	/* Limit length, Discord does this... but just in case */
