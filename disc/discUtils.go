@@ -218,7 +218,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		return err
 	}
 
-	return errors.New("error")
+	return errors.New("discord session not connected")
 }
 
 /* See if a role exists */
