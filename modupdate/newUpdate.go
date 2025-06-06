@@ -6,6 +6,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modedit"
 	"errors"
 	"fmt"
 	"strings"
@@ -198,6 +199,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	jsonModList, _ := GetModList() //Ignore error, mods-list.json missing isn't the end of the world.
 	// Merge the two lists
 	installedMods := MergeModLists(modFileList, jsonModList)
+	versionPrefs := modedit.ReadPrefs()
 
 	// Check if we need to proceed
 	if len(installedMods) == 0 {
@@ -239,6 +241,25 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 		return false, err
+	}
+
+	// Apply version preferences
+	for _, inst := range installedMods {
+		pref := modedit.GetVersion(versionPrefs, inst.Name)
+		if pref != "" && !strings.EqualFold(pref, "auto") && pref != inst.Version {
+			info, perr := DownloadModInfo(inst.Name)
+			if perr == nil {
+				for _, rel := range info.Releases {
+					if rel.Version == pref {
+						dl := downloadData{Name: inst.Name, Title: info.Title,
+							Filename: inst.Filename, OldFilename: inst.Filename,
+							Data: rel, Version: rel.Version, OldVersion: inst.Version}
+						downloadList = addDownload(dl, downloadList)
+						break
+					}
+				}
+			}
+		}
 	}
 
 	//Dry run ends here

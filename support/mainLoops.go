@@ -45,6 +45,27 @@ func MainLoops() {
 			/* Factorio not running */
 			if !fact.FactIsRunning && !fact.DoUpdateFactorio {
 
+				if !fact.FactorioBooted && !fact.FactorioBootedAt.IsZero() {
+					if time.Since(fact.FactorioBootedAt) < time.Minute*2 {
+						glob.CrashLoopCount++
+					} else {
+						glob.CrashLoopCount = 0
+					}
+					glob.LastCrash = time.Now()
+					fact.FactorioBootedAt = time.Time{}
+					if glob.CrashLoopCount >= 3 {
+						fact.SetAutolaunch(false, true)
+						mapName := fact.GameMapName
+						if mapName == "" {
+							mapName = "<unknown>"
+						}
+						msg := fmt.Sprintf("%s-%s: %s: Factorio crashed repeatedly during startup while loading %s. Moderator attention required.",
+							cfg.Global.GroupName, cfg.Local.Callsign, cfg.Local.Name, mapName)
+						disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, msg)
+						cwlog.DoLogCW(msg)
+					}
+				}
+
 				if fact.QueueFactReboot {
 					if cfg.Local.Options.AutoStart {
 						fact.SetAutolaunch(true, false)

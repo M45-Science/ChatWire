@@ -6,6 +6,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modedit"
 	"ChatWire/modupdate"
 	"ChatWire/util"
 	"os"
@@ -45,11 +46,12 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			tmsg = tmsg + msg + "\n"
 		case "add-mod":
 			tmsg = tmsg + addMod(i, option.StringValue())
+		case "list-versions":
+			tmsg = tmsg + listVersions()
+		case "set-version":
+			tmsg = tmsg + setVersion(i, option.StringValue())
 		case "clear-all-mods":
 			msg = clearAllMods()
-			tmsg = tmsg + msg + "\n"
-		case "mod-update-rollback":
-			msg = modupdate.ModUpdateRollback(option.UintValue())
 			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
@@ -304,4 +306,81 @@ func enableStr(b bool, pastTense bool) string {
 			return "disable"
 		}
 	}
+}
+
+func listVersions() string {
+	prefs := modedit.ReadPrefs()
+	if len(prefs.Mods) == 0 {
+		return "No version preferences set."
+	}
+	mods, _ := modupdate.GetModFiles()
+	inst := map[string]string{}
+	for _, m := range mods {
+		inst[strings.ToLower(m.Name)] = m.Version
+	}
+	buf := ""
+	for _, v := range prefs.Mods {
+		if buf != "" {
+			buf += "\n"
+		}
+		iv := inst[strings.ToLower(v.Name)]
+		if iv != "" {
+			buf += v.Name + " -> " + v.Version + " (installed: " + iv + ")"
+		} else {
+			buf += v.Name + " -> " + v.Version
+		}
+	}
+	return buf
+}
+
+func setVersion(i *discordgo.InteractionCreate, input string) string {
+	if input == "" {
+		return "You must specify a mod=version pair."
+	}
+	input = strings.ReplaceAll(input, " ", "")
+	parts := strings.Split(input, ",")
+
+	modFiles, _ := modupdate.GetModFiles()
+	valid := map[string]bool{}
+	for _, m := range modFiles {
+		valid[strings.ToLower(m.Name)] = true
+	}
+
+	buf := ""
+	for _, p := range parts {
+		if p == "" {
+			continue
+		}
+		seg := strings.SplitN(p, "=", 2)
+		if len(seg) != 2 {
+			if buf != "" {
+				buf += "\n"
+			}
+			buf += p + ": invalid format"
+			continue
+		}
+		name := strings.ToLower(seg[0])
+		vers := seg[1]
+		if !valid[name] {
+			if buf != "" {
+				buf += "\n"
+			}
+			buf += seg[0] + ": mod not installed"
+			continue
+		}
+		if err := modedit.SetVersion(name, vers); err != nil {
+			if buf != "" {
+				buf += "\n"
+			}
+			buf += seg[0] + ": " + err.Error()
+			continue
+		}
+		if buf != "" {
+			buf += "\n"
+		}
+		buf += seg[0] + " set to " + vers
+	}
+
+	modupdate.CheckModUpdates(false)
+	return buf
 }
