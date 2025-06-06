@@ -139,7 +139,7 @@ func MainLoops() {
 						for _, line := range factmsg {
 							oldlen := len(buf) + 1
 							addlen := len(line)
-                                                       if oldlen+addlen >= constants.MaxDiscordMsgLen {
+							if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 								glob.BootMessage = nil
 								glob.UpdateMessage = nil
@@ -159,7 +159,7 @@ func MainLoops() {
 						for _, line := range moder {
 							oldlen := len(buf) + 1
 							addlen := len(line)
-                                                       if oldlen+addlen >= constants.MaxDiscordMsgLen {
+							if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
 								buf = line
 							} else {
@@ -262,6 +262,11 @@ func MainLoops() {
 	 ************************************/
 	go fact.WatchDatabaseFile()
 
+	/****************************************
+	 * Global config file modification watching
+	 ****************************************/
+	go cfg.WatchGCfg()
+
 	/* Read database, if the file was modified */
 	go func() {
 		updated := false
@@ -283,6 +288,35 @@ func MainLoops() {
 
 				//cwlog.DoLogCW("Database file modified, loading.")
 				fact.LoadPlayers(false, false, false)
+			}
+
+		}
+	}()
+
+	/* Reload global config if the file was modified */
+	go func() {
+		updated := false
+
+		for glob.ServerRunning {
+
+			time.Sleep(5 * time.Second)
+
+			glob.GlobalCfgUpdatedLock.Lock()
+			if glob.GlobalCfgUpdated {
+				updated = true
+				glob.GlobalCfgUpdated = false
+			}
+			glob.GlobalCfgUpdatedLock.Unlock()
+
+			if updated {
+				updated = false
+
+				if cfg.ReadGCfg() {
+					cfg.WriteGCfg()
+					ConfigSoftMod()
+					fact.GenerateFactorioConfig()
+					fact.DoUpdateChannelName()
+				}
 			}
 
 		}

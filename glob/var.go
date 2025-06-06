@@ -73,6 +73,10 @@ var (
 	PlayerListSeenDirty     = false
 	PlayerListSeenDirtyLock sync.Mutex
 
+	/* Global config status */
+	GlobalCfgUpdated     = false
+	GlobalCfgUpdatedLock sync.Mutex
+
 	/* Factorio server watchdog */
 	NoResponseCount = 0
 

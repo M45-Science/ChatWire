@@ -5,11 +5,13 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"ChatWire/util"
+	"ChatWire/watcher"
 )
 
 var (
@@ -183,4 +185,13 @@ func ReadGCfg() bool {
 func createGCfg() global {
 	newcfg := global{}
 	return newcfg
+}
+
+// WatchGCfg monitors the global configuration file for changes.
+func WatchGCfg() {
+	watcher.Watch(constants.CWGlobalConfig, 5*time.Second, &glob.ServerRunning, func() {
+		glob.GlobalCfgUpdatedLock.Lock()
+		glob.GlobalCfgUpdated = true
+		glob.GlobalCfgUpdatedLock.Unlock()
+	})
 }
