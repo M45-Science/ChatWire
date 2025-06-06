@@ -1,28 +1,28 @@
 package modupdate
 
 import (
-       "ChatWire/cfg"
-       "ChatWire/constants"
-       "ChatWire/cwlog"
-       "ChatWire/util"
-       "encoding/json"
-       "fmt"
-       "math/rand/v2"
-       "os"
-       "strconv"
-       "strings"
+	"ChatWire/cfg"
+	"ChatWire/constants"
+	"ChatWire/cwlog"
+	"ChatWire/util"
+	"encoding/json"
+	"fmt"
+	"math/rand/v2"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var (
-       rollbackList []ModHistoryItem
-       rollbackKey  int
+	rollbackList []ModHistoryItem
+	rollbackKey  int
 )
 
 func ListHistory() string {
 	buf := ""
 
-       for i, item := range ModHistory.History {
-               if i > constants.ModHistoryPageSize {
+	for i, item := range ModHistory.History {
+		if i > constants.ModHistoryPageSize {
 			buf = buf + "\n...\n"
 			break
 		}
@@ -67,15 +67,15 @@ func ModUpdateRollback(value uint64) string {
 	 * Apply changes and disable mod update automatically and NOTE UPDATES ARE DISABLED
 	 */
 
-       buf := ""
-       if value >= constants.ModHistoryKeyStart {
+	buf := ""
+	if value >= constants.ModHistoryKeyStart {
 		if int(value) == rollbackKey {
 			rollbackKey = 0
 
-			//perform rollback
+			msg := performRollback()
 			cfg.Local.Options.ModUpdate = false
 			cfg.WriteLCfg()
-			return "(MOCKUP / TEST ONLY -- WIP) Mod roll-back complete!\n**NOTICE: DISABLED AUTOMATIC MOD UPDATER!**"
+			return msg + "\n**NOTICE: DISABLED AUTOMATIC MOD UPDATER!**"
 		}
 		return "Invalid roll-back key"
 	}
@@ -83,8 +83,8 @@ func ModUpdateRollback(value uint64) string {
 	numHist := uint64(len(ModHistory.History))
 
 	//Unlikely but better to be safe
-       if numHist > constants.MaxModHistory {
-               numHist = constants.MaxModHistory
+	if numHist > constants.MaxModHistory {
+		numHist = constants.MaxModHistory
 	}
 
 	if value < 1 || value > numHist {
@@ -108,8 +108,8 @@ func ModUpdateRollback(value uint64) string {
 			buf = buf + "Remove " + item.Name + "-" + item.Version + "\n"
 		}
 	}
-       if rollbackList != nil {
-               rollbackKey = constants.ModHistoryKeyStart + rand.IntN(constants.ModHistoryMaxKey-constants.ModHistoryKeyStart)
+	if rollbackList != nil {
+		rollbackKey = constants.ModHistoryKeyStart + rand.IntN(constants.ModHistoryMaxKey-constants.ModHistoryKeyStart)
 		buf = "**Roll-back to #" + strconv.FormatUint(value, 10) + ": ACTION LIST:**\n\n" + buf
 		buf = buf + "\n**To perform the roll-back type: `/editmods mod-update-rollback:" + strconv.FormatUint(uint64(rollbackKey), 10) + "`**\n"
 	}
@@ -188,4 +188,52 @@ func AddModHistory(newItem ModHistoryItem) {
 	}
 
 	ModHistory.History = append(ModHistory.History, newItem)
+}
+
+func performRollback() string {
+	if len(rollbackList) == 0 {
+		return "No roll-back data available."
+	}
+
+	modPath := cfg.GetModsFolder()
+	modList, _ := GetModList()
+	actions := ""
+
+	for i := len(rollbackList) - 1; i >= 0; i-- {
+		item := rollbackList[i]
+		if item.InfoItem || item.Name == BootName {
+			continue
+		}
+
+		if item.OldFilename != "" {
+			_ = os.Rename(modPath+item.Filename, modPath+constants.OldModsDir+"/"+item.Filename)
+			_ = os.Rename(modPath+constants.OldModsDir+"/"+item.OldFilename, modPath+item.OldFilename)
+			actions = actions + fmt.Sprintf("Downgraded %v to %v\n", item.Name, item.OldVersion)
+		} else {
+			_ = os.Remove(modPath + item.Filename)
+			for m, md := range modList.Mods {
+				if md.Name == item.Name {
+					modList.Mods = append(modList.Mods[:m], modList.Mods[m+1:]...)
+					break
+				}
+			}
+			actions = actions + fmt.Sprintf("Removed %v\n", item.Name)
+		}
+	}
+
+	WriteModsList(modList)
+
+	cut := len(ModHistory.History) - len(rollbackList)
+	if cut < 0 {
+		cut = 0
+	}
+	ModHistory.History = ModHistory.History[:cut]
+	WriteModHistory()
+
+	rollbackList = nil
+
+	if actions == "" {
+		actions = "No changes applied."
+	}
+	return "Mod roll-back complete!\n" + actions
 }
