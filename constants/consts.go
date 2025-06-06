@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2683-06.02.2025-1134p"
+	Version            = "2684-06.06.2025-0253p"
 	CWEpoch            = 1653239822390688174 //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -89,21 +89,21 @@ const (
 	/* Throttle Discord chat */
 	CMSRate            = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
 	CMSRestTime        = 3500 * time.Millisecond //Time to sleep after sending a message
-        CMSPollRate        = 100 * time.Millisecond  //Time between polls
-        MaxDiscordAttempts = 90
+	CMSPollRate        = 100 * time.Millisecond  //Time between polls
+	MaxDiscordAttempts = 90
 
 	/* Discord limits */
 	MaxDiscordMsgLen = 2000
-	
+
 	/* Auto port assignment */
 	AlphaStartValue = 10000
-	
+
 	/* Mod history settings */
 	ModHistoryKeyStart = 10000
 	ModHistoryMaxKey   = 99999
 	MaxModHistory      = 250
 	ModHistoryPageSize = 25
-	
+
 	/* Moderator uploads */
 	MaxModSettingsSize = 1024 * 1024 //1MB
 	MaxModListSize     = 1024 * 1024 //1MB
