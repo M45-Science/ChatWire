@@ -321,7 +321,7 @@ func parseDep(input string) depRequires {
 
 	input = strings.TrimSpace(input)
 	//Mark incompatible
-	if strings.ContainsAny(input, "!") {
+	if strings.Contains(input, "!") {
 		incompatible = true
 	}
 	//Mark optional
