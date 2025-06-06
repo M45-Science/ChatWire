@@ -274,7 +274,7 @@ func quickArchive() {
 	if erra != nil {
 
 		buf := fmt.Sprintf("An error occurred when attempting to read the map to archive: %s", erra)
-		cwlog.DoLogCW(cfg.Local.Channel.ChatChannel, buf)
+		LogCMS(cfg.Local.Channel.ChatChannel, buf)
 		return
 	}
 	defer from.Close()

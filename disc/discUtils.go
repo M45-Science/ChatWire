@@ -209,7 +209,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		err := DS.GuildMemberRoleAdd(gid, uid, rid)
 
 		if err != nil {
-			if !strings.ContainsAny("Unknown Member", err.Error()) {
+			if !strings.Contains(strings.ToLower(err.Error()), "unknown member") {
 				cwlog.DoLogCW("SmartRoleAdd: ERROR: %v", err)
 			} else {
 				return nil
@@ -218,7 +218,7 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		return err
 	}
 
-	return errors.New("error")
+	return errors.New("discord session not connected")
 }
 
 /* See if a role exists */
