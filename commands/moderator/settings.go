@@ -14,7 +14,7 @@ const (
 	TYPE_CHANNEL = 5
 )
 
-/* Used for set command */
+// SettingListData describes a configuration option used by the set command.
 type SettingListData struct {
 	Name      string
 	ShortDesc string
@@ -47,16 +47,6 @@ type SettingListData struct {
 	CheckString       func(string) bool
 	ListString        func() []string
 	FactUpdateCommand string
-}
-
-/* List of datatypes for settings */
-var SettingType = []int{
-	TYPE_STRING,
-	TYPE_INT,
-	TYPE_BOOL,
-	TYPE_F32,
-	TYPE_F64,
-	TYPE_CHANNEL,
 }
 
 /* Global settings */

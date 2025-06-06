@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-/* Player database */
+// PlayerData stores persistent information about a single player.
 type PlayerData struct {
 	Name      string `json:"-"`
 	Level     int    `json:"l,omitempty"`
@@ -22,14 +22,14 @@ type PlayerData struct {
 	SpamScore     int64 `json:"-"`
 }
 
-/* Registrarion codes */
+// PassData represents a temporary registration code for Discord linkage.
 type PassData struct {
 	Code   string
 	DiscID string
 	Time   int64
 }
 
-/* Votes Container */
+// VoteContainerData holds map vote data for the current campaign.
 type VoteContainerData struct {
 	Version string
 	Votes   []MapVoteData
@@ -42,7 +42,7 @@ type VoteContainerData struct {
 	Dirty bool `json:"-"`
 }
 
-/* Votes */
+// MapVoteData stores an individual vote for a map reset.
 type MapVoteData struct {
 	Name   string
 	DiscID string
@@ -61,13 +61,13 @@ type MapVoteData struct {
 	Expired bool
 }
 
-/* Temporary storage for tallying votes */
+// VoteTallyData temporarily accumulates vote counts during tallies.
 type VoteTallyData struct {
 	Selection string
 	Count     int
 }
 
-/* From softmod /online command */
+// OnlinePlayerData describes a player entry from the /online softmod command.
 type OnlinePlayerData struct {
 	Name       string
 	ScoreTicks int
@@ -76,6 +76,7 @@ type OnlinePlayerData struct {
 	AFK        string
 }
 
+// AppCmdData describes a Discord application command.
 type AppCmdData struct {
 	Name, Description        string
 	Options                  []OptionData
@@ -83,6 +84,7 @@ type AppCmdData struct {
 	DefaultMemberPermissions *int64
 }
 
+// CommandData configures a ChatWire slash command handler.
 type CommandData struct {
 	Function      func(cmd *CommandData, i *discordgo.InteractionCreate)
 	ModeratorOnly bool
@@ -94,6 +96,7 @@ type CommandData struct {
 	AppCmd      AppCmdData
 }
 
+// OptionData defines a single option for a command.
 type OptionData struct {
 	Name, Description string
 	Type              discordgo.ApplicationCommandOptionType
@@ -104,6 +107,7 @@ type OptionData struct {
 	Choices []ChoiceData
 }
 
+// ChoiceData specifies a selectable option value.
 type ChoiceData struct {
 	Name     string
 	Value    interface{}
