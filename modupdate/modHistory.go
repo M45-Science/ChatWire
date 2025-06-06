@@ -277,7 +277,7 @@ func findOlderModFile(name, current string) (string, string) {
 			if entry.IsDir() {
 				continue
 			}
-			ver := parseModFileVersion(name, entry.Name())
+			ver := parseModFileVersion(name, filepath.Join(dir, entry.Name()))
 			if ver == "" {
 				continue
 			}
@@ -304,10 +304,14 @@ func findOlderModFile(name, current string) (string, string) {
 }
 
 // parseModFileVersion extracts the version from a mod filename.
-func parseModFileVersion(name, filename string) string {
-	if !strings.HasPrefix(filename, name+"_") || !strings.HasSuffix(filename, ".zip") {
+func parseModFileVersion(name, path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
 		return ""
 	}
-	base := strings.TrimSuffix(filename, ".zip")
-	return strings.TrimPrefix(base, name+"_")
+	info := modInfoRead("", data)
+	if info == nil || info.Name != name {
+		return ""
+	}
+	return info.Version
 }
