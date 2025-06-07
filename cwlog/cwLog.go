@@ -131,10 +131,10 @@ func StartCWLog() {
 	t := time.Now().UTC()
 
 	/* Create our log file names */
-	glob.CWLogName = fmt.Sprintf("log/cw-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+	glob.CWLogName = fmt.Sprintf("audit-log/cw-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 
 	/* Make log directory */
-	errr := os.MkdirAll("log", os.ModePerm)
+	errr := os.MkdirAll("audit-log", os.ModePerm)
 	if errr != nil {
 		fmt.Print(errr.Error())
 		return
