@@ -15,9 +15,9 @@ Factorio Server Manager & Discord Bridge
 
 ### Requirements:
 Linux<br>
-Golang 1.23+<br>
+Golang 1.24+<br>
 <br>
-ChatWire is approximately 11k lines of go code over 67 files.
+ChatWire is approximately 15k lines of go code over 77 files.
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
@@ -36,7 +36,7 @@ go build
 This produces the `ChatWire` binary in the current directory.<br>
 Launching the binary for the first time will create `cw-local-config.json` and `../cw-global-config.json`.<br>
 Edit these files to provide your Discord credentials, Factorio token and server paths.<br>
-After configuring run `<code>./ChatWire -regCommands</code>` to register slash commands.<br>
+After configuring run `./ChatWire -regCommands` to register slash commands.<br>
 <br>
 ### Default path layout:<br>
 A 'base' folder the chatwire folder resides in.<br>
@@ -52,8 +52,9 @@ Binary:<br>
 `./cw-a/factorio/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 <br>
-Launch params:<br>
-`Usage of ChatWire:
+Launch params:
+```text
+Usage of ChatWire:
   -cleanBans
         Clean/minimize player database, along with bans and exit.
   -cleanDB
@@ -65,7 +66,8 @@ Launch params:<br>
   -noAutoLaunch
         Turn off auto-launch
   -regCommands
-        Register discord commands`
+        Register discord commands
+```
         
 <br>
 
