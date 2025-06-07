@@ -329,7 +329,7 @@ func MergeModLists(modFileList []modZipInfo, jsonModList ModListData) []modZipIn
 	return installedMods
 }
 
-func getFactoioVersion() {
+func getFactorioVersion() {
 	//If factorio failed to load, grab the version
 	if fact.FactorioVersion == constants.Unknown {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
@@ -354,10 +354,10 @@ func downloadMods(downloadList []downloadData) string {
 	//Show download status
 	downloadCount := getDownloadCount(downloadList)
 	if downloadCount > 0 {
-		glob.UpdateMessage = nil
+		glob.ResetUpdateMessage()
 		if downloadCount > 1 {
 			buf := fmt.Sprintf("Downloading %v mod updates.", downloadCount)
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), modUpdateTitle, buf, glob.COLOR_CYAN))
 		}
 	}
 	//Show each download
@@ -382,10 +382,10 @@ func downloadMods(downloadList []downloadData) string {
 		}
 		cwlog.DoLogCW(buf)
 
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, buf, glob.COLOR_CYAN)
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), modUpdateTitle, buf, glob.COLOR_CYAN))
 
 		if errorLog != "" {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, modUpdateTitle, dl.Name+": "+errorLog, glob.COLOR_ORANGE)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), modUpdateTitle, dl.Name+": "+errorLog, glob.COLOR_ORANGE))
 			errorLog = ""
 		}
 

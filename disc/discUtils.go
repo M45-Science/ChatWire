@@ -323,7 +323,7 @@ func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message
 // InteractionEphemeralResponseColor sends an ephemeral response with a specific embed color.
 func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
 	glob.BootMessage = nil
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 
 	if DS == nil {
 		return nil

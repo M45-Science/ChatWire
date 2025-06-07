@@ -16,7 +16,7 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 	glob.UpdatersLock.Lock()
 	defer glob.UpdatersLock.Unlock()
 
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 
 	info := &InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 
@@ -28,10 +28,10 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 		info.VersInt = *newVersion
 		err = fullPackage(info)
 		if err != nil {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status", "Install failed: "+err.Error(), glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Status", "Install failed: "+err.Error(), glob.COLOR_CYAN))
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Complete", "Factorio installed.", glob.COLOR_CYAN)
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Complete", "Factorio installed.", glob.COLOR_CYAN))
 		return info, fmt.Sprintf("Factorio %v installed.", newVersion.IntToString()), false, false
 	}
 
@@ -48,12 +48,12 @@ func DoQuickLatest(force bool) (*InfoData, string, bool, bool) {
 	fact.NewVersion = newVersion.IntToString()
 
 	if isVersionNewerThan(*newVersion, oldVersion) || force {
-		glob.UpdateMessage = disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Updating Factorio", Description: "Found Factorio update: " + newVersion.IntToString(), Color: glob.COLOR_CYAN})
+		glob.SetUpdateMessage(disc.SmartWriteDiscordEmbed(cfg.Local.Channel.ChatChannel, &discordgo.MessageEmbed{Title: "Updating Factorio", Description: "Found Factorio update: " + newVersion.IntToString(), Color: glob.COLOR_CYAN}))
 
 		info.VersInt = *newVersion
 		err := fullPackage(info)
 		if err != nil {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Status", "Update failed: "+err.Error(), glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Status", "Update failed: "+err.Error(), glob.COLOR_CYAN))
 			return info, fmt.Sprintf("DoQuickLatest: fullPackage: %v", err.Error()), true, false
 		}
 

@@ -31,7 +31,7 @@ func fullPackage(info *InfoData) error {
 	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.Build, info.Distro)
 	var data []byte
 
-	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updating Factorio", "Downloading...", glob.COLOR_CYAN)
+	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Updating Factorio", "Downloading...", glob.COLOR_CYAN))
 	cwlog.DoLogCW("Downloading: %v", url)
 
 	data, filename, err = HttpGet(false, url, false)
@@ -69,7 +69,7 @@ func fullPackage(info *InfoData) error {
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
 	fact.DoUpdateFactorio = true
-	glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Downloading Factorio", "Download verified!", glob.COLOR_CYAN)
+	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Downloading Factorio", "Download verified!", glob.COLOR_CYAN))
 	fact.WaitFactQuit(true)
 
 	err = os.RemoveAll(factPath + "/factorio/bin")

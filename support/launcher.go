@@ -93,15 +93,15 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 				if !modsLoading {
 					modsLoading = true
 					msg := "Loading mods"
-					glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
-						msg, glob.COLOR_CYAN)
+					glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Sync",
+						msg, glob.COLOR_CYAN))
 					cwlog.DoLogCW(msg)
 				} else if time.Since(lastDot) > dotInterval {
 					lastDot = time.Now()
-					if glob.UpdateMessage != nil && len(glob.UpdateMessage.Embeds) > 0 {
-						embed := glob.UpdateMessage.Embeds[0]
+					if glob.GetUpdateMessage() != nil && len(glob.GetUpdateMessage().Embeds) > 0 {
+						embed := glob.GetUpdateMessage().Embeds[0]
 						embed.Description = embed.Description + " ."
-						disc.DS.ChannelMessageEditEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage.ID, embed)
+						disc.DS.ChannelMessageEditEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage().ID, embed)
 					}
 				}
 			}
@@ -112,8 +112,8 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 				if len(urlParts) > 1 {
 					if urlParts[1] == "download" {
 						msg := "Downloading: " + urlParts[2]
-						glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
-							msg, glob.COLOR_CYAN)
+						glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Sync",
+							msg, glob.COLOR_CYAN))
 						cwlog.DoLogCW(msg)
 					}
 				}
@@ -122,8 +122,8 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 
 		if line == "Mods synced" {
 			msg := "All mods synced."
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync",
-				msg, glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Sync",
+				msg, glob.COLOR_CYAN))
 			cwlog.DoLogCW(msg)
 		}
 	}

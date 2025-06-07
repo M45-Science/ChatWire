@@ -163,7 +163,7 @@ func MainLoops() {
 							if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 								glob.BootMessage = nil
-								glob.UpdateMessage = nil
+								glob.ResetUpdateMessage()
 								buf = line
 							} else {
 								buf = buf + "\n" + line
@@ -172,7 +172,7 @@ func MainLoops() {
 						if buf != "" {
 							disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 							glob.BootMessage = nil
-							glob.UpdateMessage = nil
+							glob.ResetUpdateMessage()
 						}
 
 						/* Moderation */
@@ -838,20 +838,20 @@ func MainLoops() {
 }
 
 func checkFactUpdate() {
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 	_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
 	if msg != "" {
 		if !err && !upToDate {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Updated", msg, glob.COLOR_CYAN))
 			cwlog.DoLogCW(msg)
 
 			newHist := modupdate.ModHistoryItem{InfoItem: true,
 				Name: "Factorio Updated", Notes: "To version: " + fact.NewVersion, Date: time.Now()}
 			modupdate.AddModHistory(newHist)
 		} else if err && !upToDate {
-			//glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
+			//glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel , glob.GetUpdateMessage(), "ERROR", msg, glob.COLOR_RED)
 			cwlog.DoLogCW(msg)
 		}
 	}
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 }
