@@ -29,6 +29,13 @@ type PassData struct {
 	Time   int64
 }
 
+// PanelTokenData represents a temporary web panel token.
+type PanelTokenData struct {
+	Token  string
+	DiscID string
+	Time   int64
+}
+
 // VoteContainerData holds map vote data for the current campaign.
 type VoteContainerData struct {
 	Version string

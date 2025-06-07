@@ -326,7 +326,11 @@ func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, me
 	glob.BootMessage = nil
 	glob.ResetUpdateMessage()
 
-	if DS == nil {
+	if DS == nil || i == nil {
+		return nil
+	}
+	if i.Member == nil || i.Member.User == nil {
+		cwlog.DoLogCW("EphemeralResponse nil user: " + title + "\n" + message)
 		return nil
 	}
 	cwlog.DoLogCW("EphemeralResponse:\n" + i.Member.User.Username + "\n" + title + "\n" + message)
@@ -356,7 +360,11 @@ func InteractionEphemeralFileResponse(i *discordgo.InteractionCreate, title, mes
 	glob.BootMessage = nil
 	glob.ResetUpdateMessage()
 
-	if DS == nil {
+	if DS == nil || i == nil {
+		return nil
+	}
+	if i.Member == nil || i.Member.User == nil {
+		cwlog.DoLogCW("EphemeralFileResponse nil user: " + title)
 		return nil
 	}
 	cwlog.DoLogCW("EphemeralFileResponse:\n" + i.Member.User.Username + "\n" + title)

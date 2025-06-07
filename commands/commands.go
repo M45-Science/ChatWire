@@ -498,6 +498,12 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 	},
 		Function: user.Scoreboard, PrimaryOnly: true},
+	{AppCmd: glob.AppCmdData{
+		Name:        "web-panel",
+		Description: "Get a temporary control panel link",
+		Type:        discordgo.ChatApplicationCommand,
+	},
+		Function: moderator.WebPanelLink, ModeratorOnly: true},
 	/* PLAYER COMMANDS -------------------- */
 	{AppCmd: glob.AppCmdData{
 		Name:        "list-mods",

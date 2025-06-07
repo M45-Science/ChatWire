@@ -68,6 +68,10 @@ var (
 	PassList         map[string]*PassData
 	PasswordListLock sync.RWMutex
 
+	/* Web panel tokens */
+	PanelTokens    map[string]*PanelTokenData
+	PanelTokenLock sync.RWMutex
+
 	/* Player database status */
 	PlayerListUpdated       = false
 	PlayerListUpdatedLock   sync.Mutex
