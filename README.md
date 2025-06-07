@@ -108,3 +108,4 @@ mods or updating the game. A map section lists the most recent autosaves and let
 a single click or supply your own file name. Another form allows running arbitrary RCON commands.
 The page is rendered in a dark theme styled similarly to the public staff documentation. Open the
 link provided by `/web-panel` in a web browser and supply the token as a query parameter.
+
