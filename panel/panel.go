@@ -65,6 +65,17 @@ var panelHTML = `<!DOCTYPE html>
         padding: 0.3rem 0.6rem;
         margin: 0.2rem 0;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--gap);
+    }
+    .button-grid form {
+        margin: 0;
     }
     input[type="text"] {
         width: 100%;
@@ -100,14 +111,21 @@ var panelHTML = `<!DOCTYPE html>
 </div>
 
 <div class="card">
+<h3>Server Info</h3>
+<pre>{{.Info}}</pre>
+</div>
+
+<div class="card">
 <h3>Moderator Commands</h3>
+<div class="button-grid">
 {{range .Cmds}}
 <form method="POST" action="/action">
     <input type="hidden" name="token" value="{{$.Token}}">
-    <input type="hidden" name="cmd" value="{{.}}">
-    <button type="submit">{{.}}</button>
+    <input type="hidden" name="cmd" value="{{.Cmd}}">
+    <button type="submit"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
 </form>
 {{end}}
+</div>
 </div>
 
 <div class="card">
@@ -179,21 +197,27 @@ var panelHTML = `<!DOCTYPE html>
 </div>
 </body></html>`
 
-var modControls = []string{
-	"force-reboot",
-	"queue-reboot",
-	"queue-fact-reboot",
-	"reboot-chatwire",
-	"reload-config",
-	"start-factorio",
-	"stop-factorio",
-	"new-map",
-	"archive-map",
-	"update-mods",
-	"sync-mods",
-	"update-factorio",
-	"install-factorio",
-	"map-reset",
+type panelCmd struct {
+	Cmd   string
+	Label string
+	Icon  string
+}
+
+var modControls = []panelCmd{
+	{Cmd: "archive-map", Label: "Archive Map", Icon: "archive"},
+	{Cmd: "force-reboot", Label: "Force Reboot", Icon: "restart_alt"},
+	{Cmd: "install-factorio", Label: "Install Factorio", Icon: "download"},
+	{Cmd: "map-reset", Label: "Map Reset", Icon: "map"},
+	{Cmd: "new-map", Label: "New Map", Icon: "create_new_folder"},
+	{Cmd: "queue-fact-reboot", Label: "Queue Fact Reboot", Icon: "schedule"},
+	{Cmd: "queue-reboot", Label: "Queue Reboot", Icon: "schedule"},
+	{Cmd: "reboot-chatwire", Label: "Reboot ChatWire", Icon: "restart_alt"},
+	{Cmd: "reload-config", Label: "Reload Config", Icon: "refresh"},
+	{Cmd: "start-factorio", Label: "Start Factorio", Icon: "play_arrow"},
+	{Cmd: "stop-factorio", Label: "Stop Factorio", Icon: "stop"},
+	{Cmd: "sync-mods", Label: "Sync Mods", Icon: "sync"},
+	{Cmd: "update-factorio", Label: "Update Factorio", Icon: "update"},
+	{Cmd: "update-mods", Label: "Update Mods", Icon: "system_update_alt"},
 }
 
 type panelData struct {
@@ -221,8 +245,9 @@ type panelData struct {
 	HoursEnabled  bool
 	Paused        bool
 	Token         string
-	Cmds          []string
+	Cmds          []panelCmd
 	Saves         []string
+	Info          string
 }
 
 // Start runs the HTTPS status panel server.
@@ -253,18 +278,20 @@ func GenerateToken(id string) string {
 	return token
 }
 
-func handlePanel(w http.ResponseWriter, r *http.Request) {
-	tok := r.URL.Query().Get("token")
-	if tok == "" {
-		http.Error(w, "token required", http.StatusUnauthorized)
-		return
-	}
+func tokenValid(tok string) bool {
 	glob.PanelTokenLock.RLock()
 	_, ok := glob.PanelTokens[tok]
 	glob.PanelTokenLock.RUnlock()
-	if !ok {
-		http.Error(w, "invalid token", http.StatusUnauthorized)
-		return
+	return ok
+}
+
+func handlePanel(w http.ResponseWriter, r *http.Request) {
+	tok := r.URL.Query().Get("token")
+	if tok == "" || !tokenValid(tok) {
+		if !*glob.LocalTestMode {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
 	}
 	t := template.Must(template.New("panel").Parse(panelHTML))
 
@@ -344,16 +371,16 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ten, thirty, hour := fact.GetFactUPS()
+	cmds := make([]panelCmd, len(modControls))
+	copy(cmds, modControls)
+	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Label < cmds[j].Label })
 	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
 		UPS10: fmt.Sprintf("%.2f", ten), UPS30: fmt.Sprintf("%.2f", thirty), UPS60: fmt.Sprintf("%.2f", hour),
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
-		Total: total, Mods: mods, Banned: ban, Mem: mem, Reg: reg, Vet: vet,
-		PlayHours: playHours, HoursEnabled: cfg.Local.Options.PlayHourEnable,
-		Paused: paused,
-		Token:  tok, Cmds: modControls, Saves: saves}
+		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
+		Token: tok, Cmds: cmds, Saves: saves, Info: buildInfoString()}
 	_ = t.Execute(w, pd)
 }
 
@@ -372,8 +399,11 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 	userInfo, ok := glob.PanelTokens[tok]
 	glob.PanelTokenLock.RUnlock()
 	if !ok {
-		http.Error(w, "invalid token", http.StatusUnauthorized)
-		return
+		if !*glob.LocalTestMode {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+		userInfo = &glob.PanelTokenData{Name: "local"}
 	}
 
 	switch cmd {
@@ -534,6 +564,86 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 	cwlog.DoLogAudit("%v: ran %s", userInfo.Name, cmd)
 
 	userInfo.Time = time.Now().Unix()
+}
+
+func buildInfoString() string {
+	buf := ""
+
+	buf += fmt.Sprintf("%17v: %v\n", constants.ProgName+" version", constants.Version)
+	if glob.SoftModVersion != constants.Unknown {
+		buf += fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
+	}
+	if fact.FactorioVersion != constants.Unknown {
+		buf += fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
+	}
+
+	now := time.Now().Round(time.Second)
+	buf += fmt.Sprintf("%17v: %v\n", "ChatWire up-time", now.Sub(glob.Uptime.Round(time.Second)).Round(time.Second))
+	if !fact.FactorioBootedAt.IsZero() && fact.FactorioBooted {
+		buf += fmt.Sprintf("%17v: %v\n", "Factorio up-time", now.Sub(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second))
+	} else {
+		buf += fmt.Sprintf("%17v: %v\n", "Factorio up-time", "not running")
+	}
+
+	if cfg.Local.Options.PlayHourEnable {
+		buf += fmt.Sprintf("Time restrictions: %v - %v GMT.\n", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
+	}
+	buf += fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
+	if fact.GametimeString != constants.Unknown {
+		buf += fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
+	}
+	buf += fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
+
+	if fact.HasResetTime() {
+		buf += fmt.Sprintf("\n%17v: %v\n", "Next map reset", fact.FormatResetTime())
+		buf += fmt.Sprintf("%17v: %v\n", "Time till reset", fact.TimeTillReset())
+		buf += fmt.Sprintf("%17v: %v\n", "Interval", fact.FormatResetInterval())
+	}
+
+	ten, thirty, hour := fact.GetFactUPS()
+	if hour > 0 {
+		buf += fmt.Sprintf("UPS Average: 10m: %.2f, 30m: %.2f, 1h: %.2f\n", ten, thirty, hour)
+	} else if thirty > 0 {
+		buf += fmt.Sprintf("UPS Average: 10m: %.2f, 30m: %.2f\n", ten, thirty)
+	} else if ten > 0 {
+		buf += fmt.Sprintf("UPS Average: 10m: %.2f\n", ten)
+	}
+
+	glob.PlayerListLock.RLock()
+	var mem, reg, vet, mod, ban int
+	for _, player := range glob.PlayerList {
+		switch player.Level {
+		case -1:
+			ban++
+		case 1:
+			mem++
+		case 2:
+			reg++
+		case 3:
+			vet++
+		case 255:
+			mod++
+		}
+	}
+	bCount := len(banlist.BanList)
+	ban += bCount
+	glob.PlayerListLock.RUnlock()
+	total := ban + mem + reg + vet + mod
+	buf += fmt.Sprintf("Members: %v, Regulars: %v, Veterans: %v\nModerators: %v, Banned: %v, Total: %v\n", mem, reg, vet, mod, ban, total)
+
+	if fact.PausedTicks > 4 {
+		buf += "\n(Server is paused)\n"
+	}
+
+	msg, isConf := fact.MakeSteamURL()
+	if isConf {
+		buf += "\nSteam connect link:\n" + msg
+	}
+	if fact.HasResetTime() {
+		buf += fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", cfg.Local.Options.NextReset.UTC().Unix())
+	}
+
+	return buf
 }
 
 func generateCert() (tls.Certificate, error) {
