@@ -1,4 +1,5 @@
 /log/
+/audit-log/
 cw-local-config.json
 ChatWire
 cw.lock

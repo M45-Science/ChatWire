@@ -1201,6 +1201,10 @@ func DoExit(delay bool) {
 	cwlog.DoLogCW("Closing log files.")
 	glob.GameLogDesc.Close()
 	glob.CWLogDesc.Close()
+	glob.AuditLogDesc.Close()
+	if fi, err := os.Stat(glob.AuditLogName); err == nil && fi.Size() == 0 {
+		_ = os.Remove(glob.AuditLogName)
+	}
 
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */
