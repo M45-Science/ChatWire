@@ -70,6 +70,12 @@ var panelHTML = `<!DOCTYPE html>
         flex-direction: column;
         gap: var(--gap);
     }
+    .section {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: var(--gap);
+    }
     .section-header {
         display: flex;
         align-items: center;
@@ -141,7 +147,7 @@ var panelHTML = `<!DOCTYPE html>
     }
     .save-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: 1fr 1fr;
         gap: var(--gap);
     }
     .cmd-grid {
@@ -185,6 +191,46 @@ var panelHTML = `<!DOCTYPE html>
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        padding: 0.2rem 0.4rem;
+    }
+    .bool-display span {
+        flex: 0 0 70%;
+        text-align: right;
+    }
+    .bool-display label {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: flex-start;
+    }
+    .kv-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0.4rem;
+    }
+    .kv-display span {
+        flex: 0 0 70%;
+        text-align: right;
+    }
+    .kv-display input {
+        flex: 0 1 30%;
+        max-width: 30%;
+        text-align: left;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .value-box {
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        color: var(--text);
+        border-radius: var(--radius);
+        padding: 0.2rem 0.4rem;
+        min-width: 4rem;
+        width: auto;
+        margin: 0;
+        text-decoration: none;
+        display: inline-block;
     }
     .switch {
         position: relative;
@@ -219,6 +265,29 @@ var panelHTML = `<!DOCTYPE html>
         border-radius: var(--radius);
         margin-bottom: var(--gap);
     }
+    .cfg-content > div:nth-child(odd),
+    .cfg-content > p:nth-child(odd),
+    .info-list > div:nth-child(odd),
+    .info-list > p:nth-child(odd) {
+        background: rgba(255,255,255,0.05);
+    }
+    .cfg-content > div,
+    .cfg-content > p,
+    .info-list > div,
+    .info-list > p {
+        padding: 0.2rem 0.4rem;
+        font-size: 1.1rem;
+    }
+    .save-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+    }
+    .save-age {
+        font-size: 0.8rem;
+        color: #ccc;
+    }
     .cfg-title {
         background: var(--accent);
         padding: 0.2rem 0.4rem;
@@ -235,23 +304,23 @@ var panelHTML = `<!DOCTYPE html>
 <div class="section-content">
 <div class="card">
 <div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize">&#8211;</button></div>
-<div class="card-content">
-<p>ChatWire version: {{.CWVersion}}</p>
-<p>ChatWire up-time: {{.CWUp}}</p>
-<p>Factorio version: {{.Factorio}}</p>
-{{if ne .SoftMod ""}}<p>SoftMod version: {{.SoftMod}}</p>{{end}}
-<p>Players online: {{.Players}}</p>
-<p>Game time: {{.Gametime}}</p>
-<p>Last save: {{.SaveName}}</p>
-<p>Factorio up-time: {{.FactUp}}</p>
-<p>UPS 10m/30m/1h: {{.UPS10}}/{{.UPS30}}/{{.UPS60}}</p>
-{{if ne .PlayHours ""}}<p>Play hours: {{.PlayHours}}</p>{{end}}
+<div class="card-content info-list">
+<div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
+<div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
+<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
+{{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
+<div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
+<div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
+<div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
+<div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
+<div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS10}}/{{.UPS30}}/{{.UPS60}}"></div>
+{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
 <div class="bool-display"><span>Paused</span><label class="switch"><input type="checkbox" disabled {{if .Paused}}checked{{end}}><span class="slider"></span></label></div>
-{{if ne .NextReset ""}}<p>Next map reset: {{.NextReset}} ({{.TimeTill}})</p>{{end}}
-{{if ne .ResetInterval ""}}<p>Interval: {{.ResetInterval}}</p>{{end}}
-<p>Total players: {{.Total}}</p>
-<p>Members: {{.Mem}} | Regulars: {{.Reg}} | Veterans: {{.Vet}}</p>
-<p>Moderators: {{.Mods}} | Banned: {{.Banned}}</p>
+{{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}} ({{.TimeTill}})"></div>{{end}}
+{{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+<div class="kv-display"><span>Total players</span><input class="value-box" type="text" readonly value="{{.Total}}"></div>
+<div class="kv-display"><span>Members/Regulars/Veterans</span><input class="value-box" type="text" readonly value="{{.Mem}} | {{.Reg}} | {{.Vet}}"></div>
+<div class="kv-display"><span>Moderators/Banned</span><input class="value-box" type="text" readonly value="{{.Mods}} | {{.Banned}}"></div>
 </div>
 </div>
 
@@ -290,12 +359,15 @@ var panelHTML = `<!DOCTYPE html>
 <div class="card-content">
 <div class="save-grid">
 {{range .Saves}}
-<form method="POST" action="/action" class="cmd-form">
-    <input type="hidden" name="token" value="{{$.Token}}">
-    <input type="hidden" name="cmd" value="change-map">
-    <input type="hidden" name="arg" value="{{.Name}}">
-    <button type="submit" title="{{.Age}}">{{.Name}}</button>
-</form>
+<div class="save-item">
+    <div class="save-age">{{.Age}}</div>
+    <form method="POST" action="/action" class="cmd-form">
+        <input type="hidden" name="token" value="{{$.Token}}">
+        <input type="hidden" name="cmd" value="change-map">
+        <input type="hidden" name="arg" value="{{.Name}}">
+        <button type="submit">{{.Name}}</button>
+    </form>
+</div>
 {{end}}
 </div>
 <form method="POST" action="/action" class="cmd-form">
@@ -419,45 +491,79 @@ document.body.appendChild(c);
 const t=setTimeout(()=>c.remove(),15000);
 c.querySelector('.close').addEventListener('click',()=>{clearTimeout(t);c.remove();});
 }
+function makeValueNode(v){
+  if(/^https?:/.test(v)||v.startsWith('steam://')){
+    const a=document.createElement('a');
+    a.href=v;
+    a.target='_blank';
+    a.className='value-box';
+    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'connect':v;
+    return a;
+  }
+  const i=document.createElement('input');
+  i.type='text';
+  i.readOnly=true;
+  i.className='value-box';
+  i.value=v;
+  return i;
+}
 function formatCfg(pre){
 const lines=pre.textContent.split('\n');
 pre.innerHTML='';
-let g=null,cdiv=null;
+const root=document.createElement('div');
+root.className='cfg-content';
+pre.appendChild(root);
+let group=null,content=root;
 lines.forEach(l=>{
  if(!l.trim())return;
  if(!l.startsWith(' ')){
-  g=document.createElement('div');
-  g.className='cfg-group';
-  const t=document.createElement('div');
-  t.className='cfg-title';
-  t.textContent=l.replace(':','');
-  g.appendChild(t);
-  cdiv=document.createElement('div');
-  cdiv.className='cfg-content';
-  g.appendChild(cdiv);
-  pre.appendChild(g);
- }else if(cdiv){
-  const parts=l.trim().split(':');
-  if(parts.length==2){
-    const k=parts[0].trim();
-    const v=parts[1].trim();
+  const idx=l.indexOf(':');
+  if(idx>-1 && l.slice(idx+1).trim()!==''){
+    const k=l.slice(0,idx).trim();
+    const v=l.slice(idx+1).trim();
+    const div=document.createElement('div');
+    div.className='kv-display';
+    div.appendChild(document.createElement('span')).textContent=k;
+    div.appendChild(makeValueNode(v));
+    root.appendChild(div);
+    group=null; content=root;
+  }else{
+    group=document.createElement('div');
+    group.className='cfg-group';
+    const t=document.createElement('div');
+    t.className='cfg-title';
+    t.textContent=l.trim().replace(/:$/, '');
+    group.appendChild(t);
+    content=document.createElement('div');
+    content.className='cfg-content';
+    group.appendChild(content);
+    pre.appendChild(group);
+  }
+ }else if(content){
+  const idx=l.indexOf(':');
+  if(idx>-1){
+    const k=l.slice(0,idx).trim();
+    const v=l.slice(idx+1).trim();
     if(v==='true' || v==='false'){
       const bd=document.createElement('div');
       bd.className='bool-display';
       bd.innerHTML='<span>'+k+'</span><label class="switch"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'><span class="slider"></span></label>';
-      cdiv.appendChild(bd);
+      content.appendChild(bd);
     }else{
-      const p=document.createElement('p');
-      p.textContent=k+': '+v;
-      cdiv.appendChild(p);
+      const div=document.createElement('div');
+      div.className='kv-display';
+      div.appendChild(document.createElement('span')).textContent=k;
+      div.appendChild(makeValueNode(v));
+      content.appendChild(div);
     }
   }else{
     const p=document.createElement('p');
     p.textContent=l.trim();
-    cdiv.appendChild(p);
+    content.appendChild(p);
   }
  }
 });
+if(!root.children.length){pre.removeChild(root);}
 }
 document.querySelectorAll('.minimize').forEach(b=>{
     b.addEventListener('click',e=>{
@@ -465,7 +571,7 @@ document.querySelectorAll('.minimize').forEach(b=>{
         box.classList.toggle('collapsed');
     });
 });
-document.querySelectorAll('#config-area pre').forEach(formatCfg);
+document.querySelectorAll('#config-area pre, #info-area pre').forEach(formatCfg);
 </script>
 </body></html>`
 
@@ -674,7 +780,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		for _, f := range entries {
 			info, _ := f.Info()
 			modAge := time.Since(info.ModTime()).Round(time.Second)
-			units, _ := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m")
+			units, _ := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
 			ageStr := durafmt.Parse(modAge).LimitFirstN(2).Format(units) + " ago"
 			saves = append(saves, panelSave{Name: strings.TrimSuffix(f.Name(), ".zip"), Age: ageStr})
 		}
@@ -901,46 +1007,48 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 }
 
 func buildInfoString() string {
-	buf := ""
+	var lines []string
+	add := func(k, v string) {
+		if v == "" || v == "0" || v == constants.Unknown || v == "(not configured)" {
+			return
+		}
+		lines = append(lines, fmt.Sprintf("%s: %s", k, v))
+	}
 
-	buf += fmt.Sprintf("%17v: %v\n", constants.ProgName+" version", constants.Version)
-	if glob.SoftModVersion != constants.Unknown {
-		buf += fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
-	}
-	if fact.FactorioVersion != constants.Unknown {
-		buf += fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
-	}
+	add(constants.ProgName+" version", constants.Version)
+	add("SoftMod version", glob.SoftModVersion)
+	add("Factorio version", fact.FactorioVersion)
 
 	now := time.Now().Round(time.Second)
-	buf += fmt.Sprintf("%17v: %v\n", "ChatWire up-time", now.Sub(glob.Uptime.Round(time.Second)).Round(time.Second))
+	add("ChatWire up-time", now.Sub(glob.Uptime.Round(time.Second)).Round(time.Second).String())
 	if !fact.FactorioBootedAt.IsZero() && fact.FactorioBooted {
-		buf += fmt.Sprintf("%17v: %v\n", "Factorio up-time", now.Sub(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second))
-	} else {
-		buf += fmt.Sprintf("%17v: %v\n", "Factorio up-time", "not running")
+		add("Factorio up-time", now.Sub(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second).String())
 	}
 
 	if cfg.Local.Options.PlayHourEnable {
-		buf += fmt.Sprintf("Time restrictions: %v - %v GMT.\n", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
+		add("Time restrictions", fmt.Sprintf("%d - %d GMT", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour))
 	}
-	buf += fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
-	if fact.GametimeString != constants.Unknown {
-		buf += fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
+	add("Save name", fact.LastSaveName)
+	add("Map time", fact.GametimeString)
+	if fact.NumPlayers > 0 {
+		add("Players online", fmt.Sprintf("%d", fact.NumPlayers))
 	}
-	buf += fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
 
 	if fact.HasResetTime() {
-		buf += fmt.Sprintf("\n%17v: %v\n", "Next map reset", fact.FormatResetTime())
-		buf += fmt.Sprintf("%17v: %v\n", "Time till reset", fact.TimeTillReset())
-		buf += fmt.Sprintf("%17v: %v\n", "Interval", fact.FormatResetInterval())
+		add("Next map reset", cfg.Local.Options.NextReset.Local().Format("Jan 02 2006 03:04PM"))
+		add("Time till reset", fact.TimeTillReset())
+		if fact.HasResetInterval() {
+			add("Interval", fact.FormatResetInterval())
+		}
 	}
 
 	ten, thirty, hour := fact.GetFactUPS()
 	if hour > 0 {
-		buf += fmt.Sprintf("UPS Average: 10m: %.2f, 30m: %.2f, 1h: %.2f\n", ten, thirty, hour)
+		add("UPS Average", fmt.Sprintf("10m: %.2f, 30m: %.2f, 1h: %.2f", ten, thirty, hour))
 	} else if thirty > 0 {
-		buf += fmt.Sprintf("UPS Average: 10m: %.2f, 30m: %.2f\n", ten, thirty)
+		add("UPS Average", fmt.Sprintf("10m: %.2f, 30m: %.2f", ten, thirty))
 	} else if ten > 0 {
-		buf += fmt.Sprintf("UPS Average: 10m: %.2f\n", ten)
+		add("UPS Average", fmt.Sprintf("10m: %.2f", ten))
 	}
 
 	glob.PlayerListLock.RLock()
@@ -963,21 +1071,19 @@ func buildInfoString() string {
 	ban += bCount
 	glob.PlayerListLock.RUnlock()
 	total := ban + mem + reg + vet + mod
-	buf += fmt.Sprintf("Members: %v, Regulars: %v, Veterans: %v\nModerators: %v, Banned: %v, Total: %v\n", mem, reg, vet, mod, ban, total)
+	add("Members/Regulars/Veterans", fmt.Sprintf("%d | %d | %d", mem, reg, vet))
+	add("Moderators/Banned", fmt.Sprintf("%d | %d", mod, ban))
+	add("Total players", fmt.Sprintf("%d", total))
 
 	if fact.PausedTicks > 4 {
-		buf += "\n(Server is paused)\n"
+		lines = append(lines, "Server is paused")
 	}
 
-	msg, isConf := fact.MakeSteamURL()
-	if isConf {
-		buf += "\nSteam connect link:\n" + msg
-	}
-	if fact.HasResetTime() {
-		buf += fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", cfg.Local.Options.NextReset.UTC().Unix())
+	if url, ok := fact.MakeSteamURL(); ok {
+		add("Steam connect", url)
 	}
 
-	return buf
+	return strings.Join(lines, "\n")
 }
 
 func cfgLines(v reflect.Value, prefix string) []string {
@@ -1019,7 +1125,7 @@ func cfgLines(v reflect.Value, prefix string) []string {
 	var out []string
 	for _, it := range items {
 		if len(it.lines) == 1 {
-			out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, it.lines[0]))
+			out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, strings.TrimSpace(it.lines[0])))
 		} else {
 			out = append(out, fmt.Sprintf("%s%s:", prefix, it.name))
 			for _, l := range it.lines {
@@ -1038,6 +1144,7 @@ func buildCfgString(i interface{}) string {
 func fakeInteraction(u *glob.PanelTokenData) *discordgo.InteractionCreate {
 	return &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
+			Type:      discordgo.InteractionApplicationCommand,
 			Member:    &discordgo.Member{User: &discordgo.User{ID: u.DiscID, Username: u.Name}},
 			ChannelID: cfg.Local.Channel.ChatChannel,
 			GuildID:   cfg.Global.Discord.Guild,
