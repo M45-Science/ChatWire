@@ -10,34 +10,41 @@ import (
 	"strings"
 )
 
-func ListHistory() string {
-	buf := ""
+func ListHistory(full bool) string {
+	if len(ModHistory.History) == 0 {
+		return "**Mod History:**\n\nMod history is empty."
+	}
 
-	for i, item := range ModHistory.History {
-		if i > constants.ModHistoryPageSize {
+	buf := ""
+	count := 0
+
+	for i := len(ModHistory.History) - 1; i >= 0; i-- {
+		item := ModHistory.History[i]
+
+		if !full && count >= constants.ModHistoryPageSize {
 			buf = buf + "\n...\n"
 			break
 		}
 
+		entry := ""
 		if item.Name == BootName {
-			buf = buf + item.Name + "\n"
+			entry = entry + item.Name + "\n"
 		} else {
-			buf = buf + fmt.Sprintf("**%4v: %v**\n",
-				i+1, item.Name)
+			entry = entry + fmt.Sprintf("**%4v: %v**\n", i+1, item.Name)
 		}
 		if item.Notes != "" {
-			buf = buf + item.Notes + "\n"
+			entry = entry + item.Notes + "\n"
 		}
 		if item.Version != "" {
 			if item.OldVersion != "0.0.0" {
-				buf = buf + item.OldVersion + " -> "
+				entry = entry + item.OldVersion + " -> "
 			}
-			buf = buf + item.Version + "\n"
+			entry = entry + item.Version + "\n"
 		}
-		buf = buf + item.Date.UTC().Format("01-02-2006 15:04:05") + " UTC\n\n"
-	}
-	if buf == "" {
-		buf = "Mod history is empty."
+		entry = entry + item.Date.UTC().Format("01-02-2006 15:04:05") + " UTC\n\n"
+
+		buf = buf + entry
+		count++
 	}
 
 	return "**Mod History:**\n\n" + buf

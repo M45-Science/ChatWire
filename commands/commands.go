@@ -211,7 +211,12 @@ var cmds = []glob.CommandData{
 		Options: []glob.OptionData{
 			{
 				Name:        "mod-history",
-				Description: "Input: Page Number. See mod history and blacklist",
+				Description: "Show recent mod history",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+			},
+			{
+				Name:        "full-history",
+				Description: "Show extended mod history (large)",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
@@ -220,8 +225,8 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
-				Name:        "list-mods",
-				Description: "List all installed mods",
+				Name:        "show-mods",
+				Description: "List installed mods and version preferences",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
@@ -240,13 +245,8 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{
-				Name:        "list-versions",
-				Description: "Show mod version preferences",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-			},
-			{
-				Name:        "set-version",
-				Description: "Set mod version prefs: name=ver,mod=auto",
+				Name:        "set-version-pref",
+				Description: "Set version preference: mod=ver or mod=auto",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{

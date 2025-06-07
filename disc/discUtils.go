@@ -1,6 +1,7 @@
 package disc
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -344,6 +345,39 @@ func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, me
 		return nil
 	}
 	msg, err := DS.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{Embeds: embed, Flags: discordgo.MessageFlagsEphemeral})
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	return msg
+}
+
+// InteractionEphemeralFileResponse sends an ephemeral embed with an attached file.
+func InteractionEphemeralFileResponse(i *discordgo.InteractionCreate, title, message, filename string, data []byte) *discordgo.Message {
+	glob.BootMessage = nil
+	glob.ResetUpdateMessage()
+
+	if DS == nil {
+		return nil
+	}
+	cwlog.DoLogCW("EphemeralFileResponse:\n" + i.Member.User.Username + "\n" + title)
+
+	embed := []*discordgo.MessageEmbed{{Title: title, Description: message, Color: glob.COLOR_WHITE}}
+	file := &discordgo.File{Name: filename, Reader: bytes.NewReader(data)}
+
+	if i.Interaction != nil {
+		resp := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{Embeds: embed, Files: []*discordgo.File{file}, Flags: discordgo.MessageFlagsEphemeral},
+		}
+		err := DS.InteractionRespond(i.Interaction, resp)
+		if err != nil {
+			newResp := &discordgo.WebhookEdit{Embeds: &embed, Files: []*discordgo.File{file}}
+			DS.InteractionResponseEdit(i.Interaction, newResp)
+		}
+		return nil
+	}
+
+	msg, err := DS.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{Embeds: embed, Files: []*discordgo.File{file}, Flags: discordgo.MessageFlagsEphemeral})
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}
