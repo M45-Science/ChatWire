@@ -23,6 +23,10 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	glob.PanelTokenLock.Lock()
 	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, Name: i.Member.User.Username, DiscID: i.Member.User.ID, Time: time.Now().Unix()}
 	glob.PanelTokenLock.Unlock()
-	link := fmt.Sprintf("https://%v:%v/panel?token=%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port+constants.PanelPortOffset, token)
+	dom := cfg.Global.Paths.URLs.Domain
+	if glob.LocalTestMode != nil && *glob.LocalTestMode {
+		dom = "127.0.0.1"
+	}
+	link := fmt.Sprintf("https://%v:%v/panel?token=%v", dom, cfg.Local.Port+constants.PanelPortOffset, token)
 	disc.InteractionEphemeralResponse(i, "Panel Link", link)
 }

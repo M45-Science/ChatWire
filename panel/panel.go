@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/support"
 )
 
 var panelHTML = `<!DOCTYPE html>
@@ -85,12 +87,15 @@ var panelHTML = `<!DOCTYPE html>
 {{if ne .SoftMod ""}}<p>SoftMod version: {{.SoftMod}}</p>{{end}}
 <p>Players online: {{.Players}}</p>
 <p>Game time: {{.Gametime}}</p>
+<p>Last save: {{.SaveName}}</p>
 <p>Factorio up-time: {{.FactUp}}</p>
+<p>UPS 10m/30m/1h: {{.UPS10}}/{{.UPS30}}/{{.UPS60}}</p>
 {{if ne .PlayHours ""}}<p>Play hours: {{.PlayHours}}</p>{{end}}
 {{if .Paused}}<p>Server is paused</p>{{end}}
 {{if ne .NextReset ""}}<p>Next map reset: {{.NextReset}} ({{.TimeTill}})</p>{{end}}
 {{if ne .ResetInterval ""}}<p>Interval: {{.ResetInterval}}</p>{{end}}
 <p>Total players: {{.Total}}</p>
+<p>Members: {{.Mem}} | Regulars: {{.Reg}} | Veterans: {{.Vet}}</p>
 <p>Moderators: {{.Mods}} | Banned: {{.Banned}}</p>
 </div>
 
@@ -132,6 +137,46 @@ var panelHTML = `<!DOCTYPE html>
     <button type="submit">run</button>
 </form>
 </div>
+<div class="card">
+<h3>Set Play Hours</h3>
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="config-hours">
+    <label><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}> enable</label><br>
+    <input type="number" name="start" min="0" max="23" placeholder="start hour">
+    <input type="number" name="end" min="0" max="23" placeholder="end hour">
+    <button type="submit">apply</button>
+</form>
+</div>
+
+<div class="card">
+<h3>Set Map Schedule</h3>
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="set-schedule">
+    <input type="number" name="days" placeholder="days" min="0">
+    <input type="number" name="hours" placeholder="hours" min="0">
+    <input type="text" name="date" placeholder="YYYY-MM-DD HH-MM-SS">
+    <button type="submit">apply</button>
+</form>
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="disable-schedule">
+    <button type="submit">disable</button>
+</form>
+</div>
+
+<div class="card">
+<h3>Set Player Level</h3>
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="player-level">
+    <input type="text" name="name" placeholder="player name">
+    <input type="number" name="level" placeholder="level">
+    <input type="text" name="reason" placeholder="reason">
+    <button type="submit">apply</button>
+</form>
+</div>
 </body></html>`
 
 var modControls = []string{
@@ -157,6 +202,10 @@ type panelData struct {
 	SoftMod       string
 	Players       int
 	Gametime      string
+	SaveName      string
+	UPS10         string
+	UPS30         string
+	UPS60         string
 	CWUp          string
 	FactUp        string
 	NextReset     string
@@ -165,7 +214,11 @@ type panelData struct {
 	Total         int
 	Mods          int
 	Banned        int
+	Mem           int
+	Reg           int
+	Vet           int
 	PlayHours     string
+	HoursEnabled  bool
 	Paused        bool
 	Token         string
 	Cmds          []string
@@ -291,11 +344,16 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	ten, thirty, hour := fact.GetFactUPS()
 	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
-		Players: fact.NumPlayers, Gametime: fact.GametimeString, CWUp: cwUptime, FactUp: factUptime,
+		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
+		UPS10: fmt.Sprintf("%.2f", ten), UPS30: fmt.Sprintf("%.2f", thirty), UPS60: fmt.Sprintf("%.2f", hour),
+		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
-		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
-		Token: tok, Cmds: modControls, Saves: saves}
+		Total: total, Mods: mods, Banned: ban, Mem: mem, Reg: reg, Vet: vet,
+		PlayHours: playHours, HoursEnabled: cfg.Local.Options.PlayHourEnable,
+		Paused: paused,
+		Token:  tok, Cmds: modControls, Saves: saves}
 	_ = t.Execute(w, pd)
 }
 
@@ -382,6 +440,91 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, resp)
 		cwlog.DoLogAudit("%v: rcon %s", userInfo.Name, cmdStr)
 		return
+	case "config-hours":
+		if r.FormValue("enabled") != "" {
+			cfg.Local.Options.PlayHourEnable = true
+		} else {
+			cfg.Local.Options.PlayHourEnable = false
+		}
+		if v := r.FormValue("start"); v != "" {
+			if val, err := strconv.Atoi(v); err == nil && val >= 0 && val < 24 {
+				cfg.Local.Options.PlayStartHour = val
+			}
+		}
+		if v := r.FormValue("end"); v != "" {
+			if val, err := strconv.Atoi(v); err == nil && val >= 0 && val < 24 {
+				cfg.Local.Options.PlayEndHour = val
+			}
+		}
+		cfg.WriteLCfg()
+	case "set-schedule":
+		n := cfg.ResetInterval{}
+		if v := r.FormValue("days"); v != "" {
+			if val, err := strconv.Atoi(v); err == nil {
+				n.Days = val
+			}
+		}
+		if v := r.FormValue("hours"); v != "" {
+			if val, err := strconv.Atoi(v); err == nil {
+				n.Hours = val
+			}
+		}
+		cfg.Local.Options.ResetInterval = n
+		fact.SetResetDate()
+		if v := r.FormValue("date"); v != "" {
+			layout := "2006-01-02 15-04-05"
+			if t, err := time.Parse(layout, v); err == nil && t.After(time.Now().UTC()) {
+				cfg.Local.Options.NextReset = t
+			}
+		}
+		if cfg.Local.Options.NextReset.UTC().Sub(time.Now().UTC()) > (time.Hour*24*90 + time.Hour*24) {
+			cfg.Local.Options.NextReset = time.Time{}
+		}
+		cfg.WriteLCfg()
+		support.ConfigSoftMod()
+	case "disable-schedule":
+		cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
+		cfg.Local.Options.NextReset = time.Time{}
+		cfg.WriteLCfg()
+		support.ConfigSoftMod()
+	case "player-level":
+		name := strings.ToLower(r.FormValue("name"))
+		if name == "" {
+			fmt.Fprint(w, "name required")
+			return
+		}
+		lvlStr := r.FormValue("level")
+		lvl, err := strconv.Atoi(lvlStr)
+		if err != nil {
+			fmt.Fprint(w, "invalid level")
+			return
+		}
+		reason := r.FormValue("reason")
+		if reason == "" {
+			reason = "No reason given"
+		}
+		old := fact.PlayerLevelGet(name, false)
+		glob.PlayerListLock.RLock()
+		pl := glob.PlayerList[name]
+		glob.PlayerListLock.RUnlock()
+		if pl == nil {
+			fmt.Fprint(w, "player not found")
+			return
+		}
+		if lvl >= 0 && old == -1 {
+			fact.WriteUnban(name)
+		}
+		if lvl == -1 && old != -1 {
+			reasonString := fmt.Sprintf("%v -- Panel", reason)
+			fact.WriteBan(name, reasonString)
+			pl.BanReason = reasonString
+		}
+		fact.AutoPromote(name, false, false)
+		fact.PlayerLevelSet(pl.Name, lvl, true)
+		fact.SetPlayerListDirty()
+		fmt.Fprintf(w, "level set to %v", lvl)
+		cwlog.DoLogAudit("%v: player-level %s %d", userInfo.Name, pl.Name, lvl)
+		return
 	default:
 		fmt.Fprintf(w, "Command '%s' not supported via panel", cmd)
 		return
@@ -398,8 +541,12 @@ func generateCert() (tls.Certificate, error) {
 	if err != nil {
 		return tls.Certificate{}, err
 	}
+	dnsName := cfg.Global.Paths.URLs.Domain
+	if glob.LocalTestMode != nil && *glob.LocalTestMode {
+		dnsName = "127.0.0.1"
+	}
 	tpl := x509.Certificate{SerialNumber: big.NewInt(1), Subject: pkix.Name{Organization: []string{"ChatWire"}},
-		NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(24 * time.Hour), DNSNames: []string{cfg.Global.Paths.URLs.Domain}, BasicConstraintsValid: true}
+		NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(24 * time.Hour), DNSNames: []string{dnsName}, BasicConstraintsValid: true}
 	der, err := x509.CreateCertificate(rand.Reader, &tpl, &tpl, &priv.PublicKey, priv)
 	if err != nil {
 		return tls.Certificate{}, err
