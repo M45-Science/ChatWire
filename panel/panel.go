@@ -8,10 +8,12 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"html/template"
 	"math/big"
 	"net/http"
 	"os"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -54,32 +56,68 @@ var panelHTML = `<!DOCTYPE html>
         margin: 0;
         padding: var(--gap);
     }
-    .cards {
+    .areas {
         display: grid;
-        grid-template-columns: repeat(1, 1fr);
         gap: var(--gap);
     }
     @media (min-width: 1500px) {
-        .cards {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    @media (min-width: 2500px) {
-        .cards {
+        .areas {
             grid-template-columns: repeat(3, 1fr);
         }
     }
-    @media (min-width: 3500px) {
-        .cards {
-            grid-template-columns: repeat(4, 1fr);
-        }
+    .area {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap);
+    }
+    .section-header {
+        display: flex;
+        align-items: center;
+        background: var(--accent);
+        color: var(--text);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+    }
+    .section-header .title {
+        flex-grow: 1;
+        margin-left: 0.4rem;
+    }
+    .section-content {
+        margin-top: var(--gap);
+    }
+    .section.collapsed .section-content {
+        display: none;
     }
     .card {
         background: var(--surface);
-        padding: var(--gap);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         margin-bottom: var(--gap);
+    }
+    .card-header {
+        display: flex;
+        align-items: center;
+        background: var(--accent);
+        color: var(--text);
+        border-radius: var(--radius) var(--radius) 0 0;
+        padding: 0.4rem;
+    }
+    .card-header .title {
+        flex-grow: 1;
+        margin-left: 0.4rem;
+    }
+    .card-content {
+        padding: var(--gap);
+    }
+    .card.collapsed .card-content {
+        display: none;
+    }
+    .response-card {
+        position: fixed;
+        left: 50%;
+        bottom: var(--gap);
+        transform: translateX(-50%);
+        z-index: 1000;
     }
     button {
         background: var(--accent);
@@ -115,6 +153,14 @@ var panelHTML = `<!DOCTYPE html>
         border-radius: var(--radius);
         text-align: center;
     }
+    .minimize {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0 0.2rem;
+        font-size: 1rem;
+    }
     input[type="text"] {
         width: 100%;
         border-radius: var(--radius);
@@ -128,9 +174,13 @@ var panelHTML = `<!DOCTYPE html>
     </style>
 </head>
 <body>
-<div class="cards">
+<div class="areas">
+<div class="area section" id="info-area">
+<div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize">&#8211;</button></div>
+<div class="section-content">
 <div class="card">
-<h2>ChatWire Status</h2>
+<div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
 <p>ChatWire version: {{.CWVersion}}</p>
 <p>ChatWire up-time: {{.CWUp}}</p>
 <p>Factorio version: {{.Factorio}}</p>
@@ -148,19 +198,28 @@ var panelHTML = `<!DOCTYPE html>
 <p>Members: {{.Mem}} | Regulars: {{.Reg}} | Veterans: {{.Vet}}</p>
 <p>Moderators: {{.Mods}} | Banned: {{.Banned}}</p>
 </div>
-
-<div class="card">
-<h3>Server Info</h3>
-<pre>{{.Info}}</pre>
 </div>
 
 <div class="card">
-<h3>Moderator Commands</h3>
+<div class="card-header"><span class="material-icons">storage</span><span class="title">Server Info</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<pre>{{.Info}}</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div class="area section" id="command-area">
+<div class="section-header"><span class="material-icons">terminal</span><span class="title">Commands</span><button class="minimize">&#8211;</button></div>
+<div class="section-content">
+<div class="card">
+<div class="card-header"><span class="material-icons">rule</span><span class="title">Moderator Commands</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
 {{range .CmdGroups}}
 <h4>{{.Name}}</h4>
 <div class="button-grid">
 {{range .Cmds}}
-<form method="POST" action="/action">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="{{.Cmd}}">
     <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
@@ -169,12 +228,14 @@ var panelHTML = `<!DOCTYPE html>
 </div>
 {{end}}
 </div>
+</div>
 
 <div class="card">
-<h3>Change Map</h3>
+<div class="card-header"><span class="material-icons">map</span><span class="title">Change Map</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
 <div class="save-grid">
 {{range .Saves}}
-<form method="POST" action="/action">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
     <input type="hidden" name="arg" value="{{.Name}}">
@@ -182,39 +243,45 @@ var panelHTML = `<!DOCTYPE html>
 </form>
 {{end}}
 </div>
-<form method="POST" action="/action">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
     <input type="text" name="arg" placeholder="save name">
-    <button type="submit">load</button>
+<button type="submit">load</button>
 </form>
+</div>
 </div>
 
 <div class="card">
-<h3>RCON Command</h3>
-<form method="POST" action="/action">
+<div class="card-header"><span class="material-icons">terminal</span><span class="title">RCON Command</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="rcon">
     <input type="text" name="arg" placeholder="/command">
     <label><input type="checkbox" name="all"> all servers</label>
-    <button type="submit">run</button>
+<button type="submit">run</button>
 </form>
 </div>
+</div>
 <div class="card">
-<h3>Set Play Hours</h3>
-<form method="POST" action="/action">
+<div class="card-header"><span class="material-icons">schedule</span><span class="title">Set Play Hours</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
     <label><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}> enable</label><br>
     <input type="number" name="start" min="0" max="23" placeholder="start hour">
     <input type="number" name="end" min="0" max="23" placeholder="end hour">
-    <button type="submit">apply</button>
+<button type="submit">apply</button>
 </form>
+</div>
 </div>
 
 <div class="card">
-<h3>Set Map Schedule</h3>
-<form method="POST" action="/action">
+<div class="card-header"><span class="material-icons">event</span><span class="title">Set Map Schedule</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="set-schedule">
     <input type="number" name="days" placeholder="days" min="0">
@@ -222,34 +289,87 @@ var panelHTML = `<!DOCTYPE html>
     <input type="text" name="date" placeholder="YYYY-MM-DD HH-MM-SS">
     <button type="submit">apply</button>
 </form>
-<form method="POST" action="/action">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="disable-schedule">
-    <button type="submit">disable</button>
+<button type="submit">disable</button>
 </form>
+</div>
 </div>
 
 <div class="card">
-<h3>Set Player Level</h3>
-<form method="POST" action="/action">
+<div class="card-header"><span class="material-icons">person</span><span class="title">Set Player Level</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="player-level">
     <input type="text" name="name" placeholder="player name">
     <input type="number" name="level" placeholder="level">
     <input type="text" name="reason" placeholder="reason">
-    <button type="submit">apply</button>
+<button type="submit">apply</button>
 </form>
+</div>
 </div>
 
 <div class="card">
-<h3>Discord Commands</h3>
+<div class="card-header"><span class="material-icons">bolt</span><span class="title">Discord Commands</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
 <div class="cmd-grid">
 {{range .Commands}}
-    <div class="cmd" title="{{.Description}}">{{.Name}}</div>
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{$.Token}}">
+    <input type="hidden" name="cmd" value="discord">
+    <input type="hidden" name="arg" value="{{.Name}}">
+    <button type="submit" title="{{.Description}}">{{.Name}}</button>
+</form>
 {{end}}
 </div>
 </div>
 </div>
+</div>
+</div>
+
+<div class="area section" id="config-area">
+<div class="section-header"><span class="material-icons">settings</span><span class="title">Config</span><button class="minimize">&#8211;</button></div>
+<div class="section-content">
+<div class="card">
+<div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<pre>{{.LocalCfg}}</pre>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="material-icons">public</span><span class="title">Global Configuration</span><button class="minimize">&#8211;</button></div>
+<div class="card-content">
+<pre>{{.GlobalCfg}}</pre>
+</div>
+</div>
+</div>
+</div>
+<script>
+document.querySelectorAll('.cmd-form').forEach(f=>{
+f.addEventListener('submit',async e=>{
+e.preventDefault();
+const data=new FormData(f);
+const r=await fetch('/action',{method:'POST',body:data});
+const t=await r.text();
+showResponse(t);
+});
+});
+function showResponse(m){
+const c=document.createElement('div');
+c.className='card response-card';
+c.textContent=m;
+document.body.appendChild(c);
+setTimeout(()=>c.remove(),5000);
+}
+document.querySelectorAll('.minimize').forEach(b=>{
+    b.addEventListener('click',e=>{
+        const box=b.closest('.card, .section');
+        box.classList.toggle('collapsed');
+    });
+});
+</script>
 </body></html>`
 
 type panelCmd struct {
@@ -334,6 +454,8 @@ type panelData struct {
 	Saves         []panelSave
 	Commands      []panelCommand
 	Info          string
+	LocalCfg      string
+	GlobalCfg     string
 }
 
 // Start runs the HTTPS status panel server.
@@ -480,7 +602,8 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
-		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString()}
+		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
+		LocalCfg: buildCfgString(cfg.Local), GlobalCfg: buildCfgString(cfg.Global)}
 	_ = t.Execute(w, pd)
 }
 
@@ -619,6 +742,18 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		cfg.Local.Options.NextReset = time.Time{}
 		cfg.WriteLCfg()
 		support.ConfigSoftMod()
+	case "discord":
+		arg := strings.TrimPrefix(r.FormValue("arg"), "/")
+		for _, c := range commands.ListAllCommands() {
+			if strings.EqualFold(c.AppCmd.Name, arg) {
+				c.Function(&c, fakeInteraction(userInfo))
+				fmt.Fprintf(w, "discord command '%s' executed", arg)
+				cwlog.DoLogAudit("%v: discord %s", userInfo.Name, arg)
+				return
+			}
+		}
+		fmt.Fprint(w, "command not found")
+		return
 	case "player-level":
 		name := strings.ToLower(r.FormValue("name"))
 		if name == "" {
@@ -746,6 +881,71 @@ func buildInfoString() string {
 	}
 
 	return buf
+}
+
+func cfgLines(v reflect.Value, prefix string) []string {
+	if v.Kind() == reflect.Pointer {
+		v = v.Elem()
+	}
+	t := v.Type()
+	var items []struct {
+		name  string
+		lines []string
+	}
+	for i := 0; i < v.NumField(); i++ {
+		f := t.Field(i)
+		if f.PkgPath != "" || f.Tag.Get("json") == "-" {
+			continue
+		}
+		if tag := f.Tag.Get("form"); tag == "-" || tag == "hidden" {
+			continue
+		}
+		name := f.Tag.Get("web")
+		if name == "" {
+			name = f.Name
+		}
+		fv := v.Field(i)
+		if fv.Kind() == reflect.Struct {
+			sub := cfgLines(fv, prefix+"  ")
+			items = append(items, struct {
+				name  string
+				lines []string
+			}{name: name, lines: sub})
+		} else {
+			items = append(items, struct {
+				name  string
+				lines []string
+			}{name: name, lines: []string{fmt.Sprintf("%v", fv.Interface())}})
+		}
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].name < items[j].name })
+	var out []string
+	for _, it := range items {
+		if len(it.lines) == 1 {
+			out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, it.lines[0]))
+		} else {
+			out = append(out, fmt.Sprintf("%s%s:", prefix, it.name))
+			for _, l := range it.lines {
+				out = append(out, prefix+"  "+l)
+			}
+		}
+	}
+	return out
+}
+
+func buildCfgString(i interface{}) string {
+	lines := cfgLines(reflect.ValueOf(i), "")
+	return strings.Join(lines, "\n")
+}
+
+func fakeInteraction(u *glob.PanelTokenData) *discordgo.InteractionCreate {
+	return &discordgo.InteractionCreate{
+		Interaction: &discordgo.Interaction{
+			Member:    &discordgo.Member{User: &discordgo.User{ID: u.DiscID, Username: u.Name}},
+			ChannelID: cfg.Local.Channel.ChatChannel,
+			GuildID:   cfg.Global.Discord.Guild,
+		},
+	}
 }
 
 func generateCert() (tls.Certificate, error) {
