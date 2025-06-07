@@ -1221,6 +1221,19 @@ func handleCmdMsg(input *handleData) bool {
 		!strings.Contains(input.line, "/whitelist") &&
 		!strings.Contains(input.line, "/online") {
 		cwlog.DoLogGame(input.line)
+		cwlog.DoLogAudit(input.line)
+		return true
+	}
+	return false
+}
+
+func handleAuditMsg(input *handleData) bool {
+	/******************
+	 * AUDIT LOGGING
+	 ******************/
+	if strings.HasPrefix(input.line, "[AUDIT]") {
+		cwlog.DoLogGame(input.line)
+		cwlog.DoLogAudit(input.line)
 		return true
 	}
 	return false

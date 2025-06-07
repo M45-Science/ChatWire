@@ -37,6 +37,7 @@ var noChatHandles = []funcList{
 
 var softModHandles = []funcList{
 	{function: handleCmdMsg},
+	{function: handleAuditMsg},
 	{function: handleActMsg},
 	{function: handleOnlineMsg},
 	{function: handleSoftModMsg},
