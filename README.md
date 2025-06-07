@@ -104,6 +104,8 @@ Ensure the generated configuration files contain your Discord token, application
 Moderators can generate a temporary token with the `/web-panel` command. The control panel exposes
 information from the `/info` command such as versions, uptime, next map reset and player statistics.
 It provides buttons for common moderator actions like starting or stopping Factorio, synchronising
-mods or updating the game. Additional forms allow running arbitrary RCON commands and loading a
-specific save with the change map action. Open the link provided by `/web-panel` in a web browser
-and supply the token as a query parameter.
+mods or updating the game. A map section lists the most recent autosaves and lets you load one with
+a single click or supply your own file name. Another form allows running arbitrary RCON commands.
+The page is rendered in a dark theme styled similarly to the public staff documentation. Open the
+link provided by `/web-panel` in a web browser and supply the token as a query parameter.
+
