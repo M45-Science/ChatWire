@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	FactorioLock  sync.Mutex
-	UpdatersLock  sync.Mutex
-	BootMessage   *discordgo.Message
-	UpdateMessage *discordgo.Message
+	FactorioLock      sync.Mutex
+	UpdatersLock      sync.Mutex
+	BootMessage       *discordgo.Message
+	UpdateMessage     *discordgo.Message
+	UpdateMessageLock sync.Mutex
 
 	FactorioCmd     *exec.Cmd
 	FactorioContext context.Context
@@ -55,6 +56,8 @@ var (
 
 	/* Increasing relaunch delay */
 	RelaunchThrottle = 0
+	CrashLoopCount   = 0
+	LastCrash        time.Time
 
 	/* Player database */
 	PlayerList          map[string]*PlayerData
@@ -72,6 +75,10 @@ var (
 	PlayerListDirtyLock     sync.Mutex
 	PlayerListSeenDirty     = false
 	PlayerListSeenDirtyLock sync.Mutex
+
+	/* Global config status */
+	GlobalCfgUpdated     = false
+	GlobalCfgUpdatedLock sync.Mutex
 
 	/* Factorio server watchdog */
 	NoResponseCount = 0

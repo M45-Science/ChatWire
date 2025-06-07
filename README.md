@@ -1,4 +1,9 @@
-## M45-ChatWire²
+<img src="img-source/logo-readme.png" alt="ChatWire Logo" width="400" height="137">
+
+# ChatWire
+
+Factorio Server Manager & Discord Bridge
+
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 <br>
 [![Go](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
@@ -10,9 +15,9 @@
 
 ### Requirements:
 Linux<br>
-Golang 1.23+<br>
+Golang 1.24+<br>
 <br>
-ChatWire is approximately 11k lines of go code over 67 files.
+ChatWire is approximately 15k lines of go code over 77 files.
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
@@ -31,7 +36,7 @@ go build
 This produces the `ChatWire` binary in the current directory.<br>
 Launching the binary for the first time will create `cw-local-config.json` and `../cw-global-config.json`.<br>
 Edit these files to provide your Discord credentials, Factorio token and server paths.<br>
-After configuring run `<code>./ChatWire -regCommands</code>` to register slash commands.<br>
+After configuring run `./ChatWire -regCommands` to register slash commands.<br>
 <br>
 ### Default path layout:<br>
 A 'base' folder the chatwire folder resides in.<br>
@@ -47,8 +52,9 @@ Binary:<br>
 `./cw-a/factorio/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 <br>
-Launch params:<br>
-`Usage of ChatWire:
+Launch params:
+```text
+Usage of ChatWire:
   -cleanBans
         Clean/minimize player database, along with bans and exit.
   -cleanDB
@@ -60,10 +66,35 @@ Launch params:<br>
   -noAutoLaunch
         Turn off auto-launch
   -regCommands
-        Register discord commands`
+        Register discord commands
+```
         
 <br>
 
 ### Discord bot perms:
 The bot needs presence intent, server members intent, message content intent
 Perms: view channels, manage channels, Manage roles, send messages, embed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.
+
+### Development and Testing
+
+Run `go fmt` to format the code and `go vet` for linting before committing. Tests can be executed with:
+```bash
+go fmt ./...
+go vet ./...
+go test ./...
+```
+These are the same checks executed by the CI pipeline.
+
+### Regenerating configuration
+
+If you need to reset the configuration files, delete `cw-local-config.json` and `../cw-global-config.json` and start ChatWire again. Fresh copies will be generated automatically. You can also reload the configs at runtime using the `ReloadConfig` moderator command.
+
+### Running the bot locally
+
+Build the binary and register the Discord slash commands:
+```bash
+go build
+./ChatWire -regCommands
+./ChatWire
+```
+Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.

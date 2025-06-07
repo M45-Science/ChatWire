@@ -26,7 +26,7 @@ import (
 )
 
 const (
-       MaxZipSize = 1024 * 1024 * 1024 //1gb
+	MaxZipSize = 1024 * 1024 * 1024 //1gb
 )
 
 var (
@@ -214,14 +214,6 @@ func SetFactRunning(run, report bool) {
 		}
 		UpdateChannelName()
 		return
-	}
-}
-
-func GetGuildName() string {
-	if disc.Guild == nil {
-		return constants.Unknown
-	} else {
-		return disc.Guildname
 	}
 }
 
@@ -414,10 +406,10 @@ func QuitFactorio(message string) {
 func WriteFact(format string, args ...interface{}) {
 
 	var input string
-	if args == nil {
+	if len(args) == 0 {
 		input = format
 	} else {
-		input = fmt.Sprintf(format, args...)
+		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	PipeLock.Lock()
@@ -431,7 +423,7 @@ func WriteFact(format string, args ...interface{}) {
 
 		plen := len(buf)
 
-               if plen > constants.MaxDiscordMsgLen {
+		if plen > constants.MaxDiscordMsgLen {
 			cwlog.DoLogCW("Message to Factorio, too long... Not sending.")
 			return
 		} else if plen <= 1 {
@@ -1081,10 +1073,10 @@ func IsPlayerOnline(who string) bool {
 func FactChat(format string, args ...interface{}) {
 
 	var input string
-	if args == nil {
+	if len(args) == 0 {
 		input = format
 	} else {
-		input = fmt.Sprintf(format, args...)
+		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	if input == "" {
@@ -1124,10 +1116,10 @@ func FactChat(format string, args ...interface{}) {
 func FactWhisper(player, format string, args ...interface{}) {
 
 	var input string
-	if args == nil {
+	if len(args) == 0 {
 		input = format
 	} else {
-		input = fmt.Sprintf(format, args...)
+		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
 
 	/* Limit length, Discord does this... but just in case */
@@ -1255,16 +1247,10 @@ func GetFactorioBinary() string {
 	return bloc
 }
 
-func GetUpdateCachePath() string {
-	return cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" + "UpdateCache/"
-}
-
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
 
-       text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
+	text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
 	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 

@@ -180,7 +180,7 @@ func SyncMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	defer glob.UpdatersLock.Unlock()
 
 	if support.SyncMods(i, "") {
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Sync", "Mod sync complete.", glob.COLOR_CYAN)
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Sync", "Mod sync complete.", glob.COLOR_CYAN))
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "ERROR", "Syncing mods failed", glob.COLOR_RED)
 	}

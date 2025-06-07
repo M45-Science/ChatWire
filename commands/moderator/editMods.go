@@ -6,6 +6,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modedit"
 	"ChatWire/modupdate"
 	"ChatWire/util"
 	"os"
@@ -32,11 +33,13 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		switch oName {
 		case "mod-history":
-			tmsg = tmsg + modupdate.ListHistory()
+			tmsg = tmsg + modupdate.ListHistory(false)
+		case "full-history":
+			tmsg = tmsg + modupdate.ListHistory(true)
 		case "clear-history":
 			tmsg = tmsg + modupdate.ClearHistory()
-		case "list-mods":
-			tmsg = tmsg + listMods()
+		case "show-mods":
+			tmsg = tmsg + showMods()
 		case "enable-mod":
 			msg = toggleMod(i, option.StringValue(), true)
 			tmsg = tmsg + msg + "\n"
@@ -45,11 +48,10 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			tmsg = tmsg + msg + "\n"
 		case "add-mod":
 			tmsg = tmsg + addMod(i, option.StringValue())
+		case "set-version-pref":
+			tmsg = tmsg + setVersion(i, option.StringValue())
 		case "clear-all-mods":
 			msg = clearAllMods()
-			tmsg = tmsg + msg + "\n"
-		case "mod-update-rollback":
-			msg = modupdate.ModUpdateRollback(option.UintValue())
 			tmsg = tmsg + msg + "\n"
 		default:
 			msg = oName + " is not a valid option."
@@ -61,7 +63,12 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if tmsg == "" {
 		tmsg = "Unknown error"
 	}
-	disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
+
+	if len(tmsg) > constants.MaxDiscordMsgLen {
+		disc.InteractionEphemeralFileResponse(i, "Edit-Mods", "See attached history.", "mod-history.txt", []byte(tmsg))
+	} else {
+		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
+	}
 }
 
 func clearAllMods() string {
@@ -162,7 +169,7 @@ func parseModName(input string) (string, bool) {
 	}
 }
 
-func listMods() string {
+func showMods() string {
 	modFiles, err := modupdate.GetModFiles()
 	if err != nil {
 		return "Unable to read mod files."
@@ -170,44 +177,54 @@ func listMods() string {
 	modList, _ := modupdate.GetModList()
 	mergedMods := modupdate.MergeModLists(modFiles, modList)
 
+	prefs := modedit.ReadPrefs()
+	prefMap := map[string]string{}
+	for _, p := range prefs.Mods {
+		prefMap[strings.ToLower(p.Name)] = p.Version
+	}
+
 	ebuf := ""
 	for _, item := range mergedMods {
-		if item.Name == "base" {
-			continue
-		}
-		if !item.Enabled {
+		if item.Name == "base" || !item.Enabled {
 			continue
 		}
 		if ebuf != "" {
-			ebuf = ebuf + "\n"
+			ebuf += "\n"
 		}
+		line := ""
 		if modupdate.IsBaseMod(item.Name) {
-			ebuf = ebuf + item.Name + " (base mod)"
+			line = item.Name + " (base mod)"
 		} else if item.Version != "" {
-			ebuf = ebuf + item.Name + "-" + item.Version
+			ebuf = ebuf + item.Name + " (" + item.Version + ")"
 		} else {
-			ebuf = ebuf + item.Name
+			line = item.Name
 		}
+		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" {
+			line += " **(FORCE " + v + ")**"
+		}
+		ebuf += line
 	}
 
 	dbuf := ""
 	for _, item := range mergedMods {
-		if item.Name == "base" {
-			continue
-		}
-		if item.Enabled {
+		if item.Name == "base" || item.Enabled {
 			continue
 		}
 		if dbuf != "" {
-			dbuf = dbuf + "\n"
+			dbuf += "\n"
 		}
+		line := ""
 		if modupdate.IsBaseMod(item.Name) {
-			dbuf = dbuf + item.Name + " (base mod)"
+			line = item.Name + " (base mod)"
 		} else if item.Version != constants.Unknown {
-			dbuf = dbuf + item.Name + "-" + item.Version
+			line = item.Name + " (" + item.Version + ")"
 		} else {
-			dbuf = dbuf + item.Name
+			line = item.Name
 		}
+		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" {
+			line += " (force " + v + ")"
+		}
+		dbuf += line
 	}
 
 	if ebuf == "" {
@@ -256,7 +273,7 @@ func toggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 			if mod.Name == "base" {
 				continue
 			}
-			if mod.Name == part {
+			if strings.EqualFold(mod.Name, part) {
 				if mod.Enabled != value {
 					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
 					mergedMods[m].Enabled = value
@@ -304,4 +321,56 @@ func enableStr(b bool, pastTense bool) string {
 			return "disable"
 		}
 	}
+}
+
+func setVersion(i *discordgo.InteractionCreate, input string) string {
+	if input == "" {
+		return "You must specify a mod=version pair."
+	}
+	input = strings.ReplaceAll(input, " ", "")
+	parts := strings.Split(input, ",")
+
+	modFiles, _ := modupdate.GetModFiles()
+	valid := map[string]bool{}
+	for _, m := range modFiles {
+		valid[strings.ToLower(m.Name)] = true
+	}
+
+	buf := ""
+	for _, p := range parts {
+		if p == "" {
+			continue
+		}
+		seg := strings.SplitN(p, "=", 2)
+		if len(seg) != 2 {
+			if buf != "" {
+				buf += "\n"
+			}
+			buf += p + ": invalid format"
+			continue
+		}
+		name := strings.ToLower(seg[0])
+		vers := seg[1]
+		if !valid[name] {
+			if buf != "" {
+				buf += "\n"
+			}
+			buf += seg[0] + ": mod not installed"
+			continue
+		}
+		if err := modedit.SetVersion(name, vers); err != nil {
+			if buf != "" {
+				buf += "\n"
+			}
+			buf += seg[0] + ": " + err.Error()
+			continue
+		}
+		if buf != "" {
+			buf += "\n"
+		}
+		buf += seg[0] + " set to " + vers
+	}
+
+	modupdate.CheckModUpdates(false)
+	return buf
 }

@@ -13,6 +13,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
+	"ChatWire/watcher"
 )
 
 /* Local use only */
@@ -33,33 +34,11 @@ func compactTime(input int64) int64 {
 
 /* Screw fsnotify */
 func WatchDatabaseFile() {
-	for glob.ServerRunning {
-		time.Sleep(time.Second * 5)
+	filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-		filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-		initialStat, erra := os.Stat(filePath)
-
-		if erra != nil {
-			//cwlog.DoLogCW("WatchDatabaseFile: stat")
-			time.Sleep(time.Minute)
-			continue
-		}
-
-		for glob.ServerRunning && initialStat != nil {
-			time.Sleep(5 * time.Second)
-
-			stat, errb := os.Stat(filePath)
-			if errb != nil {
-				//cwlog.DoLogCW("WatchDatabaseFile: restat")
-				break
-			}
-
-			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				setPlayerListUpdated()
-				break
-			}
-		}
-	}
+	watcher.Watch(filePath, 5*time.Second, &glob.ServerRunning, func() {
+		setPlayerListUpdated()
+	})
 }
 
 /* Check if DB has been updated */
@@ -369,84 +348,80 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 
 	if filedata != nil {
 
-		if strings.HasSuffix(cfg.Global.Paths.DataFiles.DBFile, ".json") {
-
-			var tempData = make(map[string]*glob.PlayerData)
-			err = json.Unmarshal(filedata, &tempData)
-			if err != nil {
-				cwlog.DoLogCW(err.Error())
-			}
-
-			banCount := 0
-			doBan := true
-			//Add name back in, makes db file smaller
-			glob.PlayerListLock.Lock()
-			var removed int
-
-			for pname := range tempData {
-
-				if clearBans {
-					if tempData[pname].Level < 0 {
-						removed++
-						defer delete(tempData, pname)
-						continue
-					}
-				}
-				//DB cleaning
-				if minimize {
-					//Get rid of new/deleted
-					if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
-						removed++
-						defer delete(tempData, pname)
-						continue
-					}
-					//Delete unneeded data from member/reg/moderator
-					if tempData[pname].Level > 0 {
-						tempData[pname].SusScore = 0
-						tempData[pname].BanReason = ""
-						tempData[pname].SpamScore = 0
-					}
-					//Check discord id, fixed if needed.
-					ID, err := strconv.ParseUint(tempData[pname].ID, 10, 64)
-					//There are some old DBs that had ban reasons in the ID field, fix them.
-					if ID == 0 || err != nil {
-						tempData[pname].BanReason = tempData[pname].ID
-						tempData[pname].ID = ""
-					}
-					//Delete id "0"
-					if tempData[pname].ID == "0" {
-						tempData[pname].ID = ""
-					}
-				}
-
-				if banCount > 5 {
-					doBan = false
-				}
-				didBan = false
-				//Autopromote to veteran
-				if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
-					tempData[pname].Level = 3
-				}
-				if bootMode {
-					didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
-				} else if !bootMode {
-					didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
-				}
-				if didBan {
-					banCount++
-				}
-			}
-			if removed > 0 {
-				cwlog.DoLogCW("Removed: %v entries.\n", removed)
-			}
-			glob.PlayerListLock.Unlock()
+		var tempData = make(map[string]*glob.PlayerData)
+		err = json.Unmarshal(filedata, &tempData)
+		if err != nil {
+			cwlog.DoLogCW(err.Error())
 		}
+
+		banCount := 0
+		doBan := true
+		//Add name back in, makes db file smaller
+		glob.PlayerListLock.Lock()
+		var removed int
+
+		for pname := range tempData {
+
+			if clearBans {
+				if tempData[pname].Level < 0 {
+					removed++
+					delete(tempData, pname)
+					continue
+				}
+			}
+			//DB cleaning
+			if minimize {
+				//Get rid of new/deleted
+				if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
+					removed++
+					delete(tempData, pname)
+					continue
+				}
+				//Delete unneeded data from member/reg/moderator
+				if tempData[pname].Level > 0 {
+					tempData[pname].SusScore = 0
+					tempData[pname].BanReason = ""
+					tempData[pname].SpamScore = 0
+				}
+				//Check discord id, fixed if needed.
+				ID, err := strconv.ParseUint(tempData[pname].ID, 10, 64)
+				//There are some old DBs that had ban reasons in the ID field, fix them.
+				if ID == 0 || err != nil {
+					tempData[pname].BanReason = tempData[pname].ID
+					tempData[pname].ID = ""
+				}
+				//Delete id "0"
+				if tempData[pname].ID == "0" {
+					tempData[pname].ID = ""
+				}
+			}
+
+			if banCount > 5 {
+				doBan = false
+			}
+			didBan = false
+			//Autopromote to veteran
+			if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
+				tempData[pname].Level = 3
+			}
+			if bootMode {
+				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
+			} else {
+				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
+			}
+			if didBan {
+				banCount++
+			}
+		}
+		if removed > 0 {
+			cwlog.DoLogCW("Removed: %v entries.\n", removed)
+		}
+		glob.PlayerListLock.Unlock()
 	}
 }
 
 /* Save database */
 func WritePlayers() {
-	/* Write to file */
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
@@ -476,5 +451,4 @@ func WritePlayers() {
 		cwlog.DoLogCW("Couldn't rename db temp file.")
 		return
 	}
-
 }

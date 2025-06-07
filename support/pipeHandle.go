@@ -677,6 +677,7 @@ func handleFactReady(input *handleData) bool {
 		fact.FactorioBooted = true
 		fact.FactorioBootedAt = time.Now()
 		fact.FactIsRunning = false
+		glob.CrashLoopCount = 0
 		fact.SetFactRunning(true, true)
 
 		newHist := modupdate.ModHistoryItem{Name: modupdate.BootName, Date: time.Now(), InfoItem: true}

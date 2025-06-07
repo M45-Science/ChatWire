@@ -1,6 +1,7 @@
 package disc
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -12,7 +13,7 @@ import (
 	"ChatWire/glob"
 )
 
-/*  Check if Discord admin */
+// CheckAdmin returns true if the interaction author has the "admin" role.
 func CheckAdmin(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Admin == "" {
@@ -30,7 +31,7 @@ func CheckAdmin(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
-/*  Check if Discord moderator */
+// CheckModerator returns true if the interaction author has the "moderator" role.
 func CheckModerator(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Moderator == "" {
@@ -48,6 +49,8 @@ func CheckModerator(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
+// CheckSupporter returns true if the interaction author has the "supporter" or
+// "patreon" role.
 func CheckSupporter(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Patreon == "" ||
@@ -67,7 +70,7 @@ func CheckSupporter(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
-/* Check if Discord regular */
+// CheckRegular returns true if the interaction author has the "regular" role.
 func CheckRegular(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Regular == "" {
@@ -85,6 +88,7 @@ func CheckRegular(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
+// CheckVeteran returns true if the interaction author has the "veteran" role.
 func CheckVeteran(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Veteran == "" {
@@ -102,7 +106,7 @@ func CheckVeteran(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
-/* Check if Discord member */
+// CheckMember returns true if the interaction author has the "member" role.
 func CheckMember(i *discordgo.InteractionCreate) bool {
 
 	if cfg.Global.Discord.Roles.RoleCache.Member == "" {
@@ -120,25 +124,7 @@ func CheckMember(i *discordgo.InteractionCreate) bool {
 	return false
 }
 
-/* Check if Discord member */
-func CheckNew(i *discordgo.InteractionCreate) bool {
-
-	if cfg.Global.Discord.Roles.RoleCache.New == "" {
-		cwlog.DoLogCW("CheckNew: RoleID not found for that role, check configuration files.")
-		return false
-	}
-
-	if i.Member != nil {
-		for _, r := range i.Member.Roles {
-			if strings.EqualFold(r, cfg.Global.Discord.Roles.RoleCache.New) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-/* Send embedded message */
+// SmartWriteDiscordEmbed sends an embed to the specified channel and logs any errors.
 func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) *discordgo.Message {
 
 	if ch == "" || embed == nil {
@@ -157,7 +143,7 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) *discordgo
 	return nil
 }
 
-/* Send embedded message */
+// SmartEditDiscordEmbed edits an existing embed if possible, falling back to sending a new one.
 func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description string, color int) *discordgo.Message {
 
 	if ch == "" {
@@ -184,7 +170,7 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 	return nil
 }
 
-/*Send normal message to a channel*/
+// SmartWriteDiscord sends a plain text message to a channel and logs errors.
 func SmartWriteDiscord(ch string, text string) *discordgo.Message {
 
 	if ch == "" || text == "" {
@@ -202,14 +188,14 @@ func SmartWriteDiscord(ch string, text string) *discordgo.Message {
 	return nil
 }
 
-/* Give a player a role */
+// SmartRoleAdd assigns a role to a guild member, ignoring unknown member errors.
 func SmartRoleAdd(gid string, uid string, rid string) error {
 
 	if DS != nil {
 		err := DS.GuildMemberRoleAdd(gid, uid, rid)
 
 		if err != nil {
-			if !strings.ContainsAny("Unknown Member", err.Error()) {
+			if !strings.Contains(strings.ToLower(err.Error()), "unknown member") {
 				cwlog.DoLogCW("SmartRoleAdd: ERROR: %v", err)
 			} else {
 				return nil
@@ -218,10 +204,10 @@ func SmartRoleAdd(gid string, uid string, rid string) error {
 		return err
 	}
 
-	return errors.New("error")
+	return errors.New("discord session not connected")
 }
 
-/* See if a role exists */
+// RoleExists returns true if a role with the given name exists in the guild.
 func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 
 	if g != nil && name != "" {
@@ -242,7 +228,7 @@ func RoleExists(g *discordgo.Guild, name string) (bool, *discordgo.Role) {
 	return false, nil
 }
 
-/* Discord name from discordid */
+// GetNameFromID returns the username for a Discord user ID.
 func GetNameFromID(id string) string {
 	if id == "" || DS == nil {
 		return ""
@@ -260,7 +246,7 @@ func GetNameFromID(id string) string {
 	return ""
 }
 
-/* Discord avatar from discordid */
+// GetDiscordAvatarFromId returns an avatar URL for the provided user ID.
 func GetDiscordAvatarFromId(id string, size int) string {
 
 	if id == "" || DS == nil {
@@ -279,7 +265,7 @@ func GetDiscordAvatarFromId(id string, size int) string {
 	return ""
 }
 
-/* Look up DiscordID, from Factorio name. Only works for players that have registered */
+// GetDiscordIDFromFactorioName resolves a Factorio name to a Discord ID if the player is registered.
 func GetDiscordIDFromFactorioName(input string) string {
 
 	pname := strings.ToLower(input)
@@ -297,7 +283,7 @@ func GetDiscordIDFromFactorioName(input string) string {
 	return ""
 }
 
-/* Look up Factorio name, from DiscordID. Only works for players that have registered */
+// GetFactorioNameFromDiscordID resolves a Discord ID to a Factorio name if the player is registered.
 func GetFactorioNameFromDiscordID(id string) string {
 
 	if id == "" {
@@ -315,6 +301,7 @@ func GetFactorioNameFromDiscordID(id string) string {
 	return ""
 }
 
+// GetPlayerDataFromName returns the stored PlayerData for the given Factorio name.
 func GetPlayerDataFromName(input string) *glob.PlayerData {
 	pname := strings.ToLower(input)
 
@@ -329,13 +316,15 @@ func GetPlayerDataFromName(input string) *glob.PlayerData {
 	return p
 }
 
+// InteractionEphemeralResponse sends a simple ephemeral response using the default color.
 func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message string) *discordgo.Message {
 	return InteractionEphemeralResponseColor(i, title, message, glob.COLOR_WHITE)
 }
 
+// InteractionEphemeralResponseColor sends an ephemeral response with a specific embed color.
 func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
 	glob.BootMessage = nil
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 
 	if DS == nil {
 		return nil
@@ -356,6 +345,39 @@ func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, me
 		return nil
 	}
 	msg, err := DS.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{Embeds: embed, Flags: discordgo.MessageFlagsEphemeral})
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	return msg
+}
+
+// InteractionEphemeralFileResponse sends an ephemeral embed with an attached file.
+func InteractionEphemeralFileResponse(i *discordgo.InteractionCreate, title, message, filename string, data []byte) *discordgo.Message {
+	glob.BootMessage = nil
+	glob.ResetUpdateMessage()
+
+	if DS == nil {
+		return nil
+	}
+	cwlog.DoLogCW("EphemeralFileResponse:\n" + i.Member.User.Username + "\n" + title)
+
+	embed := []*discordgo.MessageEmbed{{Title: title, Description: message, Color: glob.COLOR_WHITE}}
+	file := &discordgo.File{Name: filename, Reader: bytes.NewReader(data)}
+
+	if i.Interaction != nil {
+		resp := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{Embeds: embed, Files: []*discordgo.File{file}, Flags: discordgo.MessageFlagsEphemeral},
+		}
+		err := DS.InteractionRespond(i.Interaction, resp)
+		if err != nil {
+			newResp := &discordgo.WebhookEdit{Embeds: &embed, Files: []*discordgo.File{file}}
+			DS.InteractionResponseEdit(i.Interaction, newResp)
+		}
+		return nil
+	}
+
+	msg, err := DS.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{Embeds: embed, Files: []*discordgo.File{file}, Flags: discordgo.MessageFlagsEphemeral})
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 	}

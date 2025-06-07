@@ -17,11 +17,13 @@ const (
 var ModHistoryLock sync.Mutex
 var ModHistory ModHistoryData
 
+// ModHistoryData tracks history of mod updates and blacklisted versions.
 type ModHistoryData struct {
 	History   []ModHistoryItem
 	Blacklist []ModHistoryItem
 }
 
+// ModHistoryItem represents a single mod history record.
 type ModHistoryItem struct {
 	InfoItem                         bool
 	Name, Notes, Version, OldVersion string
@@ -40,10 +42,12 @@ type downloadData struct {
 	wasDep bool
 }
 
+// ModListData is a minimal mod list used for downloads.
 type ModListData struct {
 	Mods []ModData `json:"mods"`
 }
 
+// ModData describes an installed mod and whether it is enabled.
 type ModData struct {
 	Name    string `json:"name"`
 	Enabled bool   `json:"enabled"`

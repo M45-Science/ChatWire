@@ -6,11 +6,13 @@ import (
 	"math"
 )
 
+// Ptr returns a pointer to the provided value.
 func Ptr[T any](v T) *T {
 	return &v
 }
 
-/* Used for map names */
+// RandomBase64String generates a random base64 string of length l.
+// This is primarily used when generating map names.
 func RandomBase64String(l int) string {
 	buff := make([]byte, int(math.Ceil(float64(l)/float64(1.33333333333))))
 	_, _ = rand.Read(buff)

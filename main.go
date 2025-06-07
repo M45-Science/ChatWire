@@ -276,7 +276,7 @@ func initMaps() {
 
 	/* Generate number to alpha map, used for auto port assignment starting at constants.RconPortOffset */
 	pos := constants.RconPortOffset
-  
+
 	for i := 'a'; i <= 'z'; i++ {
 		glob.AlphaValue[string(i)] = pos
 		pos++

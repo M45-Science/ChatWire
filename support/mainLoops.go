@@ -45,6 +45,30 @@ func MainLoops() {
 			/* Factorio not running */
 			if !fact.FactIsRunning && !fact.DoUpdateFactorio {
 
+				if !fact.FactorioBooted && !fact.FactorioBootedAt.IsZero() {
+					if time.Since(fact.FactorioBootedAt) < time.Minute*2 {
+						glob.CrashLoopCount++
+					} else {
+						glob.CrashLoopCount = 0
+					}
+					glob.LastCrash = time.Now()
+					fact.FactorioBootedAt = time.Time{}
+					if glob.CrashLoopCount >= 3 {
+						fact.SetAutolaunch(false, true)
+						mapName := fact.GameMapName
+						if mapName == "" {
+							mapName = "<unknown>"
+						}
+						msg := fmt.Sprintf("%s-%s: %s: Factorio crashed repeatedly during startup while loading. Moderator attention required, auto-start option disabled.",
+							cfg.Global.GroupName, cfg.Local.Callsign, cfg.Local.Name)
+						cfg.Local.Options.AutoStart = false
+						cfg.WriteLCfg()
+
+						disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, msg)
+						cwlog.DoLogCW(msg)
+					}
+				}
+
 				if fact.QueueFactReboot {
 					if cfg.Local.Options.AutoStart {
 						fact.SetAutolaunch(true, false)
@@ -139,10 +163,10 @@ func MainLoops() {
 						for _, line := range factmsg {
 							oldlen := len(buf) + 1
 							addlen := len(line)
-                                                       if oldlen+addlen >= constants.MaxDiscordMsgLen {
+							if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 								glob.BootMessage = nil
-								glob.UpdateMessage = nil
+								glob.ResetUpdateMessage()
 								buf = line
 							} else {
 								buf = buf + "\n" + line
@@ -151,7 +175,7 @@ func MainLoops() {
 						if buf != "" {
 							disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 							glob.BootMessage = nil
-							glob.UpdateMessage = nil
+							glob.ResetUpdateMessage()
 						}
 
 						/* Moderation */
@@ -159,7 +183,7 @@ func MainLoops() {
 						for _, line := range moder {
 							oldlen := len(buf) + 1
 							addlen := len(line)
-                                                       if oldlen+addlen >= constants.MaxDiscordMsgLen {
+							if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
 								buf = line
 							} else {
@@ -262,6 +286,11 @@ func MainLoops() {
 	 ************************************/
 	go fact.WatchDatabaseFile()
 
+	/****************************************
+	 * Global config file modification watching
+	 ****************************************/
+	go cfg.WatchGCfg()
+
 	/* Read database, if the file was modified */
 	go func() {
 		updated := false
@@ -283,6 +312,35 @@ func MainLoops() {
 
 				//cwlog.DoLogCW("Database file modified, loading.")
 				fact.LoadPlayers(false, false, false)
+			}
+
+		}
+	}()
+
+	/* Reload global config if the file was modified */
+	go func() {
+		updated := false
+
+		for glob.ServerRunning {
+
+			time.Sleep(5 * time.Second)
+
+			glob.GlobalCfgUpdatedLock.Lock()
+			if glob.GlobalCfgUpdated {
+				updated = true
+				glob.GlobalCfgUpdated = false
+			}
+			glob.GlobalCfgUpdatedLock.Unlock()
+
+			if updated {
+				updated = false
+
+				if cfg.ReadGCfg() {
+					cfg.WriteGCfg()
+					ConfigSoftMod()
+					fact.GenerateFactorioConfig()
+					fact.DoUpdateChannelName()
+				}
 			}
 
 		}
@@ -333,61 +391,15 @@ func MainLoops() {
 
 			/* Update role IDs */
 			if disc.Guild != nil {
+				roleMap := buildRoleMap()
+
 				changed := false
-				/* TODO: Clean up dupe code. This started off simple and grew */
 				for _, role := range disc.Guild.Roles {
-					if cfg.Global.Discord.Roles.Admin != "" &&
-						role.Name == cfg.Global.Discord.Roles.Admin &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Admin != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Admin = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Moderator != "" &&
-						role.Name == cfg.Global.Discord.Roles.Moderator &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Moderator != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Moderator = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Veteran != "" &&
-						role.Name == cfg.Global.Discord.Roles.Veteran &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Veteran != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Veteran = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Regular != "" &&
-						role.Name == cfg.Global.Discord.Roles.Regular &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Regular != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Regular = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.Member != "" &&
-						role.Name == cfg.Global.Discord.Roles.Member &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Member != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Member = role.ID
-						changed = true
-
-					} else if cfg.Global.Discord.Roles.New != "" &&
-						role.Name == cfg.Global.Discord.Roles.New &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.New != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.New = role.ID
-						changed = true
-					} else if cfg.Global.Discord.Roles.Patreon != "" &&
-						role.Name == cfg.Global.Discord.Roles.Patreon &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Patreon != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Patreon = role.ID
-						changed = true
-					} else if cfg.Global.Discord.Roles.Nitro != "" &&
-						role.Name == cfg.Global.Discord.Roles.Nitro &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Nitro != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Nitro = role.ID
-						changed = true
-					} else if cfg.Global.Discord.Roles.Supporter != "" &&
-						role.Name == cfg.Global.Discord.Roles.Supporter &&
-						role.ID != "" && cfg.Global.Discord.Roles.RoleCache.Supporter != role.ID {
-						cfg.Global.Discord.Roles.RoleCache.Supporter = role.ID
+					if updateRoleCache(role, roleMap) {
 						changed = true
 					}
 				}
+
 				if changed {
 					cwlog.DoLogCW("Role IDs updated.")
 					cfg.WriteGCfg()
@@ -829,20 +841,20 @@ func MainLoops() {
 }
 
 func checkFactUpdate() {
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 	_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
 	if msg != "" {
 		if !err && !upToDate {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Updated", msg, glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Updated", msg, glob.COLOR_CYAN))
 			cwlog.DoLogCW(msg)
 
 			newHist := modupdate.ModHistoryItem{InfoItem: true,
 				Name: "Factorio Updated", Notes: "To version: " + fact.NewVersion, Date: time.Now()}
 			modupdate.AddModHistory(newHist)
 		} else if err && !upToDate {
-			//glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "ERROR", msg, glob.COLOR_RED)
+			//glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel , glob.GetUpdateMessage(), "ERROR", msg, glob.COLOR_RED)
 			cwlog.DoLogCW(msg)
 		}
 	}
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 }

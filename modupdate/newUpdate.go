@@ -6,10 +6,10 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modedit"
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -30,7 +30,7 @@ func CheckMods(force bool, reportNone bool) {
 	updated, err := CheckModUpdates(false)
 	if reportNone || updated {
 		if err != nil {
-			glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Warning:", err.Error(), glob.COLOR_CYAN)
+			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Warning:", err.Error(), glob.COLOR_CYAN))
 		}
 	}
 	if updated && fact.FactIsRunning {
@@ -40,7 +40,7 @@ func CheckMods(force bool, reportNone bool) {
 
 const resolveDepsDebug = false
 
-func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]downloadData, error) {
+func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string) ([]downloadData, error) {
 
 	if depth > 10 {
 		return []downloadData{}, nil
@@ -49,16 +49,14 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 	var downloadMods []downloadData
 	for _, item := range modPortalData {
 
-		//Don't follow circular deps
+		// Don't follow circular deps
 		circular := false
-		depParentsLock.Lock()
-		for _, parent := range depParents {
+		for _, parent := range parents {
 			if item.Name == parent {
 				circular = true
 				break
 			}
 		}
-		depParentsLock.Unlock()
 		if circular {
 			continue
 		}
@@ -142,11 +140,8 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 									return []downloadData{}, err
 								}
 							}
-							//Recursively check dep's deps
-							depParentsLock.Lock()
-							depParents = append(depParents, item.Name)
-							depParentsLock.Unlock()
-							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1)
+							// Recursively check dep's deps
+							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1, append(parents, item.Name))
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
@@ -181,12 +176,9 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int) ([]d
 	return downloadMods, nil
 }
 
-var depParents []string
-var depParentsLock sync.Mutex
-
 func CheckModUpdates(dryRun bool) (bool, error) {
 	// If needed, get Factorio version
-	getFactoioVersion()
+	getFactorioVersion()
 
 	// Read all mod.zip files
 	modFileList, err := GetModFiles()
@@ -198,6 +190,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	jsonModList, _ := GetModList() //Ignore error, mods-list.json missing isn't the end of the world.
 	// Merge the two lists
 	installedMods := MergeModLists(modFileList, jsonModList)
+	versionPrefs := modedit.ReadPrefs()
 
 	// Check if we need to proceed
 	if len(installedMods) == 0 {
@@ -225,10 +218,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps(modPortalData, false, 0)
-	depParentsLock.Lock()
-	depParents = []string{}
-	depParentsLock.Unlock()
+	downloadList, err := resolveDeps(modPortalData, false, 0, nil)
 
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
@@ -239,6 +229,35 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 		return false, err
+	}
+
+	// Apply version preferences
+	for _, inst := range installedMods {
+		pref := modedit.GetVersion(versionPrefs, inst.Name)
+		if pref == "" || strings.EqualFold(pref, "auto") {
+			continue
+		}
+
+		// Remove automatic updates for this mod
+		downloadList = removeDownload(inst.Name, downloadList)
+
+		// Already at the preferred version
+		if pref == inst.Version {
+			continue
+		}
+
+		info, perr := DownloadModInfo(inst.Name)
+		if perr == nil {
+			for _, rel := range info.Releases {
+				if rel.Version == pref {
+					dl := downloadData{Name: inst.Name, Title: info.Title,
+						Filename: rel.FileName, OldFilename: inst.Filename,
+						Data: rel, Version: rel.Version, OldVersion: inst.Version}
+					downloadList = append(downloadList, dl)
+					break
+				}
+			}
+		}
 	}
 
 	//Dry run ends here
@@ -257,7 +276,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 	if getDownloadCount(downloadList) > 0 && len(installedMods) > 0 {
 		emsg := "Mod updates complete."
-		glob.UpdateMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.UpdateMessage, "Mod Updates", emsg, glob.COLOR_CYAN)
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Updates", emsg, glob.COLOR_CYAN))
 		if fact.NumPlayers > 0 && shortBuf != "" {
 			fact.FactChat("Mod updates: " + shortBuf + " (Mods will update on reboot, when server is empty)")
 		}
@@ -321,7 +340,7 @@ func parseDep(input string) depRequires {
 
 	input = strings.TrimSpace(input)
 	//Mark incompatible
-	if strings.ContainsAny(input, "!") {
+	if strings.Contains(input, "!") {
 		incompatible = true
 	}
 	//Mark optional
@@ -381,4 +400,15 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
 	}
 	return append(list, input)
+}
+
+// removeDownload removes any pending downloads for the given mod name.
+func removeDownload(name string, list []downloadData) []downloadData {
+	out := []downloadData{}
+	for _, item := range list {
+		if item.Name != name {
+			out = append(out, item)
+		}
+	}
+	return out
 }

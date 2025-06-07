@@ -5,11 +5,13 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"ChatWire/util"
+	"ChatWire/watcher"
 )
 
 var (
@@ -41,9 +43,6 @@ func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
 		Global.Paths.DataFiles.DBFile = "playerdb.json"
-		if err := os.WriteFile(Global.Paths.DataFiles.DBFile, []byte("{}"), 0644); err != nil {
-			cwlog.DoLogCW("setGlobalDefaults: Could not create " + Global.Paths.DataFiles.DBFile)
-		}
 	}
 	if Global.Paths.Folders.MapGenerators == "" {
 		Global.Paths.Folders.MapGenerators = "map-gen-json"
@@ -183,4 +182,13 @@ func ReadGCfg() bool {
 func createGCfg() global {
 	newcfg := global{}
 	return newcfg
+}
+
+// WatchGCfg monitors the global configuration file for changes.
+func WatchGCfg() {
+	watcher.Watch(constants.CWGlobalConfig, 5*time.Second, &glob.ServerRunning, func() {
+		glob.GlobalCfgUpdatedLock.Lock()
+		glob.GlobalCfgUpdated = true
+		glob.GlobalCfgUpdatedLock.Unlock()
+	})
 }
