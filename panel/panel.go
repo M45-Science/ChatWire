@@ -70,6 +70,12 @@ var panelHTML = `<!DOCTYPE html>
         flex-direction: column;
         gap: var(--gap);
     }
+    .section {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: var(--gap);
+    }
     .section-header {
         display: flex;
         align-items: center;
@@ -184,7 +190,14 @@ var panelHTML = `<!DOCTYPE html>
     .bool-display {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 0.5rem;
+        padding: 0.2rem 0.4rem;
+    }
+    .bool-display span {
+        flex-grow: 1;
+        text-align: right;
+        margin-right: 0.5rem;
     }
     .switch {
         position: relative;
@@ -219,6 +232,27 @@ var panelHTML = `<!DOCTYPE html>
         border-radius: var(--radius);
         margin-bottom: var(--gap);
     }
+    .cfg-content > div:nth-child(odd),
+    .cfg-content > p:nth-child(odd),
+    .info-list > p:nth-child(odd) {
+        background: rgba(255,255,255,0.05);
+    }
+    .cfg-content > div,
+    .cfg-content > p,
+    .info-list > p {
+        padding: 0.2rem 0.4rem;
+        font-size: 1.1rem;
+    }
+    .save-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+    }
+    .save-age {
+        font-size: 0.8rem;
+        color: #ccc;
+    }
     .cfg-title {
         background: var(--accent);
         padding: 0.2rem 0.4rem;
@@ -235,7 +269,7 @@ var panelHTML = `<!DOCTYPE html>
 <div class="section-content">
 <div class="card">
 <div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize">&#8211;</button></div>
-<div class="card-content">
+<div class="card-content info-list">
 <p>ChatWire version: {{.CWVersion}}</p>
 <p>ChatWire up-time: {{.CWUp}}</p>
 <p>Factorio version: {{.Factorio}}</p>
@@ -290,12 +324,15 @@ var panelHTML = `<!DOCTYPE html>
 <div class="card-content">
 <div class="save-grid">
 {{range .Saves}}
-<form method="POST" action="/action" class="cmd-form">
-    <input type="hidden" name="token" value="{{$.Token}}">
-    <input type="hidden" name="cmd" value="change-map">
-    <input type="hidden" name="arg" value="{{.Name}}">
-    <button type="submit" title="{{.Age}}">{{.Name}}</button>
-</form>
+<div class="save-item">
+    <div class="save-age">{{.Age}}</div>
+    <form method="POST" action="/action" class="cmd-form">
+        <input type="hidden" name="token" value="{{$.Token}}">
+        <input type="hidden" name="cmd" value="change-map">
+        <input type="hidden" name="arg" value="{{.Name}}">
+        <button type="submit">{{.Name}}</button>
+    </form>
+</div>
 {{end}}
 </div>
 <form method="POST" action="/action" class="cmd-form">
