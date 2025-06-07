@@ -147,7 +147,7 @@ var panelHTML = `<!DOCTYPE html>
     }
     .save-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
         gap: var(--gap);
     }
     .cmd-grid {
@@ -497,7 +497,7 @@ function makeValueNode(v){
     a.href=v;
     a.target='_blank';
     a.className='value-box';
-    a.textContent=v;
+    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'connect':v;
     return a;
   }
   const i=document.createElement('input');
