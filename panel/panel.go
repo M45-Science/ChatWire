@@ -52,6 +52,26 @@ var panelHTML = `<!DOCTYPE html>
         margin: 0;
         padding: var(--gap);
     }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: var(--gap);
+    }
+    @media (min-width: 1500px) {
+        .cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (min-width: 2500px) {
+        .cards {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    @media (min-width: 3500px) {
+        .cards {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
     .card {
         background: var(--surface);
         padding: var(--gap);
@@ -91,6 +111,7 @@ var panelHTML = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+<div class="cards">
 <div class="card">
 <h2>ChatWire Status</h2>
 <p>ChatWire version: {{.CWVersion}}</p>
@@ -195,6 +216,7 @@ var panelHTML = `<!DOCTYPE html>
     <input type="text" name="reason" placeholder="reason">
     <button type="submit">apply</button>
 </form>
+</div>
 </div>
 </body></html>`
 
