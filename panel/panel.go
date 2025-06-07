@@ -139,6 +139,8 @@ var panelHTML = `<!DOCTYPE html>
 
 <div class="card">
 <h3>Moderator Commands</h3>
+{{range .CmdGroups}}
+<h4>{{.Name}}</h4>
 <div class="button-grid">
 {{range .Cmds}}
 <form method="POST" action="/action">
@@ -148,6 +150,7 @@ var panelHTML = `<!DOCTYPE html>
 </form>
 {{end}}
 </div>
+{{end}}
 </div>
 
 <div class="card">
@@ -174,6 +177,7 @@ var panelHTML = `<!DOCTYPE html>
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="rcon">
     <input type="text" name="arg" placeholder="/command">
+    <label><input type="checkbox" name="all"> all servers</label>
     <button type="submit">run</button>
 </form>
 </div>
@@ -226,21 +230,41 @@ type panelCmd struct {
 	Icon  string
 }
 
-var modControls = []panelCmd{
-	{Cmd: "archive-map", Label: "Archive Map", Icon: "archive"},
-	{Cmd: "force-reboot", Label: "Force Reboot", Icon: "restart_alt"},
-	{Cmd: "install-factorio", Label: "Install Factorio", Icon: "download"},
-	{Cmd: "map-reset", Label: "Map Reset", Icon: "map"},
-	{Cmd: "new-map", Label: "New Map", Icon: "create_new_folder"},
-	{Cmd: "queue-fact-reboot", Label: "Queue Fact Reboot", Icon: "schedule"},
-	{Cmd: "queue-reboot", Label: "Queue Reboot", Icon: "schedule"},
-	{Cmd: "reboot-chatwire", Label: "Reboot ChatWire", Icon: "restart_alt"},
-	{Cmd: "reload-config", Label: "Reload Config", Icon: "refresh"},
-	{Cmd: "start-factorio", Label: "Start Factorio", Icon: "play_arrow"},
-	{Cmd: "stop-factorio", Label: "Stop Factorio", Icon: "stop"},
-	{Cmd: "sync-mods", Label: "Sync Mods", Icon: "sync"},
-	{Cmd: "update-factorio", Label: "Update Factorio", Icon: "update"},
-	{Cmd: "update-mods", Label: "Update Mods", Icon: "system_update_alt"},
+type panelCmdGroup struct {
+	Name string
+	Cmds []panelCmd
+}
+
+var modCmdGroups = []panelCmdGroup{
+	{
+		Name: "ChatWire",
+		Cmds: []panelCmd{
+			{Cmd: "reboot-chatwire", Label: "Reboot ChatWire", Icon: "restart_alt"},
+			{Cmd: "queue-reboot", Label: "Queue Reboot", Icon: "schedule"},
+			{Cmd: "force-reboot", Label: "Force Reboot", Icon: "restart_alt"},
+			{Cmd: "queue-fact-reboot", Label: "Queue Fact Reboot", Icon: "schedule"},
+			{Cmd: "reload-config", Label: "Reload Config", Icon: "refresh"},
+		},
+	},
+	{
+		Name: "Factorio",
+		Cmds: []panelCmd{
+			{Cmd: "start-factorio", Label: "Start Factorio", Icon: "play_arrow"},
+			{Cmd: "stop-factorio", Label: "Stop Factorio", Icon: "stop"},
+			{Cmd: "install-factorio", Label: "Install Factorio", Icon: "download"},
+			{Cmd: "update-factorio", Label: "Update Factorio", Icon: "update"},
+			{Cmd: "new-map", Label: "New Map", Icon: "create_new_folder"},
+			{Cmd: "archive-map", Label: "Archive Map", Icon: "archive"},
+			{Cmd: "map-reset", Label: "Map Reset", Icon: "map"},
+		},
+	},
+	{
+		Name: "Mods",
+		Cmds: []panelCmd{
+			{Cmd: "update-mods", Label: "Update Mods", Icon: "system_update_alt"},
+			{Cmd: "sync-mods", Label: "Sync Mods", Icon: "sync"},
+		},
+	},
 }
 
 type panelData struct {
@@ -268,7 +292,7 @@ type panelData struct {
 	HoursEnabled  bool
 	Paused        bool
 	Token         string
-	Cmds          []panelCmd
+	CmdGroups     []panelCmdGroup
 	Saves         []string
 	Info          string
 }
@@ -394,15 +418,17 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cmds := make([]panelCmd, len(modControls))
-	copy(cmds, modControls)
-	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Label < cmds[j].Label })
+	groups := make([]panelCmdGroup, len(modCmdGroups))
+	copy(groups, modCmdGroups)
+	for idx := range groups {
+		sort.Slice(groups[idx].Cmds, func(i, j int) bool { return groups[idx].Cmds[i].Label < groups[idx].Cmds[j].Label })
+	}
 	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
-		Token: tok, Cmds: cmds, Saves: saves, Info: buildInfoString()}
+		Token: tok, CmdGroups: groups, Saves: saves, Info: buildInfoString()}
 	_ = t.Execute(w, pd)
 }
 
@@ -470,6 +496,8 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "command required")
 			return
 		}
+		cmdStr = strings.TrimPrefix(cmdStr, "/")
+		cmdStr = "/" + cmdStr
 		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
 		rc, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 		if err != nil || rc == nil {
