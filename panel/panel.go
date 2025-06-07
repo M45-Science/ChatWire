@@ -21,12 +21,14 @@ import (
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
+	"ChatWire/commands"
 	"ChatWire/commands/moderator"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
+	"github.com/hako/durafmt"
 )
 
 var panelHTML = `<!DOCTYPE html>
@@ -39,9 +41,9 @@ var panelHTML = `<!DOCTYPE html>
     :root {
         --bg: #131313;
         --surface: #2b2b2b;
-        --accent: #7efe83;
+        --accent: #b22020;
         --text: #ffffff;
-        --radius: 1rem;
+        --radius: 0.4rem;
         --gap: 1rem;
         --shadow: 0 0.5rem 0.5rem rgba(0,0,0,0.8);
     }
@@ -81,22 +83,37 @@ var panelHTML = `<!DOCTYPE html>
     }
     button {
         background: var(--accent);
+        color: var(--text);
         border: none;
         border-radius: var(--radius);
-        padding: 0.3rem 0.6rem;
-        margin: 0.2rem 0;
+        padding: 0.4rem;
+        margin: 0.2rem;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
+        width: 100%;
     }
     .button-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: var(--gap);
     }
     .button-grid form {
         margin: 0;
+    }
+    .save-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--gap);
+    }
+    .cmd-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--gap);
+    }
+    .cmd {
+        background: var(--surface);
+        padding: 0.3rem;
+        border-radius: var(--radius);
+        text-align: center;
     }
     input[type="text"] {
         width: 100%;
@@ -146,7 +163,7 @@ var panelHTML = `<!DOCTYPE html>
 <form method="POST" action="/action">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="{{.Cmd}}">
-    <button type="submit"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
+    <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
 </form>
 {{end}}
 </div>
@@ -155,14 +172,16 @@ var panelHTML = `<!DOCTYPE html>
 
 <div class="card">
 <h3>Change Map</h3>
+<div class="save-grid">
 {{range .Saves}}
 <form method="POST" action="/action">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
-    <input type="hidden" name="arg" value="{{.}}">
-    <button type="submit">{{.}}</button>
+    <input type="hidden" name="arg" value="{{.Name}}">
+    <button type="submit" title="{{.Age}}">{{.Name}}</button>
 </form>
 {{end}}
+</div>
 <form method="POST" action="/action">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
@@ -221,6 +240,15 @@ var panelHTML = `<!DOCTYPE html>
     <button type="submit">apply</button>
 </form>
 </div>
+
+<div class="card">
+<h3>Discord Commands</h3>
+<div class="cmd-grid">
+{{range .Commands}}
+    <div class="cmd" title="{{.Description}}">{{.Name}}</div>
+{{end}}
+</div>
+</div>
 </div>
 </body></html>`
 
@@ -228,6 +256,16 @@ type panelCmd struct {
 	Cmd   string
 	Label string
 	Icon  string
+}
+
+type panelSave struct {
+	Name string
+	Age  string
+}
+
+type panelCommand struct {
+	Name        string
+	Description string
 }
 
 type panelCmdGroup struct {
@@ -293,7 +331,8 @@ type panelData struct {
 	Paused        bool
 	Token         string
 	CmdGroups     []panelCmdGroup
-	Saves         []string
+	Saves         []panelSave
+	Commands      []panelCommand
 	Info          string
 }
 
@@ -395,7 +434,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// gather last 24 saves
-	var saves []string
+	var saves []panelSave
 	files, err := os.ReadDir(cfg.GetSavesFolder())
 	if err == nil {
 		var entries []os.DirEntry
@@ -414,9 +453,22 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 			entries = entries[:24]
 		}
 		for _, f := range entries {
-			saves = append(saves, strings.TrimSuffix(f.Name(), ".zip"))
+			info, _ := f.Info()
+			modAge := time.Since(info.ModTime()).Round(time.Second)
+			units, _ := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m")
+			ageStr := durafmt.Parse(modAge).LimitFirstN(2).Format(units) + " ago"
+			saves = append(saves, panelSave{Name: strings.TrimSuffix(f.Name(), ".zip"), Age: ageStr})
 		}
 	}
+	if len(saves) > 16 {
+		saves = saves[:16]
+	}
+
+	var cmdList []panelCommand
+	for _, c := range commands.ListAllCommands() {
+		cmdList = append(cmdList, panelCommand{Name: "/" + c.AppCmd.Name, Description: c.AppCmd.Description})
+	}
+	sort.Slice(cmdList, func(i, j int) bool { return cmdList[i].Name < cmdList[j].Name })
 
 	groups := make([]panelCmdGroup, len(modCmdGroups))
 	copy(groups, modCmdGroups)
@@ -428,7 +480,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
-		Token: tok, CmdGroups: groups, Saves: saves, Info: buildInfoString()}
+		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString()}
 	_ = t.Execute(w, pd)
 }
 

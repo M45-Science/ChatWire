@@ -12,3 +12,8 @@ func ListModAdminCommands() []glob.CommandData {
 	}
 	return out
 }
+
+// ListAllCommands returns all registered slash commands.
+func ListAllCommands() []glob.CommandData {
+	return cmds
+}
