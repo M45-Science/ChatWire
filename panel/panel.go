@@ -155,8 +155,16 @@ var panelHTML = `<!DOCTYPE html>
     }
     .save-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
         gap: var(--gap);
+    }
+    .save-grid button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .cmd-grid {
         display: grid;
