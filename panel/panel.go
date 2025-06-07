@@ -139,11 +139,19 @@ var panelHTML = `<!DOCTYPE html>
     }
     .button-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
         gap: var(--gap);
     }
     .button-grid form {
         margin: 0;
+    }
+    .button-grid button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .save-grid {
         display: grid;
