@@ -225,8 +225,8 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
-				Name:        "list-mods",
-				Description: "List all installed mods",
+				Name:        "show-mods",
+				Description: "List installed mods",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
@@ -245,13 +245,13 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{
-				Name:        "list-versions",
-				Description: "Show mod version preferences",
+				Name:        "list-version-prefs",
+				Description: "Show version preferences for mods",
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
-				Name:        "set-version",
-				Description: "Set mod version prefs: name=ver,mod=auto",
+				Name:        "set-version-pref",
+				Description: "Set version preference: mod=ver or mod=auto",
 				Type:        discordgo.ApplicationCommandOptionString,
 			},
 			{

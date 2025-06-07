@@ -38,7 +38,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			tmsg = tmsg + modupdate.ListHistory(true)
 		case "clear-history":
 			tmsg = tmsg + modupdate.ClearHistory()
-		case "list-mods":
+		case "show-mods":
 			tmsg = tmsg + listMods()
 		case "enable-mod":
 			msg = toggleMod(i, option.StringValue(), true)
@@ -48,9 +48,9 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			tmsg = tmsg + msg + "\n"
 		case "add-mod":
 			tmsg = tmsg + addMod(i, option.StringValue())
-		case "list-versions":
+		case "list-version-prefs":
 			tmsg = tmsg + listVersions()
-		case "set-version":
+		case "set-version-pref":
 			tmsg = tmsg + setVersion(i, option.StringValue())
 		case "clear-all-mods":
 			msg = clearAllMods()
