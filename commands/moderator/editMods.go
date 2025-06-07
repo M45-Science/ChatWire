@@ -200,7 +200,7 @@ func showMods() string {
 			line = item.Name
 		}
 		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" {
-			line += " (force " + v + ")"
+			line += " **(FORCE " + v + ")**"
 		}
 		ebuf += line
 	}
