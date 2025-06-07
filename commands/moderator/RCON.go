@@ -16,7 +16,7 @@ import (
 /* Set a player's level */
 func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	var server, command string
+	var command string
 
 	a := i.ApplicationCommandData()
 
@@ -43,7 +43,8 @@ func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			return
 		}
 
-		cwlog.DoLogCW(i.Member.User.Username + ": " + server + ": " + command)
+		cwlog.DoLogAudit("RCON: %v: %v", i.Member.User.Username, command)
+
 		reqID, err := remoteConsole.Write(command)
 		if err != nil {
 			msg := "Was unable to write to RCON."
@@ -71,10 +72,8 @@ func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 
 		disc.InteractionEphemeralResponse(i, "Result:", resp)
-		cwlog.DoLogCW("RCON: " + resp)
 	} else {
 		msg := "You must supply a command to run."
-		cwlog.DoLogCW(msg)
 		disc.InteractionEphemeralResponse(i, "Error:", msg)
 	}
 

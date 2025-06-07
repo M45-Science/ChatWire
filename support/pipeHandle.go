@@ -1216,11 +1216,7 @@ func handleCmdMsg(input *handleData) bool {
 	/******************
 	 * COMMAND REPORTING
 	 ******************/
-	if strings.HasPrefix(input.line, "[CMD]") &&
-		!strings.Contains(input.line, "/cchat") &&
-		!strings.Contains(input.line, "/whitelist") &&
-		!strings.Contains(input.line, "/online") {
-		cwlog.DoLogGame(input.line)
+	if strings.HasPrefix(input.line, "[CMD]") {
 		cwlog.DoLogAudit(input.line)
 		return true
 	}
@@ -1232,7 +1228,6 @@ func handleAuditMsg(input *handleData) bool {
 	 * AUDIT LOGGING
 	 ******************/
 	if strings.HasPrefix(input.line, "[AUDIT]") {
-		cwlog.DoLogGame(input.line)
 		cwlog.DoLogAudit(input.line)
 		return true
 	}
