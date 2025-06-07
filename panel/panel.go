@@ -8,6 +8,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
+	"github.com/M45-Science/rcon"
 	"html/template"
 	"math/big"
 	"net/http"
@@ -33,6 +34,8 @@ var panelHTML = `<!DOCTYPE html>
 <p>Players online: {{.Players}}</p>
 <p>Game time: {{.Gametime}}</p>
 <p>Factorio up-time: {{.FactUp}}</p>
+{{if ne .PlayHours ""}}<p>Play hours: {{.PlayHours}}</p>{{end}}
+{{if .Paused}}<p>Server is paused</p>{{end}}
 {{if ne .NextReset ""}}<p>Next map reset: {{.NextReset}} ({{.TimeTill}})</p>{{end}}
 {{if ne .ResetInterval ""}}<p>Interval: {{.ResetInterval}}</p>{{end}}
 <p>Total players: {{.Total}}</p>
@@ -46,6 +49,21 @@ var panelHTML = `<!DOCTYPE html>
     <button type="submit">{{.}}</button>
 </form>
 {{end}}
+<h4>Change Map</h4>
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="change-map">
+    <input type="text" name="arg" placeholder="save name">
+    <button type="submit">load</button>
+</form>
+
+<h4>RCON Command</h4>
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="rcon">
+    <input type="text" name="arg" placeholder="/command">
+    <button type="submit">run</button>
+</form>
 </body></html>`
 
 var modControls = []string{
@@ -79,6 +97,8 @@ type panelData struct {
 	Total         int
 	Mods          int
 	Banned        int
+	PlayHours     string
+	Paused        bool
 	Token         string
 	Cmds          []string
 }
@@ -142,6 +162,16 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		resetInterval = fact.FormatResetInterval()
 	}
 
+	playHours := ""
+	if cfg.Local.Options.PlayHourEnable {
+		playHours = fmt.Sprintf("%d-%d GMT", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
+	}
+
+	paused := false
+	if fact.PausedTicks > 4 {
+		paused = true
+	}
+
 	var mem, reg, vet, mods, ban int
 	glob.PlayerListLock.RLock()
 	for _, player := range glob.PlayerList {
@@ -171,7 +201,8 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
-		Total: total, Mods: mods, Banned: ban, Token: tok, Cmds: modControls}
+		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
+		Token: tok, Cmds: modControls}
 	_ = t.Execute(w, pd)
 }
 
@@ -223,6 +254,41 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		moderator.InstallFactorio(nil, nil)
 	case "map-reset":
 		moderator.MapReset(nil, nil)
+	case "change-map":
+		arg := r.FormValue("arg")
+		if arg == "" {
+			fmt.Fprint(w, "map name required")
+			return
+		}
+		fact.DoChangeMap(arg)
+	case "rcon":
+		cmdStr := r.FormValue("arg")
+		if cmdStr == "" {
+			fmt.Fprint(w, "command required")
+			return
+		}
+		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
+		rc, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
+		if err != nil || rc == nil {
+			fmt.Fprint(w, "RCON connect failed")
+			return
+		}
+		reqID, err := rc.Write(cmdStr)
+		if err != nil {
+			fmt.Fprint(w, "RCON write failed")
+			return
+		}
+		resp, respID, err := rc.Read()
+		if err != nil || reqID != respID {
+			fmt.Fprint(w, "RCON read failed")
+			return
+		}
+		if resp == "" {
+			resp = "(Empty response)"
+		}
+		fmt.Fprint(w, resp)
+		cwlog.DoLogAudit("%v: rcon %s", userInfo.Name, cmdStr)
+		return
 	default:
 		fmt.Fprintf(w, "Command '%s' not supported via panel", cmd)
 		return
