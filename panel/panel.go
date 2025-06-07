@@ -199,6 +199,28 @@ var panelHTML = `<!DOCTYPE html>
         text-align: right;
         margin-right: 0.5rem;
     }
+    .kv-display {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.2rem 0.4rem;
+    }
+    .kv-display span {
+        flex-grow: 1;
+        text-align: right;
+        margin-right: 0.5rem;
+    }
+    .value-box {
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        color: var(--text);
+        border-radius: var(--radius);
+        padding: 0.2rem 0.4rem;
+        min-width: 4rem;
+        width: auto;
+        margin: 0;
+    }
     .switch {
         position: relative;
         display: inline-block;
@@ -234,11 +256,13 @@ var panelHTML = `<!DOCTYPE html>
     }
     .cfg-content > div:nth-child(odd),
     .cfg-content > p:nth-child(odd),
+    .info-list > div:nth-child(odd),
     .info-list > p:nth-child(odd) {
         background: rgba(255,255,255,0.05);
     }
     .cfg-content > div,
     .cfg-content > p,
+    .info-list > div,
     .info-list > p {
         padding: 0.2rem 0.4rem;
         font-size: 1.1rem;
@@ -270,22 +294,22 @@ var panelHTML = `<!DOCTYPE html>
 <div class="card">
 <div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize">&#8211;</button></div>
 <div class="card-content info-list">
-<p>ChatWire version: {{.CWVersion}}</p>
-<p>ChatWire up-time: {{.CWUp}}</p>
-<p>Factorio version: {{.Factorio}}</p>
-{{if ne .SoftMod ""}}<p>SoftMod version: {{.SoftMod}}</p>{{end}}
-<p>Players online: {{.Players}}</p>
-<p>Game time: {{.Gametime}}</p>
-<p>Last save: {{.SaveName}}</p>
-<p>Factorio up-time: {{.FactUp}}</p>
-<p>UPS 10m/30m/1h: {{.UPS10}}/{{.UPS30}}/{{.UPS60}}</p>
-{{if ne .PlayHours ""}}<p>Play hours: {{.PlayHours}}</p>{{end}}
+<div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
+<div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
+<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
+{{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
+<div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
+<div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
+<div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
+<div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
+<div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS10}}/{{.UPS30}}/{{.UPS60}}"></div>
+{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
 <div class="bool-display"><span>Paused</span><label class="switch"><input type="checkbox" disabled {{if .Paused}}checked{{end}}><span class="slider"></span></label></div>
-{{if ne .NextReset ""}}<p>Next map reset: {{.NextReset}} ({{.TimeTill}})</p>{{end}}
-{{if ne .ResetInterval ""}}<p>Interval: {{.ResetInterval}}</p>{{end}}
-<p>Total players: {{.Total}}</p>
-<p>Members: {{.Mem}} | Regulars: {{.Reg}} | Veterans: {{.Vet}}</p>
-<p>Moderators: {{.Mods}} | Banned: {{.Banned}}</p>
+{{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}} ({{.TimeTill}})"></div>{{end}}
+{{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+<div class="kv-display"><span>Total players</span><input class="value-box" type="text" readonly value="{{.Total}}"></div>
+<div class="kv-display"><span>Members/Regulars/Veterans</span><input class="value-box" type="text" readonly value="{{.Mem}} | {{.Reg}} | {{.Vet}}"></div>
+<div class="kv-display"><span>Moderators/Banned</span><input class="value-box" type="text" readonly value="{{.Mods}} | {{.Banned}}"></div>
 </div>
 </div>
 
@@ -459,21 +483,35 @@ c.querySelector('.close').addEventListener('click',()=>{clearTimeout(t);c.remove
 function formatCfg(pre){
 const lines=pre.textContent.split('\n');
 pre.innerHTML='';
-let g=null,cdiv=null;
+const root=document.createElement('div');
+root.className='cfg-content';
+pre.appendChild(root);
+let group=null,content=root;
 lines.forEach(l=>{
  if(!l.trim())return;
  if(!l.startsWith(' ')){
-  g=document.createElement('div');
-  g.className='cfg-group';
-  const t=document.createElement('div');
-  t.className='cfg-title';
-  t.textContent=l.replace(':','');
-  g.appendChild(t);
-  cdiv=document.createElement('div');
-  cdiv.className='cfg-content';
-  g.appendChild(cdiv);
-  pre.appendChild(g);
- }else if(cdiv){
+  const parts=l.trim().split(':');
+  if(parts.length==2 && parts[1].trim()!==''){
+    const k=parts[0].trim();
+    const v=parts[1].trim();
+    const div=document.createElement('div');
+    div.className='kv-display';
+    div.innerHTML='<span>'+k+'</span><input class="value-box" type="text" readonly value="'+v+'">';
+    root.appendChild(div);
+    group=null; content=root;
+  }else{
+    group=document.createElement('div');
+    group.className='cfg-group';
+    const t=document.createElement('div');
+    t.className='cfg-title';
+    t.textContent=parts[0];
+    group.appendChild(t);
+    content=document.createElement('div');
+    content.className='cfg-content';
+    group.appendChild(content);
+    pre.appendChild(group);
+  }
+ }else if(content){
   const parts=l.trim().split(':');
   if(parts.length==2){
     const k=parts[0].trim();
@@ -482,19 +520,21 @@ lines.forEach(l=>{
       const bd=document.createElement('div');
       bd.className='bool-display';
       bd.innerHTML='<span>'+k+'</span><label class="switch"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'><span class="slider"></span></label>';
-      cdiv.appendChild(bd);
+      content.appendChild(bd);
     }else{
-      const p=document.createElement('p');
-      p.textContent=k+': '+v;
-      cdiv.appendChild(p);
+      const div=document.createElement('div');
+      div.className='kv-display';
+      div.innerHTML='<span>'+k+'</span><input class="value-box" type="text" readonly value="'+v+'">';
+      content.appendChild(div);
     }
   }else{
     const p=document.createElement('p');
     p.textContent=l.trim();
-    cdiv.appendChild(p);
+    content.appendChild(p);
   }
  }
 });
+if(!root.children.length){pre.removeChild(root);}
 }
 document.querySelectorAll('.minimize').forEach(b=>{
     b.addEventListener('click',e=>{
