@@ -118,6 +118,8 @@ var panelHTML = `<!DOCTYPE html>
         bottom: var(--gap);
         transform: translateX(-50%);
         z-index: 1000;
+        max-width: 80%;
+        min-width: 20rem;
     }
     button {
         background: var(--accent);
@@ -160,6 +162,15 @@ var panelHTML = `<!DOCTYPE html>
         cursor: pointer;
         padding: 0 0.2rem;
         font-size: 1rem;
+        margin-left: auto;
+    }
+    .close {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0 0.2rem;
+        font-size: 1rem;
     }
     input[type="text"] {
         width: 100%;
@@ -170,6 +181,50 @@ var panelHTML = `<!DOCTYPE html>
         padding: 0.3rem 0.6rem;
         margin-bottom: 0.4rem;
     }
+    .bool-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 2.5rem;
+        height: 1.3rem;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute;
+        cursor: default;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #b22020;
+        transition: .4s;
+        border-radius: 1.3rem;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 1.1rem;
+        width: 1.1rem;
+        left: 0.1rem;
+        bottom: 0.1rem;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    .switch input:checked + .slider { background-color: #0a8a0a; }
+    .switch input:checked + .slider:before { transform: translateX(1.2rem); }
+    .cfg-group {
+        border: 1px solid var(--accent);
+        border-radius: var(--radius);
+        margin-bottom: var(--gap);
+    }
+    .cfg-title {
+        background: var(--accent);
+        padding: 0.2rem 0.4rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .cfg-content { padding: 0.4rem; }
     form { margin: 0; }
     </style>
 </head>
@@ -191,7 +246,7 @@ var panelHTML = `<!DOCTYPE html>
 <p>Factorio up-time: {{.FactUp}}</p>
 <p>UPS 10m/30m/1h: {{.UPS10}}/{{.UPS30}}/{{.UPS60}}</p>
 {{if ne .PlayHours ""}}<p>Play hours: {{.PlayHours}}</p>{{end}}
-{{if .Paused}}<p>Server is paused</p>{{end}}
+<div class="bool-display"><span>Paused</span><label class="switch"><input type="checkbox" disabled {{if .Paused}}checked{{end}}><span class="slider"></span></label></div>
 {{if ne .NextReset ""}}<p>Next map reset: {{.NextReset}} ({{.TimeTill}})</p>{{end}}
 {{if ne .ResetInterval ""}}<p>Interval: {{.ResetInterval}}</p>{{end}}
 <p>Total players: {{.Total}}</p>
@@ -270,7 +325,7 @@ var panelHTML = `<!DOCTYPE html>
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
-    <label><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}> enable</label><br>
+    <div class="bool-display"><span>enable</span><label class="switch"><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}><span class="slider"></span></label></div><br>
     <input type="number" name="start" min="0" max="23" placeholder="start hour">
     <input type="number" name="end" min="0" max="23" placeholder="end hour">
 <button type="submit">apply</button>
@@ -359,9 +414,50 @@ showResponse(t);
 function showResponse(m){
 const c=document.createElement('div');
 c.className='card response-card';
-c.textContent=m;
+c.innerHTML='<div class="card-header"><span class="title">Response</span><button class="close">&times;</button></div><div class="card-content">'+m+'</div>';
 document.body.appendChild(c);
-setTimeout(()=>c.remove(),5000);
+const t=setTimeout(()=>c.remove(),15000);
+c.querySelector('.close').addEventListener('click',()=>{clearTimeout(t);c.remove();});
+}
+function formatCfg(pre){
+const lines=pre.textContent.split('\n');
+pre.innerHTML='';
+let g=null,cdiv=null;
+lines.forEach(l=>{
+ if(!l.trim())return;
+ if(!l.startsWith(' ')){
+  g=document.createElement('div');
+  g.className='cfg-group';
+  const t=document.createElement('div');
+  t.className='cfg-title';
+  t.textContent=l.replace(':','');
+  g.appendChild(t);
+  cdiv=document.createElement('div');
+  cdiv.className='cfg-content';
+  g.appendChild(cdiv);
+  pre.appendChild(g);
+ }else if(cdiv){
+  const parts=l.trim().split(':');
+  if(parts.length==2){
+    const k=parts[0].trim();
+    const v=parts[1].trim();
+    if(v==='true' || v==='false'){
+      const bd=document.createElement('div');
+      bd.className='bool-display';
+      bd.innerHTML='<span>'+k+'</span><label class="switch"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'><span class="slider"></span></label>';
+      cdiv.appendChild(bd);
+    }else{
+      const p=document.createElement('p');
+      p.textContent=k+': '+v;
+      cdiv.appendChild(p);
+    }
+  }else{
+    const p=document.createElement('p');
+    p.textContent=l.trim();
+    cdiv.appendChild(p);
+  }
+ }
+});
 }
 document.querySelectorAll('.minimize').forEach(b=>{
     b.addEventListener('click',e=>{
@@ -369,6 +465,7 @@ document.querySelectorAll('.minimize').forEach(b=>{
         box.classList.toggle('collapsed');
     });
 });
+document.querySelectorAll('#config-area pre').forEach(formatCfg);
 </script>
 </body></html>`
 
