@@ -190,26 +190,31 @@ var panelHTML = `<!DOCTYPE html>
     .bool-display {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 0.5rem;
         padding: 0.2rem 0.4rem;
     }
     .bool-display span {
-        flex-grow: 1;
+        flex: 0 0 70%;
         text-align: right;
-        margin-right: 0.5rem;
+    }
+    .bool-display label {
+        flex: 0 0 30%;
+        display: flex;
+        justify-content: flex-start;
     }
     .kv-display {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 0.5rem;
         padding: 0.2rem 0.4rem;
     }
     .kv-display span {
-        flex-grow: 1;
+        flex: 0 0 70%;
         text-align: right;
-        margin-right: 0.5rem;
+    }
+    .kv-display input {
+        flex: 0 0 30%;
+        text-align: left;
     }
     .value-box {
         border: 1px solid var(--accent);
