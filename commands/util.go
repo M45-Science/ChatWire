@@ -86,6 +86,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 							options = append(options, o.Name)
 						}
 						cwlog.DoLogCW("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", "))
+						cwlog.DoLogAudit("%s: ADMIN COMMAND: %s: %v", i.Member.User.Username, data.Name, strings.Join(options, ", "))
 						return
 					} else {
 						disc.InteractionEphemeralResponse(i, "Error", "You must be a admin to use this command.")
@@ -95,6 +96,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 				} else if c.ModeratorOnly {
 					if disc.CheckModerator(i) || disc.CheckAdmin(i) {
 						cwlog.DoLogCW("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name)
+						cwlog.DoLogAudit("%s: MOD COMMAND: %s", i.Member.User.Username, data.Name)
 						runCommand(&c, i)
 						return
 					} else {

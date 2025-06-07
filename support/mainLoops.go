@@ -607,6 +607,14 @@ func MainLoops() {
 				cwlog.DoLogCW("CWLog file was deleted, recreated.")
 			}
 
+			if _, err = os.Stat(glob.AuditLogName); err != nil {
+
+				glob.AuditLogDesc.Close()
+				glob.AuditLogDesc = nil
+				cwlog.StartAuditLog()
+				cwlog.DoLogAudit("Audit log file was deleted, recreated.")
+			}
+
 			if _, err = os.Stat(glob.GameLogName); err != nil {
 				glob.GameLogDesc.Close()
 				glob.GameLogDesc = nil

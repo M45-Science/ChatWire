@@ -47,6 +47,7 @@ func main() {
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
+	cwlog.StartAuditLog()
 	cwlog.AutoRotateLogs()
 	cwlog.DoLogCW("\n Starting %v Version: %v", constants.ProgName, constants.Version)
 
