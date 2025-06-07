@@ -213,8 +213,12 @@ var panelHTML = `<!DOCTYPE html>
         text-align: right;
     }
     .kv-display input {
-        flex: 0 0 30%;
+        flex: 0 1 30%;
+        max-width: 30%;
         text-align: left;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .value-box {
         border: 1px solid var(--accent);
@@ -225,6 +229,8 @@ var panelHTML = `<!DOCTYPE html>
         min-width: 4rem;
         width: auto;
         margin: 0;
+        text-decoration: none;
+        display: inline-block;
     }
     .switch {
         position: relative;
@@ -485,6 +491,22 @@ document.body.appendChild(c);
 const t=setTimeout(()=>c.remove(),15000);
 c.querySelector('.close').addEventListener('click',()=>{clearTimeout(t);c.remove();});
 }
+function makeValueNode(v){
+  if(/^https?:/.test(v)||v.startsWith('steam://')){
+    const a=document.createElement('a');
+    a.href=v;
+    a.target='_blank';
+    a.className='value-box';
+    a.textContent=v;
+    return a;
+  }
+  const i=document.createElement('input');
+  i.type='text';
+  i.readOnly=true;
+  i.className='value-box';
+  i.value=v;
+  return i;
+}
 function formatCfg(pre){
 const lines=pre.textContent.split('\n');
 pre.innerHTML='';
@@ -501,7 +523,8 @@ lines.forEach(l=>{
     const v=parts[1].trim();
     const div=document.createElement('div');
     div.className='kv-display';
-    div.innerHTML='<span>'+k+'</span><input class="value-box" type="text" readonly value="'+v+'">';
+    div.appendChild(document.createElement('span')).textContent=k;
+    div.appendChild(makeValueNode(v));
     root.appendChild(div);
     group=null; content=root;
   }else{
@@ -529,7 +552,8 @@ lines.forEach(l=>{
     }else{
       const div=document.createElement('div');
       div.className='kv-display';
-      div.innerHTML='<span>'+k+'</span><input class="value-box" type="text" readonly value="'+v+'">';
+      div.appendChild(document.createElement('span')).textContent=k;
+      div.appendChild(makeValueNode(v));
       content.appendChild(div);
     }
   }else{
@@ -983,46 +1007,48 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 }
 
 func buildInfoString() string {
-	buf := ""
+	var lines []string
+	add := func(k, v string) {
+		if v == "" || v == "0" || v == constants.Unknown || v == "(not configured)" {
+			return
+		}
+		lines = append(lines, fmt.Sprintf("%s: %s", k, v))
+	}
 
-	buf += fmt.Sprintf("%17v: %v\n", constants.ProgName+" version", constants.Version)
-	if glob.SoftModVersion != constants.Unknown {
-		buf += fmt.Sprintf("%17v: %v\n", "SoftMod version", glob.SoftModVersion)
-	}
-	if fact.FactorioVersion != constants.Unknown {
-		buf += fmt.Sprintf("%17v: %v\n", "Factorio version", fact.FactorioVersion)
-	}
+	add(constants.ProgName+" version", constants.Version)
+	add("SoftMod version", glob.SoftModVersion)
+	add("Factorio version", fact.FactorioVersion)
 
 	now := time.Now().Round(time.Second)
-	buf += fmt.Sprintf("%17v: %v\n", "ChatWire up-time", now.Sub(glob.Uptime.Round(time.Second)).Round(time.Second))
+	add("ChatWire up-time", now.Sub(glob.Uptime.Round(time.Second)).Round(time.Second).String())
 	if !fact.FactorioBootedAt.IsZero() && fact.FactorioBooted {
-		buf += fmt.Sprintf("%17v: %v\n", "Factorio up-time", now.Sub(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second))
-	} else {
-		buf += fmt.Sprintf("%17v: %v\n", "Factorio up-time", "not running")
+		add("Factorio up-time", now.Sub(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second).String())
 	}
 
 	if cfg.Local.Options.PlayHourEnable {
-		buf += fmt.Sprintf("Time restrictions: %v - %v GMT.\n", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
+		add("Time restrictions", fmt.Sprintf("%d - %d GMT", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour))
 	}
-	buf += fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
-	if fact.GametimeString != constants.Unknown {
-		buf += fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
+	add("Save name", fact.LastSaveName)
+	add("Map time", fact.GametimeString)
+	if fact.NumPlayers > 0 {
+		add("Players online", fmt.Sprintf("%d", fact.NumPlayers))
 	}
-	buf += fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
 
 	if fact.HasResetTime() {
-		buf += fmt.Sprintf("\n%17v: %v\n", "Next map reset", fact.FormatResetTime())
-		buf += fmt.Sprintf("%17v: %v\n", "Time till reset", fact.TimeTillReset())
-		buf += fmt.Sprintf("%17v: %v\n", "Interval", fact.FormatResetInterval())
+		add("Next map reset", cfg.Local.Options.NextReset.Local().Format("Jan 02 2006 03:04PM"))
+		add("Time till reset", fact.TimeTillReset())
+		if fact.HasResetInterval() {
+			add("Interval", fact.FormatResetInterval())
+		}
 	}
 
 	ten, thirty, hour := fact.GetFactUPS()
 	if hour > 0 {
-		buf += fmt.Sprintf("UPS Average: 10m: %.2f, 30m: %.2f, 1h: %.2f\n", ten, thirty, hour)
+		add("UPS Average", fmt.Sprintf("10m: %.2f, 30m: %.2f, 1h: %.2f", ten, thirty, hour))
 	} else if thirty > 0 {
-		buf += fmt.Sprintf("UPS Average: 10m: %.2f, 30m: %.2f\n", ten, thirty)
+		add("UPS Average", fmt.Sprintf("10m: %.2f, 30m: %.2f", ten, thirty))
 	} else if ten > 0 {
-		buf += fmt.Sprintf("UPS Average: 10m: %.2f\n", ten)
+		add("UPS Average", fmt.Sprintf("10m: %.2f", ten))
 	}
 
 	glob.PlayerListLock.RLock()
@@ -1045,21 +1071,19 @@ func buildInfoString() string {
 	ban += bCount
 	glob.PlayerListLock.RUnlock()
 	total := ban + mem + reg + vet + mod
-	buf += fmt.Sprintf("Members: %v, Regulars: %v, Veterans: %v\nModerators: %v, Banned: %v, Total: %v\n", mem, reg, vet, mod, ban, total)
+	add("Members/Regulars/Veterans", fmt.Sprintf("%d | %d | %d", mem, reg, vet))
+	add("Moderators/Banned", fmt.Sprintf("%d | %d", mod, ban))
+	add("Total players", fmt.Sprintf("%d", total))
 
 	if fact.PausedTicks > 4 {
-		buf += "\n(Server is paused)\n"
+		lines = append(lines, "Server is paused")
 	}
 
-	msg, isConf := fact.MakeSteamURL()
-	if isConf {
-		buf += "\nSteam connect link:\n" + msg
-	}
-	if fact.HasResetTime() {
-		buf += fmt.Sprintf("\nNEXT MAP RESET: <t:%v:F>(local time)\n", cfg.Local.Options.NextReset.UTC().Unix())
+	if url, ok := fact.MakeSteamURL(); ok {
+		add("Steam connect", url)
 	}
 
-	return buf
+	return strings.Join(lines, "\n")
 }
 
 func cfgLines(v reflect.Value, prefix string) []string {
