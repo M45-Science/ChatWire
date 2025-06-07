@@ -198,7 +198,7 @@ var panelHTML = `<!DOCTYPE html>
         text-align: right;
     }
     .bool-display label {
-        flex: 0 0 30%;
+        flex: 0 0 auto;
         display: flex;
         justify-content: flex-start;
     }
@@ -547,7 +547,7 @@ document.querySelectorAll('.minimize').forEach(b=>{
         box.classList.toggle('collapsed');
     });
 });
-document.querySelectorAll('#config-area pre').forEach(formatCfg);
+document.querySelectorAll('#config-area pre, #info-area pre').forEach(formatCfg);
 </script>
 </body></html>`
 
@@ -756,7 +756,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		for _, f := range entries {
 			info, _ := f.Info()
 			modAge := time.Since(info.ModTime()).Round(time.Second)
-			units, _ := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m")
+			units, _ := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
 			ageStr := durafmt.Parse(modAge).LimitFirstN(2).Format(units) + " ago"
 			saves = append(saves, panelSave{Name: strings.TrimSuffix(f.Name(), ".zip"), Age: ageStr})
 		}
