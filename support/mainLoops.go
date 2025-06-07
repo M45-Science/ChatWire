@@ -228,6 +228,26 @@ func MainLoops() {
 	}()
 
 	/********************************
+	 * Delete expired panel tokens
+	 ********************************/
+	go func() {
+
+		for glob.ServerRunning {
+			time.Sleep(1 * time.Minute)
+
+			t := time.Now()
+
+			glob.PanelTokenLock.Lock()
+			for k, tok := range glob.PanelTokens {
+				if (t.Unix() - tok.Time) > constants.PassExpireSec {
+					delete(glob.PanelTokens, k)
+				}
+			}
+			glob.PanelTokenLock.Unlock()
+		}
+	}()
+
+	/********************************
 	 * Save database, if marked dirty
 	 ********************************/
 	go func() {
