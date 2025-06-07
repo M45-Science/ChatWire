@@ -33,7 +33,9 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		switch oName {
 		case "mod-history":
-			tmsg = tmsg + modupdate.ListHistory()
+			tmsg = tmsg + modupdate.ListHistory(false)
+		case "full-history":
+			tmsg = tmsg + modupdate.ListHistory(true)
 		case "clear-history":
 			tmsg = tmsg + modupdate.ClearHistory()
 		case "list-mods":
@@ -63,7 +65,12 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if tmsg == "" {
 		tmsg = "Unknown error"
 	}
-	disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
+
+	if len(tmsg) > constants.MaxDiscordMsgLen {
+		disc.InteractionEphemeralFileResponse(i, "Edit-Mods", "See attached history.", "mod-history.txt", []byte(tmsg))
+	} else {
+		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
+	}
 }
 
 func clearAllMods() string {
