@@ -409,8 +409,11 @@ func handleActMsg(input *handleData) bool {
 	 * Used for logs, and to attempt to warn of potential griefing
 	 ******************/
 
-	if strings.HasPrefix(input.line, "[ACT]") || strings.HasPrefix(input.line, "[TODO]") || strings.HasPrefix(input.line, "[ERROR]") {
+	if strings.HasPrefix(input.line, "[ERROR]") {
+		cwlog.DoLogCW(input.line)
+		return true
 
+	} else if strings.HasPrefix(input.line, "[ACT]") || strings.HasPrefix(input.line, "[TODO]") {
 		cwlog.DoLogGame(input.line)
 		if input.wordListLen > 2 {
 
@@ -733,7 +736,7 @@ func handleFactVersion(input *handleData) bool {
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(input.noTimecode, "Loading mod base") {
-		cwlog.DoLogCW(input.noTimecode)
+		//cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
 			fact.FactorioVersion = input.noTimecodeList[3]
 		}
@@ -842,10 +845,6 @@ func handleDesync(input *handleData) bool {
 	 * CAPTURE DESYNC
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Info") {
-		if strings.Contains(input.noTimecode, "New RCON connection from") {
-			cwlog.DoLogCW(input.noTimecode)
-			return true
-		}
 		if strings.Contains(input.noTimecode, "DesyncedWaitingForMap") {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Desync: "+input.noTimecode)
 			cwlog.DoLogCW("desync: " + input.noTimecode)
