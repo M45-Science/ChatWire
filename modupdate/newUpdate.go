@@ -234,17 +234,27 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	// Apply version preferences
 	for _, inst := range installedMods {
 		pref := modedit.GetVersion(versionPrefs, inst.Name)
-		if pref != "" && !strings.EqualFold(pref, "auto") && pref != inst.Version {
-			info, perr := DownloadModInfo(inst.Name)
-			if perr == nil {
-				for _, rel := range info.Releases {
-					if rel.Version == pref {
-						dl := downloadData{Name: inst.Name, Title: info.Title,
-							Filename: inst.Filename, OldFilename: inst.Filename,
-							Data: rel, Version: rel.Version, OldVersion: inst.Version}
-						downloadList = addDownload(dl, downloadList)
-						break
-					}
+		if pref == "" || strings.EqualFold(pref, "auto") {
+			continue
+		}
+
+		// Remove automatic updates for this mod
+		downloadList = removeDownload(inst.Name, downloadList)
+
+		// Already at the preferred version
+		if pref == inst.Version {
+			continue
+		}
+
+		info, perr := DownloadModInfo(inst.Name)
+		if perr == nil {
+			for _, rel := range info.Releases {
+				if rel.Version == pref {
+					dl := downloadData{Name: inst.Name, Title: info.Title,
+						Filename: rel.FileName, OldFilename: inst.Filename,
+						Data: rel, Version: rel.Version, OldVersion: inst.Version}
+					downloadList = append(downloadList, dl)
+					break
 				}
 			}
 		}
@@ -390,4 +400,15 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
 	}
 	return append(list, input)
+}
+
+// removeDownload removes any pending downloads for the given mod name.
+func removeDownload(name string, list []downloadData) []downloadData {
+	out := []downloadData{}
+	for _, item := range list {
+		if item.Name != name {
+			out = append(out, item)
+		}
+	}
+	return out
 }
