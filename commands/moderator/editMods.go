@@ -195,7 +195,7 @@ func showMods() string {
 		if modupdate.IsBaseMod(item.Name) {
 			line = item.Name + " (base mod)"
 		} else if item.Version != "" {
-			line = item.Name + "-" + item.Version
+			ebuf = ebuf + item.Name + " (" + item.Version + ")"
 		} else {
 			line = item.Name
 		}
