@@ -1,7 +1,5 @@
 github.com/Clinet/discordgo-embed v0.0.0-20220113222025-bafe0c917646 h1:KkKIDMzyOhNnW5ew6KpRvEflciWqo09NmgVGqTZEj3M=
 github.com/Clinet/discordgo-embed v0.0.0-20220113222025-bafe0c917646/go.mod h1:0ydUl+01209LCyzJk68BeRtCN1IMrNJgX4IBmwmC1f8=
-github.com/Distortions81/rcon v0.0.0-20210709062803-ce5b041d17c9 h1:4ccU84xgz6ujTk/lCGr0cORWPWKLcNMJGGjIyKOp08Q=
-github.com/Distortions81/rcon v0.0.0-20210709062803-ce5b041d17c9/go.mod h1:GbVvAe+rnkpXX1uhSvD+c9/m2Z+STX7JWhL0lhSunDs=
 github.com/M45-Science/rcon v0.0.0-20250606024627-1f9788ade323 h1:8kzBIHnVqwxYa4Mw1JqZ0ZVHiIe+nXcT+n6HRfpUIXw=
 github.com/M45-Science/rcon v0.0.0-20250606024627-1f9788ade323/go.mod h1:FWgnh9gdGSDOPlpmPZAGSgGTnm+J9vrbgCDS00v/80w=
 github.com/bwmarrin/discordgo v0.28.1 h1:gXsuo2GBO7NbR6uqmrrBDplPUx2T3nzu775q/Rd1aG4=
