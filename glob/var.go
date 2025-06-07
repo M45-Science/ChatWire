@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	FactorioLock  sync.Mutex
-	UpdatersLock  sync.Mutex
-	BootMessage   *discordgo.Message
-	UpdateMessage *discordgo.Message
+	FactorioLock      sync.Mutex
+	UpdatersLock      sync.Mutex
+	BootMessage       *discordgo.Message
+	UpdateMessage     *discordgo.Message
+	UpdateMessageLock sync.Mutex
 
 	FactorioCmd     *exec.Cmd
 	FactorioContext context.Context

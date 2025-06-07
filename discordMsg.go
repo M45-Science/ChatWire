@@ -93,7 +93,7 @@ func handleDiscordMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	//Kill continuity.
 	glob.BootMessage = nil
-	glob.UpdateMessage = nil
+	glob.ResetUpdateMessage()
 
 	/* Factorio channel ONLY */
 	if strings.EqualFold(cfg.Local.Channel.ChatChannel, m.ChannelID) && cfg.Local.Channel.ChatChannel != "" {
