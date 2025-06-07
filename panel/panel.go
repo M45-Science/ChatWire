@@ -1125,7 +1125,12 @@ func cfgLines(v reflect.Value, prefix string) []string {
 	var out []string
 	for _, it := range items {
 		if len(it.lines) == 1 {
-			out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, it.lines[0]))
+			l := strings.TrimSpace(it.lines[0])
+			if strings.Contains(l, ":") {
+				out = append(out, fmt.Sprintf("%s%s %s", prefix, it.name, l))
+			} else {
+				out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, l))
+			}
 		} else {
 			out = append(out, fmt.Sprintf("%s%s:", prefix, it.name))
 			for _, l := range it.lines {
