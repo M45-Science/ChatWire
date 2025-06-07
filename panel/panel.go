@@ -517,10 +517,10 @@ let group=null,content=root;
 lines.forEach(l=>{
  if(!l.trim())return;
  if(!l.startsWith(' ')){
-  const parts=l.trim().split(':');
-  if(parts.length==2 && parts[1].trim()!==''){
-    const k=parts[0].trim();
-    const v=parts[1].trim();
+  const idx=l.indexOf(':');
+  if(idx>-1 && l.slice(idx+1).trim()!==''){
+    const k=l.slice(0,idx).trim();
+    const v=l.slice(idx+1).trim();
     const div=document.createElement('div');
     div.className='kv-display';
     div.appendChild(document.createElement('span')).textContent=k;
@@ -532,7 +532,7 @@ lines.forEach(l=>{
     group.className='cfg-group';
     const t=document.createElement('div');
     t.className='cfg-title';
-    t.textContent=parts[0];
+    t.textContent=l.trim().replace(/:$/, '');
     group.appendChild(t);
     content=document.createElement('div');
     content.className='cfg-content';
@@ -540,10 +540,10 @@ lines.forEach(l=>{
     pre.appendChild(group);
   }
  }else if(content){
-  const parts=l.trim().split(':');
-  if(parts.length==2){
-    const k=parts[0].trim();
-    const v=parts[1].trim();
+  const idx=l.indexOf(':');
+  if(idx>-1){
+    const k=l.slice(0,idx).trim();
+    const v=l.slice(idx+1).trim();
     if(v==='true' || v==='false'){
       const bd=document.createElement('div');
       bd.className='bool-display';
@@ -1125,12 +1125,7 @@ func cfgLines(v reflect.Value, prefix string) []string {
 	var out []string
 	for _, it := range items {
 		if len(it.lines) == 1 {
-			l := strings.TrimSpace(it.lines[0])
-			if strings.Contains(l, ":") {
-				out = append(out, fmt.Sprintf("%s%s %s", prefix, it.name, l))
-			} else {
-				out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, l))
-			}
+			out = append(out, fmt.Sprintf("%s%s: %s", prefix, it.name, strings.TrimSpace(it.lines[0])))
 		} else {
 			out = append(out, fmt.Sprintf("%s%s:", prefix, it.name))
 			for _, l := range it.lines {
