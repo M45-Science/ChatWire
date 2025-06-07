@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"time"
 
+	"ChatWire/banlist"
 	"ChatWire/cfg"
 	"ChatWire/commands/moderator"
 	"ChatWire/constants"
@@ -25,9 +26,17 @@ var panelHTML = `<!DOCTYPE html>
 <html><head><title>ChatWire Panel</title></head>
 <body>
 <h2>ChatWire Status</h2>
+<p>ChatWire version: {{.CWVersion}}</p>
+<p>ChatWire up-time: {{.CWUp}}</p>
 <p>Factorio version: {{.Factorio}}</p>
+{{if ne .SoftMod ""}}<p>SoftMod version: {{.SoftMod}}</p>{{end}}
 <p>Players online: {{.Players}}</p>
 <p>Game time: {{.Gametime}}</p>
+<p>Factorio up-time: {{.FactUp}}</p>
+{{if ne .NextReset ""}}<p>Next map reset: {{.NextReset}} ({{.TimeTill}})</p>{{end}}
+{{if ne .ResetInterval ""}}<p>Interval: {{.ResetInterval}}</p>{{end}}
+<p>Total players: {{.Total}}</p>
+<p>Moderators: {{.Mods}} | Banned: {{.Banned}}</p>
 
 <h3>Moderator Commands</h3>
 {{range .Cmds}}
@@ -57,11 +66,21 @@ var modControls = []string{
 }
 
 type panelData struct {
-	Factorio string
-	Players  int
-	Gametime string
-	Token    string
-	Cmds     []string
+	CWVersion     string
+	Factorio      string
+	SoftMod       string
+	Players       int
+	Gametime      string
+	CWUp          string
+	FactUp        string
+	NextReset     string
+	TimeTill      string
+	ResetInterval string
+	Total         int
+	Mods          int
+	Banned        int
+	Token         string
+	Cmds          []string
 }
 
 // Start runs the HTTPS status panel server.
@@ -106,7 +125,53 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	t := template.Must(template.New("panel").Parse(panelHTML))
-	pd := panelData{Factorio: fact.FactorioVersion, Players: fact.NumPlayers, Gametime: fact.GametimeString, Token: tok, Cmds: modControls}
+
+	cwUptime := time.Since(glob.Uptime.Round(time.Second)).Round(time.Second).String()
+
+	factUptime := "not running"
+	if !fact.FactorioBootedAt.IsZero() && fact.FactorioBooted {
+		factUptime = time.Since(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second).String()
+	}
+
+	nextReset := ""
+	timeTill := ""
+	resetInterval := ""
+	if fact.HasResetTime() {
+		nextReset = fact.FormatResetTime()
+		timeTill = fact.TimeTillReset()
+		resetInterval = fact.FormatResetInterval()
+	}
+
+	var mem, reg, vet, mods, ban int
+	glob.PlayerListLock.RLock()
+	for _, player := range glob.PlayerList {
+		switch player.Level {
+		case -1:
+			ban++
+		case 1:
+			mem++
+		case 2:
+			reg++
+		case 3:
+			vet++
+		case 255:
+			mods++
+		}
+	}
+	bCount := len(banlist.BanList)
+	ban += bCount
+	glob.PlayerListLock.RUnlock()
+	total := ban + mem + reg + vet + mods
+
+	softMod := ""
+	if glob.SoftModVersion != constants.Unknown {
+		softMod = glob.SoftModVersion
+	}
+
+	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
+		Players: fact.NumPlayers, Gametime: fact.GametimeString, CWUp: cwUptime, FactUp: factUptime,
+		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
+		Total: total, Mods: mods, Banned: ban, Token: tok, Cmds: modControls}
 	_ = t.Execute(w, pd)
 }
 
