@@ -1149,6 +1149,7 @@ func buildCfgString(i interface{}) string {
 func fakeInteraction(u *glob.PanelTokenData) *discordgo.InteractionCreate {
 	return &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
+			Type:      discordgo.InteractionApplicationCommand,
 			Member:    &discordgo.Member{User: &discordgo.User{ID: u.DiscID, Username: u.Name}},
 			ChannelID: cfg.Local.Channel.ChatChannel,
 			GuildID:   cfg.Global.Discord.Guild,
