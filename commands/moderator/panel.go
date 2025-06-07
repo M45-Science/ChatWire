@@ -21,7 +21,7 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	token := glob.RandomBase64String(20)
 	glob.PanelTokenLock.Lock()
-	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: i.Member.User.ID, Time: time.Now().Unix()}
+	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, Name: i.Member.User.Username, DiscID: i.Member.User.ID, Time: time.Now().Unix()}
 	glob.PanelTokenLock.Unlock()
 	link := fmt.Sprintf("https://%v:%v/panel?token=%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port+constants.PanelPortOffset, token)
 	disc.InteractionEphemeralResponse(i, "Panel Link", link)

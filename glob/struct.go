@@ -32,6 +32,7 @@ type PassData struct {
 // PanelTokenData represents a temporary web panel token.
 type PanelTokenData struct {
 	Token  string
+	Name   string
 	DiscID string
 	Time   int64
 }

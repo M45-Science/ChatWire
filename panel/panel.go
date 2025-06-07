@@ -122,7 +122,7 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	glob.PanelTokenLock.RLock()
-	_, ok := glob.PanelTokens[tok]
+	userInfo, ok := glob.PanelTokens[tok]
 	glob.PanelTokenLock.RUnlock()
 	if !ok {
 		http.Error(w, "invalid token", http.StatusUnauthorized)
@@ -164,6 +164,9 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "Command '%s' executed", cmd)
+	cwlog.DoLogAudit("%v: ran %s", userInfo.Name, cmd)
+
+	userInfo.Time = time.Now().Unix()
 }
 
 func generateCert() (tls.Certificate, error) {
