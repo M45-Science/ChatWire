@@ -147,7 +147,7 @@ var panelHTML = `<!DOCTYPE html>
     }
     .save-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: var(--gap);
     }
     .cmd-grid {
