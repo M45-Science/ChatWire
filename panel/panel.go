@@ -8,7 +8,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"github.com/M45-Science/rcon"
 	"html/template"
 	"math/big"
 	"net/http"
@@ -17,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/M45-Science/rcon"
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
@@ -376,7 +377,6 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Label < cmds[j].Label })
 	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
-		UPS10: fmt.Sprintf("%.2f", ten), UPS30: fmt.Sprintf("%.2f", thirty), UPS60: fmt.Sprintf("%.2f", hour),
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,

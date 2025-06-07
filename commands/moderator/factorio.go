@@ -33,9 +33,11 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Generating new map.")
 	fileName := fact.GenNewMap()
 
-	newHist := modupdate.ModHistoryItem{InfoItem: true,
-		Name: "Generate New Map By: " + i.Member.User.Username, Notes: fileName, Date: time.Now()}
-	modupdate.AddModHistory(newHist)
+	if i != nil {
+		newHist := modupdate.ModHistoryItem{InfoItem: true,
+			Name: "Generate New Map By: " + i.Member.User.Username, Notes: fileName, Date: time.Now()}
+		modupdate.AddModHistory(newHist)
+	}
 
 	disc.InteractionEphemeralResponse(i, "Map generator", fileName)
 }
