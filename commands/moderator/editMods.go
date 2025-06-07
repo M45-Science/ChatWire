@@ -186,7 +186,7 @@ func listMods() string {
 		if modupdate.IsBaseMod(item.Name) {
 			ebuf = ebuf + item.Name + " (base mod)"
 		} else if item.Version != "" {
-			ebuf = ebuf + item.Name + "-" + item.Version
+			ebuf = ebuf + item.Name + " (" + item.Version + ")"
 		} else {
 			ebuf = ebuf + item.Name
 		}
