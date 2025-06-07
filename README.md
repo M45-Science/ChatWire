@@ -98,3 +98,17 @@ go build
 ./ChatWire
 ```
 Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
+
+### Web Control Panel
+
+Moderators can generate a temporary token with the `/web-panel` command. The control panel exposes
+information from the `/info` command such as versions, uptime, next map reset and player statistics.
+It provides buttons for common moderator actions like starting or stopping Factorio, synchronising
+mods or updating the game. A map section lists the most recent autosaves and lets you load one with
+a single click or supply your own file name. Another form allows running arbitrary RCON commands.
+The page is rendered in a dark theme styled similarly to the public staff documentation. Open the
+link provided by `/web-panel` in a web browser and supply the token as a query parameter. When
+ChatWire is started with `-localTest` the URL will use `127.0.0.1` so it can be accessed locally.
+The panel now mirrors information from `/info verbose` including the last save name and UPS
+statistics. Additional forms allow adjusting play hours, scheduling map resets and changing a
+player's level directly from the browser.
