@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -9,7 +10,6 @@ import (
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/glob"
-	"ChatWire/panel"
 )
 
 // WebPanelLink sends a temporary access link to the requester.
@@ -19,7 +19,10 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	token := panel.GenerateToken(i.Member.User.ID)
+	token := glob.RandomBase64String(20)
+	glob.PanelTokenLock.Lock()
+	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: i.Member.User.ID, Time: time.Now().Unix()}
+	glob.PanelTokenLock.Unlock()
 	link := fmt.Sprintf("https://%v:%v/panel?token=%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port+constants.PanelPortOffset, token)
 	disc.InteractionEphemeralResponse(i, "Panel Link", link)
 }

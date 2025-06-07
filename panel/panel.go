@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"ChatWire/cfg"
+	"ChatWire/commands/moderator"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/fact"
@@ -21,23 +22,52 @@ import (
 )
 
 var panelHTML = `<!DOCTYPE html>
-<html><head><title>ChatWire Status</title></head>
+<html><head><title>ChatWire Panel</title></head>
 <body>
 <h2>ChatWire Status</h2>
 <p>Factorio version: {{.Factorio}}</p>
 <p>Players online: {{.Players}}</p>
 <p>Game time: {{.Gametime}}</p>
+
+<h3>Moderator Commands</h3>
+{{range .Cmds}}
+<form method="POST" action="/action">
+    <input type="hidden" name="token" value="{{$.Token}}">
+    <input type="hidden" name="cmd" value="{{.}}">
+    <button type="submit">{{.}}</button>
+</form>
+{{end}}
 </body></html>`
+
+var modControls = []string{
+	"force-reboot",
+	"queue-reboot",
+	"queue-fact-reboot",
+	"reboot-chatwire",
+	"reload-config",
+	"start-factorio",
+	"stop-factorio",
+	"new-map",
+	"archive-map",
+	"update-mods",
+	"sync-mods",
+	"update-factorio",
+	"install-factorio",
+	"map-reset",
+}
 
 type panelData struct {
 	Factorio string
 	Players  int
 	Gametime string
+	Token    string
+	Cmds     []string
 }
 
 // Start runs the HTTPS status panel server.
 func Start() {
 	http.HandleFunc("/panel", handlePanel)
+	http.HandleFunc("/action", handleAction)
 	addr := fmt.Sprintf(":%v", cfg.Local.Port+constants.PanelPortOffset)
 	go func() {
 		cert, err := generateCert()
@@ -68,19 +98,72 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "token required", http.StatusUnauthorized)
 		return
 	}
-	glob.PanelTokenLock.Lock()
+	glob.PanelTokenLock.RLock()
 	_, ok := glob.PanelTokens[tok]
-	if ok {
-		delete(glob.PanelTokens, tok)
-	}
-	glob.PanelTokenLock.Unlock()
+	glob.PanelTokenLock.RUnlock()
 	if !ok {
 		http.Error(w, "invalid token", http.StatusUnauthorized)
 		return
 	}
 	t := template.Must(template.New("panel").Parse(panelHTML))
-	pd := panelData{Factorio: fact.FactorioVersion, Players: fact.NumPlayers, Gametime: fact.GametimeString}
+	pd := panelData{Factorio: fact.FactorioVersion, Players: fact.NumPlayers, Gametime: fact.GametimeString, Token: tok, Cmds: modControls}
 	_ = t.Execute(w, pd)
+}
+
+func handleAction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	tok := r.FormValue("token")
+	cmd := r.FormValue("cmd")
+	if tok == "" || cmd == "" {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	glob.PanelTokenLock.RLock()
+	_, ok := glob.PanelTokens[tok]
+	glob.PanelTokenLock.RUnlock()
+	if !ok {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	switch cmd {
+	case "force-reboot":
+		moderator.ForceReboot(nil, nil)
+	case "queue-reboot":
+		moderator.QueReboot(nil, nil)
+	case "queue-fact-reboot":
+		moderator.QueFactReboot(nil, nil)
+	case "reboot-chatwire":
+		moderator.RebootCW(nil, nil)
+	case "reload-config":
+		moderator.ReloadConfig(nil, nil)
+	case "start-factorio":
+		moderator.StartFact(nil, nil)
+	case "stop-factorio":
+		moderator.StopFact(nil, nil)
+	case "new-map":
+		moderator.NewMap(nil, nil)
+	case "archive-map":
+		moderator.ArchiveMap(nil, nil)
+	case "update-mods":
+		moderator.UpdateMods(nil, nil)
+	case "sync-mods":
+		moderator.SyncMods(nil, nil)
+	case "update-factorio":
+		moderator.UpdateFactorio(nil, nil)
+	case "install-factorio":
+		moderator.InstallFactorio(nil, nil)
+	case "map-reset":
+		moderator.MapReset(nil, nil)
+	default:
+		fmt.Fprintf(w, "Command '%s' not supported via panel", cmd)
+		return
+	}
+
+	fmt.Fprintf(w, "Command '%s' executed", cmd)
 }
 
 func generateCert() (tls.Certificate, error) {
