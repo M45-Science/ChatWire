@@ -137,7 +137,6 @@ var panelHTML = `<!DOCTYPE html>
     <button type="submit">run</button>
 </form>
 </div>
-
 <div class="card">
 <h3>Set Play Hours</h3>
 <form method="POST" action="/action">
