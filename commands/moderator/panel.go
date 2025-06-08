@@ -43,9 +43,9 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	link := fmt.Sprintf("https://%v:%v/panel?token=%v", dom, cfg.Local.Port+constants.PanelPortOffset, token)
 
 	embed := &discordgo.MessageEmbed{
-		Title:       "Click here to open the moderator panel",
+		Title:       "# Click here to open the moderator panel",
 		URL:         link,
-		Description: "Run the /web-panel command again to invalidate your token if it becomes public.",
+		Description: "Run the `/web-panel` command again to invalidate your token if you accidently leak or share it.",
 		Color:       glob.COLOR_WHITE,
 	}
 	embeds := []*discordgo.MessageEmbed{embed}

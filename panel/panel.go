@@ -8,7 +8,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
 	"html/template"
 	"math/big"
 	"net"
@@ -19,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 
 	"github.com/M45-Science/rcon"
 
@@ -31,6 +32,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
+
 	"github.com/hako/durafmt"
 )
 
@@ -821,7 +823,7 @@ func Start() {
 // GenerateToken creates a temporary token for web access.
 func GenerateToken(id string) string {
 	now := time.Now().Unix()
-	token := glob.RandomBase64String(20)
+	token := glob.RandomBase64String(128)
 	var orig int64 = now
 	glob.PanelTokenLock.Lock()
 	for k, v := range glob.PanelTokens {
