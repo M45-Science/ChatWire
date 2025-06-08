@@ -133,7 +133,10 @@ var panelHTML = `<!DOCTYPE html>
         max-width: 80%;
         min-width: 20rem;
     }
-    .banner {
+.banner {
+        position: sticky;
+        top: 0;
+        z-index: 1200;
         display: flex;
         align-items: center;
         gap: 0.4rem;
@@ -143,6 +146,13 @@ var panelHTML = `<!DOCTYPE html>
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         margin-bottom: var(--gap);
+        outline: 1px solid #ffffff;
+    }
+    .panel-id {
+        font-weight: bold;
+        background: var(--surface);
+        padding: 0 0.4rem;
+        border-radius: var(--radius);
     }
     .confirm-overlay {
         position: fixed;
@@ -162,6 +172,8 @@ var panelHTML = `<!DOCTYPE html>
         font-size: 1.2rem;
         border: 2px solid black;
         outline: 2px solid #ffeb3b;
+        max-width: 34rem;
+        width: 90%;
     }
     .confirm-title {
         display: flex;
@@ -186,7 +198,7 @@ var panelHTML = `<!DOCTYPE html>
     }
     .confirm-buttons {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         gap: var(--gap);
         margin-top: var(--gap);
     }
@@ -194,6 +206,7 @@ var panelHTML = `<!DOCTYPE html>
         width: auto;
         font-size: 1.5rem;
         padding: 0.6rem 1.2rem;
+        text-transform: capitalize;
     }
     .confirm-proceed { background: var(--positive); }
     .confirm-cancel { background: var(--accent); }
@@ -393,7 +406,7 @@ var panelHTML = `<!DOCTYPE html>
 </head>
 <body>
 <script>history.replaceState(null,"",location.pathname);</script>
-<div class="banner"><span class="material-icons">admin_panel_settings</span><span>Moderator Control Panel - {{.Callsign}} {{.ServerName}}</span></div>
+<div class="banner"><span class="material-icons">admin_panel_settings</span><span class="panel-id">Moderator Control Panel - {{.Callsign}}-{{.ServerName}}</span></div>
 <div class="areas">
 <div class="area section" id="info-area">
 <div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize">&#8211;</button></div>
@@ -587,7 +600,7 @@ function confirmAction(msg){
 return new Promise(res=>{
 const ov=document.createElement('div');
 ov.className='confirm-overlay';
-ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message"><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-proceed">proceed</button><button class="confirm-cancel">cancel</button></div></div>';
+ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message"><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-cancel">cancel</button><button class="confirm-proceed">proceed</button></div></div>';
 ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
 ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
 document.body.appendChild(ov);
