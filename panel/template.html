@@ -295,10 +295,12 @@
         flex: 0 0 40%;
         text-align: right;
         word-break: break-word;
+        min-width: 0;
     }
     .bool-display label {
         flex: 0 0 60%;
         max-width: 60%;
+        min-width: 0;
         display: flex;
         justify-content: flex-start;
     }
@@ -312,10 +314,12 @@
         flex: 0 0 40%;
         text-align: right;
         word-break: break-word;
+        min-width: 0;
     }
     .kv-display input {
         flex: 0 1 60%;
         max-width: 60%;
+        min-width: 0;
         text-align: left;
         box-sizing: border-box;
         overflow: hidden;
@@ -430,6 +434,16 @@
 <pre>{{.Info}}</pre>
 </div>
 </div>
+<div class="card">
+<div class="card-header"><span class="material-icons">extension</span><span class="title">Installed Mods</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+    <select multiple size="8" readonly>
+    {{range .ModNames}}
+        <option>{{.}}</option>
+    {{end}}
+    </select>
+</div>
+</div>
 </div>
 </div>
 
@@ -440,7 +454,9 @@
 <div class="card-header"><span class="material-icons">rule</span><span class="title">Moderator Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 {{range .CmdGroups}}
-<h4>{{.Name}}</h4>
+<div class="cfg-group">
+<div class="cfg-title">{{.Name}}</div>
+<div class="cfg-content">
 <div class="button-grid">
 {{range .Cmds}}
 <form method="POST" action="/action" class="cmd-form" data-desc="{{.Label}}">
@@ -449,6 +465,8 @@
     <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
 </form>
 {{end}}
+</div>
+</div>
 </div>
 {{end}}
 </div>

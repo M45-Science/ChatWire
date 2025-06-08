@@ -135,6 +135,7 @@ type panelData struct {
 	Mem           int
 	Reg           int
 	Vet           int
+	ModNames      []string
 	PlayHours     string
 	HoursEnabled  bool
 	Paused        bool
@@ -341,6 +342,8 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	for idx := range groups {
 		sort.Slice(groups[idx].Cmds, func(i, j int) bool { return groups[idx].Cmds[i].Label < groups[idx].Cmds[j].Label })
 	}
+	modNames := support.GetModFiles()
+	sort.Strings(modNames)
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
 		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
@@ -348,6 +351,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
 		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
+		ModNames: modNames,
 		LocalCfg: buildCfgString(cfg.Local), GlobalCfg: buildCfgString(cfg.Global)}
 	_ = t.Execute(w, pd)
 }
