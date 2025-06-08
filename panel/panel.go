@@ -211,7 +211,7 @@ var panelHTML = `<!DOCTYPE html>
     .confirm-proceed { background: var(--positive); }
     .confirm-cancel { background: var(--accent); }
     button {
-        background: var(--accent);
+        background: linear-gradient(to bottom, var(--accent), #4c0000);
         color: var(--text);
         border: 1px solid #ff3030;
         border-radius: var(--radius);
@@ -219,10 +219,12 @@ var panelHTML = `<!DOCTYPE html>
         margin: 0.2rem;
         cursor: pointer;
         width: 100%;
-        transition: filter 0.15s;
+        transition: filter 0.15s, box-shadow 0.15s;
+        box-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.5);
     }
     button:hover {
-        filter: brightness(1.1);
+        filter: brightness(1.3);
+        box-shadow: 0 0.2rem 0.4rem rgba(255,48,48,0.6);
     }
     .button-grid {
         display: grid;
