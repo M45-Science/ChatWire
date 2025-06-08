@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"html/template"
@@ -134,6 +135,7 @@ type panelData struct {
 	Mem           int
 	Reg           int
 	Vet           int
+	AccessLevel   int
 	ModNames      []string
 	PlayHours     string
 	HoursEnabled  bool
@@ -147,6 +149,7 @@ type panelData struct {
 	Info          string
 	LocalCfg      string
 	GlobalCfg     string
+	LocalJSON     string
 }
 
 // Start runs the HTTPS status panel server.
@@ -277,6 +280,13 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		playHours = fmt.Sprintf("%d-%d GMT", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
 	}
 
+	accessLevel := 0
+	if cfg.Local.Options.RegularsOnly {
+		accessLevel = 2
+	} else if cfg.Local.Options.MembersOnly {
+		accessLevel = 1
+	}
+
 	paused := false
 	if fact.PausedTicks > 4 {
 		paused = true
@@ -357,18 +367,20 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(modNames)
 	skip := map[string]struct{}{
-		"Next map reset":   {},
-		"Reset interval":   {},
-		"Map Reset Hour":   {},
-		"Skip Map Reset":   {},
-		"Limit Open Hours": {},
-		"Open Hour":        {},
-		"Close Hour":       {},
-		"Callsign":         {},
-		"Port":             {},
-		"Channel ID":       {},
-		"Channel":          {},
-		"Last Backup Slot": {},
+		"Next map reset":                   {},
+		"Reset interval":                   {},
+		"Map Reset Hour":                   {},
+		"Skip Map Reset":                   {},
+		"Limit Open Hours":                 {},
+		"Open Hour":                        {},
+		"Close Hour":                       {},
+		"Callsign":                         {},
+		"Port":                             {},
+		"Channel ID":                       {},
+		"Channel":                          {},
+		"Last Backup Slot":                 {},
+		"Regulars, Veterans only":          {},
+		"Members, Regulars, Veterans only": {},
 	}
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
 		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
@@ -378,9 +390,25 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
 		FactRunning: factRunning, MapSchedule: mapSchedule,
 		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
-		ModNames:  modNames,
-		LocalCfg:  buildCfgStringSkip(cfg.Local, skip),
-		GlobalCfg: buildCfgString(cfg.Global)}
+		ModNames:    modNames,
+		AccessLevel: accessLevel,
+		LocalCfg: func() string {
+			s := buildCfgStringSkip(cfg.Local, skip)
+			switch accessLevel {
+			case 2:
+				s += "\nMinimum Level: Regulars+"
+			case 1:
+				s += "\nMinimum Level: Members+"
+			default:
+				s += "\nMinimum Level: Open"
+			}
+			return s
+		}(),
+		GlobalCfg: buildCfgString(cfg.Global),
+		LocalJSON: func() string {
+			b, _ := json.MarshalIndent(cfg.Local, "", "  ")
+			return string(b)
+		}()}
 	_ = t.Execute(w, pd)
 }
 
@@ -395,7 +423,7 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		ip = r.RemoteAddr
 	}
 	cmd := r.FormValue("cmd")
-	if tok == "" || cmd == "" {
+	if cmd == "" || (tok == "" && !*glob.LocalTestMode) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
@@ -541,6 +569,20 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		cfg.Local.Options.NextReset = time.Time{}
 		cfg.WriteLCfg()
 		support.ConfigSoftMod()
+	case "apply-config":
+		text := r.FormValue("cfg")
+		if text == "" {
+			fmt.Fprint(w, "no config provided")
+			return
+		}
+		newCfg := cfg.Local
+		if err := json.Unmarshal([]byte(text), &newCfg); err != nil {
+			fmt.Fprint(w, "parse error")
+			return
+		}
+		cfg.Local = newCfg
+		cfg.WriteLCfg()
+		support.ConfigSoftMod()
 	case "discord":
 		arg := strings.TrimPrefix(r.FormValue("arg"), "/")
 		for _, c := range commands.ListAllCommands() {
@@ -553,6 +595,21 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprint(w, "command not found")
 		return
+	case "access-level":
+		lvlStr := r.FormValue("level")
+		lvl, err := strconv.Atoi(lvlStr)
+		if err != nil {
+			fmt.Fprint(w, "invalid level")
+			return
+		}
+		cfg.Local.Options.MembersOnly = false
+		cfg.Local.Options.RegularsOnly = false
+		if lvl >= 2 {
+			cfg.Local.Options.RegularsOnly = true
+		} else if lvl == 1 {
+			cfg.Local.Options.MembersOnly = true
+		}
+		cfg.WriteLCfg()
 	case "player-level":
 		name := strings.ToLower(r.FormValue("name"))
 		if name == "" {
@@ -739,7 +796,8 @@ func cfgLines(v reflect.Value, prefix string, skip map[string]struct{}) []string
 			}{name: name, lines: []string{fmt.Sprintf("%v", fv.Interface())}})
 		}
 	}
-	sort.Slice(items, func(i, j int) bool { return items[i].name < items[j].name })
+	// Preserve struct order rather than sorting alphabetically so related
+	// fields can be grouped together in the output.
 	var out []string
 	for _, it := range items {
 		if len(it.lines) == 1 {

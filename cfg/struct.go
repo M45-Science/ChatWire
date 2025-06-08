@@ -158,26 +158,29 @@ type ResetInterval struct {
 type localOptions struct {
 	LocalDescription string `web:"Factorio Description"`
 
+	AutoStart  bool    `web:"Auto Boot"`
+	AutoUpdate bool    `web:"Auto Updates"`
+	ExpUpdates bool    `web:"Experimental Updates"`
+	ModUpdate  bool    `web:"Auto Mod Updates"`
+	Speed      float32 `web:"Game Speed"`
+
+	HideAutosaves bool `web:"Hide Autosaves"`
+	HideResearch  bool `web:"Hide Research"`
+
+	PlayHourEnable bool `web:"Limit Open Hours"`
+	PlayStartHour  int  `web:"Open Hour"`
+	PlayEndHour    int  `web:"Close Hour"`
+
 	ResetInterval ResetInterval `web:"Reset interval"`
 	NextReset     time.Time     `web:"Next map reset"`
 	ResetHour     int           `web:"Map Reset Hour"`
 	SkipReset     bool          `web:"Skip Map Reset"`
 
-	ResetPingRole  string `form:"-"`
-	PlayHourEnable bool   `web:"Limit Open Hours"`
-	PlayStartHour  int    `web:"Open Hour"`
-	PlayEndHour    int    `web:"Close Hour"`
+	ResetPingRole string `form:"-"`
 
-	AutoStart       bool    `web:"Auto Boot/Reboot Factorio"`
-	AutoUpdate      bool    `web:"Auto Factorio Updates"`
-	ExpUpdates      bool    `web:"Factorio Experimental Updates"`
-	HideAutosaves   bool    `web:"Hide Autosaves"`
-	HideResearch    bool    `web:"Hide Research on Discord"`
-	RegularsOnly    bool    `web:"Regulars, Veterans only"`
-	MembersOnly     bool    `web:"Members, Regulars, Veterans only"`
-	CustomWhitelist bool    `web:"Private whitelist"`
-	ModUpdate       bool    `web:"Auto update Factorio Mods"`
-	Speed           float32 `web:"Game Speed Factor"`
+	MembersOnly     bool `web:"-"`
+	RegularsOnly    bool `web:"-"`
+	CustomWhitelist bool `web:"Private Whitelist"`
 
 	Whitelist bool
 
