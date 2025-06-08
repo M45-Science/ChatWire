@@ -26,6 +26,11 @@
         display: grid;
         gap: var(--gap);
     }
+    @media (min-width: 900px) {
+        .areas {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
     @media (min-width: 1500px) {
         .areas {
             grid-template-columns: repeat(3, 1fr);
@@ -111,6 +116,7 @@
         box-shadow: var(--shadow);
         margin-bottom: var(--gap);
         outline: 1px solid #ffffff;
+        font-size: 1.2rem;
     }
     .panel-id {
         font-weight: bold;
@@ -301,14 +307,17 @@
         max-width: 60%;
         text-align: right;
         word-break: break-word;
+        overflow-wrap: anywhere;
         min-width: 0;
     }
-    .bool-display input {
-        margin-left: auto;
+    .bool-box {
+        flex: 0 0 40%;
+        max-width: 40%;
+        display: flex;
+        align-items: center;
+    }
+    .bool-box input {
         flex: 0 0 auto;
-        width: auto;
-        max-width: none;
-        min-width: 0;
     }
     .bool-display input[type="checkbox"] {
         appearance: none;
@@ -363,6 +372,7 @@
         max-width: 60%;
         text-align: right;
         word-break: break-word;
+        overflow-wrap: anywhere;
         min-width: 0;
     }
     .kv-display input {
@@ -424,7 +434,10 @@
         padding: 0.2rem 0.4rem;
         border-radius: var(--radius) var(--radius) 0 0;
     }
-    .cfg-content { padding: 0.4rem; }
+    .cfg-content {
+        padding: 0.4rem;
+        white-space: normal;
+    }
     form { margin: 0; }
     </style>
 </head>
@@ -440,24 +453,38 @@
 <div class="card-content info-list">
 <div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
 <div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
-<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
 {{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
+{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">science</span><span class="title">Factorio Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content info-list">
+{{if .FactRunning}}
+<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
 <div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
 <div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
 <div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
 <div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
 <div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS}}"></div>
-{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
-<div class="bool-display"><span>Paused</span><input type="checkbox" disabled {{if .Paused}}checked{{end}}></div>
+<div class="bool-display"><span>Paused</span><span class="bool-box"><input type="checkbox" disabled {{if .Paused}}checked{{end}}></span></div>
+{{else}}
+<p>Factorio is not running</p>
+{{end}}
 </div>
 </div>
 
 <div class="card">
 <div class="card-header"><span class="material-icons">map</span><span class="title">Map</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
+    {{if .MapSchedule}}
     {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}}"></div>{{end}}
     {{if ne .TimeTill ""}}<div class="kv-display"><span>Time till reset</span><input class="value-box" type="text" readonly value="{{.TimeTill}}"></div>{{end}}
     {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+    {{else}}
+    <p>No map schedule is set</p>
+    {{end}}
 </div>
 </div>
 
@@ -530,7 +557,7 @@
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
-    <div class="bool-display"><span>Enable Limits</span><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></div><br>
+    <div class="bool-display"><span>Enable Limits</span><span class="bool-box"><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></span></div><br>
     <select name="start">
         <option value="" disabled selected>start hour</option>
         <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>
@@ -598,7 +625,7 @@
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="player-level">
     <input type="text" name="name" placeholder="player name">
-    <select name="level">
+    <select name="level" id="level-select">
         <option value="" disabled selected>choose a level</option>
         <option value="-1">Banned</option>
         <option value="-255">Deleted</option>
@@ -608,8 +635,8 @@
         <option value="3">Veteran</option>
         <option value="255">Moderator</option>
     </select>
-    <p class="note">Please fill this out and include a log URL!</p>
-    <input type="text" name="reason" placeholder="reason">
+    <p class="note" id="reason-note">Please fill this out and include a log URL!</p>
+    <input type="text" name="reason" id="reason-box" placeholder="reason">
 <button type="submit">apply</button>
 </form>
 </div>
@@ -698,7 +725,7 @@ function makeValueNode(v){
     a.href=v;
     a.target='_blank';
     a.className='value-box';
-    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'connect':v;
+    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'Connect':v;
     return a;
   }
   const i=document.createElement('input');
@@ -748,7 +775,7 @@ lines.forEach(l=>{
     if(v==='true' || v==='false'){
       const bd=document.createElement('div');
       bd.className='bool-display';
-      bd.innerHTML='<span>'+k+'</span><input type="checkbox" disabled '+(v==='true'?'checked':'')+'>';
+      bd.innerHTML='<span>'+k+'</span><span class="bool-box"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'></span>';
       content.appendChild(bd);
     }else{
       const div=document.createElement('div');
@@ -765,6 +792,18 @@ lines.forEach(l=>{
  }
 });
 if(!root.children.length){pre.removeChild(root);}
+}
+const lvlSel=document.getElementById('level-select');
+const reasonBox=document.getElementById('reason-box');
+const reasonNote=document.getElementById('reason-note');
+function toggleReason(){
+    const show=lvlSel.value==='-1';
+    reasonBox.style.display=show?'':'none';
+    reasonNote.style.display=show?'':'none';
+}
+if(lvlSel){
+    lvlSel.addEventListener('change',toggleReason);
+    toggleReason();
 }
 document.querySelectorAll('.minimize').forEach(b=>{
     b.addEventListener('click',e=>{
