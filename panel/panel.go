@@ -170,12 +170,18 @@ var panelHTML = `<!DOCTYPE html>
         background: var(--accent);
         color: var(--text);
         font-size: 1.4rem;
-        margin: calc(-1.5 * var(--gap)) calc(-1.5 * var(--gap)) var(--gap) calc(-1.5 * var(--gap));
-        padding: 0.4rem;
+        margin: calc(-1.8 * var(--gap)) calc(-1.8 * var(--gap)) var(--gap) calc(-1.8 * var(--gap));
+        padding: 0.6rem;
         border-radius: var(--radius) var(--radius) 0 0;
     }
     .confirm-message {
         padding: var(--gap) 0;
+    }
+    .action-box {
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        padding: var(--gap);
+        border-radius: var(--radius);
     }
     .confirm-buttons {
         display: flex;
@@ -183,7 +189,11 @@ var panelHTML = `<!DOCTYPE html>
         gap: var(--gap);
         margin-top: var(--gap);
     }
-    .confirm-box button { width: auto; }
+    .confirm-box button {
+        width: auto;
+        font-size: 1.5rem;
+        padding: 0.6rem 1.2rem;
+    }
     .confirm-proceed { background: var(--positive); }
     .confirm-cancel { background: var(--accent); }
     button {
@@ -575,7 +585,7 @@ function confirmAction(msg){
 return new Promise(res=>{
 const ov=document.createElement('div');
 ov.className='confirm-overlay';
-ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message">'+msg+'</div><div class="confirm-buttons"><button class="confirm-proceed">proceed</button><button class="confirm-cancel">cancel</button></div></div>';
+ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message"><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-proceed">proceed</button><button class="confirm-cancel">cancel</button></div></div>';
 ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
 ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
 document.body.appendChild(ov);

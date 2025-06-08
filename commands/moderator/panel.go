@@ -28,5 +28,21 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		dom = "127.0.0.1"
 	}
 	link := fmt.Sprintf("https://%v:%v/panel?token=%v", dom, cfg.Local.Port+constants.PanelPortOffset, token)
-	disc.InteractionEphemeralResponse(i, "Panel Link", link)
+
+	embed := &discordgo.MessageEmbed{
+		Title:       "Click here to open the moderator panel",
+		URL:         link,
+		Description: "Run the /web-panel command again to invalidate your token if it becomes public.",
+		Color:       glob.COLOR_WHITE,
+	}
+	embeds := []*discordgo.MessageEmbed{embed}
+	resp := &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{Embeds: embeds, Flags: discordgo.MessageFlagsEphemeral},
+	}
+	err := disc.DS.InteractionRespond(i.Interaction, resp)
+	if err != nil {
+		newResp := &discordgo.WebhookEdit{Embeds: &embeds}
+		disc.DS.InteractionResponseEdit(i.Interaction, newResp)
+	}
 }
