@@ -259,13 +259,18 @@
         align-items: center;
         justify-content: center;
     }
-    .close {
+.close {
         background: none;
         border: none;
         color: inherit;
         cursor: pointer;
-        padding: 0 0.2rem;
+        padding: 0;
         font-size: 1rem;
+        width: 1.6rem;
+        height: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     input[type="text"] {
         width: 100%;
@@ -338,6 +343,14 @@
         font-size: 0.9rem;
         margin: 0.2rem 0;
         color: #ccc;
+    }
+    .schedule-date {
+        display: block;
+        margin: 0 auto 0.4rem auto;
+    }
+    .schedule-note {
+        text-align: center;
+        margin-bottom: 0.4rem;
     }
     .kv-display {
         display: flex;
@@ -566,8 +579,8 @@
         <option>16</option><option>17</option><option>18</option><option>19</option>
         <option>20</option><option>21</option><option>22</option><option>23</option>
     </select></div>
-    <input type="datetime-local" name="date">
-    <p class="note">Use this to set a specific reset date and time.</p>
+    <input type="datetime-local" name="date" class="schedule-date">
+    <p class="note schedule-note">Use this to set a specific reset date and time.</p>
     <button type="submit">apply</button>
 </form>
 <form method="POST" action="/action" class="cmd-form">
