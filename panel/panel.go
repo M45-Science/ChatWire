@@ -85,9 +85,9 @@ var modCmdGroups = []panelCmdGroup{
 		Name: "ChatWire",
 		Cmds: []panelCmd{
 			{Cmd: "reboot-chatwire", Label: "Reboot ChatWire", Icon: "restart_alt"},
-			{Cmd: "queue-reboot", Label: "Queue Reboot", Icon: "schedule"},
-			{Cmd: "force-reboot", Label: "Force Reboot", Icon: "restart_alt"},
-			{Cmd: "queue-fact-reboot", Label: "Queue Fact Reboot", Icon: "schedule"},
+			{Cmd: "queue-reboot", Label: "Queue ChatWire Reboot", Icon: "schedule"},
+			{Cmd: "force-reboot", Label: "Force Reboot ChatWire", Icon: "restart_alt"},
+			{Cmd: "queue-fact-reboot", Label: "Queue Factorio Reboot", Icon: "schedule"},
 			{Cmd: "reload-config", Label: "Reload Config", Icon: "refresh"},
 		},
 	},
@@ -625,8 +625,11 @@ func buildInfoString() string {
 	ban += bCount
 	glob.PlayerListLock.RUnlock()
 	total := ban + mem + reg + vet + mod
-	add("Members/Regulars/Veterans", fmt.Sprintf("%d | %d | %d", mem, reg, vet))
-	add("Moderators/Banned", fmt.Sprintf("%d | %d", mod, ban))
+	add("Members", fmt.Sprintf("%d", mem))
+	add("Regulars", fmt.Sprintf("%d", reg))
+	add("Veterans", fmt.Sprintf("%d", vet))
+	add("Moderators", fmt.Sprintf("%d", mod))
+	add("Banned", fmt.Sprintf("%d", ban))
 	add("Total players", fmt.Sprintf("%d", total))
 
 	if fact.PausedTicks > 4 {
