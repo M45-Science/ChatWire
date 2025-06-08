@@ -683,6 +683,12 @@
 <div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre>{{.LocalCfg}}</pre>
+<form method="POST" action="/action" class="cmd-form" data-desc="Apply Config">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="apply-config">
+    <textarea name="cfg" rows="12" style="width:100%">{{.LocalJSON}}</textarea>
+    <button type="submit">apply</button>
+</form>
 </div>
 </div>
 <div class="card">

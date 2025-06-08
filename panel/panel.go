@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"html/template"
@@ -148,6 +149,7 @@ type panelData struct {
 	Info          string
 	LocalCfg      string
 	GlobalCfg     string
+	LocalJSON     string
 }
 
 // Start runs the HTTPS status panel server.
@@ -402,7 +404,11 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 			}
 			return s
 		}(),
-		GlobalCfg: buildCfgString(cfg.Global)}
+		GlobalCfg: buildCfgString(cfg.Global),
+		LocalJSON: func() string {
+			b, _ := json.MarshalIndent(cfg.Local, "", "  ")
+			return string(b)
+		}()}
 	_ = t.Execute(w, pd)
 }
 
@@ -417,7 +423,7 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		ip = r.RemoteAddr
 	}
 	cmd := r.FormValue("cmd")
-	if tok == "" || cmd == "" {
+	if cmd == "" || (tok == "" && !*glob.LocalTestMode) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
@@ -561,6 +567,20 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 	case "disable-schedule":
 		cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
 		cfg.Local.Options.NextReset = time.Time{}
+		cfg.WriteLCfg()
+		support.ConfigSoftMod()
+	case "apply-config":
+		text := r.FormValue("cfg")
+		if text == "" {
+			fmt.Fprint(w, "no config provided")
+			return
+		}
+		newCfg := cfg.Local
+		if err := json.Unmarshal([]byte(text), &newCfg); err != nil {
+			fmt.Fprint(w, "parse error")
+			return
+		}
+		cfg.Local = newCfg
 		cfg.WriteLCfg()
 		support.ConfigSoftMod()
 	case "discord":
