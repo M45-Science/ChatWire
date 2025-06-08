@@ -572,6 +572,22 @@
 </div>
 
 <div class="card">
+<div class="card-header"><span class="material-icons">how_to_reg</span><span class="title">Access Level</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="access-level">
+    <select name="level">
+        <option value="0" {{if eq .AccessLevel 0}}selected{{end}}>Open</option>
+        <option value="1" {{if eq .AccessLevel 1}}selected{{end}}>Members+</option>
+        <option value="2" {{if eq .AccessLevel 2}}selected{{end}}>Regulars+</option>
+    </select>
+    <button type="submit">apply</button>
+</form>
+</div>
+</div>
+
+<div class="card">
 <div class="card-header"><span class="material-icons">event</span><span class="title">Set Map Schedule</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form">
