@@ -357,6 +357,10 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		"Limit Open Hours": {},
 		"Open Hour":        {},
 		"Close Hour":       {},
+		"Callsign":         {},
+		"Port":             {},
+		"Channel ID":       {},
+		"Last Backup Slot": {},
 	}
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
 		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
