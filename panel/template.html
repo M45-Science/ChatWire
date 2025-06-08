@@ -292,7 +292,9 @@
         padding: 0.2rem 0.4rem;
     }
     .bool-display span {
-        flex: 1 1 auto;
+        flex: 0 0 60%;
+        max-width: 60%;
+        text-align: right;
         word-break: break-word;
         min-width: 0;
     }
@@ -554,6 +556,7 @@
         <option>28</option><option>29</option><option>30</option><option>31</option>
     </select>
     <span class="note">days</span>
+    <span class="note">hours</span>
     <select name="hours">
         <option>0</option><option>1</option><option>2</option><option>3</option>
         <option>4</option><option>5</option><option>6</option><option>7</option>
@@ -562,7 +565,6 @@
         <option>16</option><option>17</option><option>18</option><option>19</option>
         <option>20</option><option>21</option><option>22</option><option>23</option>
     </select>
-    <span class="note">hours</span>
     <input type="datetime-local" name="date">
     <p class="note">Use this to set a specific reset date and time.</p>
     <button type="submit">apply</button>

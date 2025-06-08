@@ -363,6 +363,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		"Callsign":         {},
 		"Port":             {},
 		"Channel ID":       {},
+		"Channel":          {},
 		"Last Backup Slot": {},
 	}
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
