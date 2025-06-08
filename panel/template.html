@@ -361,6 +361,11 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    .kv-display select {
+        flex: 0 1 40%;
+        max-width: 40%;
+        min-width: 0;
+    }
     .value-box {
         border: 1px solid var(--accent);
         background: var(--bg);
@@ -507,12 +512,12 @@
 </div>
 </div>
 <div class="card">
-<div class="card-header"><span class="material-icons">schedule</span><span class="title">Set Play Hours</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-header"><span class="material-icons">schedule</span><span class="title">Limit Play Hours</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
-    <div class="bool-display"><span>enable</span><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></div><br>
+    <div class="bool-display"><span>Enable Limits</span><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></div><br>
     <select name="start">
         <option value="" disabled selected>start hour</option>
         <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>
@@ -532,20 +537,18 @@
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="set-schedule">
-    <select name="months">
+    <div class="kv-display"><span class="note">months</span><select name="months">
         <option>0</option><option>1</option><option>2</option><option>3</option>
         <option>4</option><option>5</option><option>6</option><option>7</option>
         <option>8</option><option>9</option><option>10</option><option>11</option>
         <option>12</option>
-    </select>
-    <span class="note">months</span>
-    <select name="weeks">
+    </select></div>
+    <div class="kv-display"><span class="note">weeks</span><select name="weeks">
         <option>0</option><option>1</option><option>2</option><option>3</option>
         <option>4</option><option>5</option><option>6</option><option>7</option>
         <option>8</option>
-    </select>
-    <span class="note">weeks</span>
-    <select name="days">
+    </select></div>
+    <div class="kv-display"><span class="note">days</span><select name="days">
         <option>0</option><option>1</option><option>2</option><option>3</option>
         <option>4</option><option>5</option><option>6</option><option>7</option>
         <option>8</option><option>9</option><option>10</option><option>11</option>
@@ -554,17 +557,15 @@
         <option>20</option><option>21</option><option>22</option><option>23</option>
         <option>24</option><option>25</option><option>26</option><option>27</option>
         <option>28</option><option>29</option><option>30</option><option>31</option>
-    </select>
-    <span class="note">days</span>
-    <span class="note">hours</span>
-    <select name="hours">
+    </select></div>
+    <div class="kv-display"><span class="note">hours</span><select name="hours">
         <option>0</option><option>1</option><option>2</option><option>3</option>
         <option>4</option><option>5</option><option>6</option><option>7</option>
         <option>8</option><option>9</option><option>10</option><option>11</option>
         <option>12</option><option>13</option><option>14</option><option>15</option>
         <option>16</option><option>17</option><option>18</option><option>19</option>
         <option>20</option><option>21</option><option>22</option><option>23</option>
-    </select>
+    </select></div>
     <input type="datetime-local" name="date">
     <p class="note">Use this to set a specific reset date and time.</p>
     <button type="submit">apply</button>
