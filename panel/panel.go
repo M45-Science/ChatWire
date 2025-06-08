@@ -144,6 +144,7 @@ var panelHTML = `<!DOCTYPE html>
     }
     .button-grid form {
         margin: 0;
+        width: 100%;
     }
     .button-grid button {
         display: flex;
@@ -157,6 +158,9 @@ var panelHTML = `<!DOCTYPE html>
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
         gap: var(--gap);
+    }
+    .save-grid form {
+        width: 100%;
     }
     .save-grid button {
         display: flex;
