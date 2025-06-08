@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"html/template"
 	"math/big"
+	"net"
 	"net/http"
 	"os"
 	"reflect"
@@ -807,7 +808,7 @@ func GenerateToken(id string) string {
 	if now-orig > constants.PanelTokenLimitSec {
 		orig = now
 	}
-	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: id, Time: now, Orig: orig}
+	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: id, Time: now, Orig: orig, IP: ""}
 	glob.PanelTokenLock.Unlock()
 	return token
 }
@@ -831,11 +832,30 @@ func tokenValid(tok string) bool {
 
 func handlePanel(w http.ResponseWriter, r *http.Request) {
 	tok := r.URL.Query().Get("token")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if ip == "" {
+		ip = r.RemoteAddr
+	}
 	if tok == "" || !tokenValid(tok) {
 		if !*glob.LocalTestMode {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
+	}
+	glob.PanelTokenLock.Lock()
+	data, ok := glob.PanelTokens[tok]
+	if ok {
+		if data.IP == "" {
+			data.IP = ip
+		} else if data.IP != ip {
+			delete(glob.PanelTokens, tok)
+			ok = false
+		}
+	}
+	glob.PanelTokenLock.Unlock()
+	if !ok && !*glob.LocalTestMode {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
 	}
 	t := template.Must(template.New("panel").Parse(panelHTML))
 
@@ -950,14 +970,26 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tok := r.FormValue("token")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if ip == "" {
+		ip = r.RemoteAddr
+	}
 	cmd := r.FormValue("cmd")
 	if tok == "" || cmd == "" {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-	glob.PanelTokenLock.RLock()
+	glob.PanelTokenLock.Lock()
 	userInfo, ok := glob.PanelTokens[tok]
-	glob.PanelTokenLock.RUnlock()
+	if ok {
+		if userInfo.IP == "" {
+			userInfo.IP = ip
+		} else if userInfo.IP != ip {
+			delete(glob.PanelTokens, tok)
+			ok = false
+		}
+	}
+	glob.PanelTokenLock.Unlock()
 	if !ok || !tokenValid(tok) {
 		if !*glob.LocalTestMode {
 			http.Error(w, "invalid token", http.StatusUnauthorized)

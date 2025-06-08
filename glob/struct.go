@@ -36,6 +36,7 @@ type PanelTokenData struct {
 	DiscID string
 	Time   int64
 	Orig   int64
+	IP     string
 }
 
 // VoteContainerData holds map vote data for the current campaign.
