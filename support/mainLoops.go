@@ -239,7 +239,7 @@ func MainLoops() {
 
 			glob.PanelTokenLock.Lock()
 			for k, tok := range glob.PanelTokens {
-				if (t.Unix() - tok.Time) > constants.PassExpireSec {
+				if (t.Unix()-tok.Time) > constants.PassExpireSec || (t.Unix()-tok.Orig) > constants.PanelTokenLimitSec {
 					delete(glob.PanelTokens, k)
 				}
 			}

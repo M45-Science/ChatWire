@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"html/template"
 	"math/big"
+	"net"
 	"net/http"
 	"os"
 	"reflect"
@@ -41,10 +42,11 @@ var panelHTML = `<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <style>
     :root {
-        --bg: #131313;
-        --surface: #2b2b2b;
-        --accent: #b22020;
+        --bg: #101010;
+        --surface: #242424;
+        --accent: #650000;
         --text: #ffffff;
+        --positive: #0a8a0a;
         --radius: 0.4rem;
         --gap: 1rem;
         --shadow: 0 0.5rem 0.5rem rgba(0,0,0,0.8);
@@ -75,7 +77,11 @@ var panelHTML = `<!DOCTYPE html>
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         padding: var(--gap);
+        border: 1px solid var(--accent);
     }
+    #info-area { background: #201010; }
+    #command-area { background: #181010; }
+    #config-area { background: #100808; }
     .section-header {
         display: flex;
         align-items: center;
@@ -127,28 +133,142 @@ var panelHTML = `<!DOCTYPE html>
         max-width: 80%;
         min-width: 20rem;
     }
-    button {
+.banner {
+        position: sticky;
+        top: 0;
+        z-index: 1200;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
         background: var(--accent);
         color: var(--text);
-        border: none;
+        padding: 0.6rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: var(--gap);
+        outline: 1px solid #ffffff;
+    }
+    .panel-id {
+        font-weight: bold;
+        background: var(--surface);
+        padding: 0 0.4rem;
+        border-radius: var(--radius);
+    }
+    .confirm-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1100;
+    }
+    .confirm-box {
+        background: var(--surface);
+        padding: calc(var(--gap) * 1.5);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        text-align: center;
+        font-size: 1.2rem;
+        border: 2px solid black;
+        outline: 2px solid #ffeb3b;
+        max-width: 34rem;
+        width: 90%;
+    }
+    .confirm-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: var(--accent);
+        color: var(--text);
+        font-size: 1.4rem;
+        margin: calc(-1.8 * var(--gap)) calc(-1.8 * var(--gap)) var(--gap) calc(-1.8 * var(--gap));
+        padding: 0.6rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .confirm-message {
+        padding: var(--gap) 0;
+    }
+    .alert-icon {
+        text-align: center;
+        margin-bottom: var(--gap);
+    }
+    .alert-icon .material-icons {
+        font-size: 3.5rem;
+        color: #ffeb3b;
+    }
+    .action-box {
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        padding: var(--gap);
+        border-radius: var(--radius);
+    }
+    .confirm-buttons {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--gap);
+        margin-top: var(--gap);
+    }
+    .confirm-box button {
+        width: auto;
+        font-size: 1.5rem;
+        padding: 0.6rem 1.2rem;
+        text-transform: capitalize;
+    }
+    .confirm-proceed {
+        background: var(--positive);
+        border: 3px solid #ffffff !important;
+    }
+    .confirm-cancel { background: var(--accent); }
+    button {
+        background: linear-gradient(to bottom, var(--accent), #4c0000);
+        color: var(--text);
+        border: 1px solid #ff3030;
         border-radius: var(--radius);
         padding: 0.4rem;
         margin: 0.2rem;
         cursor: pointer;
         width: 100%;
+        transition: filter 0.15s, box-shadow 0.15s;
+        box-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.5);
+    }
+    button:hover {
+        filter: brightness(1.3);
+        box-shadow: 0 0.2rem 0.4rem rgba(255,48,48,0.6);
     }
     .button-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
         gap: var(--gap);
     }
     .button-grid form {
         margin: 0;
+        width: 100%;
+    }
+    .button-grid button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .save-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
         gap: var(--gap);
+    }
+    .save-grid form {
+        width: 100%;
+    }
+    .save-grid button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .cmd-grid {
         display: grid;
@@ -243,7 +363,7 @@ var panelHTML = `<!DOCTYPE html>
         position: absolute;
         cursor: default;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #b22020;
+        background-color: var(--accent);
         transition: .4s;
         border-radius: 1.3rem;
     }
@@ -298,6 +418,8 @@ var panelHTML = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+<script>history.replaceState(null,"",location.pathname);</script>
+<div class="banner"><span class="material-icons">admin_panel_settings</span><span class="panel-id">Moderator Control Panel - {{.Callsign}}-{{.ServerName}}</span></div>
 <div class="areas">
 <div class="area section" id="info-area">
 <div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize">&#8211;</button></div>
@@ -343,7 +465,7 @@ var panelHTML = `<!DOCTYPE html>
 <h4>{{.Name}}</h4>
 <div class="button-grid">
 {{range .Cmds}}
-<form method="POST" action="/action" class="cmd-form">
+<form method="POST" action="/action" class="cmd-form" data-desc="{{.Label}}">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="{{.Cmd}}">
     <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
@@ -361,7 +483,7 @@ var panelHTML = `<!DOCTYPE html>
 {{range .Saves}}
 <div class="save-item">
     <div class="save-age">{{.Age}}</div>
-    <form method="POST" action="/action" class="cmd-form">
+    <form method="POST" action="/action" class="cmd-form" data-desc="Change map to {{.Name}}">
         <input type="hidden" name="token" value="{{$.Token}}">
         <input type="hidden" name="cmd" value="change-map">
         <input type="hidden" name="arg" value="{{.Name}}">
@@ -370,7 +492,7 @@ var panelHTML = `<!DOCTYPE html>
 </div>
 {{end}}
 </div>
-<form method="POST" action="/action" class="cmd-form">
+<form method="POST" action="/action" class="cmd-form" data-desc="Change map to">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
     <input type="text" name="arg" placeholder="save name">
@@ -382,7 +504,7 @@ var panelHTML = `<!DOCTYPE html>
 <div class="card">
 <div class="card-header"><span class="material-icons">terminal</span><span class="title">RCON Command</span><button class="minimize">&#8211;</button></div>
 <div class="card-content">
-<form method="POST" action="/action" class="cmd-form">
+<form method="POST" action="/action" class="cmd-form" data-desc="Run RCON">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="rcon">
     <input type="text" name="arg" placeholder="/command">
@@ -477,12 +599,26 @@ var panelHTML = `<!DOCTYPE html>
 document.querySelectorAll('.cmd-form').forEach(f=>{
 f.addEventListener('submit',async e=>{
 e.preventDefault();
+let desc=f.dataset.desc||f.querySelector('button').textContent.trim();
+const arg=f.querySelector('input[name="arg"],input[name="name"]');
+if(arg&&arg.value){desc+=' '+arg.value;}
+if(!(await confirmAction(desc)))return;
 const data=new FormData(f);
 const r=await fetch('/action',{method:'POST',body:data});
 const t=await r.text();
 showResponse(t);
 });
 });
+function confirmAction(msg){
+return new Promise(res=>{
+const ov=document.createElement('div');
+ov.className='confirm-overlay';
+ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message"><div class="alert-icon"><span class="material-icons">warning</span></div><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-cancel"><span class="material-icons">close</span> Cancel</button><button class="confirm-proceed"><span class="material-icons">check</span> Proceed</button></div></div>';
+ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
+ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
+document.body.appendChild(ov);
+});
+}
 function showResponse(m){
 const c=document.createElement('div');
 c.className='card response-card';
@@ -629,6 +765,8 @@ var modCmdGroups = []panelCmdGroup{
 }
 
 type panelData struct {
+	ServerName    string
+	Callsign      string
 	CWVersion     string
 	Factorio      string
 	SoftMod       string
@@ -682,27 +820,69 @@ func Start() {
 
 // GenerateToken creates a temporary token for web access.
 func GenerateToken(id string) string {
+	now := time.Now().Unix()
 	token := glob.RandomBase64String(20)
+	var orig int64 = now
 	glob.PanelTokenLock.Lock()
-	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: id, Time: time.Now().Unix()}
+	for k, v := range glob.PanelTokens {
+		if v.DiscID == id {
+			if v.Orig < orig {
+				orig = v.Orig
+			}
+			delete(glob.PanelTokens, k)
+		}
+	}
+	if now-orig > constants.PanelTokenLimitSec {
+		orig = now
+	}
+	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: id, Time: now, Orig: orig, IP: ""}
 	glob.PanelTokenLock.Unlock()
 	return token
 }
 
 func tokenValid(tok string) bool {
 	glob.PanelTokenLock.RLock()
-	_, ok := glob.PanelTokens[tok]
+	data, ok := glob.PanelTokens[tok]
 	glob.PanelTokenLock.RUnlock()
-	return ok
+	if !ok {
+		return false
+	}
+	now := time.Now().Unix()
+	if now-data.Time > constants.PassExpireSec {
+		return false
+	}
+	if now-data.Orig > constants.PanelTokenLimitSec {
+		return false
+	}
+	return true
 }
 
 func handlePanel(w http.ResponseWriter, r *http.Request) {
 	tok := r.URL.Query().Get("token")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if ip == "" {
+		ip = r.RemoteAddr
+	}
 	if tok == "" || !tokenValid(tok) {
 		if !*glob.LocalTestMode {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
+	}
+	glob.PanelTokenLock.Lock()
+	data, ok := glob.PanelTokens[tok]
+	if ok {
+		if data.IP == "" {
+			data.IP = ip
+		} else if data.IP != ip {
+			delete(glob.PanelTokens, tok)
+			ok = false
+		}
+	}
+	glob.PanelTokenLock.Unlock()
+	if !ok && !*glob.LocalTestMode {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
 	}
 	t := template.Must(template.New("panel").Parse(panelHTML))
 
@@ -800,7 +980,8 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	for idx := range groups {
 		sort.Slice(groups[idx].Cmds, func(i, j int) bool { return groups[idx].Cmds[i].Label < groups[idx].Cmds[j].Label })
 	}
-	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
+	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
+		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
@@ -816,15 +997,27 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tok := r.FormValue("token")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if ip == "" {
+		ip = r.RemoteAddr
+	}
 	cmd := r.FormValue("cmd")
 	if tok == "" || cmd == "" {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-	glob.PanelTokenLock.RLock()
+	glob.PanelTokenLock.Lock()
 	userInfo, ok := glob.PanelTokens[tok]
-	glob.PanelTokenLock.RUnlock()
-	if !ok {
+	if ok {
+		if userInfo.IP == "" {
+			userInfo.IP = ip
+		} else if userInfo.IP != ip {
+			delete(glob.PanelTokens, tok)
+			ok = false
+		}
+	}
+	glob.PanelTokenLock.Unlock()
+	if !ok || !tokenValid(tok) {
 		if !*glob.LocalTestMode {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
