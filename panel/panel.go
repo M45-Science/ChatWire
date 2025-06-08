@@ -45,6 +45,7 @@ var panelHTML = `<!DOCTYPE html>
         --surface: #2b2b2b;
         --accent: #b22020;
         --text: #ffffff;
+        --positive: #0a8a0a;
         --radius: 0.4rem;
         --gap: 1rem;
         --shadow: 0 0.5rem 0.5rem rgba(0,0,0,0.8);
@@ -75,7 +76,11 @@ var panelHTML = `<!DOCTYPE html>
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         padding: var(--gap);
+        border: 1px solid var(--accent);
     }
+    #info-area { background: #363636; }
+    #command-area { background: #2b2b2b; }
+    #config-area { background: #242424; }
     .section-header {
         display: flex;
         align-items: center;
@@ -127,6 +132,42 @@ var panelHTML = `<!DOCTYPE html>
         max-width: 80%;
         min-width: 20rem;
     }
+    .banner {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--accent);
+        color: var(--text);
+        padding: 0.6rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: var(--gap);
+    }
+    .confirm-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1100;
+    }
+    .confirm-box {
+        background: var(--surface);
+        padding: var(--gap);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        text-align: center;
+    }
+    .confirm-buttons {
+        display: flex;
+        justify-content: center;
+        gap: var(--gap);
+        margin-top: var(--gap);
+    }
+    .confirm-box button { width: auto; }
+    .confirm-proceed { background: var(--positive); }
+    .confirm-cancel { background: var(--accent); }
     button {
         background: var(--accent);
         color: var(--text);
@@ -318,6 +359,7 @@ var panelHTML = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+<div class="banner"><span class="material-icons">admin_panel_settings</span><span>Moderator Control Panel - {{.Callsign}} {{.ServerName}}</span></div>
 <div class="areas">
 <div class="area section" id="info-area">
 <div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize">&#8211;</button></div>
@@ -363,7 +405,7 @@ var panelHTML = `<!DOCTYPE html>
 <h4>{{.Name}}</h4>
 <div class="button-grid">
 {{range .Cmds}}
-<form method="POST" action="/action" class="cmd-form">
+<form method="POST" action="/action" class="cmd-form" data-desc="{{.Label}}">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="{{.Cmd}}">
     <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
@@ -381,7 +423,7 @@ var panelHTML = `<!DOCTYPE html>
 {{range .Saves}}
 <div class="save-item">
     <div class="save-age">{{.Age}}</div>
-    <form method="POST" action="/action" class="cmd-form">
+    <form method="POST" action="/action" class="cmd-form" data-desc="Change map to {{.Name}}">
         <input type="hidden" name="token" value="{{$.Token}}">
         <input type="hidden" name="cmd" value="change-map">
         <input type="hidden" name="arg" value="{{.Name}}">
@@ -390,7 +432,7 @@ var panelHTML = `<!DOCTYPE html>
 </div>
 {{end}}
 </div>
-<form method="POST" action="/action" class="cmd-form">
+<form method="POST" action="/action" class="cmd-form" data-desc="Change map to">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
     <input type="text" name="arg" placeholder="save name">
@@ -402,7 +444,7 @@ var panelHTML = `<!DOCTYPE html>
 <div class="card">
 <div class="card-header"><span class="material-icons">terminal</span><span class="title">RCON Command</span><button class="minimize">&#8211;</button></div>
 <div class="card-content">
-<form method="POST" action="/action" class="cmd-form">
+<form method="POST" action="/action" class="cmd-form" data-desc="Run RCON">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="rcon">
     <input type="text" name="arg" placeholder="/command">
@@ -497,12 +539,26 @@ var panelHTML = `<!DOCTYPE html>
 document.querySelectorAll('.cmd-form').forEach(f=>{
 f.addEventListener('submit',async e=>{
 e.preventDefault();
+let desc=f.dataset.desc||f.querySelector('button').textContent.trim();
+const arg=f.querySelector('input[name="arg"],input[name="name"]');
+if(arg&&arg.value){desc+=' '+arg.value;}
+if(!(await confirmAction(desc)))return;
 const data=new FormData(f);
 const r=await fetch('/action',{method:'POST',body:data});
 const t=await r.text();
 showResponse(t);
 });
 });
+function confirmAction(msg){
+return new Promise(res=>{
+const ov=document.createElement('div');
+ov.className='confirm-overlay';
+ov.innerHTML='<div class="confirm-box"><div>'+msg+'</div><div class="confirm-buttons"><button class="confirm-proceed">proceed</button><button class="confirm-cancel">cancel</button></div></div>';
+ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
+ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
+document.body.appendChild(ov);
+});
+}
 function showResponse(m){
 const c=document.createElement('div');
 c.className='card response-card';
@@ -649,6 +705,8 @@ var modCmdGroups = []panelCmdGroup{
 }
 
 type panelData struct {
+	ServerName    string
+	Callsign      string
 	CWVersion     string
 	Factorio      string
 	SoftMod       string
@@ -820,7 +878,8 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	for idx := range groups {
 		sort.Slice(groups[idx].Cmds, func(i, j int) bool { return groups[idx].Cmds[i].Label < groups[idx].Cmds[j].Label })
 	}
-	pd := panelData{CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
+	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
+		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
 		CWUp: cwUptime, FactUp: factUptime,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
