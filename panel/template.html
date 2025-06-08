@@ -304,10 +304,38 @@
         min-width: 0;
     }
     .bool-display input[type="checkbox"] {
-        width: 1.3rem;
-        height: 1.3rem;
-        accent-color: var(--positive);
+        appearance: none;
+        width: 1.2rem;
+        height: 1.2rem;
+        border: 2px solid var(--accent);
+        border-radius: 0.2rem;
+        background: var(--bg);
         cursor: pointer;
+        position: relative;
+    }
+    .bool-display input[type="checkbox"]:checked {
+        background: var(--positive);
+        border-color: var(--positive);
+    }
+    .bool-display input[type="checkbox"]::after {
+        content: '';
+        position: absolute;
+        left: 0.25rem;
+        top: 0.05rem;
+        width: 0.35rem;
+        height: 0.7rem;
+        border: solid var(--bg);
+        border-width: 0 0.2rem 0.2rem 0;
+        transform: rotate(45deg);
+        opacity: 0;
+    }
+    .bool-display input[type="checkbox"]:checked::after {
+        opacity: 1;
+    }
+    .note {
+        font-size: 0.9rem;
+        margin: 0.2rem 0;
+        color: #ccc;
     }
     .kv-display {
         display: flex;
@@ -412,16 +440,6 @@
 <pre>{{.Info}}</pre>
 </div>
 </div>
-<div class="card">
-<div class="card-header"><span class="material-icons">extension</span><span class="title">Installed Mods</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
-<div class="card-content">
-    <select multiple size="{{len .ModNames}}" readonly>
-    {{range .ModNames}}
-        <option>{{.}}</option>
-    {{end}}
-    </select>
-</div>
-</div>
 </div>
 </div>
 
@@ -486,8 +504,14 @@
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
     <div class="bool-display"><span>enable</span><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></div><br>
-    <input type="number" name="start" min="0" max="23" placeholder="start hour">
-    <input type="number" name="end" min="0" max="23" placeholder="end hour">
+    <select name="start">
+        <option value="" disabled selected>start hour</option>
+        <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>
+    </select>
+    <select name="end">
+        <option value="" disabled selected>end hour</option>
+        <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>
+    </select>
 <button type="submit">apply</button>
 </form>
 </div>
@@ -520,14 +544,16 @@
     <input type="hidden" name="cmd" value="player-level">
     <input type="text" name="name" placeholder="player name">
     <select name="level">
-        <option value="255">Moderator</option>
-        <option value="3">Veteran</option>
-        <option value="2">Regular</option>
-        <option value="1">Member</option>
-        <option value="0">New</option>
+        <option value="" disabled selected>choose a level</option>
         <option value="-1">Banned</option>
         <option value="-255">Deleted</option>
+        <option value="0">New</option>
+        <option value="1">Member</option>
+        <option value="2">Regular</option>
+        <option value="3">Veteran</option>
+        <option value="255">Moderator</option>
     </select>
+    <p class="note">Please fill this out and include a log URL!</p>
     <input type="text" name="reason" placeholder="reason">
 <button type="submit">apply</button>
 </form>
@@ -559,6 +585,16 @@
 <div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre>{{.LocalCfg}}</pre>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="material-icons">extension</span><span class="title">Installed Mods</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+    <select multiple size="{{len .ModNames}}" readonly>
+    {{range .ModNames}}
+        <option>{{.}}</option>
+    {{end}}
+    </select>
 </div>
 </div>
 <div class="card collapsed">
