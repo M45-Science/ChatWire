@@ -271,6 +271,15 @@
         padding: 0.3rem 0.6rem;
         margin-bottom: 0.4rem;
     }
+    select {
+        width: 100%;
+        border-radius: var(--radius);
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        color: var(--text);
+        padding: 0.3rem 0.6rem;
+        margin-bottom: 0.4rem;
+    }
     .bool-display {
         display: flex;
         align-items: center;
@@ -443,24 +452,15 @@
 <div class="card">
 <div class="card-header"><span class="material-icons">map</span><span class="title">Change Map</span><button class="minimize">&#8211;</button></div>
 <div class="card-content">
-<div class="save-grid">
-{{range .Saves}}
-<div class="save-item">
-    <div class="save-age">{{.Age}}</div>
-    <form method="POST" action="/action" class="cmd-form" data-desc="Change map to {{.Name}}">
-        <input type="hidden" name="token" value="{{$.Token}}">
-        <input type="hidden" name="cmd" value="change-map">
-        <input type="hidden" name="arg" value="{{.Name}}">
-        <button type="submit">{{.Name}}</button>
-    </form>
-</div>
-{{end}}
-</div>
-<form method="POST" action="/action" class="cmd-form" data-desc="Change map to">
+<form method="POST" action="/action" class="cmd-form" data-desc="Change map">
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
-    <input type="text" name="arg" placeholder="save name">
-<button type="submit">load</button>
+    <select name="arg">
+        {{range .Saves}}
+        <option value="{{.Name}}">{{.Name}} ({{.Age}})</option>
+        {{end}}
+    </select>
+    <button type="submit">load</button>
 </form>
 </div>
 </div>
