@@ -250,9 +250,14 @@
         border: none;
         color: inherit;
         cursor: pointer;
-        padding: 0 0.2rem;
+        padding: 0;
         font-size: 1rem;
         margin-left: auto;
+        width: 1.6rem;
+        height: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .close {
         background: none;
@@ -395,10 +400,10 @@
 <div class="banner"><span class="material-icons">admin_panel_settings</span><span class="panel-id">Moderator Control Panel - {{.Callsign}}-{{.ServerName}}</span></div>
 <div class="areas">
 <div class="area section" id="info-area">
-<div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize">&#8211;</button></div>
+<div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="section-content">
 <div class="card">
-<div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
 <div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
 <div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
@@ -420,7 +425,7 @@
 </div>
 
 <div class="card">
-<div class="card-header"><span class="material-icons">storage</span><span class="title">Server Info</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">storage</span><span class="title">Server Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre>{{.Info}}</pre>
 </div>
@@ -429,10 +434,10 @@
 </div>
 
 <div class="area section" id="command-area">
-<div class="section-header"><span class="material-icons">terminal</span><span class="title">Commands</span><button class="minimize">&#8211;</button></div>
+<div class="section-header"><span class="material-icons">terminal</span><span class="title">Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="section-content">
 <div class="card">
-<div class="card-header"><span class="material-icons">rule</span><span class="title">Moderator Commands</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">rule</span><span class="title">Moderator Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 {{range .CmdGroups}}
 <h4>{{.Name}}</h4>
@@ -450,7 +455,7 @@
 </div>
 
 <div class="card">
-<div class="card-header"><span class="material-icons">map</span><span class="title">Change Map</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">map</span><span class="title">Change Map</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form" data-desc="Change map">
     <input type="hidden" name="token" value="{{$.Token}}">
@@ -466,7 +471,7 @@
 </div>
 
 <div class="card">
-<div class="card-header"><span class="material-icons">terminal</span><span class="title">RCON Command</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">terminal</span><span class="title">RCON Command</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form" data-desc="Run RCON">
     <input type="hidden" name="token" value="{{.Token}}">
@@ -478,7 +483,7 @@
 </div>
 </div>
 <div class="card">
-<div class="card-header"><span class="material-icons">schedule</span><span class="title">Set Play Hours</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">schedule</span><span class="title">Set Play Hours</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
@@ -492,7 +497,7 @@
 </div>
 
 <div class="card">
-<div class="card-header"><span class="material-icons">event</span><span class="title">Set Map Schedule</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">event</span><span class="title">Set Map Schedule</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
@@ -511,7 +516,7 @@
 </div>
 
 <div class="card">
-<div class="card-header"><span class="material-icons">person</span><span class="title">Set Player Level</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">person</span><span class="title">Set Player Level</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
@@ -525,7 +530,7 @@
 </div>
 
 <div class="card">
-<div class="card-header"><span class="material-icons">bolt</span><span class="title">Discord Commands</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">bolt</span><span class="title">Discord Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <div class="cmd-grid">
 {{range .Commands}}
@@ -543,16 +548,16 @@
 </div>
 
 <div class="area section" id="config-area">
-<div class="section-header"><span class="material-icons">settings</span><span class="title">Config</span><button class="minimize">&#8211;</button></div>
+<div class="section-header"><span class="material-icons">settings</span><span class="title">Config</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="section-content">
 <div class="card">
-<div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize">&#8211;</button></div>
+<div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre>{{.LocalCfg}}</pre>
 </div>
 </div>
-<div class="card">
-<div class="card-header"><span class="material-icons">public</span><span class="title">Global Configuration</span><button class="minimize">&#8211;</button></div>
+<div class="card collapsed">
+<div class="card-header"><span class="material-icons">public</span><span class="title">Global Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre>{{.GlobalCfg}}</pre>
 </div>
