@@ -44,7 +44,7 @@ var panelHTML = `<!DOCTYPE html>
     :root {
         --bg: #101010;
         --surface: #242424;
-        --accent: #8a0000;
+        --accent: #650000;
         --text: #ffffff;
         --positive: #0a8a0a;
         --radius: 0.4rem;
@@ -79,9 +79,9 @@ var panelHTML = `<!DOCTYPE html>
         padding: var(--gap);
         border: 1px solid var(--accent);
     }
-    #info-area { background: #303030; }
-    #command-area { background: #262626; }
-    #config-area { background: #1e1e1e; }
+    #info-area { background: #201010; }
+    #command-area { background: #181010; }
+    #config-area { background: #100808; }
     .section-header {
         display: flex;
         align-items: center;
@@ -392,6 +392,7 @@ var panelHTML = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+<script>history.replaceState(null,"",location.pathname);</script>
 <div class="banner"><span class="material-icons">admin_panel_settings</span><span>Moderator Control Panel - {{.Callsign}} {{.ServerName}}</span></div>
 <div class="areas">
 <div class="area section" id="info-area">
