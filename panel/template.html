@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ChatWire Panel</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <style>
+    :root {
+        --bg: #101010;
+        --surface: #242424;
+        --accent: #650000;
+        --text: #ffffff;
+        --positive: #0a8a0a;
+        --radius: 0.4rem;
+        --gap: 1rem;
+        --shadow: 0 0.5rem 0.5rem rgba(0,0,0,0.8);
+    }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: var(--gap);
+    }
+    .areas {
+        display: grid;
+        gap: var(--gap);
+    }
+    @media (min-width: 1500px) {
+        .areas {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    .area {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap);
+    }
+    .section {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: var(--gap);
+        border: 1px solid var(--accent);
+    }
+    #info-area { background: #201010; }
+    #command-area { background: #181010; }
+    #config-area { background: #100808; }
+    .section-header {
+        display: flex;
+        align-items: center;
+        background: var(--accent);
+        color: var(--text);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+    }
+    .section-header .title {
+        flex-grow: 1;
+        margin-left: 0.4rem;
+    }
+    .section-content {
+        margin-top: var(--gap);
+    }
+    .section.collapsed .section-content {
+        display: none;
+    }
+    .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: var(--gap);
+    }
+    .card-header {
+        display: flex;
+        align-items: center;
+        background: var(--accent);
+        color: var(--text);
+        border-radius: var(--radius) var(--radius) 0 0;
+        padding: 0.4rem;
+    }
+    .card-header .title {
+        flex-grow: 1;
+        margin-left: 0.4rem;
+    }
+    .card-content {
+        padding: var(--gap);
+    }
+    .card.collapsed .card-content {
+        display: none;
+    }
+    .response-card {
+        position: fixed;
+        left: 50%;
+        bottom: var(--gap);
+        transform: translateX(-50%);
+        z-index: 1000;
+        max-width: 80%;
+        min-width: 20rem;
+    }
+.banner {
+        position: sticky;
+        top: 0;
+        z-index: 1200;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--accent);
+        color: var(--text);
+        padding: 0.6rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: var(--gap);
+        outline: 1px solid #ffffff;
+    }
+    .panel-id {
+        font-weight: bold;
+        background: var(--surface);
+        padding: 0 0.4rem;
+        border-radius: var(--radius);
+    }
+    .confirm-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1100;
+    }
+    .confirm-box {
+        background: var(--surface);
+        padding: calc(var(--gap) * 1.5);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        text-align: center;
+        font-size: 1.2rem;
+        border: 2px solid black;
+        outline: 2px solid #ffeb3b;
+        max-width: 34rem;
+        width: 90%;
+    }
+    .confirm-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: var(--accent);
+        color: var(--text);
+        font-size: 1.4rem;
+        margin: calc(-1.8 * var(--gap)) calc(-1.8 * var(--gap)) var(--gap) calc(-1.8 * var(--gap));
+        padding: 0.6rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .confirm-message {
+        padding: var(--gap) 0;
+    }
+    .alert-icon {
+        text-align: center;
+        margin-bottom: var(--gap);
+    }
+    .alert-icon .material-icons {
+        font-size: 3.5rem;
+        color: #ffeb3b;
+    }
+    .action-box {
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        padding: var(--gap);
+        border-radius: var(--radius);
+    }
+    .confirm-buttons {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--gap);
+        margin-top: var(--gap);
+    }
+    .confirm-box button {
+        width: auto;
+        font-size: 1.5rem;
+        padding: 0.6rem 1.2rem;
+        text-transform: capitalize;
+    }
+    .confirm-proceed {
+        background: var(--positive);
+        border: 3px solid #ffffff !important;
+    }
+    .confirm-cancel { background: var(--accent); }
+    button {
+        background: linear-gradient(to bottom, var(--accent), #4c0000);
+        color: var(--text);
+        border: 1px solid #ff3030;
+        border-radius: var(--radius);
+        padding: 0.4rem;
+        margin: 0.2rem;
+        cursor: pointer;
+        width: 100%;
+        transition: filter 0.15s, box-shadow 0.15s;
+        box-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.5);
+    }
+    button:hover {
+        filter: brightness(1.3);
+        box-shadow: 0 0.2rem 0.4rem rgba(255,48,48,0.6);
+    }
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+        gap: var(--gap);
+    }
+    .button-grid form {
+        margin: 0;
+        width: 100%;
+    }
+    .button-grid button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .save-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+        gap: var(--gap);
+    }
+    .save-grid form {
+        width: 100%;
+    }
+    .save-grid button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .cmd-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--gap);
+    }
+    .cmd {
+        background: var(--surface);
+        padding: 0.3rem;
+        border-radius: var(--radius);
+        text-align: center;
+    }
+    .minimize {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0;
+        font-size: 1rem;
+        margin-left: auto;
+        width: 1.6rem;
+        height: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .close {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0 0.2rem;
+        font-size: 1rem;
+    }
+    input[type="text"] {
+        width: 100%;
+        border-radius: var(--radius);
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        color: var(--text);
+        padding: 0.3rem 0.6rem;
+        margin-bottom: 0.4rem;
+    }
+    select {
+        width: 100%;
+        border-radius: var(--radius);
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        color: var(--text);
+        padding: 0.3rem 0.6rem;
+        margin-bottom: 0.4rem;
+    }
+    .bool-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0.4rem;
+    }
+    .bool-display span {
+        flex: 0 0 70%;
+        text-align: right;
+    }
+    .bool-display label {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: flex-start;
+    }
+    .kv-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0.4rem;
+    }
+    .kv-display span {
+        flex: 0 0 70%;
+        text-align: right;
+    }
+    .kv-display input {
+        flex: 0 1 30%;
+        max-width: 30%;
+        text-align: left;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .value-box {
+        border: 1px solid var(--accent);
+        background: var(--bg);
+        color: var(--text);
+        border-radius: var(--radius);
+        padding: 0.2rem 0.4rem;
+        min-width: 4rem;
+        width: auto;
+        margin: 0;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 2.5rem;
+        height: 1.3rem;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute;
+        cursor: default;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--accent);
+        transition: .4s;
+        border-radius: 1.3rem;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 1.1rem;
+        width: 1.1rem;
+        left: 0.1rem;
+        bottom: 0.1rem;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    .switch input:checked + .slider { background-color: #0a8a0a; }
+    .switch input:checked + .slider:before { transform: translateX(1.2rem); }
+    .cfg-group {
+        border: 1px solid var(--accent);
+        border-radius: var(--radius);
+        margin-bottom: var(--gap);
+    }
+    .cfg-content > div:nth-child(odd),
+    .cfg-content > p:nth-child(odd),
+    .info-list > div:nth-child(odd),
+    .info-list > p:nth-child(odd) {
+        background: rgba(255,255,255,0.05);
+    }
+    .cfg-content > div,
+    .cfg-content > p,
+    .info-list > div,
+    .info-list > p {
+        padding: 0.2rem 0.4rem;
+        font-size: 1.1rem;
+    }
+    .save-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+    }
+    .save-age {
+        font-size: 0.8rem;
+        color: #ccc;
+    }
+    .cfg-title {
+        background: var(--accent);
+        padding: 0.2rem 0.4rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .cfg-content { padding: 0.4rem; }
+    form { margin: 0; }
+    </style>
+</head>
+<body>
+<script>history.replaceState(null,"",location.pathname);</script>
+<div class="banner"><span class="material-icons">admin_panel_settings</span><span class="panel-id">Moderator Control Panel - {{.Callsign}}-{{.ServerName}}</span></div>
+<div class="areas">
+<div class="area section" id="info-area">
+<div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="section-content">
+<div class="card">
+<div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content info-list">
+<div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
+<div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
+<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
+{{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
+<div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
+<div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
+<div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
+<div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
+<div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS10}}/{{.UPS30}}/{{.UPS60}}"></div>
+{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
+<div class="bool-display"><span>Paused</span><label class="switch"><input type="checkbox" disabled {{if .Paused}}checked{{end}}><span class="slider"></span></label></div>
+{{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}} ({{.TimeTill}})"></div>{{end}}
+{{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+<div class="kv-display"><span>Total players</span><input class="value-box" type="text" readonly value="{{.Total}}"></div>
+<div class="kv-display"><span>Members/Regulars/Veterans</span><input class="value-box" type="text" readonly value="{{.Mem}} | {{.Reg}} | {{.Vet}}"></div>
+<div class="kv-display"><span>Moderators/Banned</span><input class="value-box" type="text" readonly value="{{.Mods}} | {{.Banned}}"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">storage</span><span class="title">Server Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<pre>{{.Info}}</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div class="area section" id="command-area">
+<div class="section-header"><span class="material-icons">terminal</span><span class="title">Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="section-content">
+<div class="card">
+<div class="card-header"><span class="material-icons">rule</span><span class="title">Moderator Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+{{range .CmdGroups}}
+<h4>{{.Name}}</h4>
+<div class="button-grid">
+{{range .Cmds}}
+<form method="POST" action="/action" class="cmd-form" data-desc="{{.Label}}">
+    <input type="hidden" name="token" value="{{$.Token}}">
+    <input type="hidden" name="cmd" value="{{.Cmd}}">
+    <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
+</form>
+{{end}}
+</div>
+{{end}}
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">map</span><span class="title">Change Map</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form" data-desc="Change map">
+    <input type="hidden" name="token" value="{{$.Token}}">
+    <input type="hidden" name="cmd" value="change-map">
+    <select name="arg">
+        {{range .Saves}}
+        <option value="{{.Name}}">{{.Name}} ({{.Age}})</option>
+        {{end}}
+    </select>
+    <button type="submit">load</button>
+</form>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">terminal</span><span class="title">RCON Command</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form" data-desc="Run RCON">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="rcon">
+    <input type="text" name="arg" placeholder="/command">
+    <label><input type="checkbox" name="all"> all servers</label>
+<button type="submit">run</button>
+</form>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="material-icons">schedule</span><span class="title">Set Play Hours</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="config-hours">
+    <div class="bool-display"><span>enable</span><label class="switch"><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}><span class="slider"></span></label></div><br>
+    <input type="number" name="start" min="0" max="23" placeholder="start hour">
+    <input type="number" name="end" min="0" max="23" placeholder="end hour">
+<button type="submit">apply</button>
+</form>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">event</span><span class="title">Set Map Schedule</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="set-schedule">
+    <input type="number" name="days" placeholder="days" min="0">
+    <input type="number" name="hours" placeholder="hours" min="0">
+    <input type="text" name="date" placeholder="YYYY-MM-DD HH-MM-SS">
+    <button type="submit">apply</button>
+</form>
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="disable-schedule">
+<button type="submit">disable</button>
+</form>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">person</span><span class="title">Set Player Level</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{.Token}}">
+    <input type="hidden" name="cmd" value="player-level">
+    <input type="text" name="name" placeholder="player name">
+    <input type="number" name="level" placeholder="level">
+    <input type="text" name="reason" placeholder="reason">
+<button type="submit">apply</button>
+</form>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">bolt</span><span class="title">Discord Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<div class="cmd-grid">
+{{range .Commands}}
+<form method="POST" action="/action" class="cmd-form">
+    <input type="hidden" name="token" value="{{$.Token}}">
+    <input type="hidden" name="cmd" value="discord">
+    <input type="hidden" name="arg" value="{{.Name}}">
+    <button type="submit" title="{{.Description}}">{{.Name}}</button>
+</form>
+{{end}}
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="area section" id="config-area">
+<div class="section-header"><span class="material-icons">settings</span><span class="title">Config</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="section-content">
+<div class="card">
+<div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<pre>{{.LocalCfg}}</pre>
+</div>
+</div>
+<div class="card collapsed">
+<div class="card-header"><span class="material-icons">public</span><span class="title">Global Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+<pre>{{.GlobalCfg}}</pre>
+</div>
+</div>
+</div>
+</div>
+<script>
+document.querySelectorAll('.cmd-form').forEach(f=>{
+f.addEventListener('submit',async e=>{
+e.preventDefault();
+let desc=f.dataset.desc||f.querySelector('button').textContent.trim();
+const arg=f.querySelector('input[name="arg"],input[name="name"]');
+if(arg&&arg.value){desc+=' '+arg.value;}
+if(!(await confirmAction(desc)))return;
+const data=new FormData(f);
+const r=await fetch('/action',{method:'POST',body:data});
+const t=await r.text();
+showResponse(t);
+});
+});
+function confirmAction(msg){
+return new Promise(res=>{
+const ov=document.createElement('div');
+ov.className='confirm-overlay';
+ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span>Confirm action</span></div><div class="confirm-message"><div class="alert-icon"><span class="material-icons">warning</span></div><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-cancel">Cancel <span class="material-icons">close</span></button><button class="confirm-proceed">Proceed <span class="material-icons">check</span></button></div></div>';
+ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
+ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
+document.body.appendChild(ov);
+});
+}
+function showResponse(m){
+const c=document.createElement('div');
+c.className='card response-card';
+c.innerHTML='<div class="card-header"><span class="title">Response</span><button class="close">&times;</button></div><div class="card-content">'+m+'</div>';
+document.body.appendChild(c);
+const t=setTimeout(()=>c.remove(),15000);
+c.querySelector('.close').addEventListener('click',()=>{clearTimeout(t);c.remove();});
+}
+function makeValueNode(v){
+  if(/^https?:/.test(v)||v.startsWith('steam://')){
+    const a=document.createElement('a');
+    a.href=v;
+    a.target='_blank';
+    a.className='value-box';
+    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'connect':v;
+    return a;
+  }
+  const i=document.createElement('input');
+  i.type='text';
+  i.readOnly=true;
+  i.className='value-box';
+  i.value=v;
+  return i;
+}
+function formatCfg(pre){
+const lines=pre.textContent.split('\n');
+pre.innerHTML='';
+const root=document.createElement('div');
+root.className='cfg-content';
+pre.appendChild(root);
+let group=null,content=root;
+lines.forEach(l=>{
+ if(!l.trim())return;
+ if(!l.startsWith(' ')){
+  const idx=l.indexOf(':');
+  if(idx>-1 && l.slice(idx+1).trim()!==''){
+    const k=l.slice(0,idx).trim();
+    const v=l.slice(idx+1).trim();
+    const div=document.createElement('div');
+    div.className='kv-display';
+    div.appendChild(document.createElement('span')).textContent=k;
+    div.appendChild(makeValueNode(v));
+    root.appendChild(div);
+    group=null; content=root;
+  }else{
+    group=document.createElement('div');
+    group.className='cfg-group';
+    const t=document.createElement('div');
+    t.className='cfg-title';
+    t.textContent=l.trim().replace(/:$/, '');
+    group.appendChild(t);
+    content=document.createElement('div');
+    content.className='cfg-content';
+    group.appendChild(content);
+    pre.appendChild(group);
+  }
+ }else if(content){
+  const idx=l.indexOf(':');
+  if(idx>-1){
+    const k=l.slice(0,idx).trim();
+    const v=l.slice(idx+1).trim();
+    if(v==='true' || v==='false'){
+      const bd=document.createElement('div');
+      bd.className='bool-display';
+      bd.innerHTML='<span>'+k+'</span><label class="switch"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'><span class="slider"></span></label>';
+      content.appendChild(bd);
+    }else{
+      const div=document.createElement('div');
+      div.className='kv-display';
+      div.appendChild(document.createElement('span')).textContent=k;
+      div.appendChild(makeValueNode(v));
+      content.appendChild(div);
+    }
+  }else{
+    const p=document.createElement('p');
+    p.textContent=l.trim();
+    content.appendChild(p);
+  }
+ }
+});
+if(!root.children.length){pre.removeChild(root);}
+}
+document.querySelectorAll('.minimize').forEach(b=>{
+    b.addEventListener('click',e=>{
+        const box=b.closest('.card, .section');
+        box.classList.toggle('collapsed');
+    });
+});
+document.querySelectorAll('#config-area pre, #info-area pre').forEach(formatCfg);
+</script>
+</body></html>
