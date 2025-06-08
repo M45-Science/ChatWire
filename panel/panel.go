@@ -190,6 +190,14 @@ var panelHTML = `<!DOCTYPE html>
     .confirm-message {
         padding: var(--gap) 0;
     }
+    .alert-icon {
+        text-align: center;
+        margin-bottom: var(--gap);
+    }
+    .alert-icon .material-icons {
+        font-size: 3.5rem;
+        color: #ffeb3b;
+    }
     .action-box {
         border: 1px solid var(--accent);
         background: var(--bg);
@@ -208,7 +216,10 @@ var panelHTML = `<!DOCTYPE html>
         padding: 0.6rem 1.2rem;
         text-transform: capitalize;
     }
-    .confirm-proceed { background: var(--positive); }
+    .confirm-proceed {
+        background: var(--positive);
+        border: 3px solid #ffffff !important;
+    }
     .confirm-cancel { background: var(--accent); }
     button {
         background: linear-gradient(to bottom, var(--accent), #4c0000);
@@ -602,7 +613,7 @@ function confirmAction(msg){
 return new Promise(res=>{
 const ov=document.createElement('div');
 ov.className='confirm-overlay';
-ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message"><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-cancel">cancel</button><button class="confirm-proceed">proceed</button></div></div>';
+ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message"><div class="alert-icon"><span class="material-icons">warning</span></div><div class="action-box">'+msg+'</div></div><div class="confirm-buttons"><button class="confirm-cancel"><span class="material-icons">close</span> Cancel</button><button class="confirm-proceed"><span class="material-icons">check</span> Proceed</button></div></div>';
 ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
 ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
 document.body.appendChild(ov);
