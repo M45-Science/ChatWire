@@ -116,6 +116,7 @@
         box-shadow: var(--shadow);
         margin-bottom: var(--gap);
         outline: 1px solid #ffffff;
+        font-size: 1.2rem;
     }
     .panel-id {
         font-weight: bold;
@@ -450,6 +451,7 @@
 <div class="card">
 <div class="card-header"><span class="material-icons">science</span><span class="title">Factorio Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
+{{if .FactRunning}}
 <div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
 <div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
 <div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
@@ -457,15 +459,22 @@
 <div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
 <div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS}}"></div>
 <div class="bool-display"><span>Paused</span><input type="checkbox" disabled {{if .Paused}}checked{{end}}></div>
+{{else}}
+<p>Factorio is not running</p>
+{{end}}
 </div>
 </div>
 
 <div class="card">
 <div class="card-header"><span class="material-icons">map</span><span class="title">Map</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
+    {{if .MapSchedule}}
     {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}}"></div>{{end}}
     {{if ne .TimeTill ""}}<div class="kv-display"><span>Time till reset</span><input class="value-box" type="text" readonly value="{{.TimeTill}}"></div>{{end}}
     {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+    {{else}}
+    <p>No map schedule is set</p>
+    {{end}}
 </div>
 </div>
 
@@ -606,7 +615,7 @@
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="player-level">
     <input type="text" name="name" placeholder="player name">
-    <select name="level">
+    <select name="level" id="level-select">
         <option value="" disabled selected>choose a level</option>
         <option value="-1">Banned</option>
         <option value="-255">Deleted</option>
@@ -616,8 +625,8 @@
         <option value="3">Veteran</option>
         <option value="255">Moderator</option>
     </select>
-    <p class="note">Please fill this out and include a log URL!</p>
-    <input type="text" name="reason" placeholder="reason">
+    <p class="note" id="reason-note">Please fill this out and include a log URL!</p>
+    <input type="text" name="reason" id="reason-box" placeholder="reason">
 <button type="submit">apply</button>
 </form>
 </div>
@@ -706,7 +715,7 @@ function makeValueNode(v){
     a.href=v;
     a.target='_blank';
     a.className='value-box';
-    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'connect':v;
+    a.textContent=(v.includes('gosteam')||v.startsWith('steam://'))?'Connect':v;
     return a;
   }
   const i=document.createElement('input');
@@ -773,6 +782,18 @@ lines.forEach(l=>{
  }
 });
 if(!root.children.length){pre.removeChild(root);}
+}
+const lvlSel=document.getElementById('level-select');
+const reasonBox=document.getElementById('reason-box');
+const reasonNote=document.getElementById('reason-note');
+function toggleReason(){
+    const show=lvlSel.value==='-1';
+    reasonBox.style.display=show?'':'none';
+    reasonNote.style.display=show?'':'none';
+}
+if(lvlSel){
+    lvlSel.addEventListener('change',toggleReason);
+    toggleReason();
 }
 document.querySelectorAll('.minimize').forEach(b=>{
     b.addEventListener('click',e=>{

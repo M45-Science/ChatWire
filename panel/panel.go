@@ -138,6 +138,8 @@ type panelData struct {
 	PlayHours     string
 	HoursEnabled  bool
 	Paused        bool
+	FactRunning   bool
+	MapSchedule   bool
 	Token         string
 	CmdGroups     []panelCmdGroup
 	Saves         []panelSave
@@ -253,6 +255,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	if !fact.FactorioBootedAt.IsZero() && fact.FactorioBooted {
 		factUptime = time.Since(fact.FactorioBootedAt.Round(time.Second)).Round(time.Second).String()
 	}
+	factRunning := fact.FactIsRunning
 
 	nextReset := ""
 	timeTill := ""
@@ -262,6 +265,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		timeTill = fact.TimeTillReset()
 		resetInterval = fact.FormatResetInterval()
 	}
+	mapSchedule := fact.HasResetTime() || fact.HasResetInterval()
 
 	ups := "no data"
 	if ten, thirty, hour := fact.GetFactUPS(); ten > 0 || thirty > 0 || hour > 0 {
@@ -372,6 +376,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		CWUp: cwUptime, FactUp: factUptime, UPS: ups,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
+		FactRunning: factRunning, MapSchedule: mapSchedule,
 		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
 		ModNames:  modNames,
 		LocalCfg:  buildCfgStringSkip(cfg.Local, skip),
@@ -606,6 +611,7 @@ func buildInfoString() string {
 		"Time till reset":               {},
 		"Interval":                      {},
 		"UPS Average":                   {},
+		"Connect via Steam":             {},
 	}
 	add := func(k, v string) {
 		if v == "" || v == "0" || v == constants.Unknown || v == "(not configured)" {
@@ -687,7 +693,7 @@ func buildInfoString() string {
 	}
 
 	if url, ok := fact.MakeSteamURL(); ok {
-		add("Steam connect", url)
+		add("Connect via Steam", url)
 	}
 
 	return strings.Join(lines, "\n")
