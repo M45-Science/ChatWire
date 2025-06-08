@@ -41,9 +41,9 @@ var panelHTML = `<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <style>
     :root {
-        --bg: #131313;
-        --surface: #2b2b2b;
-        --accent: #b22020;
+        --bg: #101010;
+        --surface: #242424;
+        --accent: #8a0000;
         --text: #ffffff;
         --positive: #0a8a0a;
         --radius: 0.4rem;
@@ -78,9 +78,9 @@ var panelHTML = `<!DOCTYPE html>
         padding: var(--gap);
         border: 1px solid var(--accent);
     }
-    #info-area { background: #363636; }
-    #command-area { background: #2b2b2b; }
-    #config-area { background: #242424; }
+    #info-area { background: #303030; }
+    #command-area { background: #262626; }
+    #config-area { background: #1e1e1e; }
     .section-header {
         display: flex;
         align-items: center;
@@ -189,12 +189,16 @@ var panelHTML = `<!DOCTYPE html>
     button {
         background: var(--accent);
         color: var(--text);
-        border: none;
+        border: 1px solid #ff3030;
         border-radius: var(--radius);
         padding: 0.4rem;
         margin: 0.2rem;
         cursor: pointer;
         width: 100%;
+        transition: filter 0.15s;
+    }
+    button:hover {
+        filter: brightness(1.1);
     }
     .button-grid {
         display: grid;
@@ -322,7 +326,7 @@ var panelHTML = `<!DOCTYPE html>
         position: absolute;
         cursor: default;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #b22020;
+        background-color: var(--accent);
         transition: .4s;
         border-radius: 1.3rem;
     }
