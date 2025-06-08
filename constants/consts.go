@@ -45,6 +45,9 @@ const (
 	// HTTPS status panel offset (server port + this value)
 	PanelPortOffset = RconPortOffset + 10000
 
+	// Path to the web panel HTML template
+	PanelTemplateFile = "panel/template.html"
+
 	// Minimum bytes required in level.dat0 to consider a save valid
 	LevelDatMinSize = 50 * 1024
 

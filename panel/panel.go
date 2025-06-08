@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -32,13 +33,14 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
-
-	_ "embed"
+	"ChatWire/watcher"
 	"github.com/hako/durafmt"
 )
 
-//go:embed template.html
-var panelHTML string
+var (
+	panelTmpl     *template.Template
+	panelTmplLock sync.RWMutex
+)
 
 type panelCmd struct {
 	Cmd   string
@@ -59,6 +61,23 @@ type panelCommand struct {
 type panelCmdGroup struct {
 	Name string
 	Cmds []panelCmd
+}
+
+func loadTemplate() {
+	tmpl, err := template.ParseFiles(constants.PanelTemplateFile)
+	if err != nil {
+		cwlog.DoLogCW("panel: template load error: %v", err)
+		return
+	}
+	panelTmplLock.Lock()
+	panelTmpl = tmpl
+	panelTmplLock.Unlock()
+}
+
+// WatchTemplate monitors the panel template and reloads it when changed.
+func WatchTemplate() {
+	loadTemplate()
+	watcher.Watch(constants.PanelTemplateFile, 5*time.Second, &glob.ServerRunning, loadTemplate)
 }
 
 var modCmdGroups = []panelCmdGroup{
@@ -132,6 +151,7 @@ type panelData struct {
 func Start() {
 	http.HandleFunc("/panel", handlePanel)
 	http.HandleFunc("/action", handleAction)
+	go WatchTemplate()
 	addr := fmt.Sprintf(":%v", cfg.Local.Port+constants.PanelPortOffset)
 	go func() {
 		cert, err := generateCert()
@@ -213,7 +233,19 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid token", http.StatusUnauthorized)
 		return
 	}
-	t := template.Must(template.New("panel").Parse(panelHTML))
+	panelTmplLock.RLock()
+	t := panelTmpl
+	panelTmplLock.RUnlock()
+	if t == nil {
+		loadTemplate()
+		panelTmplLock.RLock()
+		t = panelTmpl
+		panelTmplLock.RUnlock()
+		if t == nil {
+			http.Error(w, "template error", http.StatusInternalServerError)
+			return
+		}
+	}
 
 	cwUptime := time.Since(glob.Uptime.Round(time.Second)).Round(time.Second).String()
 
