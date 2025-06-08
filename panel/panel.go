@@ -344,6 +344,15 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	}
 	modNames := support.GetModFiles()
 	sort.Strings(modNames)
+	skip := map[string]struct{}{
+		"Next map reset":   {},
+		"Reset interval":   {},
+		"Map Reset Hour":   {},
+		"Skip Map Reset":   {},
+		"Limit Open Hours": {},
+		"Open Hour":        {},
+		"Close Hour":       {},
+	}
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
 		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
@@ -351,8 +360,9 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
 		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
-		ModNames: modNames,
-		LocalCfg: buildCfgString(cfg.Local), GlobalCfg: buildCfgString(cfg.Global)}
+		ModNames:  modNames,
+		LocalCfg:  buildCfgStringSkip(cfg.Local, skip),
+		GlobalCfg: buildCfgString(cfg.Global)}
 	_ = t.Execute(w, pd)
 }
 
@@ -647,7 +657,7 @@ func buildInfoString() string {
 	return strings.Join(lines, "\n")
 }
 
-func cfgLines(v reflect.Value, prefix string) []string {
+func cfgLines(v reflect.Value, prefix string, skip map[string]struct{}) []string {
 	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
@@ -668,9 +678,14 @@ func cfgLines(v reflect.Value, prefix string) []string {
 		if name == "" {
 			name = f.Name
 		}
+		if skip != nil {
+			if _, ok := skip[name]; ok {
+				continue
+			}
+		}
 		fv := v.Field(i)
 		if fv.Kind() == reflect.Struct {
-			sub := cfgLines(fv, prefix+"  ")
+			sub := cfgLines(fv, prefix+"  ", skip)
 			items = append(items, struct {
 				name  string
 				lines []string
@@ -697,10 +712,12 @@ func cfgLines(v reflect.Value, prefix string) []string {
 	return out
 }
 
-func buildCfgString(i interface{}) string {
-	lines := cfgLines(reflect.ValueOf(i), "")
+func buildCfgStringSkip(i interface{}, skip map[string]struct{}) string {
+	lines := cfgLines(reflect.ValueOf(i), "", skip)
 	return strings.Join(lines, "\n")
 }
+
+func buildCfgString(i interface{}) string { return buildCfgStringSkip(i, nil) }
 
 func fakeInteraction(u *glob.PanelTokenData) *discordgo.InteractionCreate {
 	return &discordgo.InteractionCreate{
