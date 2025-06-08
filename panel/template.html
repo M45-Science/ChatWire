@@ -307,12 +307,17 @@
         max-width: 60%;
         text-align: left;
         word-break: break-word;
+        overflow-wrap: anywhere;
         min-width: 0;
     }
-    .bool-display input {
-        flex: 0 1 40%;
+    .bool-box {
+        flex: 0 0 40%;
         max-width: 40%;
-        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+    .bool-box input {
+        flex: 0 0 auto;
     }
     .bool-display input[type="checkbox"] {
         appearance: none;
@@ -367,6 +372,7 @@
         max-width: 60%;
         text-align: right;
         word-break: break-word;
+        overflow-wrap: anywhere;
         min-width: 0;
     }
     .kv-display input {
@@ -459,7 +465,7 @@
 <div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
 <div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
 <div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS}}"></div>
-<div class="bool-display"><span>Paused</span><input type="checkbox" disabled {{if .Paused}}checked{{end}}></div>
+<div class="bool-display"><span>Paused</span><span class="bool-box"><input type="checkbox" disabled {{if .Paused}}checked{{end}}></span></div>
 {{else}}
 <p>Factorio is not running</p>
 {{end}}
@@ -548,7 +554,7 @@
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
-    <div class="bool-display"><span>Enable Limits</span><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></div><br>
+    <div class="bool-display"><span>Enable Limits</span><span class="bool-box"><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></span></div><br>
     <select name="start">
         <option value="" disabled selected>start hour</option>
         <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>
@@ -766,7 +772,7 @@ lines.forEach(l=>{
     if(v==='true' || v==='false'){
       const bd=document.createElement('div');
       bd.className='bool-display';
-      bd.innerHTML='<span>'+k+'</span><input type="checkbox" disabled '+(v==='true'?'checked':'')+'>';
+      bd.innerHTML='<span>'+k+'</span><span class="bool-box"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'></span>';
       content.appendChild(bd);
     }else{
       const div=document.createElement('div');
