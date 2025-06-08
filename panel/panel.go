@@ -32,6 +32,7 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"ChatWire/modupdate"
 	"ChatWire/support"
 	"ChatWire/watcher"
 	"github.com/hako/durafmt"
@@ -86,7 +87,7 @@ var modCmdGroups = []panelCmdGroup{
 		Cmds: []panelCmd{
 			{Cmd: "reboot-chatwire", Label: "Reboot ChatWire", Icon: "restart_alt"},
 			{Cmd: "queue-reboot", Label: "Queue ChatWire Reboot", Icon: "schedule"},
-			{Cmd: "force-reboot", Label: "Force Reboot ChatWire", Icon: "restart_alt"},
+			{Cmd: "force-reboot", Label: "Force ChatWire Reboot", Icon: "restart_alt"},
 			{Cmd: "queue-fact-reboot", Label: "Queue Factorio Reboot", Icon: "schedule"},
 			{Cmd: "reload-config", Label: "Reload Config", Icon: "refresh"},
 		},
@@ -100,7 +101,7 @@ var modCmdGroups = []panelCmdGroup{
 			{Cmd: "update-factorio", Label: "Update Factorio", Icon: "update"},
 			{Cmd: "new-map", Label: "New Map", Icon: "create_new_folder"},
 			{Cmd: "archive-map", Label: "Archive Map", Icon: "archive"},
-			{Cmd: "map-reset", Label: "Map Reset", Icon: "map"},
+			{Cmd: "map-reset", Label: "Reset Map", Icon: "map"},
 		},
 	},
 	{
@@ -342,7 +343,11 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	for idx := range groups {
 		sort.Slice(groups[idx].Cmds, func(i, j int) bool { return groups[idx].Cmds[i].Label < groups[idx].Cmds[j].Label })
 	}
-	modNames := support.GetModFiles()
+	modFiles, _ := modupdate.GetModFiles()
+	var modNames []string
+	for _, m := range modFiles {
+		modNames = append(modNames, fmt.Sprintf("%s (%s)", m.Name, m.Version))
+	}
 	sort.Strings(modNames)
 	skip := map[string]struct{}{
 		"Next map reset":   {},

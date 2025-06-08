@@ -298,12 +298,10 @@
         word-break: break-word;
         min-width: 0;
     }
-    .bool-display label {
+    .bool-display input {
         flex: 0 0 40%;
         max-width: 40%;
         min-width: 0;
-        display: flex;
-        justify-content: flex-start;
     }
     .kv-display {
         display: flex;
@@ -339,34 +337,6 @@
         text-decoration: none;
         display: inline-block;
     }
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 2.5rem;
-        height: 1.3rem;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-        position: absolute;
-        cursor: default;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--accent);
-        transition: .4s;
-        border-radius: 1.3rem;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 1.1rem;
-        width: 1.1rem;
-        left: 0.1rem;
-        bottom: 0.1rem;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    .switch input:checked + .slider { background-color: #0a8a0a; }
-    .switch input:checked + .slider:before { transform: translateX(1.2rem); }
     .cfg-group {
         border: 1px solid var(--accent);
         border-radius: var(--radius);
@@ -424,7 +394,7 @@
 <div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
 <div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS10}}/{{.UPS30}}/{{.UPS60}}"></div>
 {{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
-<div class="bool-display"><span>Paused</span><label class="switch"><input type="checkbox" disabled {{if .Paused}}checked{{end}}><span class="slider"></span></label></div>
+<div class="bool-display"><span>Paused</span><input type="checkbox" disabled {{if .Paused}}checked{{end}}></div>
 {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}} ({{.TimeTill}})"></div>{{end}}
 {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
 </div>
@@ -439,7 +409,7 @@
 <div class="card">
 <div class="card-header"><span class="material-icons">extension</span><span class="title">Installed Mods</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
-    <select multiple size="8" readonly>
+    <select multiple size="{{len .ModNames}}" readonly>
     {{range .ModNames}}
         <option>{{.}}</option>
     {{end}}
@@ -509,7 +479,7 @@
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="config-hours">
-    <div class="bool-display"><span>enable</span><label class="switch"><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}><span class="slider"></span></label></div><br>
+    <div class="bool-display"><span>enable</span><input type="checkbox" name="enabled" {{if .HoursEnabled}}checked{{end}}></div><br>
     <input type="number" name="start" min="0" max="23" placeholder="start hour">
     <input type="number" name="end" min="0" max="23" placeholder="end hour">
 <button type="submit">apply</button>
@@ -681,7 +651,7 @@ lines.forEach(l=>{
     if(v==='true' || v==='false'){
       const bd=document.createElement('div');
       bd.className='bool-display';
-      bd.innerHTML='<span>'+k+'</span><label class="switch"><input type="checkbox" disabled '+(v==='true'?'checked':'')+'><span class="slider"></span></label>';
+      bd.innerHTML='<span>'+k+'</span><input type="checkbox" disabled '+(v==='true'?'checked':'')+'>';
       content.appendChild(bd);
     }else{
       const div=document.createElement('div');
