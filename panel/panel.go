@@ -122,9 +122,7 @@ type panelData struct {
 	Players       int
 	Gametime      string
 	SaveName      string
-	UPS10         string
-	UPS30         string
-	UPS60         string
+	UPS           string
 	CWUp          string
 	FactUp        string
 	NextReset     string
@@ -265,6 +263,11 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		resetInterval = fact.FormatResetInterval()
 	}
 
+	ups := "no data"
+	if ten, thirty, hour := fact.GetFactUPS(); ten > 0 || thirty > 0 || hour > 0 {
+		ups = fmt.Sprintf("%.2f/%.2f/%.2f", ten, thirty, hour)
+	}
+
 	playHours := ""
 	if cfg.Local.Options.PlayHourEnable {
 		playHours = fmt.Sprintf("%d-%d GMT", cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
@@ -365,7 +368,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
 		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
-		CWUp: cwUptime, FactUp: factUptime,
+		CWUp: cwUptime, FactUp: factUptime, UPS: ups,
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
 		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
@@ -494,6 +497,16 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		cfg.WriteLCfg()
 	case "set-schedule":
 		n := cfg.ResetInterval{}
+		if v := r.FormValue("months"); v != "" {
+			if val, err := strconv.Atoi(v); err == nil {
+				n.Months = val
+			}
+		}
+		if v := r.FormValue("weeks"); v != "" {
+			if val, err := strconv.Atoi(v); err == nil {
+				n.Weeks = val
+			}
+		}
 		if v := r.FormValue("days"); v != "" {
 			if val, err := strconv.Atoi(v); err == nil {
 				n.Days = val
@@ -507,7 +520,7 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		cfg.Local.Options.ResetInterval = n
 		fact.SetResetDate()
 		if v := r.FormValue("date"); v != "" {
-			layout := "2006-01-02 15-04-05"
+			layout := "2006-01-02T15:04"
 			if t, err := time.Parse(layout, v); err == nil && t.After(time.Now().UTC()) {
 				cfg.Local.Options.NextReset = t
 			}
@@ -626,6 +639,8 @@ func buildInfoString() string {
 		add("UPS Average", fmt.Sprintf("10m: %.2f, 30m: %.2f", ten, thirty))
 	} else if ten > 0 {
 		add("UPS Average", fmt.Sprintf("10m: %.2f", ten))
+	} else {
+		add("UPS Average", "no data")
 	}
 
 	glob.PlayerListLock.RLock()

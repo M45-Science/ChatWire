@@ -299,8 +299,9 @@
         min-width: 0;
     }
     .bool-display input {
-        flex: 0 0 40%;
-        max-width: 40%;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: none;
         min-width: 0;
     }
     .bool-display input[type="checkbox"] {
@@ -426,11 +427,18 @@
 <div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
 <div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
 <div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
-<div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS10}}/{{.UPS30}}/{{.UPS60}}"></div>
+<div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS}}"></div>
 {{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
 <div class="bool-display"><span>Paused</span><input type="checkbox" disabled {{if .Paused}}checked{{end}}></div>
-{{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}} ({{.TimeTill}})"></div>{{end}}
-{{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">map</span><span class="title">Map</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content info-list">
+    {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}}"></div>{{end}}
+    {{if ne .TimeTill ""}}<div class="kv-display"><span>Time till reset</span><input class="value-box" type="text" readonly value="{{.TimeTill}}"></div>{{end}}
+    {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
 </div>
 </div>
 
@@ -523,9 +531,37 @@
 <form method="POST" action="/action" class="cmd-form">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="set-schedule">
-    <input type="number" name="days" placeholder="days" min="0">
-    <input type="number" name="hours" placeholder="hours" min="0">
-    <input type="text" name="date" placeholder="YYYY-MM-DD HH-MM-SS">
+    <select name="months">
+        <option>0</option><option>1</option><option>2</option><option>3</option>
+        <option>4</option><option>5</option><option>6</option><option>7</option>
+        <option>8</option><option>9</option><option>10</option><option>11</option>
+        <option>12</option>
+    </select>
+    <select name="weeks">
+        <option>0</option><option>1</option><option>2</option><option>3</option>
+        <option>4</option><option>5</option><option>6</option><option>7</option>
+        <option>8</option>
+    </select>
+    <select name="days">
+        <option>0</option><option>1</option><option>2</option><option>3</option>
+        <option>4</option><option>5</option><option>6</option><option>7</option>
+        <option>8</option><option>9</option><option>10</option><option>11</option>
+        <option>12</option><option>13</option><option>14</option><option>15</option>
+        <option>16</option><option>17</option><option>18</option><option>19</option>
+        <option>20</option><option>21</option><option>22</option><option>23</option>
+        <option>24</option><option>25</option><option>26</option><option>27</option>
+        <option>28</option><option>29</option><option>30</option><option>31</option>
+    </select>
+    <select name="hours">
+        <option>0</option><option>1</option><option>2</option><option>3</option>
+        <option>4</option><option>5</option><option>6</option><option>7</option>
+        <option>8</option><option>9</option><option>10</option><option>11</option>
+        <option>12</option><option>13</option><option>14</option><option>15</option>
+        <option>16</option><option>17</option><option>18</option><option>19</option>
+        <option>20</option><option>21</option><option>22</option><option>23</option>
+    </select>
+    <input type="datetime-local" name="date">
+    <p class="note">Use this to set a specific reset date and time.</p>
     <button type="submit">apply</button>
 </form>
 <form method="POST" action="/action" class="cmd-form">
