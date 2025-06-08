@@ -599,8 +599,19 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 
 func buildInfoString() string {
 	var lines []string
+	skip := map[string]struct{}{
+		constants.ProgName + " version": {},
+		"ChatWire up-time":              {},
+		"Next map reset":                {},
+		"Time till reset":               {},
+		"Interval":                      {},
+		"UPS Average":                   {},
+	}
 	add := func(k, v string) {
 		if v == "" || v == "0" || v == constants.Unknown || v == "(not configured)" {
+			return
+		}
+		if _, ok := skip[k]; ok {
 			return
 		}
 		lines = append(lines, fmt.Sprintf("%s: %s", k, v))

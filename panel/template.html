@@ -26,6 +26,11 @@
         display: grid;
         gap: var(--gap);
     }
+    @media (min-width: 900px) {
+        .areas {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
     @media (min-width: 1500px) {
         .areas {
             grid-template-columns: repeat(3, 1fr);
@@ -297,14 +302,11 @@
         padding: 0.2rem 0.4rem;
     }
     .bool-display span {
-        flex: 0 0 60%;
-        max-width: 60%;
-        text-align: right;
+        text-align: left;
         word-break: break-word;
         min-width: 0;
     }
     .bool-display input {
-        margin-left: auto;
         flex: 0 0 auto;
         width: auto;
         max-width: none;
@@ -440,14 +442,20 @@
 <div class="card-content info-list">
 <div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
 <div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
-<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
 {{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
+{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="material-icons">science</span><span class="title">Factorio Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content info-list">
+<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
 <div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
 <div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
 <div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
 <div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
 <div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS}}"></div>
-{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
 <div class="bool-display"><span>Paused</span><input type="checkbox" disabled {{if .Paused}}checked{{end}}></div>
 </div>
 </div>
