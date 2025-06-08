@@ -154,10 +154,28 @@ var panelHTML = `<!DOCTYPE html>
     }
     .confirm-box {
         background: var(--surface);
-        padding: var(--gap);
+        padding: calc(var(--gap) * 1.5);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         text-align: center;
+        font-size: 1.2rem;
+        border: 2px solid black;
+        outline: 2px solid #ffeb3b;
+    }
+    .confirm-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: var(--accent);
+        color: var(--text);
+        font-size: 1.4rem;
+        margin: calc(-1.5 * var(--gap)) calc(-1.5 * var(--gap)) var(--gap) calc(-1.5 * var(--gap));
+        padding: 0.4rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .confirm-message {
+        padding: var(--gap) 0;
     }
     .confirm-buttons {
         display: flex;
@@ -553,7 +571,7 @@ function confirmAction(msg){
 return new Promise(res=>{
 const ov=document.createElement('div');
 ov.className='confirm-overlay';
-ov.innerHTML='<div class="confirm-box"><div>'+msg+'</div><div class="confirm-buttons"><button class="confirm-proceed">proceed</button><button class="confirm-cancel">cancel</button></div></div>';
+ov.innerHTML='<div class="confirm-box"><div class="confirm-title"><span class="material-icons">warning</span><span>Confirm action</span></div><div class="confirm-message">'+msg+'</div><div class="confirm-buttons"><button class="confirm-proceed">proceed</button><button class="confirm-cancel">cancel</button></div></div>';
 ov.querySelector('.confirm-proceed').addEventListener('click',()=>{ov.remove();res(true);});
 ov.querySelector('.confirm-cancel').addEventListener('click',()=>{ov.remove();res(false);});
 document.body.appendChild(ov);
