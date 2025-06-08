@@ -19,9 +19,22 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	now := time.Now().Unix()
 	token := glob.RandomBase64String(20)
+	var orig int64 = now
 	glob.PanelTokenLock.Lock()
-	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, Name: i.Member.User.Username, DiscID: i.Member.User.ID, Time: time.Now().Unix()}
+	for k, v := range glob.PanelTokens {
+		if v.DiscID == i.Member.User.ID {
+			if v.Orig < orig {
+				orig = v.Orig
+			}
+			delete(glob.PanelTokens, k)
+		}
+	}
+	if now-orig > constants.PanelTokenLimitSec {
+		orig = now
+	}
+	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, Name: i.Member.User.Username, DiscID: i.Member.User.ID, Time: now, Orig: orig}
 	glob.PanelTokenLock.Unlock()
 	dom := cfg.Global.Paths.URLs.Domain
 	if glob.LocalTestMode != nil && *glob.LocalTestMode {

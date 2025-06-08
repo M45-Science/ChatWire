@@ -792,18 +792,41 @@ func Start() {
 
 // GenerateToken creates a temporary token for web access.
 func GenerateToken(id string) string {
+	now := time.Now().Unix()
 	token := glob.RandomBase64String(20)
+	var orig int64 = now
 	glob.PanelTokenLock.Lock()
-	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: id, Time: time.Now().Unix()}
+	for k, v := range glob.PanelTokens {
+		if v.DiscID == id {
+			if v.Orig < orig {
+				orig = v.Orig
+			}
+			delete(glob.PanelTokens, k)
+		}
+	}
+	if now-orig > constants.PanelTokenLimitSec {
+		orig = now
+	}
+	glob.PanelTokens[token] = &glob.PanelTokenData{Token: token, DiscID: id, Time: now, Orig: orig}
 	glob.PanelTokenLock.Unlock()
 	return token
 }
 
 func tokenValid(tok string) bool {
 	glob.PanelTokenLock.RLock()
-	_, ok := glob.PanelTokens[tok]
+	data, ok := glob.PanelTokens[tok]
 	glob.PanelTokenLock.RUnlock()
-	return ok
+	if !ok {
+		return false
+	}
+	now := time.Now().Unix()
+	if now-data.Time > constants.PassExpireSec {
+		return false
+	}
+	if now-data.Orig > constants.PanelTokenLimitSec {
+		return false
+	}
+	return true
 }
 
 func handlePanel(w http.ResponseWriter, r *http.Request) {
@@ -935,7 +958,7 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 	glob.PanelTokenLock.RLock()
 	userInfo, ok := glob.PanelTokens[tok]
 	glob.PanelTokenLock.RUnlock()
-	if !ok {
+	if !ok || !tokenValid(tok) {
 		if !*glob.LocalTestMode {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
