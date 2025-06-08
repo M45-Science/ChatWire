@@ -85,9 +85,9 @@ var modCmdGroups = []panelCmdGroup{
 		Name: "ChatWire",
 		Cmds: []panelCmd{
 			{Cmd: "reboot-chatwire", Label: "Reboot ChatWire", Icon: "restart_alt"},
-			{Cmd: "queue-reboot", Label: "Queue Reboot", Icon: "schedule"},
-			{Cmd: "force-reboot", Label: "Force Reboot", Icon: "restart_alt"},
-			{Cmd: "queue-fact-reboot", Label: "Queue Fact Reboot", Icon: "schedule"},
+			{Cmd: "queue-reboot", Label: "Queue ChatWire Reboot", Icon: "schedule"},
+			{Cmd: "force-reboot", Label: "Force Reboot ChatWire", Icon: "restart_alt"},
+			{Cmd: "queue-fact-reboot", Label: "Queue Factorio Reboot", Icon: "schedule"},
 			{Cmd: "reload-config", Label: "Reload Config", Icon: "refresh"},
 		},
 	},
@@ -135,6 +135,7 @@ type panelData struct {
 	Mem           int
 	Reg           int
 	Vet           int
+	ModNames      []string
 	PlayHours     string
 	HoursEnabled  bool
 	Paused        bool
@@ -341,6 +342,17 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	for idx := range groups {
 		sort.Slice(groups[idx].Cmds, func(i, j int) bool { return groups[idx].Cmds[i].Label < groups[idx].Cmds[j].Label })
 	}
+	modNames := support.GetModFiles()
+	sort.Strings(modNames)
+	skip := map[string]struct{}{
+		"Next map reset":   {},
+		"Reset interval":   {},
+		"Map Reset Hour":   {},
+		"Skip Map Reset":   {},
+		"Limit Open Hours": {},
+		"Open Hour":        {},
+		"Close Hour":       {},
+	}
 	pd := panelData{ServerName: cfg.Local.Name, Callsign: strings.ToUpper(cfg.Local.Callsign),
 		CWVersion: constants.Version, Factorio: fact.FactorioVersion, SoftMod: softMod,
 		Players: fact.NumPlayers, Gametime: fact.GametimeString, SaveName: fact.LastSaveName,
@@ -348,7 +360,9 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		NextReset: nextReset, TimeTill: timeTill, ResetInterval: resetInterval,
 		Total: total, Mods: mods, Banned: ban, PlayHours: playHours, Paused: paused,
 		Token: tok, CmdGroups: groups, Saves: saves, Commands: cmdList, Info: buildInfoString(),
-		LocalCfg: buildCfgString(cfg.Local), GlobalCfg: buildCfgString(cfg.Global)}
+		ModNames:  modNames,
+		LocalCfg:  buildCfgStringSkip(cfg.Local, skip),
+		GlobalCfg: buildCfgString(cfg.Global)}
 	_ = t.Execute(w, pd)
 }
 
@@ -625,8 +639,11 @@ func buildInfoString() string {
 	ban += bCount
 	glob.PlayerListLock.RUnlock()
 	total := ban + mem + reg + vet + mod
-	add("Members/Regulars/Veterans", fmt.Sprintf("%d | %d | %d", mem, reg, vet))
-	add("Moderators/Banned", fmt.Sprintf("%d | %d", mod, ban))
+	add("Members", fmt.Sprintf("%d", mem))
+	add("Regulars", fmt.Sprintf("%d", reg))
+	add("Veterans", fmt.Sprintf("%d", vet))
+	add("Moderators", fmt.Sprintf("%d", mod))
+	add("Banned", fmt.Sprintf("%d", ban))
 	add("Total players", fmt.Sprintf("%d", total))
 
 	if fact.PausedTicks > 4 {
@@ -640,7 +657,7 @@ func buildInfoString() string {
 	return strings.Join(lines, "\n")
 }
 
-func cfgLines(v reflect.Value, prefix string) []string {
+func cfgLines(v reflect.Value, prefix string, skip map[string]struct{}) []string {
 	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
@@ -661,9 +678,14 @@ func cfgLines(v reflect.Value, prefix string) []string {
 		if name == "" {
 			name = f.Name
 		}
+		if skip != nil {
+			if _, ok := skip[name]; ok {
+				continue
+			}
+		}
 		fv := v.Field(i)
 		if fv.Kind() == reflect.Struct {
-			sub := cfgLines(fv, prefix+"  ")
+			sub := cfgLines(fv, prefix+"  ", skip)
 			items = append(items, struct {
 				name  string
 				lines []string
@@ -690,10 +712,12 @@ func cfgLines(v reflect.Value, prefix string) []string {
 	return out
 }
 
-func buildCfgString(i interface{}) string {
-	lines := cfgLines(reflect.ValueOf(i), "")
+func buildCfgStringSkip(i interface{}, skip map[string]struct{}) string {
+	lines := cfgLines(reflect.ValueOf(i), "", skip)
 	return strings.Join(lines, "\n")
 }
+
+func buildCfgString(i interface{}) string { return buildCfgStringSkip(i, nil) }
 
 func fakeInteraction(u *glob.PanelTokenData) *discordgo.InteractionCreate {
 	return &discordgo.InteractionCreate{

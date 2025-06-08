@@ -292,11 +292,16 @@
         padding: 0.2rem 0.4rem;
     }
     .bool-display span {
-        flex: 0 0 70%;
+        flex: 0 0 60%;
+        max-width: 60%;
         text-align: right;
+        word-break: break-word;
+        min-width: 0;
     }
     .bool-display label {
-        flex: 0 0 auto;
+        flex: 0 0 40%;
+        max-width: 40%;
+        min-width: 0;
         display: flex;
         justify-content: flex-start;
     }
@@ -307,12 +312,16 @@
         padding: 0.2rem 0.4rem;
     }
     .kv-display span {
-        flex: 0 0 70%;
+        flex: 0 0 60%;
+        max-width: 60%;
         text-align: right;
+        word-break: break-word;
+        min-width: 0;
     }
     .kv-display input {
-        flex: 0 1 30%;
-        max-width: 30%;
+        flex: 0 1 40%;
+        max-width: 40%;
+        min-width: 0;
         text-align: left;
         box-sizing: border-box;
         overflow: hidden;
@@ -418,9 +427,6 @@
 <div class="bool-display"><span>Paused</span><label class="switch"><input type="checkbox" disabled {{if .Paused}}checked{{end}}><span class="slider"></span></label></div>
 {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}} ({{.TimeTill}})"></div>{{end}}
 {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
-<div class="kv-display"><span>Total players</span><input class="value-box" type="text" readonly value="{{.Total}}"></div>
-<div class="kv-display"><span>Members/Regulars/Veterans</span><input class="value-box" type="text" readonly value="{{.Mem}} | {{.Reg}} | {{.Vet}}"></div>
-<div class="kv-display"><span>Moderators/Banned</span><input class="value-box" type="text" readonly value="{{.Mods}} | {{.Banned}}"></div>
 </div>
 </div>
 
@@ -428,6 +434,16 @@
 <div class="card-header"><span class="material-icons">storage</span><span class="title">Server Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre>{{.Info}}</pre>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="material-icons">extension</span><span class="title">Installed Mods</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
+<div class="card-content">
+    <select multiple size="8" readonly>
+    {{range .ModNames}}
+        <option>{{.}}</option>
+    {{end}}
+    </select>
 </div>
 </div>
 </div>
@@ -440,7 +456,9 @@
 <div class="card-header"><span class="material-icons">rule</span><span class="title">Moderator Commands</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 {{range .CmdGroups}}
-<h4>{{.Name}}</h4>
+<div class="cfg-group">
+<div class="cfg-title">{{.Name}}</div>
+<div class="cfg-content">
 <div class="button-grid">
 {{range .Cmds}}
 <form method="POST" action="/action" class="cmd-form" data-desc="{{.Label}}">
@@ -449,6 +467,8 @@
     <button type="submit" title="{{.Cmd}}"><span class="material-icons">{{.Icon}}</span>{{.Label}}</button>
 </form>
 {{end}}
+</div>
+</div>
 </div>
 {{end}}
 </div>
@@ -461,6 +481,7 @@
     <input type="hidden" name="token" value="{{$.Token}}">
     <input type="hidden" name="cmd" value="change-map">
     <select name="arg">
+        <option value="" disabled selected>click to choose a map</option>
         {{range .Saves}}
         <option value="{{.Name}}">{{.Name}} ({{.Age}})</option>
         {{end}}
@@ -522,7 +543,15 @@
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="player-level">
     <input type="text" name="name" placeholder="player name">
-    <input type="number" name="level" placeholder="level">
+    <select name="level">
+        <option value="255">Moderator</option>
+        <option value="3">Veteran</option>
+        <option value="2">Regular</option>
+        <option value="1">Member</option>
+        <option value="0">New</option>
+        <option value="-1">Banned</option>
+        <option value="-255">Deleted</option>
+    </select>
     <input type="text" name="reason" placeholder="reason">
 <button type="submit">apply</button>
 </form>
