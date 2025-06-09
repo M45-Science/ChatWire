@@ -682,11 +682,11 @@
 <div class="card">
 <div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
-<pre>{{.LocalCfg}}</pre>
-<form method="POST" action="/action" class="cmd-form" data-desc="Apply Config">
+<pre id="local-cfg-pre">{{.LocalCfg}}</pre>
+<form method="POST" action="/action" id="cfg-form" class="cmd-form" data-desc="Apply Config">
     <input type="hidden" name="token" value="{{.Token}}">
     <input type="hidden" name="cmd" value="apply-config">
-    <textarea name="cfg" rows="12" style="width:100%">{{.LocalJSON}}</textarea>
+    <textarea name="cfg" hidden>{{.LocalJSON}}</textarea>
     <button type="submit">apply</button>
 </form>
 </div>
@@ -756,6 +756,57 @@ function makeValueNode(v){
   i.className='value-box';
   i.value=v;
   return i;
+}
+function setCfgPath(obj,path,value){
+  let o=obj;
+  for(let i=0;i<path.length-1;i++)o=o[path[i]];
+  o[path[path.length-1]]=value;
+}
+function renderCfgEditor(obj, container, path=[]){
+  Object.entries(obj).forEach(([k,v])=>{
+    const p=path.concat(k);
+    if(v&&typeof v==='object'&&!Array.isArray(v)){
+      const g=document.createElement('div');
+      g.className='cfg-group';
+      const t=document.createElement('div');
+      t.className='cfg-title';
+      t.textContent=k;
+      g.appendChild(t);
+      const c=document.createElement('div');
+      c.className='cfg-content';
+      g.appendChild(c);
+      container.appendChild(g);
+      renderCfgEditor(v,c,p);
+    }else{
+      if(typeof v==='boolean'){
+        const bd=document.createElement('div');
+        bd.className='bool-display';
+        const sp=document.createElement('span');
+        sp.textContent=k;
+        const box=document.createElement('span');
+        box.className='bool-box';
+        const input=document.createElement('input');
+        input.type='checkbox';
+        input.checked=v;
+        input.addEventListener('change',()=>setCfgPath(obj,p,input.checked));
+        box.appendChild(input);
+        bd.appendChild(sp);
+        bd.appendChild(box);
+        container.appendChild(bd);
+      }else{
+        const div=document.createElement('div');
+        div.className='kv-display';
+        div.appendChild(document.createElement('span')).textContent=k;
+        const input=document.createElement('input');
+        input.className='value-box';
+        input.type=typeof v==='number'?'number':'text';
+        input.value=v;
+        input.addEventListener('input',()=>setCfgPath(obj,p,input.type==='number'?Number(input.value):input.value));
+        div.appendChild(input);
+        container.appendChild(div);
+      }
+    }
+  });
 }
 function formatCfg(pre){
 const lines=pre.textContent.split('\n');
@@ -833,6 +884,18 @@ document.querySelectorAll('.minimize').forEach(b=>{
         box.classList.toggle('collapsed');
     });
 });
-document.querySelectorAll('#config-area pre, #info-area pre').forEach(formatCfg);
+document.querySelectorAll('#info-area pre').forEach(formatCfg);
+const cfgForm=document.getElementById('cfg-form');
+if(cfgForm){
+  const cfgArea=document.getElementById('local-cfg-pre');
+  const ta=cfgForm.querySelector('textarea[name="cfg"]');
+  let cfgObj={};
+  try{cfgObj=JSON.parse(ta.value);}catch(e){}
+  cfgArea.textContent='';
+  renderCfgEditor(cfgObj,cfgArea);
+  cfgForm.addEventListener('submit',()=>{
+    ta.value=JSON.stringify(cfgObj,null,2);
+  });
+}
 </script>
 </body></html>
