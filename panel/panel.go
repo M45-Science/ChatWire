@@ -583,6 +583,19 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		cfg.Local = newCfg
 		cfg.WriteLCfg()
 		support.ConfigSoftMod()
+	case "set-config-field":
+		path := r.FormValue("path")
+		val := r.FormValue("value")
+		if path == "" {
+			fmt.Fprint(w, "path required")
+			return
+		}
+		if err := setCfgField(strings.Split(path, "."), val); err != nil {
+			fmt.Fprint(w, err.Error())
+			return
+		}
+		cfg.WriteLCfg()
+		support.ConfigSoftMod()
 	case "discord":
 		arg := strings.TrimPrefix(r.FormValue("arg"), "/")
 		for _, c := range commands.ListAllCommands() {
@@ -818,6 +831,50 @@ func buildCfgStringSkip(i interface{}, skip map[string]struct{}) string {
 }
 
 func buildCfgString(i interface{}) string { return buildCfgStringSkip(i, nil) }
+
+func setCfgField(path []string, value string) error {
+	v := reflect.ValueOf(&cfg.Local).Elem()
+	for i, p := range path {
+		v = v.FieldByName(p)
+		if !v.IsValid() {
+			return fmt.Errorf("field not found")
+		}
+		if i == len(path)-1 {
+			if !v.CanSet() {
+				return fmt.Errorf("cannot set field")
+			}
+			switch v.Kind() {
+			case reflect.String:
+				v.SetString(value)
+			case reflect.Bool:
+				b := strings.ToLower(value)
+				v.SetBool(b == "true" || b == "1" || b == "on" || b == "yes")
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				n, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return err
+				}
+				v.SetInt(n)
+			case reflect.Float32, reflect.Float64:
+				f, err := strconv.ParseFloat(value, 64)
+				if err != nil {
+					return err
+				}
+				v.SetFloat(f)
+			default:
+				return fmt.Errorf("unsupported type")
+			}
+			return nil
+		}
+		if v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				v.Set(reflect.New(v.Type().Elem()))
+			}
+			v = v.Elem()
+		}
+	}
+	return fmt.Errorf("invalid path")
+}
 
 func fakeInteraction(u *glob.PanelTokenData) *discordgo.InteractionCreate {
 	return &discordgo.InteractionCreate{
