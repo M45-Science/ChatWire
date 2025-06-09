@@ -25,6 +25,7 @@ import (
 	"ChatWire/modupdate"
 	"ChatWire/panel"
 	"ChatWire/support"
+	"ChatWire/util"
 )
 
 var (
@@ -40,6 +41,7 @@ func main() {
 	glob.LocalTestMode = flag.Bool("localTest", false, "Disable public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Disable auto-launch")
 	glob.NoDiscord = flag.Bool("noDiscord", false, "Disable Discord")
+	panelFlag := flag.Bool("panel", false, "Enable web panel")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
@@ -78,7 +80,9 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
-	panel.Start()
+	if *panelFlag {
+		panel.Start()
+	}
 	if !*glob.NoDiscord {
 		go support.MainLoops()
 		go support.HandleChat()
@@ -313,6 +317,7 @@ func readConfigs() {
 		os.Exit(1)
 	}
 	if cfg.ReadLCfg() {
+		util.SetTempFilePrefix(cfg.Local.Callsign + "-")
 		//cfg.WriteLCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
