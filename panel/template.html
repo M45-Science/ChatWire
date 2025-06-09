@@ -711,17 +711,21 @@
 </div>
 <script>
 document.querySelectorAll('.cmd-form').forEach(f=>{
-f.addEventListener('submit',async e=>{
-e.preventDefault();
-let desc=f.dataset.desc||f.querySelector('button').textContent.trim();
-const arg=f.querySelector('input[name="arg"],input[name="name"]');
-if(arg&&arg.value){desc+=' '+arg.value;}
-if(!(await confirmAction(desc)))return;
-const data=new FormData(f);
-const r=await fetch('/action',{method:'POST',body:data});
-const t=await r.text();
-showResponse(t);
-});
+  f.addEventListener('submit',async e=>{
+    e.preventDefault();
+    let desc=f.dataset.desc||f.querySelector('button').textContent.trim();
+    const arg=f.querySelector('input[name="arg"],input[name="name"]');
+    if(arg&&arg.value){desc+=' '+arg.value;}
+    if(!(await confirmAction(desc)))return;
+    if(f.id==='cfg-form'&&window.cfgObj){
+      const ta=f.querySelector('textarea[name="cfg"]');
+      ta.value=JSON.stringify(window.cfgObj,null,2);
+    }
+    const data=new FormData(f);
+    const r=await fetch('/action',{method:'POST',body:data});
+    const t=await r.text();
+    showResponse(t);
+  });
 });
 function confirmAction(msg){
 return new Promise(res=>{
@@ -885,17 +889,16 @@ document.querySelectorAll('.minimize').forEach(b=>{
     });
 });
 document.querySelectorAll('#info-area pre').forEach(formatCfg);
+var cfgObj;
 const cfgForm=document.getElementById('cfg-form');
 if(cfgForm){
   const cfgArea=document.getElementById('local-cfg-pre');
   const ta=cfgForm.querySelector('textarea[name="cfg"]');
-  let cfgObj={};
+  cfgObj={};
   try{cfgObj=JSON.parse(ta.value);}catch(e){}
+  window.cfgObj=cfgObj;
   cfgArea.textContent='';
   renderCfgEditor(cfgObj,cfgArea);
-  cfgForm.addEventListener('submit',()=>{
-    ta.value=JSON.stringify(cfgObj,null,2);
-  });
 }
 </script>
 </body></html>
