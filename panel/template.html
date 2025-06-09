@@ -683,12 +683,10 @@
 <div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre id="local-cfg-pre">{{.LocalCfg}}</pre>
-<form method="POST" action="/action" id="cfg-form" class="cmd-form" data-desc="Apply Config">
+<form id="cfg-form">
     <input type="hidden" name="token" value="{{.Token}}">
-    <input type="hidden" name="cmd" value="apply-config">
-    <textarea name="cfg" hidden>{{.LocalJSON}}</textarea>
-    <button type="submit">apply</button>
 </form>
+<textarea id="cfg-json" hidden>{{.LocalJSON}}</textarea>
 </div>
 </div>
 <div class="card">
@@ -766,6 +764,15 @@ function setCfgPath(obj,path,value){
   for(let i=0;i<path.length-1;i++)o=o[path[i]];
   o[path[path.length-1]]=value;
 }
+function sendCfgField(path,value){
+  const data=new FormData();
+  data.append('token', cfgForm.querySelector('input[name="token"]').value);
+  data.append('cmd','set-config-field');
+  data.append('path',path.join('.'));
+  data.append('value',value);
+  fetch('/action',{method:'POST',body:data})
+    .then(r=>r.text()).then(showResponse);
+}
 function renderCfgEditor(obj, container, path=[]){
   Object.entries(obj).forEach(([k,v])=>{
     const p=path.concat(k);
@@ -792,7 +799,10 @@ function renderCfgEditor(obj, container, path=[]){
         const input=document.createElement('input');
         input.type='checkbox';
         input.checked=v;
-        input.addEventListener('change',()=>setCfgPath(obj,p,input.checked));
+        input.addEventListener('change',()=>{
+          setCfgPath(obj,p,input.checked);
+          sendCfgField(p,input.checked?'true':'false');
+        });
         box.appendChild(input);
         bd.appendChild(sp);
         bd.appendChild(box);
@@ -805,7 +815,11 @@ function renderCfgEditor(obj, container, path=[]){
         input.className='value-box';
         input.type=typeof v==='number'?'number':'text';
         input.value=v;
-        input.addEventListener('input',()=>setCfgPath(obj,p,input.type==='number'?Number(input.value):input.value));
+        input.addEventListener('change',()=>{
+          const val=input.type==='number'?input.value:input.value;
+          setCfgPath(obj,p,input.type==='number'?Number(val):val);
+          sendCfgField(p,val);
+        });
         div.appendChild(input);
         container.appendChild(div);
       }
@@ -893,7 +907,7 @@ var cfgObj;
 const cfgForm=document.getElementById('cfg-form');
 if(cfgForm){
   const cfgArea=document.getElementById('local-cfg-pre');
-  const ta=cfgForm.querySelector('textarea[name="cfg"]');
+  const ta=document.getElementById('cfg-json');
   cfgObj={};
   try{cfgObj=JSON.parse(ta.value);}catch(e){}
   window.cfgObj=cfgObj;
