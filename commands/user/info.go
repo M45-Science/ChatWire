@@ -151,7 +151,7 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	msg, isConfigured := fact.MakeSteamURL()
 	if isConfigured {
-		buf = buf + "Steam connect link:\n" + msg
+		buf = buf + "Connect via Steam:\n" + msg
 	}
 
 	if fact.HasResetTime() {

@@ -49,7 +49,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		case "add-mod":
 			tmsg = tmsg + addMod(i, option.StringValue())
 		case "set-version-pref":
-			tmsg = tmsg + setVersion(i, option.StringValue())
+			tmsg = tmsg + setVersion(option.StringValue())
 		case "clear-all-mods":
 			msg = clearAllMods()
 			tmsg = tmsg + msg + "\n"
@@ -323,7 +323,7 @@ func enableStr(b bool, pastTense bool) string {
 	}
 }
 
-func setVersion(i *discordgo.InteractionCreate, input string) string {
+func setVersion(input string) string {
 	if input == "" {
 		return "You must specify a mod=version pair."
 	}

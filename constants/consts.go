@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2685-06.06.2025-1101p"
+	Version            = "2686-06.07.2025-1224p"
 	CWEpoch            = 1653239822390688174 //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -13,6 +13,7 @@ const (
 	MaxNameLength      = 64
 	MaxBanReasonLength = 1024
 	PassExpireSec      = 5 * 60
+	PanelTokenLimitSec = 30 * 60
 
 	/* ChatWire files */
 	CWGlobalConfig      = "../cw-global-config.json"
@@ -40,6 +41,12 @@ const (
 	ErrMsgDelay         = time.Second * 3
 	// Default offset added to Factorio server port for RCON
 	RconPortOffset = 10000
+
+	// HTTPS status panel offset (server port + this value)
+	PanelPortOffset = RconPortOffset + 10000
+
+	// Path to the web panel HTML template
+	PanelTemplateFile = "panel/template.html"
 
 	// Minimum bytes required in level.dat0 to consider a save valid
 	LevelDatMinSize = 50 * 1024

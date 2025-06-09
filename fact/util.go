@@ -440,11 +440,6 @@ func WriteFact(format string, args ...interface{}) {
 			}
 			return
 		}
-		if buf != "/time" && !strings.HasPrefix(buf, "/cchat") && !strings.HasPrefix(buf, "/cwhisper") &&
-			!strings.HasPrefix(buf, "/online") && !strings.HasPrefix(buf, "/p o c") {
-			cwlog.DoLogCW("CW: %v", buf)
-		}
-
 	} else {
 		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
 		SetFactRunning(false, true)
@@ -1201,6 +1196,10 @@ func DoExit(delay bool) {
 	cwlog.DoLogCW("Closing log files.")
 	glob.GameLogDesc.Close()
 	glob.CWLogDesc.Close()
+	glob.AuditLogDesc.Close()
+	if fi, err := os.Stat(glob.AuditLogName); err == nil && fi.Size() == 0 {
+		_ = os.Remove(glob.AuditLogName)
+	}
 
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */

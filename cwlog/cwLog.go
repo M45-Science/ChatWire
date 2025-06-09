@@ -36,6 +36,32 @@ func DoLogCW(format string, args ...interface{}) {
 	}
 }
 
+/* Audit log for moderator/admin actions */
+func DoLogAudit(format string, args ...interface{}) {
+	if glob.AuditLogDesc == nil {
+		return
+	}
+
+	ctime := time.Now()
+	_, filename, line, _ := runtime.Caller(1)
+
+	var text string
+	if len(args) == 0 {
+		text = format
+	} else {
+		text = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
+	}
+
+	date := fmt.Sprintf("%2v:%2v.%2v", ctime.Hour(), ctime.Minute(), ctime.Second())
+	buf := fmt.Sprintf("%v: %15v:%5v: %v\n", date, filepath.Base(filename), line, text)
+	_, err := glob.AuditLogDesc.WriteString(buf)
+	if err != nil {
+		fmt.Println("DoLogAudit: WriteString failure")
+		glob.AuditLogDesc = nil
+		return
+	}
+}
+
 /* Game log */
 func DoLogGame(format string, args ...interface{}) {
 	if glob.GameLogDesc == nil {
@@ -105,10 +131,10 @@ func StartCWLog() {
 	t := time.Now().UTC()
 
 	/* Create our log file names */
-	glob.CWLogName = fmt.Sprintf("log/cw-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+	glob.CWLogName = fmt.Sprintf("audit-log/cw-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 
 	/* Make log directory */
-	errr := os.MkdirAll("log", os.ModePerm)
+	errr := os.MkdirAll("audit-log", os.ModePerm)
 	if errr != nil {
 		fmt.Print(errr.Error())
 		return
@@ -133,6 +159,44 @@ func StartCWLog() {
 
 }
 
+/* Prep everything for the audit log */
+func StartAuditLog() {
+
+	t := time.Now().UTC()
+
+	/* Create our log file names */
+	oldName := glob.AuditLogName
+	glob.AuditLogName = fmt.Sprintf("audit-log/audit-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+
+	/* Make log directory */
+	errr := os.MkdirAll("audit-log", os.ModePerm)
+	if errr != nil {
+		fmt.Print(errr.Error())
+		return
+	}
+
+	/* Open log files */
+	adesc, errb := os.OpenFile(glob.AuditLogName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	/* Handle file errors */
+	if errb != nil {
+		fmt.Printf("An error occurred when attempting to create audit log. Details: %s", errb)
+		return
+	}
+
+	if glob.AuditLogDesc != nil {
+		DoLogAudit("Rotating log.")
+		glob.AuditLogDesc.Close()
+		if fi, err := os.Stat(oldName); err == nil && fi.Size() == 0 {
+			_ = os.Remove(oldName)
+		}
+	}
+
+	/* Save descriptors, open/closed elsewhere */
+	glob.AuditLogDesc = adesc
+
+}
+
 func AutoRotateLogs() {
 	//Rotate when date changes
 	go func() {
@@ -143,6 +207,7 @@ func AutoRotateLogs() {
 				startDay = currentDay
 				StartCWLog()
 				StartGameLog()
+				StartAuditLog()
 			}
 			time.Sleep(time.Second)
 		}

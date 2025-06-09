@@ -23,6 +23,7 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
+	"ChatWire/panel"
 	"ChatWire/support"
 )
 
@@ -46,6 +47,7 @@ func main() {
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
+	cwlog.StartAuditLog()
 	cwlog.AutoRotateLogs()
 	cwlog.DoLogCW("\n Starting %v Version: %v", constants.ProgName, constants.Version)
 
@@ -76,6 +78,7 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
+	panel.Start()
 	if !*glob.NoDiscord {
 		go support.MainLoops()
 		go support.HandleChat()
@@ -273,6 +276,7 @@ func initMaps() {
 	glob.ChatterSpamScore = make(map[string]int)
 	glob.PlayerList = make(map[string]*glob.PlayerData)
 	glob.PassList = make(map[string]*glob.PassData)
+	glob.PanelTokens = make(map[string]*glob.PanelTokenData)
 
 	/* Generate number to alpha map, used for auto port assignment starting at constants.RconPortOffset */
 	pos := constants.RconPortOffset

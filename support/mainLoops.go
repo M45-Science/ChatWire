@@ -228,6 +228,26 @@ func MainLoops() {
 	}()
 
 	/********************************
+	 * Delete expired panel tokens
+	 ********************************/
+	go func() {
+
+		for glob.ServerRunning {
+			time.Sleep(1 * time.Minute)
+
+			t := time.Now()
+
+			glob.PanelTokenLock.Lock()
+			for k, tok := range glob.PanelTokens {
+				if (t.Unix()-tok.Time) > constants.PassExpireSec || (t.Unix()-tok.Orig) > constants.PanelTokenLimitSec {
+					delete(glob.PanelTokens, k)
+				}
+			}
+			glob.PanelTokenLock.Unlock()
+		}
+	}()
+
+	/********************************
 	 * Save database, if marked dirty
 	 ********************************/
 	go func() {
@@ -585,6 +605,14 @@ func MainLoops() {
 				glob.CWLogDesc = nil
 				cwlog.StartCWLog()
 				cwlog.DoLogCW("CWLog file was deleted, recreated.")
+			}
+
+			if _, err = os.Stat(glob.AuditLogName); err != nil {
+
+				glob.AuditLogDesc.Close()
+				glob.AuditLogDesc = nil
+				cwlog.StartAuditLog()
+				cwlog.DoLogAudit("Audit log file was deleted, recreated.")
 			}
 
 			if _, err = os.Stat(glob.GameLogName); err != nil {

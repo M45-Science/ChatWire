@@ -108,6 +108,7 @@ func ReadLCfg() bool {
 		cwlog.DoLogCW("ReadLCfg: os.Stat failed, auto-defaults generated.")
 		newcfg := createLCfg()
 		Local = newcfg
+		Local.Channel.ChatChannel = util.TrimPrefixIgnoreCase(strings.TrimSpace(Local.Channel.ChatChannel), "channel id:")
 		setLocalDefaults()
 		if !Local.Settings.AutoPause {
 			Local.Settings.AutoPause = true
@@ -129,6 +130,7 @@ func ReadLCfg() bool {
 		}
 
 		Local = newcfg
+		Local.Channel.ChatChannel = util.TrimPrefixIgnoreCase(strings.TrimSpace(Local.Channel.ChatChannel), "channel id:")
 		setLocalDefaults()
 
 		/* Automatic local defaults */

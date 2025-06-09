@@ -277,7 +277,7 @@ func GetModFiles() ([]modZipInfo, error) {
 			if modMap[modInfo.Name] != nil {
 				greater, err := checkVersion(EO_GREATER, modMap[modInfo.Name].Version, modInfo.Version)
 				if err == nil && greater {
-					cwlog.DoLogCW("Found newer version of mod: %v: %v -> %v", modInfo.Name, modMap[modInfo.Name].Version, modInfo.Version)
+					//cwlog.DoLogCW("Found newer version of mod: %v: %v -> %v", modInfo.Name, modMap[modInfo.Name].Version, modInfo.Version)
 					modMap[modInfo.Name] = modInfo
 				}
 			} else {

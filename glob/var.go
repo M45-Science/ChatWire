@@ -46,10 +46,12 @@ var (
 	SoftModVersion = constants.Unknown
 
 	/* Log data */
-	GameLogName = ""
-	CWLogName   = ""
-	GameLogDesc *os.File
-	CWLogDesc   *os.File
+	GameLogName  = ""
+	CWLogName    = ""
+	AuditLogName = ""
+	GameLogDesc  *os.File
+	CWLogDesc    *os.File
+	AuditLogDesc *os.File
 
 	/* CW reboot */
 	DoRebootCW = false
@@ -67,6 +69,10 @@ var (
 	/* Registration codes */
 	PassList         map[string]*PassData
 	PasswordListLock sync.RWMutex
+
+	/* Web panel tokens */
+	PanelTokens    map[string]*PanelTokenData
+	PanelTokenLock sync.RWMutex
 
 	/* Player database status */
 	PlayerListUpdated       = false
