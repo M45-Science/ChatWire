@@ -65,6 +65,8 @@ Usage of ChatWire:
         Turn off public/auth mode for testing
   -noAutoLaunch
         Turn off auto-launch
+  -panel
+        Enable web control panel
   -regCommands
         Register discord commands
 ```
@@ -101,7 +103,7 @@ Ensure the generated configuration files contain your Discord token, application
 
 ### Web Control Panel
 
-Moderators can generate a temporary token with the `/web-panel` command. The control panel exposes
+The panel server is disabled by default. Launch ChatWire with `-panel` to enable it. Moderators can generate a temporary token with the `/web-panel` command. The control panel exposes
 information from the `/info` command such as versions, uptime, next map reset and player statistics.
 It provides buttons for common moderator actions like starting or stopping Factorio, synchronising
 mods or updating the game. A map section lists the most recent autosaves and lets you load one with

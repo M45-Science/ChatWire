@@ -311,6 +311,11 @@ func MainLoops() {
 	 ****************************************/
 	go cfg.WatchGCfg()
 
+	/****************************************
+	 * Local config file modification watching
+	 ****************************************/
+	go cfg.WatchLCfg()
+
 	/* Read database, if the file was modified */
 	go func() {
 		updated := false
@@ -356,7 +361,35 @@ func MainLoops() {
 				updated = false
 
 				if cfg.ReadGCfg() {
-					cfg.WriteGCfg()
+					ConfigSoftMod()
+					fact.GenerateFactorioConfig()
+					fact.DoUpdateChannelName()
+				}
+			}
+
+		}
+	}()
+
+	/* Reload local config if the file was modified */
+	go func() {
+		updated := false
+
+		for glob.ServerRunning {
+
+			time.Sleep(5 * time.Second)
+
+			glob.LocalCfgUpdatedLock.Lock()
+			if glob.LocalCfgUpdated {
+				updated = true
+				glob.LocalCfgUpdated = false
+			}
+			glob.LocalCfgUpdatedLock.Unlock()
+
+			if updated {
+				updated = false
+
+				if cfg.ReadLCfg() {
+					util.SetTempFilePrefix(cfg.Local.Callsign + "-")
 					ConfigSoftMod()
 					fact.GenerateFactorioConfig()
 					fact.DoUpdateChannelName()

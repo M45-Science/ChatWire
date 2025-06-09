@@ -14,6 +14,7 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/watcher"
 )
 
 var (
@@ -76,35 +77,13 @@ func CheckBanList(name string, doWarn bool) bool {
 
 // WatchBanFile monitors the ban file for changes and reloads it when modified.
 func WatchBanFile() {
-	for glob.ServerRunning {
-
-		if cfg.Global.Paths.DataFiles.Bans == "" {
-			break
-		}
-
-		filePath := cfg.Global.Paths.DataFiles.Bans
-		initialStat, erra := os.Stat(filePath)
-
-		if erra != nil {
-			time.Sleep(time.Minute)
-			continue
-		}
-
-		time.Sleep(5 * time.Second)
-		for glob.ServerRunning && initialStat != nil {
-			time.Sleep(5 * time.Second)
-
-			stat, errb := os.Stat(filePath)
-			if errb != nil {
-				break
-			}
-
-			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				ReadBanFile(false)
-				break
-			}
-		}
+	if cfg.Global.Paths.DataFiles.Bans == "" {
+		return
 	}
+
+	watcher.Watch(cfg.Global.Paths.DataFiles.Bans, 5*time.Second, &glob.ServerRunning, func() {
+		ReadBanFile(false)
+	})
 }
 
 // ReadBanFile loads the ban file from disk. When firstboot is true the

@@ -86,6 +86,10 @@ var (
 	GlobalCfgUpdated     = false
 	GlobalCfgUpdatedLock sync.Mutex
 
+	/* Local config status */
+	LocalCfgUpdated     = false
+	LocalCfgUpdatedLock sync.Mutex
+
 	/* Factorio server watchdog */
 	NoResponseCount = 0
 

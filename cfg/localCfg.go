@@ -7,10 +7,12 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"ChatWire/util"
+	"ChatWire/watcher"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
@@ -165,4 +167,13 @@ func ReadLCfg() bool {
 func createLCfg() local {
 	newcfg := local{}
 	return newcfg
+}
+
+// WatchLCfg monitors the local configuration file for changes.
+func WatchLCfg() {
+	watcher.Watch(constants.CWLocalConfig, 5*time.Second, &glob.ServerRunning, func() {
+		glob.LocalCfgUpdatedLock.Lock()
+		glob.LocalCfgUpdated = true
+		glob.LocalCfgUpdatedLock.Unlock()
+	})
 }
