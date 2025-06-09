@@ -280,7 +280,7 @@ func injectSoftMod(fileName, folderName string) {
 		/* Read files in from softmod */
 		blackList := []string{"img-source", "out"}                   /* Wildcard exclude */
 		allowList := []string{"README.md", "preview.jpg", "LICENSE"} /* Always include */
-		allowExt := []string{".lua", ".png"}
+		allowExt := []string{".lua", ".png", ".cfg"}
 
 		tfiles := readFolder(cfg.Local.Options.SoftModOptions.SoftModPath, folderName)
 		var addFiles []zipFilesData
