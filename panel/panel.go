@@ -155,6 +155,7 @@ type panelData struct {
 // Start runs the HTTPS status panel server.
 func Start() {
 	http.HandleFunc("/panel", handlePanel)
+	http.HandleFunc("/panel-data", handlePanelData)
 	http.HandleFunc("/action", handleAction)
 	go WatchTemplate()
 	addr := fmt.Sprintf(":%v", cfg.Local.Port+constants.PanelPortOffset)
@@ -211,47 +212,7 @@ func tokenValid(tok string) bool {
 	return true
 }
 
-func handlePanel(w http.ResponseWriter, r *http.Request) {
-	tok := r.URL.Query().Get("token")
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	if ip == "" {
-		ip = r.RemoteAddr
-	}
-	if tok == "" || !tokenValid(tok) {
-		if !*glob.LocalTestMode {
-			http.Error(w, "invalid token", http.StatusUnauthorized)
-			return
-		}
-	}
-	glob.PanelTokenLock.Lock()
-	data, ok := glob.PanelTokens[tok]
-	if ok {
-		if data.IP == "" {
-			data.IP = ip
-		} else if data.IP != ip {
-			delete(glob.PanelTokens, tok)
-			ok = false
-		}
-	}
-	glob.PanelTokenLock.Unlock()
-	if !ok && !*glob.LocalTestMode {
-		http.Error(w, "invalid token", http.StatusUnauthorized)
-		return
-	}
-	panelTmplLock.RLock()
-	t := panelTmpl
-	panelTmplLock.RUnlock()
-	if t == nil {
-		loadTemplate()
-		panelTmplLock.RLock()
-		t = panelTmpl
-		panelTmplLock.RUnlock()
-		if t == nil {
-			http.Error(w, "template error", http.StatusInternalServerError)
-			return
-		}
-	}
-
+func buildPanelData(tok string) panelData {
 	cwUptime := time.Since(glob.Uptime.Round(time.Second)).Round(time.Second).String()
 
 	factUptime := "not running"
@@ -318,7 +279,6 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		softMod = glob.SoftModVersion
 	}
 
-	// gather last 24 saves
 	var saves []panelSave
 	files, err := os.ReadDir(cfg.GetSavesFolder())
 	if err == nil {
@@ -409,7 +369,84 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 			b, _ := json.MarshalIndent(cfg.Local, "", "  ")
 			return string(b)
 		}()}
+	return pd
+}
+
+func handlePanel(w http.ResponseWriter, r *http.Request) {
+	tok := r.URL.Query().Get("token")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if ip == "" {
+		ip = r.RemoteAddr
+	}
+	if tok == "" || !tokenValid(tok) {
+		if !*glob.LocalTestMode {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+	}
+	glob.PanelTokenLock.Lock()
+	data, ok := glob.PanelTokens[tok]
+	if ok {
+		if data.IP == "" {
+			data.IP = ip
+		} else if data.IP != ip {
+			delete(glob.PanelTokens, tok)
+			ok = false
+		}
+	}
+	glob.PanelTokenLock.Unlock()
+	if !ok && !*glob.LocalTestMode {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+	panelTmplLock.RLock()
+	t := panelTmpl
+	panelTmplLock.RUnlock()
+	if t == nil {
+		loadTemplate()
+		panelTmplLock.RLock()
+		t = panelTmpl
+		panelTmplLock.RUnlock()
+		if t == nil {
+			http.Error(w, "template error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	pd := buildPanelData(tok)
 	_ = t.Execute(w, pd)
+}
+
+func handlePanelData(w http.ResponseWriter, r *http.Request) {
+	tok := r.URL.Query().Get("token")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if ip == "" {
+		ip = r.RemoteAddr
+	}
+	if tok == "" || !tokenValid(tok) {
+		if !*glob.LocalTestMode {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+	}
+	glob.PanelTokenLock.Lock()
+	data, ok := glob.PanelTokens[tok]
+	if ok {
+		if data.IP == "" {
+			data.IP = ip
+		} else if data.IP != ip {
+			delete(glob.PanelTokens, tok)
+			ok = false
+		}
+	}
+	glob.PanelTokenLock.Unlock()
+	if !ok && !*glob.LocalTestMode {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+	pd := buildPanelData(tok)
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(pd)
 }
 
 func handleAction(w http.ResponseWriter, r *http.Request) {
