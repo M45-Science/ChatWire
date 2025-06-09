@@ -727,6 +727,9 @@ document.querySelectorAll('.cmd-form').forEach(f=>{
     const r=await fetch('/action',{method:'POST',body:data});
     const t=await r.text();
     showResponse(t);
+    if(e.submitter && e.submitter.textContent.trim().toLowerCase()==='apply'){
+      location.reload();
+    }
   });
 });
 function confirmAction(msg){
@@ -955,6 +958,9 @@ if(cfgForm){
       setCfgPath(cfgOrig,path.split('.'),getCfgPath(cfgObj,path.split('.')));
     }
     dirtyFields.clear();
+    if(e.submitter && e.submitter.textContent.trim().toLowerCase()==='apply'){
+      location.reload();
+    }
   });
 }
 </script>
