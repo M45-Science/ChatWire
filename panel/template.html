@@ -438,6 +438,9 @@
         padding: 0.4rem;
         white-space: normal;
     }
+    input.dirty {
+        box-shadow: 0 0 0 2px #ffeb3b;
+    }
     form { margin: 0; }
     </style>
 </head>
@@ -683,8 +686,9 @@
 <div class="card-header"><span class="material-icons">build</span><span class="title">Local Configuration</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
 <pre id="local-cfg-pre">{{.LocalCfg}}</pre>
-<form id="cfg-form">
+<form id="cfg-form" data-desc="Apply Config">
     <input type="hidden" name="token" value="{{.Token}}">
+    <button type="submit">apply</button>
 </form>
 <textarea id="cfg-json" hidden>{{.LocalJSON}}</textarea>
 </div>
@@ -761,21 +765,27 @@ function makeValueNode(v){
 }
 function setCfgPath(obj,path,value){
   let o=obj;
-  for(let i=0;i<path.length-1;i++)o=o[path[i]];
+  for(let i=0;i<path.length-1;i++){
+    if(!(path[i] in o))o[path[i]]={};
+    o=o[path[i]];
+  }
   o[path[path.length-1]]=value;
+}
+function getCfgPath(obj,path){
+  return path.reduce((o,p)=>o?o[p]:undefined,obj);
 }
 function sendCfgField(path,value){
   const data=new FormData();
   data.append('token', cfgForm.querySelector('input[name="token"]').value);
   data.append('cmd','set-config-field');
-  data.append('path',path.join('.'));
+  data.append('path',Array.isArray(path)?path.join('.') : path);
   data.append('value',value);
-  fetch('/action',{method:'POST',body:data})
-    .then(r=>r.text()).then(showResponse);
+  return fetch('/action',{method:'POST',body:data}).then(r=>r.text());
 }
 function renderCfgEditor(obj, container, path=[]){
   Object.entries(obj).forEach(([k,v])=>{
     const p=path.concat(k);
+    const key=p.join('.');
     if(v&&typeof v==='object'&&!Array.isArray(v)){
       const g=document.createElement('div');
       g.className='cfg-group';
@@ -799,9 +809,18 @@ function renderCfgEditor(obj, container, path=[]){
         const input=document.createElement('input');
         input.type='checkbox';
         input.checked=v;
+        cfgInputs[key]=input;
+        input.dataset.path=key;
         input.addEventListener('change',()=>{
-          setCfgPath(obj,p,input.checked);
-          sendCfgField(p,input.checked?'true':'false');
+          setCfgPath(cfgObj,p,input.checked);
+          const orig=getCfgPath(cfgOrig,p);
+          if(input.checked!==orig){
+            dirtyFields.set(key,input.checked?'true':'false');
+            input.classList.add('dirty');
+          }else{
+            dirtyFields.delete(key);
+            input.classList.remove('dirty');
+          }
         });
         box.appendChild(input);
         bd.appendChild(sp);
@@ -815,10 +834,19 @@ function renderCfgEditor(obj, container, path=[]){
         input.className='value-box';
         input.type=typeof v==='number'?'number':'text';
         input.value=v;
-        input.addEventListener('change',()=>{
-          const val=input.type==='number'?input.value:input.value;
-          setCfgPath(obj,p,input.type==='number'?Number(val):val);
-          sendCfgField(p,val);
+        cfgInputs[key]=input;
+        input.dataset.path=key;
+        input.addEventListener('input',()=>{
+          const val=input.type==='number'?Number(input.value):input.value;
+          setCfgPath(cfgObj,p,val);
+          const orig=getCfgPath(cfgOrig,p);
+          if(val!==orig){
+            dirtyFields.set(key,String(val));
+            input.classList.add('dirty');
+          }else{
+            dirtyFields.delete(key);
+            input.classList.remove('dirty');
+          }
         });
         div.appendChild(input);
         container.appendChild(div);
@@ -903,16 +931,31 @@ document.querySelectorAll('.minimize').forEach(b=>{
     });
 });
 document.querySelectorAll('#info-area pre').forEach(formatCfg);
-var cfgObj;
+var cfgObj,cfgOrig;
+const dirtyFields=new Map();
+const cfgInputs={};
 const cfgForm=document.getElementById('cfg-form');
 if(cfgForm){
   const cfgArea=document.getElementById('local-cfg-pre');
   const ta=document.getElementById('cfg-json');
-  cfgObj={};
-  try{cfgObj=JSON.parse(ta.value);}catch(e){}
+  cfgObj={}; cfgOrig={};
+  try{cfgObj=JSON.parse(ta.value);cfgOrig=JSON.parse(ta.value);}catch(e){}
   window.cfgObj=cfgObj;
   cfgArea.textContent='';
   renderCfgEditor(cfgObj,cfgArea);
+  cfgForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!dirtyFields.size)return;
+    let desc=cfgForm.dataset.desc||'Apply Config';
+    if(!(await confirmAction(desc)))return;
+    for(const [path,val] of dirtyFields.entries()){
+      const t=await sendCfgField(path,val);
+      showResponse(t);
+      cfgInputs[path].classList.remove('dirty');
+      setCfgPath(cfgOrig,path.split('.'),getCfgPath(cfgObj,path.split('.')));
+    }
+    dirtyFields.clear();
+  });
 }
 </script>
 </body></html>
