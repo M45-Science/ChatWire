@@ -124,6 +124,11 @@
         padding: 0 0.4rem;
         border-radius: var(--radius);
     }
+    .refresh-info {
+        text-align: right;
+        font-size: 0.9rem;
+        margin-bottom: var(--gap);
+    }
     .confirm-overlay {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
@@ -447,6 +452,7 @@
 <body>
 <script>history.replaceState(null,"",location.pathname);</script>
 <div class="banner"><span class="material-icons">admin_panel_settings</span><span class="panel-id">Moderator Control Panel - {{.Callsign}}-{{.ServerName}}</span></div>
+<div class="refresh-info">Last refresh <span id="refresh-age">0</span> seconds ago</div>
 <div class="areas">
 <div class="area section" id="info-area">
 <div class="section-header"><span class="material-icons">info</span><span class="title">Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
@@ -454,10 +460,10 @@
 <div class="card">
 <div class="card-header"><span class="material-icons">dashboard</span><span class="title">ChatWire Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
-<div class="kv-display"><span>ChatWire version</span><input class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
-<div class="kv-display"><span>Up-time</span><input class="value-box" type="text" readonly value="{{.CWUp}}"></div>
-{{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
-{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
+<div class="kv-display"><span>ChatWire version</span><input id="cw-version" class="value-box" type="text" readonly value="{{.CWVersion}}"></div>
+<div class="kv-display"><span>Up-time</span><input id="cw-uptime" class="value-box" type="text" readonly value="{{.CWUp}}"></div>
+{{if ne .SoftMod ""}}<div class="kv-display"><span>SoftMod version</span><input id="softmod-version" class="value-box" type="text" readonly value="{{.SoftMod}}"></div>{{end}}
+{{if ne .PlayHours ""}}<div class="kv-display"><span>Play hours</span><input id="play-hours" class="value-box" type="text" readonly value="{{.PlayHours}}"></div>{{end}}
 </div>
 </div>
 
@@ -465,13 +471,13 @@
 <div class="card-header"><span class="material-icons">science</span><span class="title">Factorio Status</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
 {{if .FactRunning}}
-<div class="kv-display"><span>Factorio version</span><input class="value-box" type="text" readonly value="{{.Factorio}}"></div>
-<div class="kv-display"><span>Players online</span><input class="value-box" type="text" readonly value="{{.Players}}"></div>
-<div class="kv-display"><span>Game time</span><input class="value-box" type="text" readonly value="{{.Gametime}}"></div>
-<div class="kv-display"><span>Last save</span><input class="value-box" type="text" readonly value="{{.SaveName}}"></div>
-<div class="kv-display"><span>Factorio up-time</span><input class="value-box" type="text" readonly value="{{.FactUp}}"></div>
-<div class="kv-display"><span>UPS 10m/30m/1h</span><input class="value-box" type="text" readonly value="{{.UPS}}"></div>
-<div class="bool-display"><span>Paused</span><span class="bool-box"><input type="checkbox" disabled {{if .Paused}}checked{{end}}></span></div>
+<div class="kv-display"><span>Factorio version</span><input id="fact-version" class="value-box" type="text" readonly value="{{.Factorio}}"></div>
+<div class="kv-display"><span>Players online</span><input id="fact-players" class="value-box" type="text" readonly value="{{.Players}}"></div>
+<div class="kv-display"><span>Game time</span><input id="game-time" class="value-box" type="text" readonly value="{{.Gametime}}"></div>
+<div class="kv-display"><span>Last save</span><input id="save-name" class="value-box" type="text" readonly value="{{.SaveName}}"></div>
+<div class="kv-display"><span>Factorio up-time</span><input id="fact-uptime" class="value-box" type="text" readonly value="{{.FactUp}}"></div>
+<div class="kv-display"><span>UPS 10m/30m/1h</span><input id="fact-ups" class="value-box" type="text" readonly value="{{.UPS}}"></div>
+<div class="bool-display"><span>Paused</span><span class="bool-box"><input id="paused-check" type="checkbox" disabled {{if .Paused}}checked{{end}}></span></div>
 {{else}}
 <p>Factorio is not running</p>
 {{end}}
@@ -482,9 +488,9 @@
 <div class="card-header"><span class="material-icons">map</span><span class="title">Map</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content info-list">
     {{if .MapSchedule}}
-    {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input class="value-box" type="text" readonly value="{{.NextReset}}"></div>{{end}}
-    {{if ne .TimeTill ""}}<div class="kv-display"><span>Time till reset</span><input class="value-box" type="text" readonly value="{{.TimeTill}}"></div>{{end}}
-    {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
+    {{if ne .NextReset ""}}<div class="kv-display"><span>Next map reset</span><input id="next-reset" class="value-box" type="text" readonly value="{{.NextReset}}"></div>{{end}}
+    {{if ne .TimeTill ""}}<div class="kv-display"><span>Time till reset</span><input id="time-till" class="value-box" type="text" readonly value="{{.TimeTill}}"></div>{{end}}
+    {{if ne .ResetInterval ""}}<div class="kv-display"><span>Interval</span><input id="reset-interval" class="value-box" type="text" readonly value="{{.ResetInterval}}"></div>{{end}}
     {{else}}
     <p>No map schedule is set</p>
     {{end}}
@@ -494,7 +500,7 @@
 <div class="card">
 <div class="card-header"><span class="material-icons">storage</span><span class="title">Server Info</span><button class="minimize"><span class="material-icons">horizontal_rule</span></button></div>
 <div class="card-content">
-<pre>{{.Info}}</pre>
+<pre id="info-pre">{{.Info}}</pre>
 </div>
 </div>
 </div>
@@ -724,12 +730,12 @@ document.querySelectorAll('.cmd-form').forEach(f=>{
       ta.value=JSON.stringify(window.cfgObj,null,2);
     }
     const data=new FormData(f);
-    const r=await fetch('/action',{method:'POST',body:data});
-    const t=await r.text();
-    showResponse(t);
-    if(e.submitter && e.submitter.textContent.trim().toLowerCase()==='apply'){
-      location.reload();
-    }
+      const r=await fetch('/action',{method:'POST',body:data});
+      const t=await r.text();
+      showResponse(t);
+      if(e.submitter && e.submitter.textContent.trim().toLowerCase()==='apply'){
+        updateData();
+      }
   });
 });
 function confirmAction(msg){
@@ -750,6 +756,25 @@ document.body.appendChild(c);
 const t=setTimeout(()=>c.remove(),15000);
 c.querySelector('.close').addEventListener('click',()=>{clearTimeout(t);c.remove();});
 }
+async function updateData(){
+  const tok=document.querySelector('input[name="token"]').value;
+  const r=await fetch('/panel-data?token='+encodeURIComponent(tok));
+  if(!r.ok)return;
+  const d=await r.json();
+  const set=(id,val)=>{const el=document.getElementById(id);if(el){if(el.type==='checkbox'){el.checked=!!val;}else{el.value=val;}}};
+  set('cw-version',d.CWVersion); set('cw-uptime',d.CWUp); set('softmod-version',d.SoftMod);
+  set('play-hours',d.PlayHours); set('fact-version',d.Factorio); set('fact-players',d.Players);
+  set('game-time',d.Gametime); set('save-name',d.SaveName); set('fact-uptime',d.FactUp);
+  set('fact-ups',d.UPS); set('paused-check',d.Paused); set('next-reset',d.NextReset);
+  set('time-till',d.TimeTill); set('reset-interval',d.ResetInterval);
+  const info=document.getElementById('info-pre'); if(info){info.textContent=d.Info;}
+  lastRefresh=Date.now(); updateAge();
+}
+let lastRefresh=Date.now();
+function updateAge(){document.getElementById('refresh-age').textContent=Math.floor((Date.now()-lastRefresh)/1000);}
+setInterval(updateAge,1000);
+updateData();
+setInterval(updateData,30000);
 function makeValueNode(v){
   if(/^https?:/.test(v)||v.startsWith('steam://')){
     const a=document.createElement('a');
@@ -959,7 +984,7 @@ if(cfgForm){
     }
     dirtyFields.clear();
     if(e.submitter && e.submitter.textContent.trim().toLowerCase()==='apply'){
-      location.reload();
+      updateData();
     }
   });
 }
