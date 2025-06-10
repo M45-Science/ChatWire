@@ -34,6 +34,7 @@ var (
 	LocalTestMode        *bool
 	NoAutoLaunch         *bool
 	NoDiscord            *bool
+	PanelFlag            *bool
 	ProxyURL             *string
 
 	/* Vote map */

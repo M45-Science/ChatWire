@@ -19,6 +19,11 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	if !*glob.PanelFlag {
+		disc.InteractionEphemeralResponse(i, "Error", "The web control panel is not enabled.")
+		return
+	}
+
 	now := time.Now().Unix()
 	token := glob.RandomBase64String(20)
 	var orig int64 = now

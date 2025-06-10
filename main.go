@@ -41,7 +41,7 @@ func main() {
 	glob.LocalTestMode = flag.Bool("localTest", false, "Disable public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Disable auto-launch")
 	glob.NoDiscord = flag.Bool("noDiscord", false, "Disable Discord")
-	panelFlag := flag.Bool("panel", false, "Enable web panel")
+	glob.PanelFlag = flag.Bool("panel", false, "Enable web panel")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
@@ -80,7 +80,7 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
-	if *panelFlag {
+	if *glob.PanelFlag {
 		panel.Start()
 	}
 	if !*glob.NoDiscord {
