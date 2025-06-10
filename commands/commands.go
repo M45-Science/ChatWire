@@ -225,11 +225,6 @@ var cmds = []glob.CommandData{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 			},
 			{
-				Name:        "show-mods",
-				Description: "List installed mods and version preferences",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
-			},
-			{
 				Name:        "enable-mod",
 				Description: "Enable mods by name: mod1, mod2",
 				Type:        discordgo.ApplicationCommandOptionString,
