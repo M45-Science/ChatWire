@@ -548,14 +548,15 @@ func launchFactorio() {
 	}
 
 	/* Hide RCON password and port */
-	for i, targ := range tempargs {
-		if targ == rconpass {
-			tempargs[i] = "***private***"
-		} else if targ == rconportStr {
-			/* funny, and impossible port number  */
-			tempargs[i] = "69420"
+	/*
+		for i, targ := range tempargs {
+			if targ == rconpass {
+				tempargs[i] = "***private***"
+			} else if targ == rconportStr {
+				tempargs[i] = "69420"
+			}
 		}
-	}
+	*/
 
 	/* Okay, prep for factorio launch */
 	fact.SetFactRunning(true, false)
