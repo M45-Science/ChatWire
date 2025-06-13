@@ -512,13 +512,9 @@ func launchFactorio() {
 		cwlog.DoLogCW("Canceling existing context.")
 		glob.FactorioCancel()
 	}
-	if glob.FactorioCmd != nil {
-		if isProcessRunning(glob.FactorioCmd) || isProcessAlive(glob.FactorioCmd.Process.Pid) {
-			cwlog.DoLogCW("Killing Previous Factorio process.")
-
-			glob.FactorioCmd.Process.Kill()
-			glob.FactorioCmd.Wait()
-		}
+	if AgentRunning() {
+		cwlog.DoLogCW("Stopping running Factorio instance via agent.")
+		AgentStop()
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
 
@@ -548,10 +544,6 @@ func launchFactorio() {
 		}
 	}
 
-	/* Run Factorio */
-	glob.FactorioCmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
-	glob.FactorioCmd.WaitDelay = time.Minute
-
 	/* Hide RCON password and port */
 	for i, targ := range tempargs {
 		if targ == rconpass {
@@ -576,37 +568,12 @@ func launchFactorio() {
 	glob.NoResponseCount = 0
 	cwlog.DoLogCW("Factorio booting...")
 
-	/* Launch Factorio */
+	/* Launch Factorio via agent */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-	linuxSetProcessGroup(glob.FactorioCmd)
-	/* Connect Factorio stdout to a buffer for processing */
 	fact.GameBuffer = new(bytes.Buffer)
-	logwriter := io.MultiWriter(fact.GameBuffer)
-	glob.FactorioCmd.Stdout = logwriter
-	/* Stdin */
-	tpipe, errp := glob.FactorioCmd.StdinPipe()
-
-	/* Factorio is not happy. */
-	if errp != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)
-
-		/* close lock  */
-		fact.DoExit(true)
-		return
-	}
-
-	/* Save pipe */
-	if tpipe != nil {
-		fact.PipeLock.Lock()
-		fact.Pipe = tpipe
-		fact.PipeLock.Unlock()
-	}
-
-	/* Handle launch errors */
-	err = glob.FactorioCmd.Start()
+	err = AgentStart(tempargs)
 	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game via agent. Details: %s", err))
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)
 		fact.DoExit(true)
 		return

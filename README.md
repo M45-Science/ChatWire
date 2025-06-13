@@ -101,6 +101,23 @@ go build
 ```
 Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
 
+### Factorio Agent
+
+ChatWire can run Factorio through a small helper daemon. The agent listens on the
+Unix socket `/var/run/factorio-agent.sock` and understands a byte protocol:
+
+```
+0x01 <args>\n  start Factorio
+0x02          stop Factorio
+0x03          query running status (returns 0x01 or 0x00)
+0x04 <line>\n write a command to stdin
+0x05          read buffered stdout terminated by NUL
+```
+
+Whenever new stdout lines are available the agent sends `0x02 0x06` once per
+second. An example systemd unit is available at `misc/factorio-agent.service`.
+Enable and start this service so ChatWire can communicate with the agent.
+
 ### Web Control Panel
 
 The panel server is disabled by default. Launch ChatWire with `-panel` to enable it. Moderators can generate a temporary token with the `/web-panel` command. The control panel exposes

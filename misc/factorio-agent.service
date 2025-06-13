@@ -1,0 +1,12 @@
+[Unit]
+Description=ChatWire Factorio Agent
+After=network.target
+
+[Service]
+Type=simple
+User=factorio
+ExecStart=/usr/local/bin/factorio-agent
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
