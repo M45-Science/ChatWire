@@ -590,7 +590,7 @@ func launchFactorio() {
 			time.Sleep(time.Millisecond * 100)
 		}
 	}()
-	err = AgentStart(tempargs)
+	err = AgentStart(fact.GetFactorioBinary(), tempargs)
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game via agent. Details: %s", err))
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)

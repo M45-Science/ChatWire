@@ -75,7 +75,7 @@ func (agentWriter) Close() error { return nil }
 // NewAgentWriter returns an io.WriteCloser that sends input to the Factorio agent.
 func NewAgentWriter() io.WriteCloser { return agentWriter{} }
 
-func AgentStart(args []string) error {
+func AgentStart(bin string, args []string) error {
 	socketLock.Lock()
 	defer socketLock.Unlock()
 	conn, err := getConn()
@@ -83,8 +83,9 @@ func AgentStart(args []string) error {
 		return err
 	}
 	buf := []byte{byte(agentCmdStart)}
-	if len(args) > 0 {
-		buf = append(buf, []byte(strings.Join(args, " ")+"\n")...)
+	all := append([]string{bin}, args...)
+	if len(all) > 0 {
+		buf = append(buf, []byte(strings.Join(all, " ")+"\n")...)
 	} else {
 		buf = append(buf, '\n')
 	}

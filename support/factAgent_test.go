@@ -16,12 +16,12 @@ func TestAgentStartSend(t *testing.T) {
 		n, _ := c2.Read(buf)
 		done <- buf[:n]
 	}()
-	if err := AgentStart([]string{"a", "b"}); err != nil {
+	if err := AgentStart("bin", []string{"a", "b"}); err != nil {
 		t.Fatalf("AgentStart error: %v", err)
 	}
 	out := <-done
 	exp := []byte{byte(agentCmdStart)}
-	exp = append(exp, []byte("a b\n")...)
+	exp = append(exp, []byte("bin a b\n")...)
 	if !bytes.Equal(out, exp) {
 		t.Fatalf("unexpected bytes %v", out)
 	}

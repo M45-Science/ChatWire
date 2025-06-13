@@ -107,7 +107,7 @@ ChatWire can run Factorio through a small helper daemon. The agent listens on a
 Unix socket located next to the agent binary, typically `agent/factorio-agent.sock`, and understands a byte protocol:
 
 ```
-0x01 <args>\n  start Factorio
+0x01 <binary> <args>\n  start Factorio (binary path followed by arguments)
 0x02          stop Factorio
 0x03          query running status (returns 0x01 or 0x00)
 0x04 <line>\n write a command to stdin

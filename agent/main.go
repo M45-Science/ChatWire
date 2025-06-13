@@ -14,8 +14,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"ChatWire/fact"
 )
 
 // Agent command bytes. Notifications reuse cmdStop followed by notifyBuffered.
@@ -144,12 +142,15 @@ func startFactorio(args []string) error {
 	if procCmd != nil {
 		return errors.New("running")
 	}
-	log.Printf("launching Factorio: %v", args)
-	bin := fact.GetFactorioBinary()
+	if len(args) == 0 {
+		return errors.New("no binary path provided")
+	}
+	bin := args[0]
 	if !filepath.IsAbs(bin) {
 		bin = filepath.Join("..", bin)
 	}
-	procCmd = exec.Command(bin, args...)
+	log.Printf("launching Factorio: %s %v", bin, args[1:])
+	procCmd = exec.Command(bin, args[1:]...)
 	procCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdout, err := procCmd.StdoutPipe()
 	if err != nil {
