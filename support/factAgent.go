@@ -4,11 +4,19 @@ import (
 	"bufio"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
 
-const agentSocket = "/var/run/factorio-agent.sock"
+var agentSocket = func() string {
+	ex, err := os.Executable()
+	if err != nil {
+		return filepath.Join("agent", "factorio-agent.sock")
+	}
+	return filepath.Join(filepath.Dir(ex), "agent", "factorio-agent.sock")
+}()
 
 type agentCmd byte
 

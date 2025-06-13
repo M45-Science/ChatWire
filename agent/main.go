@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
@@ -16,8 +17,6 @@ import (
 
 	"ChatWire/fact"
 )
-
-const socketPath = "/var/run/factorio-agent.sock"
 
 // Agent command bytes. Notifications reuse cmdStop followed by notifyBuffered.
 const (
@@ -45,6 +44,11 @@ var (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	socketPath := filepath.Join(filepath.Dir(ex), "factorio-agent.sock")
 	_ = os.Remove(socketPath)
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {
@@ -141,7 +145,11 @@ func startFactorio(args []string) error {
 		return errors.New("running")
 	}
 	log.Printf("launching Factorio: %v", args)
-	procCmd = exec.Command(fact.GetFactorioBinary(), args...)
+	bin := fact.GetFactorioBinary()
+	if !filepath.IsAbs(bin) {
+		bin = filepath.Join("..", bin)
+	}
+	procCmd = exec.Command(bin, args...)
 	procCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdout, err := procCmd.StdoutPipe()
 	if err != nil {
