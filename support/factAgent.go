@@ -10,6 +10,19 @@ import (
 
 const agentSocket = "/var/run/factorio-agent.sock"
 
+type agentCmd byte
+
+const (
+	agentCmdStart agentCmd = iota + 1
+	agentCmdStop
+	agentCmdRunning
+	agentCmdWrite
+	agentCmdRead
+)
+
+const agentNotifyBuffered byte = 0x06
+const agentRespOK byte = byte(agentCmdStart)
+
 var (
 	agentConn  net.Conn
 	connLock   sync.Mutex
@@ -42,7 +55,7 @@ func (agentWriter) Write(p []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	_, err = conn.Write(append([]byte{0x04}, p...))
+	_, err = conn.Write(append([]byte{byte(agentCmdWrite)}, p...))
 	if err != nil {
 		return 0, err
 	}
@@ -61,7 +74,7 @@ func AgentStart(args []string) error {
 	if err != nil {
 		return err
 	}
-	buf := []byte{0x01}
+	buf := []byte{byte(agentCmdStart)}
 	if len(args) > 0 {
 		buf = append(buf, []byte(strings.Join(args, " ")+"\n")...)
 	} else {
@@ -78,7 +91,7 @@ func AgentStop() error {
 	if err != nil {
 		return err
 	}
-	_, err = conn.Write([]byte{0x02})
+	_, err = conn.Write([]byte{byte(agentCmdStop)})
 	return err
 }
 
@@ -89,7 +102,7 @@ func AgentRunning() bool {
 	if err != nil {
 		return false
 	}
-	if _, err = conn.Write([]byte{0x03}); err != nil {
+	if _, err = conn.Write([]byte{byte(agentCmdRunning)}); err != nil {
 		return false
 	}
 	resp := make([]byte, 1)
@@ -106,7 +119,7 @@ func AgentWrite(line string) error {
 	if err != nil {
 		return err
 	}
-	_, err = conn.Write(append([]byte{0x04}, []byte(line+"\n")...))
+	_, err = conn.Write(append([]byte{byte(agentCmdWrite)}, []byte(line+"\n")...))
 	return err
 }
 
@@ -117,7 +130,7 @@ func AgentReadBuffered() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err = conn.Write([]byte{0x05}); err != nil {
+	if _, err = conn.Write([]byte{byte(agentCmdRead)}); err != nil {
 		return nil, err
 	}
 	r := bufio.NewReader(conn)

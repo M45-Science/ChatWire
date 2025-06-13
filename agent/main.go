@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -18,6 +19,21 @@ import (
 
 const socketPath = "/var/run/factorio-agent.sock"
 
+// Agent command bytes. Notifications reuse cmdStop followed by notifyBuffered.
+const (
+	cmdStart agentCmd = iota + 1
+	cmdStop
+	cmdRunning
+	cmdWrite
+	cmdRead
+)
+
+const respOK byte = byte(cmdStart)
+
+const notifyBuffered byte = 0x06
+
+type agentCmd byte
+
 var (
 	procCmd  *exec.Cmd
 	procIn   io.WriteCloser
@@ -28,17 +44,21 @@ var (
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	_ = os.Remove(socketPath)
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {
 		panic(err)
 	}
+	log.Printf("agent listening on %s", socketPath)
 	go notifier()
 	for {
 		c, err := ln.Accept()
 		if err != nil {
+			log.Printf("accept error: %v", err)
 			continue
 		}
+		log.Printf("connection from %v", c.RemoteAddr())
 		connLock.Lock()
 		conns[c] = struct{}{}
 		connLock.Unlock()
@@ -55,9 +75,10 @@ func notifier() {
 		if has {
 			connLock.Lock()
 			for c := range conns {
-				c.Write([]byte{0x02, 0x06})
+				c.Write([]byte{byte(cmdStop), notifyBuffered})
 			}
 			connLock.Unlock()
+			log.Printf("sent buffered notification to %d connections", len(conns))
 		}
 	}
 }
@@ -68,33 +89,39 @@ func handleConn(c net.Conn) {
 		delete(conns, c)
 		connLock.Unlock()
 		c.Close()
+		log.Printf("connection from %v closed", c.RemoteAddr())
 	}()
 	r := bufio.NewReader(c)
 	for {
 		cmd, err := r.ReadByte()
 		if err != nil {
+			log.Printf("read error from %v: %v", c.RemoteAddr(), err)
 			return
 		}
-		switch cmd {
-		case 0x01: // start
+		log.Printf("command %02x from %v", cmd, c.RemoteAddr())
+		switch agentCmd(cmd) {
+		case cmdStart: // start
 			line, _ := r.ReadString('\n')
 			args := strings.Fields(strings.TrimSpace(line))
+			log.Printf("starting Factorio with args: %v", args)
 			startFactorio(args)
-			c.Write([]byte{0x01})
-		case 0x02: // stop
+			c.Write([]byte{respOK})
+		case cmdStop: // stop
+			log.Printf("stop command received")
 			stopFactorio()
-			c.Write([]byte{0x01})
-		case 0x03: // running?
+			c.Write([]byte{respOK})
+		case cmdRunning: // running?
 			b := byte(0)
 			if procCmd != nil && procCmd.Process != nil {
 				b = 1
 			}
 			c.Write([]byte{b})
-		case 0x04: // write
+		case cmdWrite: // write
 			line, _ := r.ReadString('\n')
 			writeFactorio(strings.TrimRight(line, "\n"))
-			c.Write([]byte{0x01})
-		case 0x05: // read buffer
+			log.Printf("wrote line: %s", strings.TrimSpace(line))
+			c.Write([]byte{respOK})
+		case cmdRead: // read buffer
 			lines := readBuffer()
 			var buf bytes.Buffer
 			for _, l := range lines {
@@ -104,6 +131,7 @@ func handleConn(c net.Conn) {
 			buf.WriteByte(0)
 			c.Write(buf.Bytes())
 		default:
+			log.Printf("unknown command %02x", cmd)
 		}
 	}
 }
@@ -112,6 +140,7 @@ func startFactorio(args []string) error {
 	if procCmd != nil {
 		return errors.New("running")
 	}
+	log.Printf("launching Factorio: %v", args)
 	procCmd = exec.Command(fact.GetFactorioBinary(), args...)
 	procCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdout, err := procCmd.StdoutPipe()
@@ -124,11 +153,13 @@ func startFactorio(args []string) error {
 	}
 	procCmd.Stderr = procCmd.Stdout
 	if err := procCmd.Start(); err != nil {
+		log.Printf("start error: %v", err)
 		return err
 	}
 	go readStdout(stdout)
 	go func() {
 		procCmd.Wait()
+		log.Printf("factorio exited")
 		procCmd = nil
 	}()
 	return nil
@@ -138,6 +169,7 @@ func readStdout(r io.Reader) {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
+		log.Printf("stdout: %s", line)
 		bufLock.Lock()
 		outBuf = append(outBuf, line)
 		bufLock.Unlock()
@@ -148,14 +180,17 @@ func stopFactorio() {
 	if procCmd == nil {
 		return
 	}
+	log.Printf("stopping factorio")
 	writeFactorio("/quit")
 	procCmd.Wait()
+	log.Printf("factorio stopped")
 	procCmd = nil
 }
 
 func writeFactorio(line string) {
 	if procIn != nil {
 		io.WriteString(procIn, line+"\n")
+		log.Printf("sent to stdin: %s", line)
 	}
 }
 

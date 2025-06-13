@@ -20,7 +20,7 @@ func TestAgentStartSend(t *testing.T) {
 		t.Fatalf("AgentStart error: %v", err)
 	}
 	out := <-done
-	exp := []byte{0x01}
+	exp := []byte{byte(agentCmdStart)}
 	exp = append(exp, []byte("a b\n")...)
 	if !bytes.Equal(out, exp) {
 		t.Fatalf("unexpected bytes %v", out)
@@ -43,7 +43,7 @@ func TestAgentStopSend(t *testing.T) {
 		t.Fatalf("AgentStop error: %v", err)
 	}
 	out := <-done
-	if !bytes.Equal(out, []byte{0x02}) {
+	if !bytes.Equal(out, []byte{byte(agentCmdStop)}) {
 		t.Fatalf("unexpected bytes %v", out)
 	}
 	c1.Close()
@@ -80,7 +80,7 @@ func TestAgentWrite(t *testing.T) {
 		t.Fatalf("AgentWrite error: %v", err)
 	}
 	out := <-done
-	if !bytes.Equal(out, []byte{0x04, 'c', 'm', 'd', '\n'}) {
+	if !bytes.Equal(out, []byte{byte(agentCmdWrite), 'c', 'm', 'd', '\n'}) {
 		t.Fatalf("unexpected bytes %v", out)
 	}
 	c1.Close()
