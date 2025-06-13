@@ -2,6 +2,7 @@ package support
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"net"
 	"os"
@@ -156,4 +157,58 @@ func AgentReadBuffered() ([]string, error) {
 		out = out[:len(out)-1]
 	}
 	return out, nil
+}
+
+// AgentWatch listens for buffered output notifications from the Factorio agent.
+// When data is available it reads the buffered lines and sends them on the
+// provided channel. The context can be used to stop the goroutine.
+func AgentWatch(ctx context.Context, out chan<- []string) error {
+	conn, err := dialFn()
+	if err != nil {
+		return err
+	}
+	go func() {
+		defer conn.Close()
+		r := bufio.NewReader(conn)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			b1, err := r.ReadByte()
+			if err != nil {
+				return
+			}
+			if agentCmd(b1) != agentCmdStop {
+				continue
+			}
+			b2, err := r.ReadByte()
+			if err != nil {
+				return
+			}
+			if b2 != agentNotifyBuffered {
+				continue
+			}
+			// request buffered lines
+			if _, err := conn.Write([]byte{byte(agentCmdRead)}); err != nil {
+				return
+			}
+			data, err := r.ReadBytes(0)
+			if err != nil {
+				return
+			}
+			data = data[:len(data)-1]
+			if len(data) == 0 {
+				continue
+			}
+			lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
+			select {
+			case out <- lines:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	return nil
 }

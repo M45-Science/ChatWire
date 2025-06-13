@@ -577,17 +577,20 @@ func launchFactorio() {
 	fact.PipeLock.Lock()
 	fact.Pipe = NewAgentWriter()
 	fact.PipeLock.Unlock()
+	bufCh := make(chan []string, 10)
+	if err := AgentWatch(glob.FactorioContext, bufCh); err != nil {
+		cwlog.DoLogCW("Agent watch error: %v", err)
+	}
 	go func() {
-		for glob.ServerRunning {
-			lines, err := AgentReadBuffered()
-			if err != nil {
-				time.Sleep(time.Second)
-				continue
+		for {
+			select {
+			case lines := <-bufCh:
+				for _, l := range lines {
+					fact.GameBuffer.WriteString(l + "\n")
+				}
+			case <-glob.FactorioContext.Done():
+				return
 			}
-			for _, l := range lines {
-				fact.GameBuffer.WriteString(l + "\n")
-			}
-			time.Sleep(time.Millisecond * 100)
 		}
 	}()
 	err = AgentStart(fact.GetFactorioBinary(), tempargs)
