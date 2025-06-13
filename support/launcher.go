@@ -515,6 +515,9 @@ func launchFactorio() {
 	if AgentRunning() {
 		cwlog.DoLogCW("Stopping running Factorio instance via agent.")
 		AgentStop()
+		fact.PipeLock.Lock()
+		fact.Pipe = nil
+		fact.PipeLock.Unlock()
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
 
@@ -571,6 +574,22 @@ func launchFactorio() {
 	/* Launch Factorio via agent */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 	fact.GameBuffer = new(bytes.Buffer)
+	fact.PipeLock.Lock()
+	fact.Pipe = NewAgentWriter()
+	fact.PipeLock.Unlock()
+	go func() {
+		for glob.ServerRunning {
+			lines, err := AgentReadBuffered()
+			if err != nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			for _, l := range lines {
+				fact.GameBuffer.WriteString(l + "\n")
+			}
+			time.Sleep(time.Millisecond * 100)
+		}
+	}()
 	err = AgentStart(tempargs)
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game via agent. Details: %s", err))

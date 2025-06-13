@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"ChatWire/fact"
@@ -112,6 +113,7 @@ func startFactorio(args []string) error {
 		return errors.New("running")
 	}
 	procCmd = exec.Command(fact.GetFactorioBinary(), args...)
+	procCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdout, err := procCmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -120,6 +122,7 @@ func startFactorio(args []string) error {
 	if err != nil {
 		return err
 	}
+	procCmd.Stderr = procCmd.Stdout
 	if err := procCmd.Start(); err != nil {
 		return err
 	}

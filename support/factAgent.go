@@ -2,6 +2,7 @@ package support
 
 import (
 	"bufio"
+	"io"
 	"net"
 	"strings"
 	"sync"
@@ -10,9 +11,10 @@ import (
 const agentSocket = "/var/run/factorio-agent.sock"
 
 var (
-	agentConn net.Conn
-	connLock  sync.Mutex
-	dialFn    = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
+	agentConn  net.Conn
+	connLock   sync.Mutex
+	socketLock sync.Mutex
+	dialFn     = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
 )
 
 func getConn() (net.Conn, error) {
@@ -29,7 +31,32 @@ func getConn() (net.Conn, error) {
 	return agentConn, nil
 }
 
+// agentWriter adapts the agent connection to an io.WriteCloser so that
+// existing code writing to fact.Pipe can send commands through the agent.
+type agentWriter struct{}
+
+func (agentWriter) Write(p []byte) (int, error) {
+	socketLock.Lock()
+	defer socketLock.Unlock()
+	conn, err := getConn()
+	if err != nil {
+		return 0, err
+	}
+	_, err = conn.Write(append([]byte{0x04}, p...))
+	if err != nil {
+		return 0, err
+	}
+	return len(p), nil
+}
+
+func (agentWriter) Close() error { return nil }
+
+// NewAgentWriter returns an io.WriteCloser that sends input to the Factorio agent.
+func NewAgentWriter() io.WriteCloser { return agentWriter{} }
+
 func AgentStart(args []string) error {
+	socketLock.Lock()
+	defer socketLock.Unlock()
 	conn, err := getConn()
 	if err != nil {
 		return err
@@ -41,13 +68,12 @@ func AgentStart(args []string) error {
 		buf = append(buf, '\n')
 	}
 	_, err = conn.Write(buf)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func AgentStop() error {
+	socketLock.Lock()
+	defer socketLock.Unlock()
 	conn, err := getConn()
 	if err != nil {
 		return err
@@ -57,6 +83,8 @@ func AgentStop() error {
 }
 
 func AgentRunning() bool {
+	socketLock.Lock()
+	defer socketLock.Unlock()
 	conn, err := getConn()
 	if err != nil {
 		return false
@@ -72,6 +100,8 @@ func AgentRunning() bool {
 }
 
 func AgentWrite(line string) error {
+	socketLock.Lock()
+	defer socketLock.Unlock()
 	conn, err := getConn()
 	if err != nil {
 		return err
@@ -81,6 +111,8 @@ func AgentWrite(line string) error {
 }
 
 func AgentReadBuffered() ([]string, error) {
+	socketLock.Lock()
+	defer socketLock.Unlock()
 	conn, err := getConn()
 	if err != nil {
 		return nil, err
