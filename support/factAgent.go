@@ -20,9 +20,9 @@ import (
 var agentSocket = func() string {
 	ex, err := os.Executable()
 	if err != nil {
-		return filepath.Join("agent", "factorio-agent.sock")
+		return "factorio-agent.sock"
 	}
-	return filepath.Join(filepath.Dir(ex), "agent", "factorio-agent.sock")
+	return filepath.Join(filepath.Dir(ex), "factorio-agent.sock")
 }()
 
 type agentCmd byte
