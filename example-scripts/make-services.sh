@@ -87,7 +87,7 @@ generate_chatwire_timer() {
   local delay=$2
   cat <<EOF > "$SERVICE_DIR/chatwire-$letter.timer"
 [Unit]
-Description=Delayed Start for chatwire-$letter
+Description=delayed-cw-$letter
 
 [Timer]
 OnBootSec=${delay}sec
