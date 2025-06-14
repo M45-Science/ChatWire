@@ -115,7 +115,7 @@ Whenever new stdout lines are available the agent sends `0x02 0x06` once per
 second. An example systemd unit is available at `misc/factorio-agent.service`.
 Enable and start this service so ChatWire can communicate with the agent.
 
-### Web Control Panel
+### Web Control Panel (Work In Progress)
 
 - Start ChatWire with `-panel` to enable the panel server.
 - Generate a temporary token with the `/web-panel` command.
