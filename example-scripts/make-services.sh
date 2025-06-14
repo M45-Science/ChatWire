@@ -32,7 +32,7 @@ After=network.target network-online.target
 
 [Service]
 User=$USER_NAME
-WorkingDirectory=$BASE_DIR/cw-$letter/agent
+WorkingDirectory=$BASE_DIR/cw-$letter/agent/
 ExecStart=./agent
 Restart=always
 StartLimitBurst=3
@@ -54,7 +54,7 @@ After=network.target network-online.target
 
 [Service]
 User=$USER_NAME
-WorkingDirectory=$BASE_DIR/cw$letter/
+WorkingDirectory=$BASE_DIR/cw-$letter/
 ExecStart=/bin/bash start.sh
 Restart=always
 StartLimitBurst=3
