@@ -106,6 +106,8 @@ Ensure the generated configuration files contain your Discord token, application
 ChatWire can run Factorio through a small helper daemon. The agent listens on a
 Unix socket located next to the agent binary (e.g. `factorio-agent.sock`) and understands a byte protocol:
 
+The `-debug` flag prints verbose logs from the agent. Without it the agent runs silently.
+
 ```
 0x01 <binary> <args>\n  start Factorio (binary path followed by arguments)
 0x02          stop Factorio

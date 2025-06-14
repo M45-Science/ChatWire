@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"flag"
 	"io"
 	"log"
 	"net"
@@ -38,9 +39,14 @@ var (
 	outBuf   []string
 	connLock sync.Mutex
 	conns    = make(map[net.Conn]struct{})
+	debug    = flag.Bool("debug", false, "enable debug logging")
 )
 
 func main() {
+	flag.Parse()
+	if !*debug {
+		log.SetOutput(io.Discard)
+	}
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	ex, err := os.Executable()
 	if err != nil {
