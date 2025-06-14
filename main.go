@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	_ "net/http/pprof"
@@ -80,6 +81,7 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
+	support.AttachRunningFactorio(context.Background())
 	if *glob.PanelFlag {
 		panel.Start()
 	}

@@ -2,6 +2,7 @@ package support
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"io"
 	"net"
@@ -9,6 +10,11 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
+
+	"ChatWire/cwlog"
+	"ChatWire/fact"
+	"ChatWire/glob"
 )
 
 var agentSocket = func() string {
@@ -211,4 +217,47 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 		}
 	}()
 	return nil
+}
+
+// AttachRunningFactorio checks if the Factorio agent is already running a server
+// and, if so, sets up IPC pipes and log reading so ChatWire can interact with it.
+// It returns true if a running instance was detected.
+func AttachRunningFactorio(ctx context.Context) bool {
+	if !AgentRunning() {
+		return false
+	}
+
+	cwlog.DoLogCW("Detected running Factorio instance via agent. Attaching...")
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(ctx)
+
+	fact.GameBuffer = new(bytes.Buffer)
+	fact.PipeLock.Lock()
+	fact.Pipe = NewAgentWriter()
+	fact.PipeLock.Unlock()
+
+	bufCh := make(chan []string, 10)
+	if err := AgentWatch(glob.FactorioContext, bufCh); err != nil {
+		cwlog.DoLogCW("Agent watch error: %v", err)
+	}
+	go func() {
+		for {
+			select {
+			case lines := <-bufCh:
+				for _, l := range lines {
+					fact.GameBuffer.WriteString(l + "\n")
+				}
+			case <-glob.FactorioContext.Done():
+				return
+			}
+		}
+	}()
+
+	fact.FactorioBooted = true
+	fact.FactorioBootedAt = time.Now()
+	fact.SetFactRunning(true, false)
+	return true
 }
