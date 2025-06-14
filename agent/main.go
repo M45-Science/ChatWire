@@ -49,11 +49,7 @@ func main() {
 		log.SetOutput(io.Discard)
 	}
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	ex, err := os.Executable()
-	if err != nil {
-		log.Fatalf("executable path error: %v", err)
-	}
-	socketPath := filepath.Join(filepath.Dir(ex), "../factorio-agent.sock")
+	socketPath := "../factorio-agent.sock"
 	_ = os.Remove(socketPath)
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {
