@@ -55,7 +55,7 @@ func TestBoolToOnOff(t *testing.T) {
 
 func TestClearOldSignals(t *testing.T) {
 	dir := t.TempDir()
-	files := []string{".qrestart", ".queue", ".stop", ".newmap", ".message", ".start", ".halt"}
+	files := []string{".start", ".queue", ".stop", ".rebootcw"}
 	oldwd, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("getwd: %v", err)

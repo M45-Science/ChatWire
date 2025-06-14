@@ -3,15 +3,14 @@
 cw-local-config.json
 ChatWire
 cw.lock
-*.sh
 *.dat
 composite.json
 .gitignore
 server-banlist.json
 /factorio
-cpufile.prof
 playerdb.json
 factorio.tar
 .VSCodeCounter
 .vscode
 agent/agent
+services

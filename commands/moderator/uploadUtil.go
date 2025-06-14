@@ -1,12 +1,12 @@
 package moderator
 
 import (
-       "ChatWire/fact"
-       "sync"
+	"ChatWire/fact"
+	"sync"
 )
 
 const (
-       saveGameName = "save-game"
+	saveGameName = "save-game"
 )
 
 var (
@@ -16,7 +16,6 @@ var (
 
 func stopWaitFact(msg string) {
 	if fact.FactorioBooted || fact.FactIsRunning {
-		fact.QueueReboot = false      //Skip queued reboot
 		fact.QueueFactReboot = false  //Skip queued reboot
 		fact.DoUpdateFactorio = false //Skip queued updates
 

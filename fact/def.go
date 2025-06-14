@@ -42,7 +42,6 @@ var (
 	FactAutoStart = false
 
 	/* Reboot-when-empty */
-	QueueReboot     = false
 	QueueFactReboot = false
 
 	/*Factorio save game data */

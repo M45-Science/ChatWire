@@ -69,7 +69,7 @@ func MainLoops() {
 					}
 					fact.QueueFactReboot = false
 
-				} else if fact.QueueReboot || glob.DoRebootCW {
+				} else if glob.DoRebootCW {
 					fact.DoExit(false)
 					return
 
@@ -485,15 +485,8 @@ func MainLoops() {
 
 		for glob.ServerRunning {
 			time.Sleep(5 * time.Second)
-
 			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 {
-
-				if fact.QueueReboot && !fact.DoUpdateFactorio {
-					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
-					//fact.QuitFactorio("Server rebooting for maintenance.")
-					break //We don't need to loop anymore, rebooting chat wire.
-
-				} else if fact.QueueFactReboot && !fact.DoUpdateFactorio {
+				if fact.QueueFactReboot && !fact.DoUpdateFactorio {
 					cwlog.DoLogCW("Stopping Factorio for reboot.")
 					fact.QuitFactorio("Rebooting Factorio.")
 					time.Sleep(time.Minute)
@@ -567,12 +560,9 @@ func MainLoops() {
 			var errb error
 
 			/* Queued reboots, regardless of game state */
-			if _, err = os.Stat(".queue"); err == nil {
-				if errb = os.Remove(".queue"); errb == nil {
-					if !fact.QueueReboot {
-						fact.QueueReboot = true
-						cwlog.DoLogCW("Reboot queued!")
-					}
+			if _, err = os.Stat(".rebootcw"); err == nil {
+				if errb = os.Remove(".rebootcw"); errb == nil {
+					fact.DoExit(false)
 				} else if !failureReported {
 					failureReported = true
 					cwlog.DoLogCW("Failed to remove .queue file, ignoring.")
@@ -592,13 +582,24 @@ func MainLoops() {
 					}
 				}
 
+				if _, err = os.Stat(".rebootfactorio"); err == nil {
+					if errb = os.Remove(".rebootfactorio"); errb == nil {
+						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio rebooting!")
+						fact.SetAutolaunch(true, false)
+						fact.QuitFactorio("Server stopping for maintenance.")
+					} else if !failureReported {
+						failureReported = true
+						cwlog.DoLogCW("Failed to remove .stop file, ignoring.")
+					}
+				}
+
 				/* Restart game */
-				if _, err = os.Stat(".rfact"); err == nil {
-					if errb = os.Remove(".rfact"); errb == nil {
+				if _, err = os.Stat(".queue"); err == nil {
+					if errb = os.Remove(".queue"); errb == nil {
 						fact.QueueFactReboot = true
 					} else if !failureReported {
 						failureReported = true
-						cwlog.DoLogCW("Failed to remove .rfact file, ignoring.")
+						cwlog.DoLogCW("Failed to remove .queue file, ignoring.")
 					}
 				}
 			} else { /*  Only if game is NOT running */
