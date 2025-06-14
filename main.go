@@ -326,6 +326,7 @@ func readConfigs() {
 	}
 	if cfg.ReadLCfg() {
 		util.SetTempFilePrefix(cfg.Local.Callsign + "-")
+		glob.RCONPass = cfg.Local.RCONPass
 		//cfg.WriteLCfg()
 	} else {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)
