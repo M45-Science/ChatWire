@@ -33,7 +33,7 @@ After=network.target network-online.target
 [Service]
 User=$USER_NAME
 WorkingDirectory=$BASE_DIR/cw-$letter/agent/
-ExecStart=agent
+ExecStart=$BASE_DIR/cw-$letter/agent/agent
 Restart=always
 StartLimitBurst=3
 StartLimitInterval=1
