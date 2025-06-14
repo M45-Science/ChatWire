@@ -45,7 +45,7 @@ func main() {
 	glob.PanelFlag = flag.Bool("panel", false, "Enable web panel")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
-	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
+	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.domain/path")
 	flag.Parse()
 
 	/* Start cw logs */
