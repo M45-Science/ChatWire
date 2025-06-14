@@ -72,10 +72,10 @@ generate_agent_timer() {
   local letter=$1
   cat <<EOF > "$SERVICE_DIR/agent-$letter.timer"
 [Unit]
-Description=Delayed Start for agent-$letter
+Description=delayed-agent-$letter
 
 [Timer]
-OnBootSec=1s
+OnBootSec=1sec
 
 [Install]
 WantedBy=basic.target
