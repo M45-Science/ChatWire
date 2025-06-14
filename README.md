@@ -68,9 +68,12 @@ Binary:<br>
 | `-regCommands` | Register Discord commands. |
 <br>
 
-### Discord bot perms:
-The bot needs presence intent, server members intent, message content intent
-Perms: view channels, manage channels, Manage roles, send messages, embed links, attach files, mention all roles, manage messages (delete message, if register code leaked), read message history, use application commands.
+### Setting up your Discord bot
+1. Visit <https://discord.com/developers/applications> and create a **New Application**.
+2. Under **Bot** click **Add Bot**. Enable the *Presence*, *Server Members* and *Message Content* intents and grant these permissions: view channels, manage channels, manage roles, send messages, embed links, attach files, mention all roles, manage messages (delete message if register code leaked), read message history and use application commands.
+3. Copy the **Token** from the bot page and note the **Application ID** from *OAuth2 > General*.
+4. In Discord enable *Developer Mode* and right click your server to **Copy ID** for the guild ID.
+5. Copy a channel ID or leave `ChatChannel` blank in `cw-local-config.json` and ChatWire will create one on first run.
 
 ### Development and Testing
 
@@ -81,6 +84,7 @@ go vet ./...
 go test ./...
 ```
 These are the same checks executed by the CI pipeline.
+Some integration tests connect to Discord. Set CW_TEST_TOKEN, CW_TEST_GUILD and CW_TEST_APP to enable them.
 
 ### Regenerating configuration
 
