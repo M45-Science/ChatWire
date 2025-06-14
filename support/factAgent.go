@@ -169,40 +169,62 @@ func AgentReadBuffered() ([]string, error) {
 // When data is available it reads the buffered lines and sends them on the
 // provided channel. The context can be used to stop the goroutine.
 func AgentWatch(ctx context.Context, out chan<- []string) error {
-	conn, err := dialFn()
-	if err != nil {
-		return err
-	}
 	go func() {
-		defer conn.Close()
-		r := bufio.NewReader(conn)
+		var conn net.Conn
+		var r *bufio.Reader
+		var err error
 		for {
-			select {
-			case <-ctx.Done():
+			if ctx.Err() != nil {
+				if conn != nil {
+					conn.Close()
+				}
 				return
-			default:
+			}
+			if conn == nil {
+				conn, err = dialFn()
+				if err != nil {
+					cwlog.DoLogCW("Agent watch dial error: %v", err)
+					time.Sleep(time.Second)
+					continue
+				}
+				r = bufio.NewReader(conn)
 			}
 			b1, err := r.ReadByte()
 			if err != nil {
-				return
+				cwlog.DoLogCW("Agent watch read error: %v", err)
+				conn.Close()
+				conn = nil
+				time.Sleep(time.Second)
+				continue
 			}
 			if agentCmd(b1) != agentCmdStop {
 				continue
 			}
 			b2, err := r.ReadByte()
 			if err != nil {
-				return
+				cwlog.DoLogCW("Agent watch read error: %v", err)
+				conn.Close()
+				conn = nil
+				time.Sleep(time.Second)
+				continue
 			}
 			if b2 != agentNotifyBuffered {
 				continue
 			}
-			// request buffered lines
 			if _, err := conn.Write([]byte{byte(agentCmdRead)}); err != nil {
-				return
+				cwlog.DoLogCW("Agent watch write error: %v", err)
+				conn.Close()
+				conn = nil
+				time.Sleep(time.Second)
+				continue
 			}
 			data, err := r.ReadBytes(0)
 			if err != nil {
-				return
+				cwlog.DoLogCW("Agent watch read error: %v", err)
+				conn.Close()
+				conn = nil
+				time.Sleep(time.Second)
+				continue
 			}
 			data = data[:len(data)-1]
 			if len(data) == 0 {
@@ -212,6 +234,7 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 			select {
 			case out <- lines:
 			case <-ctx.Done():
+				conn.Close()
 				return
 			}
 		}
