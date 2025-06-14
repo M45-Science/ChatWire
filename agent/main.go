@@ -76,7 +76,7 @@ func main() {
 }
 
 func notifier() {
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(time.Second / 2)
 	for range t.C {
 		bufLock.Lock()
 		has := len(outBuf) > 0
