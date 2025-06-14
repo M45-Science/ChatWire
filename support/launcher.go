@@ -547,17 +547,6 @@ func launchFactorio() {
 		}
 	}
 
-	/* Hide RCON password and port */
-	/*
-		for i, targ := range tempargs {
-			if targ == rconpass {
-				tempargs[i] = "***private***"
-			} else if targ == rconportStr {
-				tempargs[i] = "69420"
-			}
-		}
-	*/
-
 	/* Okay, prep for factorio launch */
 	fact.SetFactRunning(true, false)
 	fact.FactorioBooted = false
@@ -572,8 +561,20 @@ func launchFactorio() {
 	glob.NoResponseCount = 0
 	cwlog.DoLogCW("Factorio booting...")
 
+	/* Hide RCON password and port */
+	var logArgs []string
+	for _, targ := range tempargs {
+		if targ == rconpass {
+			logArgs = append(logArgs, "***private***")
+		} else if targ == rconportStr {
+			logArgs = append(logArgs, "69420")
+		} else {
+			logArgs = append(logArgs, targ)
+		}
+	}
+
 	/* Launch Factorio via agent */
-	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
+	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(logArgs, " "))
 	fact.GameBuffer = new(bytes.Buffer)
 	fact.PipeLock.Lock()
 	fact.Pipe = NewAgentWriter()

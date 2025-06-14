@@ -21,7 +21,7 @@ func ForceReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 /* Reboot when server is empty */
 func QueReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	disc.InteractionEphemeralResponse(i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
+	disc.InteractionEphemeralResponse(i, "Complete:", "Reboot has been queued.")
 	fact.QueueReboot = true
 }
 
@@ -39,7 +39,7 @@ func RebootCW(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	glob.DoRebootCW = true
 	glob.RelaunchThrottle = 0
-	fact.QuitFactorio("Server rebooting...")
+	//fact.QuitFactorio("Server rebooting...")
 }
 
 /* Reload config files */

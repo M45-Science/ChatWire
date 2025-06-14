@@ -104,14 +104,16 @@ func main() {
 	<-sc
 
 	_ = os.Remove("cw.lock")
-	fact.SetAutolaunch(false, false)
-	glob.DoRebootCW = false
-	fact.QueueReboot = false
-	fact.QueueFactReboot = false
-	fact.QuitFactorio("Server quitting...")
-	fact.WaitFactQuit(false)
+	/*
+		fact.SetAutolaunch(false, false)
+		glob.DoRebootCW = false
+		fact.QueueReboot = false
+		fact.QueueFactReboot = false
+		fact.QuitFactorio("Server quitting...")
+		fact.WaitFactQuit(false)
 
-	fact.DoExit(false)
+		fact.DoExit(false)
+	*/
 }
 
 func startbotA() {

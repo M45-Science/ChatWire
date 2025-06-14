@@ -101,7 +101,7 @@ func MainLoops() {
 				/* Just in case factorio hangs, bogs down or is flooded */
 				if nores == 120 {
 					msg := "Factorio unresponsive for over two minutes... rebooting."
-					fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
+					//fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
 				}
@@ -496,7 +496,7 @@ func MainLoops() {
 
 				if fact.QueueReboot && !fact.DoUpdateFactorio {
 					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
-					fact.QuitFactorio("Server rebooting for maintenance.")
+					//fact.QuitFactorio("Server rebooting for maintenance.")
 					break //We don't need to loop anymore, rebooting chat wire.
 
 				} else if fact.QueueFactReboot && !fact.DoUpdateFactorio {
