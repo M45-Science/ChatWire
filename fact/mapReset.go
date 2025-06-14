@@ -36,22 +36,12 @@ func getMapTypeNum(mapt string) int {
 	return -1
 }
 
-func getMapTypeName(num int) string {
-
-	numMaps := len(constants.MapTypes)
-	if num >= 0 && num < numMaps {
-		return constants.MapTypes[num]
-	}
-	return "Error"
-}
-
 /* Generate map */
 func Map_reset(doReport bool) {
 
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
 	if FactorioBooted || FactIsRunning {
-		QueueReboot = false      //Skip queued reboot
 		QueueFactReboot = false  //Skip queued fact reboot
 		DoUpdateFactorio = false //Skip queued updates
 

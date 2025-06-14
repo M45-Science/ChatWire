@@ -192,35 +192,36 @@ func GenerateFactorioConfig() bool {
 		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
 		if err != nil || remoteConsole == nil {
 			cwlog.DoLogCW("Error: `%v`\n", err)
-		}
+		} else {
 
-		_, err = remoteConsole.Write(c + " name " + servName)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		_, err = remoteConsole.Write(c + " description " + serverDescString)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		/* 		remoteConsole.Write(c + " max-players " + "0")
-		 * 		remoteConsole.Write(c + " visibility-public " + "true")
-		 * 		remoteConsole.Write(c + " visibility-steam " + "true")
-		 * 		remoteConsole.Write(c + " visibility-lan " + "false")
-		 * 		remoteConsole.Write(c + " require-user-verification " + "true")
-		 * 		remoteConsole.Write(c + " allow-commands " + "admins-only") */
-		_, err = remoteConsole.Write(c + " autosave-interval " + strconv.Itoa(autosave_interval))
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		_, err = remoteConsole.Write(c + " afk-auto-kick " + strconv.Itoa(autokick))
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		/* 		remoteConsole.Write(c + " only-admins-can-pause " + "true")
-		 * 		remoteConsole.Write(c + " autosave-only-on-server " + "true") */
-		err = remoteConsole.Close()
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
+			_, err = remoteConsole.Write(c + " name " + servName)
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+			_, err = remoteConsole.Write(c + " description " + serverDescString)
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+			/* 		remoteConsole.Write(c + " max-players " + "0")
+			 * 		remoteConsole.Write(c + " visibility-public " + "true")
+			 * 		remoteConsole.Write(c + " visibility-steam " + "true")
+			 * 		remoteConsole.Write(c + " visibility-lan " + "false")
+			 * 		remoteConsole.Write(c + " require-user-verification " + "true")
+			 * 		remoteConsole.Write(c + " allow-commands " + "admins-only") */
+			_, err = remoteConsole.Write(c + " autosave-interval " + strconv.Itoa(autosave_interval))
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+			_, err = remoteConsole.Write(c + " afk-auto-kick " + strconv.Itoa(autokick))
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
+			/* 		remoteConsole.Write(c + " only-admins-can-pause " + "true")
+			 * 		remoteConsole.Write(c + " autosave-only-on-server " + "true") */
+			err = remoteConsole.Close()
+			if err != nil {
+				cwlog.DoLogCW(err.Error())
+			}
 		}
 	}
 

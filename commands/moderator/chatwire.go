@@ -13,7 +13,7 @@ import (
 /* Reboots cw */
 func ForceReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	disc.InteractionEphemeralResponse(i, "Status:", "Force rebooting!")
+	disc.InteractionEphemeralResponse(i, "Status:", "Force rebooting ChatWire!")
 	glob.RelaunchThrottle = 0
 	fact.DoExit(false)
 }
@@ -21,8 +21,9 @@ func ForceReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 /* Reboot when server is empty */
 func QueReboot(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	disc.InteractionEphemeralResponse(i, "Complete:", "Reboot has been queued. Server will reboot when map is unoccupied.")
-	fact.QueueReboot = true
+	disc.InteractionEphemeralResponse(i, "Complete:", "Chatwire will reboot.")
+	glob.RelaunchThrottle = 0
+	fact.DoExit(false)
 }
 
 /* Reboot when server is empty */
@@ -37,9 +38,9 @@ func RebootCW(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	disc.InteractionEphemeralResponse(i, "Status:", "Rebooting ChatWire...")
 
-	glob.DoRebootCW = true
+	disc.InteractionEphemeralResponse(i, "Complete:", "Chatwire will reboot.")
 	glob.RelaunchThrottle = 0
-	fact.QuitFactorio("Server rebooting...")
+	fact.DoExit(false)
 }
 
 /* Reload config files */

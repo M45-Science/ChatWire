@@ -52,25 +52,20 @@ Binary:<br>
 `./cw-a/factorio/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 <br>
-Launch params:
-```text
-Usage of ChatWire:
-  -cleanBans
-        Clean/minimize player database, along with bans and exit.
-  -cleanDB
-        Clean/minimize player database and exit.
-  -deregCommands
-        Deregister discord commands and quit.
-  -localTest
-        Turn off public/auth mode for testing
-  -noAutoLaunch
-        Turn off auto-launch
-  -panel
-        Enable web control panel
-  -regCommands
-        Register discord commands
-```
         
+### Launch parameters:
+
+| Flag | Description |
+|------|-------------|
+| `-cleanBans` | Clean and minimise the player database, remove bans then exit. |
+| `-cleanDB` | Clean and minimise the player database then exit. |
+| `-deregCommands` | Deregister Discord commands and quit. |
+| `-localTest` | Disable public/auth mode for testing. |
+| `-noAutoLaunch` | Disable auto-launch. |
+| `-noDiscord` | Disable Discord integration. |
+| `-panel` | Enable web control panel. |
+| `-proxy` | HTTP caching proxy URL. Format: `proxy/http://example.domain/path`. |
+| `-regCommands` | Register Discord commands. |
 <br>
 
 ### Discord bot perms:
@@ -101,16 +96,42 @@ go build
 ```
 Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
 
-### Web Control Panel
+### Factorio Agent
 
-The panel server is disabled by default. Launch ChatWire with `-panel` to enable it. Moderators can generate a temporary token with the `/web-panel` command. The control panel exposes
-information from the `/info` command such as versions, uptime, next map reset and player statistics.
-It provides buttons for common moderator actions like starting or stopping Factorio, synchronising
-mods or updating the game. A map section lists the most recent autosaves and lets you load one with
-a single click or supply your own file name. Another form allows running arbitrary RCON commands.
-The page is rendered in a dark theme styled similarly to the public staff documentation. Open the
-link provided by `/web-panel` in a web browser and supply the token as a query parameter. When
-ChatWire is started with `-localTest` the URL will use `127.0.0.1` so it can be accessed locally.
-The panel now mirrors information from `/info verbose` including the last save name and UPS
-statistics. Additional forms allow adjusting play hours, scheduling map resets and changing a
-player's level directly from the browser.
+ChatWire can run Factorio through a small helper daemon. The agent listens on a
+Unix socket located next to the agent binary (e.g. `factorio-agent.sock`) and understands a byte protocol:
+
+The `-debug` flag prints verbose logs from the agent. Without it the agent runs silently.
+
+```
+0x01 <binary> <args>\n  start Factorio (binary path followed by arguments)
+0x02          stop Factorio
+0x03          query running status (returns 0x01 or 0x00)
+0x04 <line>\n write a command to stdin
+0x05          read buffered stdout terminated by NUL
+```
+
+Whenever new stdout lines are available the agent sends `0x02 0x06` once per
+second. An example systemd unit is available at `misc/factorio-agent.service`.
+
+Enable and start this service so ChatWire can communicate with the agent.
+
+### Example Scripts
+
+Helper scripts live in `example-scripts/`. They automate common tasks like
+deploying builds, queuing restarts and generating systemd units. See
+`example-scripts/README.md` for details.
+
+### Web Control Panel (Work In Progress)
+
+- Start ChatWire with `-panel` to enable the panel server.
+- Generate a temporary token with the `/web-panel` command.
+- See `/info` details like versions, uptime, next map reset and player stats.
+- Buttons let you start/stop Factorio, sync mods and update the game.
+- The map section lists recent saves for one-click loading or custom filenames.
+- Send arbitrary RCON commands from the browser.
+- Styled in a dark theme similar to the staff docs.
+- With `-localTest` the URL uses `127.0.0.1` for local access.
+- Mirrors `/info verbose` showing the last save name and UPS stats.
+- Extra forms adjust play hours, schedule map resets and set player levels.
+

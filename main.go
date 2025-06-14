@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	_ "net/http/pprof"
@@ -44,7 +45,7 @@ func main() {
 	glob.PanelFlag = flag.Bool("panel", false, "Enable web panel")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
-	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
+	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.domain/path")
 	flag.Parse()
 
 	/* Start cw logs */
@@ -80,6 +81,7 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
+	support.AttachRunningFactorio(context.Background())
 	if *glob.PanelFlag {
 		panel.Start()
 	}
@@ -104,12 +106,14 @@ func main() {
 	<-sc
 
 	_ = os.Remove("cw.lock")
-	fact.SetAutolaunch(false, false)
-	glob.DoRebootCW = false
-	fact.QueueReboot = false
-	fact.QueueFactReboot = false
-	fact.QuitFactorio("Server quitting...")
-	fact.WaitFactQuit(false)
+	/*
+		fact.SetAutolaunch(false, false)
+		glob.DoRebootCW = false
+		fact.QueueReboot = false
+		fact.QueueFactReboot = false
+		fact.QuitFactorio("Server quitting...")
+		fact.WaitFactQuit(false)
+	*/
 
 	fact.DoExit(false)
 }
@@ -225,7 +229,11 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 	if !support.BotIsReady {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
 		if fact.FactIsRunning || fact.FactorioBooted {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" is online.", glob.COLOR_GREEN)
+			var vers string
+			if fact.FactorioVersion != constants.Unknown {
+				vers = fact.FactorioVersion
+			}
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+vers+" is online.", glob.COLOR_GREEN)
 		}
 	}
 
