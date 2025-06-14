@@ -92,7 +92,7 @@ var (
 	LocalCfgUpdatedLock sync.Mutex
 
 	/* Factorio server watchdog */
-	NoResponseCount = 0
+	NoResponseCount int32
 
 	/* Update warning */
 	UpdateWarnCounter  = 0

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"sync/atomic"
+
 	embed "github.com/Clinet/discordgo-embed"
 	"github.com/dustin/go-humanize"
 
@@ -1085,7 +1087,7 @@ func handleChatMsg(input *handleData) bool {
 
 			if pname != "<server>" {
 
-				var nores int = glob.NoResponseCount
+				nores := atomic.LoadInt32(&glob.NoResponseCount)
 
 				if !cfg.Global.Options.DisableSpamProtect {
 					glob.ChatterLock.Lock()

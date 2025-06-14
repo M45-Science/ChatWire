@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"sync/atomic"
 
 	"ChatWire/banlist"
 	"ChatWire/cfg"
@@ -84,11 +85,9 @@ func MainLoops() {
 			} else if fact.FactIsRunning && fact.FactorioBooted {
 
 				/* If the game isn't paused, check game time */
-				nores := 0
+				var nores int32
 				if fact.PausedTicks <= constants.PauseThresh {
-
-					glob.NoResponseCount = glob.NoResponseCount + 1
-					nores = glob.NoResponseCount
+					nores = atomic.AddInt32(&glob.NoResponseCount, 1)
 
 					fact.WriteFact("/time")
 				}
