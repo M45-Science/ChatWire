@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	socketPath := filepath.Join(filepath.Dir(ex), "factorio-agent.sock")
+	socketPath := filepath.Join(filepath.Dir(ex), "../factorio-agent.sock")
 	_ = os.Remove(socketPath)
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {

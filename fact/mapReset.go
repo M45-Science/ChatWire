@@ -36,15 +36,6 @@ func getMapTypeNum(mapt string) int {
 	return -1
 }
 
-func getMapTypeName(num int) string {
-
-	numMaps := len(constants.MapTypes)
-	if num >= 0 && num < numMaps {
-		return constants.MapTypes[num]
-	}
-	return "Error"
-}
-
 /* Generate map */
 func Map_reset(doReport bool) {
 

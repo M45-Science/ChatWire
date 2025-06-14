@@ -108,16 +108,6 @@ func HasResetTime() bool {
 	return cfg.Local.Options.NextReset.Unix() > 0
 }
 
-func disableNextReset() {
-	cfg.Local.Options.NextReset = time.Time{}
-	cfg.WriteLCfg()
-}
-
-func disableResetSchedule() {
-	cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
-	cfg.WriteLCfg()
-}
-
 func TimeTillReset() string {
 	if !HasResetTime() {
 		return "No reset is scheduled"

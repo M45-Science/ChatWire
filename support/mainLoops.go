@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
-	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -22,10 +20,6 @@ import (
 	"ChatWire/modupdate"
 	"ChatWire/util"
 )
-
-func linuxSetProcessGroup(cmd *exec.Cmd) {
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-}
 
 /********************
  * Main threads/loops

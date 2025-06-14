@@ -113,9 +113,9 @@ func main() {
 		fact.QueueFactReboot = false
 		fact.QuitFactorio("Server quitting...")
 		fact.WaitFactQuit(false)
-
-		fact.DoExit(false)
 	*/
+
+	fact.DoExit(false)
 }
 
 func startbotA() {
@@ -229,7 +229,11 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 	if !support.BotIsReady {
 		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN)
 		if fact.FactIsRunning || fact.FactorioBooted {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+fact.FactorioVersion+" is online.", glob.COLOR_GREEN)
+			var vers string
+			if fact.FactorioVersion != constants.Unknown {
+				vers = fact.FactorioVersion
+			}
+			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+vers+" is online.", glob.COLOR_GREEN)
 		}
 	}
 

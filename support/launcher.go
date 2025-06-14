@@ -13,7 +13,6 @@ import (
 	"path"
 	"sort"
 	"strings"
-	"syscall"
 	"time"
 
 	"ChatWire/cfg"
@@ -367,22 +366,6 @@ func waitForDiscord() {
 		cwlog.DoLogCW("Waiting for Discord...")
 		time.Sleep(time.Second)
 	}
-}
-
-func isProcessRunning(cmd *exec.Cmd) bool {
-	// Check if the process state is nil (still running)
-	if cmd.ProcessState == nil {
-		return true
-	}
-
-	// Check if the process has exited
-	return !cmd.ProcessState.Exited()
-}
-
-func isProcessAlive(pid int) bool {
-	// Send signal 0 to the process
-	err := syscall.Kill(pid, 0)
-	return err == nil
 }
 
 /* Create config files, launch factorio */
