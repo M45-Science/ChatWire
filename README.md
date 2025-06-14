@@ -122,6 +122,14 @@ Helper scripts live in `example-scripts/`. They automate common tasks like
 deploying builds, queuing restarts and generating systemd units. See
 `example-scripts/README.md` for details.
 
+ChatWire also watches for small "signal files" in its directory:
+
+* `.start` to start Factorio if it's not running.
+* `.stop` to stop the game gracefully.
+* `.queue` to queue a reboot once the current game ends.
+* `.rebootfactorio` to immediately restart Factorio.
+* `.rebootcw` to restart ChatWire itself.
+
 ### Web Control Panel (Work In Progress)
 
 - Start ChatWire with `-panel` to enable the panel server.
