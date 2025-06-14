@@ -33,13 +33,14 @@ const notifyBuffered byte = 0x06
 type agentCmd byte
 
 var (
-	procCmd  *exec.Cmd
-	procIn   io.WriteCloser
-	bufLock  sync.Mutex
-	outBuf   []string
-	connLock sync.Mutex
-	conns    = make(map[net.Conn]struct{})
-	debug    = flag.Bool("debug", false, "enable debug logging")
+	procCmd   *exec.Cmd
+	procIn    io.WriteCloser
+	bufLock   sync.Mutex
+	outBuf    []string
+	connLock  sync.Mutex
+	conns     = make(map[net.Conn]struct{})
+	debug     = flag.Bool("debug", false, "enable debug logging")
+	commandFn = exec.Command
 )
 
 func main() {
@@ -50,13 +51,13 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	ex, err := os.Executable()
 	if err != nil {
-		panic(err)
+		log.Fatalf("executable path error: %v", err)
 	}
 	socketPath := filepath.Join(filepath.Dir(ex), "../factorio-agent.sock")
 	_ = os.Remove(socketPath)
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {
-		panic(err)
+		log.Fatalf("listen error: %v", err)
 	}
 	log.Printf("agent listening on %s", socketPath)
 	go notifier()
@@ -112,7 +113,9 @@ func handleConn(c net.Conn) {
 			line, _ := r.ReadString('\n')
 			args := strings.Fields(strings.TrimSpace(line))
 			log.Printf("starting Factorio with args: %v", args)
-			startFactorio(args)
+			if err := startFactorio(args); err != nil {
+				log.Printf("start error: %v", err)
+			}
 			c.Write([]byte{respOK})
 		case cmdStop: // stop
 			log.Printf("stop command received")
@@ -156,7 +159,7 @@ func startFactorio(args []string) error {
 		bin = filepath.Join("..", bin)
 	}
 	log.Printf("launching Factorio: %s %v", bin, args[1:])
-	procCmd = exec.Command(bin, args[1:]...)
+	procCmd = commandFn(bin, args[1:]...)
 	procCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdout, err := procCmd.StdoutPipe()
 	if err != nil {
@@ -197,16 +200,22 @@ func stopFactorio() {
 	}
 	log.Printf("stopping factorio")
 	writeFactorio("/quit")
-	procCmd.Wait()
+	if err := procCmd.Wait(); err != nil {
+		log.Printf("wait error: %v", err)
+	}
 	log.Printf("factorio stopped")
 	procCmd = nil
 }
 
 func writeFactorio(line string) {
-	if procIn != nil {
-		io.WriteString(procIn, line+"\n")
-		log.Printf("sent to stdin: %s", line)
+	if procIn == nil {
+		return
 	}
+	if _, err := io.WriteString(procIn, line+"\n"); err != nil {
+		log.Printf("stdin write error: %v", err)
+		return
+	}
+	log.Printf("sent to stdin: %s", line)
 }
 
 func readBuffer() []string {
