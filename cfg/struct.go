@@ -115,9 +115,9 @@ type globalOptions struct {
 type local struct {
 	Callsign       string `form:"RO"`
 	Name           string
-	Port           int    `form:"RO"`
-	RCONPass       string `json:"-"`
-	LastSaveBackup int    `form:"RO" web:"Last Backup Slot"`
+	Port           int `form:"RO"`
+	RCONPass       string
+	LastSaveBackup int `form:"RO" web:"Last Backup Slot"`
 
 	Settings settings
 
