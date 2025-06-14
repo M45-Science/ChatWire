@@ -113,7 +113,14 @@ The `-debug` flag prints verbose logs from the agent. Without it the agent runs 
 
 Whenever new stdout lines are available the agent sends `0x02 0x06` once per
 second. An example systemd unit is available at `misc/factorio-agent.service`.
+
 Enable and start this service so ChatWire can communicate with the agent.
+
+### Example Scripts
+
+Helper scripts live in `example-scripts/`. They automate common tasks like
+deploying builds, queuing restarts and generating systemd units. See
+`example-scripts/README.md` for details.
 
 ### Web Control Panel (Work In Progress)
 
