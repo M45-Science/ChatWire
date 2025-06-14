@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -192,11 +193,11 @@ func SetFactRunning(run, report bool) {
 	wasrun := FactIsRunning
 	FactIsRunning = run
 
-	if run && glob.NoResponseCount >= 15 && !FactorioBootedAt.IsZero() && time.Since(FactorioBootedAt) > time.Minute {
+	if run && atomic.LoadInt32(&glob.NoResponseCount) >= 15 && !FactorioBootedAt.IsZero() && time.Since(FactorioBootedAt) > time.Minute {
 		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")
 		cwlog.DoLogCW("Server now appears to be responding again.")
 	}
-	glob.NoResponseCount = 0
+	atomic.StoreInt32(&glob.NoResponseCount, 0)
 
 	if wasrun != run {
 		if !run {
@@ -370,7 +371,7 @@ func QuitFactorio(message string) {
 	}
 
 	glob.RelaunchThrottle = 0
-	glob.NoResponseCount = 0
+	atomic.StoreInt32(&glob.NoResponseCount, 0)
 
 	/* Running but no players, just quit */
 	if (FactorioBooted && FactIsRunning) && NumPlayers <= 0 {

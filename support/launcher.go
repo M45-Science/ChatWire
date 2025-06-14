@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"sync/atomic"
+
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
@@ -541,7 +543,7 @@ func launchFactorio() {
 	fact.FactorioBootedAt = time.Now()
 
 	fact.Gametime = (constants.Unknown)
-	glob.NoResponseCount = 0
+	atomic.StoreInt32(&glob.NoResponseCount, 0)
 	cwlog.DoLogCW("Factorio booting...")
 
 	/* Hide RCON password and port */
