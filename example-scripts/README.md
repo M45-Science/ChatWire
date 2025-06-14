@@ -8,6 +8,7 @@ This directory provides small helper scripts for managing multiple ChatWire inst
 - **example-stop-factorio.sh** – create a `.stop` file in each server directory to stop Factorio.
 - **example-queue-reboot-factorio.sh** – create `.queue` files to queue Factorio reboots.
 - **example-reboot-chatwire.sh** – create `.rebootcw` files to restart ChatWire instances.
+- **example-reboot-factorio.sh** – create `.rebootfactorio` files to immediately reboot Factorio.
 - **make-services.sh** – generate systemd service and timer files for ChatWire and the agent.
 
 Adjust the scripts as needed for your environment.
