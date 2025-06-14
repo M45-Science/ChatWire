@@ -90,7 +90,7 @@ generate_chatwire_timer() {
 Description=Delayed Start for chatwire-$letter
 
 [Timer]
-OnBootSec=${delay}s
+OnBootSec=${delay}sec
 
 [Install]
 WantedBy=basic.target
