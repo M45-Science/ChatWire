@@ -282,5 +282,7 @@ func AttachRunningFactorio(ctx context.Context) bool {
 	fact.FactorioBooted = true
 	fact.FactorioBootedAt = time.Now()
 	fact.SetFactRunning(true, false)
+	fact.WriteFact("/sversion")
+	fact.WriteFact(glob.OnlineCommand)
 	return true
 }
