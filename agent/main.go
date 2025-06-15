@@ -180,13 +180,22 @@ func startFactorio(args []string) error {
 }
 
 func readStdout(r io.Reader) {
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		line := scanner.Text()
-		log.Printf("stdout: %s", line)
-		bufLock.Lock()
-		outBuf = append(outBuf, line)
-		bufLock.Unlock()
+	br := bufio.NewReader(r)
+	for {
+		line, err := br.ReadString('\n')
+		if len(line) > 0 {
+			line = strings.TrimRight(line, "\n")
+			log.Printf("stdout: %s", line)
+			bufLock.Lock()
+			outBuf = append(outBuf, line)
+			bufLock.Unlock()
+		}
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				log.Printf("stdout read error: %v", err)
+			}
+			return
+		}
 	}
 }
 
