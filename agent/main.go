@@ -197,9 +197,6 @@ func readStdout(r io.Reader) {
 			return
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		log.Printf("stdout scan error: %v", err)
-	}
 }
 
 func stopFactorio() {
