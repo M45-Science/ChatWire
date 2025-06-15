@@ -372,10 +372,24 @@ func waitForDiscord() {
 
 /* Create config files, launch factorio */
 func launchFactorio() {
-
 	if fact.FactIsRunning {
 		cwlog.DoLogCW("launchFactorio: Factorio is already running.")
 		return
+	}
+
+	if _, err := getConn(); err != nil {
+		if !glob.WaitAgentNotice {
+			cwlog.DoLogCW("Waiting for agent socket...")
+			glob.WaitAgentNotice = true
+		}
+		return
+	}
+	glob.WaitAgentNotice = false
+
+	if AgentRunning() {
+		if AttachRunningFactorio(context.Background()) {
+			return
+		}
 	}
 
 	glob.FactorioLock.Lock()
@@ -384,7 +398,6 @@ func launchFactorio() {
 	fact.SetLastBan("")
 
 	waitForDiscord()
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
 	fact.QueueFactReboot = false
 
 	/* Allow crash reports right away */
