@@ -181,12 +181,17 @@ func startFactorio(args []string) error {
 
 func readStdout(r io.Reader) {
 	scanner := bufio.NewScanner(r)
+	// allow up to 1MB long lines from Factorio
+	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 	for scanner.Scan() {
 		line := scanner.Text()
 		log.Printf("stdout: %s", line)
 		bufLock.Lock()
 		outBuf = append(outBuf, line)
 		bufLock.Unlock()
+	}
+	if err := scanner.Err(); err != nil {
+		log.Printf("stdout scan error: %v", err)
 	}
 }
 
