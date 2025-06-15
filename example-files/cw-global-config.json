@@ -1,0 +1,73 @@
+{
+	"GroupName": "ZYX",
+	"PrimaryServer": "a",
+	"Discord": {
+		"Token": "discord_token",
+		"Guild": "guild_id",
+		"Application": "app_id",
+		"ReportChannel": "report_channel",
+		"AnnounceChannel": "announce_channel",
+		"Roles": {
+			"Comment": "These are role names, ChatWire will auto-resolve the IDs and cache them.",
+			"RoleCache": {
+				"Comment": "Cached Role IDs, in case lookup is slow or fails.",
+				"Admin": "1234",
+				"Moderator": "5678",
+				"Regular": "9012",
+				"Veteran": "3456",
+				"Member": "7890",
+				"New": "1234",
+				"Patreon": "5678",
+				"Supporter": "9012",
+				"Nitro": "3456"
+			}
+		},
+		"Comment": "RoleIDs to ping for suspicious or banishment events, if any.",
+		"SusPingRole": "suspect-ping-role-id",
+		"BanishPingRole": "banish-ping-id"
+	},
+	"Factorio": {
+		"Username": "FactorioPlayerName",
+		"Token": "myFactorioToken"
+	},
+	"Paths": {
+		"ChatWirePrefix": "cw-",
+		"Folders": {
+			"FactorioDir": "factorio",
+			"ServersRoot": "/home/fact/",
+			"Saves": "saves",
+			"Mods": "mods",
+			"MapGenerators": "map-gen-json",
+			"MapArchives": "/home/fact/www/public_html/archive/",
+			"ModPack": "/home/fact/www/public_html/modpack/"
+		},
+		"Binaries": {
+			"FactBinary": "bin/x64/factorio"
+		},
+		"URLs": {
+			"Domain": "example.com",
+			"PathPrefix": "/u/fact",
+			"LogPath": "/logs/",
+			"LogsPathWeb": "/new-logs/",
+			"ArchivePath": "/archive/",
+			"ModPackPath": "/modpack/"
+		},
+		"DataFiles": {
+			"DBFile": "playerdb.json",
+			"Bans": "../composite.json"
+		}
+	},
+	"Options": {
+		"Description": "This is is in all server descriptions.",
+		"Comment": "RoleID to ping on map resets, if any.",
+		"ResetPingRole": "map-reset-ping-id",
+		"UseAuthserver": true,
+		"AutosaveMax": 250,
+		"RconOffset": 10000,
+		"ShutupSusWarn": false,
+		"DisableSpamProtect": false,
+		"FCLWarnOnly": false,
+		"FCLWarnRegulars": true,
+		"NonBlockSave": false
+	}
+}

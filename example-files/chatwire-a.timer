@@ -1,0 +1,8 @@
+[Unit]
+Description=delayed-cw-a
+
+[Timer]
+OnBootSec=6sec
+
+[Install]
+WantedBy=basic.target

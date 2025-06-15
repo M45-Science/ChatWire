@@ -1,0 +1,16 @@
+[Unit]
+Description=chatwire-a
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+User=fact2
+WorkingDirectory=/home/fact2/cw-a/
+ExecStart=/bin/bash start.sh
+Restart=always
+StartLimitBurst=3
+StartLimitInterval=1
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
