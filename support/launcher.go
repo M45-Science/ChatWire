@@ -582,11 +582,30 @@ func launchFactorio() {
 	}()
 	err = AgentStart(fact.GetFactorioBinary(), tempargs)
 	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game via agent. Details: %s", err))
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)
-		fact.DoExit(true)
+		cwlog.DoLogCW("Agent start failed: %v", err)
+		retryAgentStart(glob.FactorioContext, fact.GetFactorioBinary(), tempargs)
 		return
 	}
+}
+
+func retryAgentStart(ctx context.Context, bin string, args []string) {
+	go func() {
+		alert := true
+		for {
+			if ctx != nil && ctx.Err() != nil {
+				return
+			}
+			if err := AgentStart(bin, args); err != nil {
+				if alert {
+					cwlog.DoLogCW("Waiting for agent socket...")
+					alert = false
+				}
+				time.Sleep(time.Second)
+				continue
+			}
+			return
+		}
+	}()
 }
 
 func ConfigSoftMod() {
