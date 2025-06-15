@@ -1,0 +1,59 @@
+{
+	"Callsign": "a",
+	"Name": "RailWorld",
+	"Port": 10000,
+	"RCONPass": "automatically randomized each time we launch factorio",
+	"LastSaveBackup": 1,
+	"Settings": {
+		"Scenario": "none",
+		"MapGenerator": "",
+		"MapPreset": "default",
+		"Seed": 0,
+		"AFKMin": 30,
+		"AutosaveMin": 5,
+		"AutoPause": true,
+		"AdminOnlyPause": true,
+		"Heartbeats": 60
+	},
+	"Channel": {
+		"Comment": "ChannelID, if blank will attempt to create a new channel.",
+		"ChatChannel": ""
+	},
+	"Options": {
+		"LocalDescription": "Adds to this specific server description",
+		"AutoStart": true,
+		"AutoUpdate": true,
+		"ExpUpdates": false,
+		"ModUpdate": true,
+		"Speed": 1,
+		"HideAutosaves": false,
+		"HideResearch": false,
+		"PlayHourEnable": false,
+		"PlayStartHour": 0,
+		"PlayEndHour": 0,
+		"ResetInterval": {
+			"Months": 1,
+			"Weeks": 0,
+			"Days": 0,
+			"Hours": 0
+		},
+		"NextReset": "",
+		"ResetHour": 0,
+		"SkipReset": false,
+		"ResetPingRole": "",
+		"MembersOnly": false,
+		"RegularsOnly": false,
+		"CustomWhitelist": false,
+		"Whitelist": false,
+		"SoftModOptions": {
+			"Restrict": false,
+			"FriendlyFire": false,
+			"OneLife": false,
+			"DisableBlueprints": false,
+			"Cheats": false,
+			"InjectSoftMod": true,
+			"SoftModPath": "/home/fact/github/SoftMod/"
+		}
+	},
+	"ModPackList": []
+}
