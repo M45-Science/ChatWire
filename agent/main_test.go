@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"net"
+	"strings"
 	"testing"
 	"time"
 )
@@ -47,4 +49,19 @@ func TestHandleConnUnknown(t *testing.T) {
 	c2.Write([]byte{0xff})
 	c2.Close()
 	<-done
+}
+
+func TestReadStdoutLongLine(t *testing.T) {
+	longLine := strings.Repeat("a", 2*1024*1024) + "\nshort\n"
+	outBuf = nil
+	readStdout(bytes.NewBufferString(longLine))
+	if len(outBuf) != 2 {
+		t.Fatalf("expected 2 lines, got %d", len(outBuf))
+	}
+	if outBuf[0] != strings.Repeat("a", 2*1024*1024) {
+		t.Fatalf("long line mismatch")
+	}
+	if outBuf[1] != "short" {
+		t.Fatalf("short line mismatch: %q", outBuf[1])
+	}
 }
