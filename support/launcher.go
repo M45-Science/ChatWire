@@ -588,7 +588,6 @@ func launchFactorio() {
 }
 
 func finalizeLaunch(logArgs []string) {
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
 	fact.SetFactRunning(true, false)
 	fact.FactorioBooted = false
 
