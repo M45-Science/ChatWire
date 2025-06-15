@@ -532,20 +532,6 @@ func launchFactorio() {
 		}
 	}
 
-	/* Okay, prep for factorio launch */
-	fact.SetFactRunning(true, false)
-	fact.FactorioBooted = false
-
-	//Reset relaunch throttle
-	if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) > time.Hour {
-		glob.RelaunchThrottle = 0
-	}
-	fact.FactorioBootedAt = time.Now()
-
-	fact.Gametime = (constants.Unknown)
-	atomic.StoreInt32(&glob.NoResponseCount, 0)
-	cwlog.DoLogCW("Factorio booting...")
-
 	/* Hide RCON password and port */
 	var logArgs []string
 	for _, targ := range tempargs {
@@ -559,7 +545,6 @@ func launchFactorio() {
 	}
 
 	/* Launch Factorio via agent */
-	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(logArgs, " "))
 	fact.GameBuffer = new(bytes.Buffer)
 	fact.PipeLock.Lock()
 	fact.Pipe = NewAgentWriter()
@@ -582,11 +567,48 @@ func launchFactorio() {
 	}()
 	err = AgentStart(fact.GetFactorioBinary(), tempargs)
 	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game via agent. Details: %s", err))
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)
-		fact.DoExit(true)
+		cwlog.DoLogCW("Agent start failed: %v", err)
+		retryAgentStart(glob.FactorioContext, fact.GetFactorioBinary(), tempargs, logArgs)
 		return
 	}
+	finalizeLaunch(logArgs)
+}
+
+func finalizeLaunch(logArgs []string) {
+	fact.SetFactRunning(true, false)
+	fact.FactorioBooted = false
+
+	if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) > time.Hour {
+		glob.RelaunchThrottle = 0
+	}
+	fact.FactorioBootedAt = time.Now()
+
+	fact.Gametime = (constants.Unknown)
+	atomic.StoreInt32(&glob.NoResponseCount, 0)
+
+	cwlog.DoLogCW("Factorio booting...")
+	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(logArgs, " "))
+}
+
+func retryAgentStart(ctx context.Context, bin string, args []string, logArgs []string) {
+	go func() {
+		alert := true
+		for {
+			if ctx != nil && ctx.Err() != nil {
+				return
+			}
+			if err := AgentStart(bin, args); err != nil {
+				if alert {
+					cwlog.DoLogCW("Waiting for agent socket...")
+					alert = false
+				}
+				time.Sleep(time.Second)
+				continue
+			}
+			finalizeLaunch(logArgs)
+			return
+		}
+	}()
 }
 
 func ConfigSoftMod() {
