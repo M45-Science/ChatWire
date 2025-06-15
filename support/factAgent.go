@@ -10,7 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"ChatWire/cfg"
 	"ChatWire/cwlog"
+	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 )
@@ -36,6 +38,7 @@ var (
 	socketLock   sync.Mutex
 	dialFn       = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
 	retryingConn bool
+	alertAgent   bool
 )
 
 func markBadConn() {
@@ -45,6 +48,34 @@ func markBadConn() {
 		agentConn = nil
 	}
 	connLock.Unlock()
+}
+
+func agentLost() {
+	if !alertAgent {
+		alertAgent = true
+		cwlog.DoLogCW("Agent connection lost, attempting to reconnect")
+		disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, "Lost connection to Factorio agent, attempting to reconnect.")
+	}
+}
+
+func agentReconnected() {
+	if alertAgent {
+		alertAgent = false
+		cwlog.DoLogCW("Agent connection established")
+		disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, "Reconnected to Factorio agent.")
+	}
+
+	if fact.FactIsRunning {
+		return
+	}
+
+	if AttachRunningFactorio(context.Background()) {
+		return
+	}
+
+	if fact.FactAutoStart && !*glob.NoAutoLaunch {
+		launchFactorio()
+	}
 }
 
 func getConn() (net.Conn, error) {
@@ -61,7 +92,7 @@ func getConn() (net.Conn, error) {
 		connLock.Lock()
 		if !retryingConn {
 			retryingConn = true
-			cwlog.DoLogCW("Agent connection failed, retrying...")
+			agentLost()
 			go func() {
 				for {
 					time.Sleep(time.Second)
@@ -71,7 +102,7 @@ func getConn() (net.Conn, error) {
 						agentConn = nc
 						retryingConn = false
 						connLock.Unlock()
-						cwlog.DoLogCW("Agent connection established")
+						agentReconnected()
 						return
 					}
 				}
@@ -84,6 +115,7 @@ func getConn() (net.Conn, error) {
 	agentConn = c
 	retryingConn = false
 	connLock.Unlock()
+	agentReconnected()
 	return agentConn, nil
 }
 
@@ -215,6 +247,7 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 		var conn net.Conn
 		var r *bufio.Reader
 		var err error
+		var alerted bool
 		for {
 			if ctx.Err() != nil {
 				if conn != nil {
@@ -225,15 +258,27 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 			if conn == nil {
 				conn, err = dialFn()
 				if err != nil {
-					cwlog.DoLogCW("Agent watch dial error: %v", err)
+					if !alerted {
+						alerted = true
+						cwlog.DoLogCW("Agent watch dial error: %v", err)
+						cwlog.DoLogCW("Attempting to reconnect")
+						agentLost()
+					}
 					time.Sleep(time.Second)
 					continue
 				}
+				alerted = false
+				agentReconnected()
 				r = bufio.NewReader(conn)
 			}
 			b1, err := r.ReadByte()
 			if err != nil {
-				cwlog.DoLogCW("Agent watch read error: %v", err)
+				if !alerted {
+					alerted = true
+					cwlog.DoLogCW("Agent watch read error: %v", err)
+					cwlog.DoLogCW("Attempting to reconnect")
+					agentLost()
+				}
 				conn.Close()
 				conn = nil
 				time.Sleep(time.Second)
@@ -244,7 +289,12 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 			}
 			b2, err := r.ReadByte()
 			if err != nil {
-				cwlog.DoLogCW("Agent watch read error: %v", err)
+				if !alerted {
+					alerted = true
+					cwlog.DoLogCW("Agent watch read error: %v", err)
+					cwlog.DoLogCW("Attempting to reconnect")
+					agentLost()
+				}
 				conn.Close()
 				conn = nil
 				time.Sleep(time.Second)
@@ -254,7 +304,12 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 				continue
 			}
 			if _, err := conn.Write([]byte{byte(agentCmdRead)}); err != nil {
-				cwlog.DoLogCW("Agent watch write error: %v", err)
+				if !alerted {
+					alerted = true
+					cwlog.DoLogCW("Agent watch write error: %v", err)
+					cwlog.DoLogCW("Attempting to reconnect")
+					agentLost()
+				}
 				conn.Close()
 				conn = nil
 				time.Sleep(time.Second)
@@ -262,7 +317,12 @@ func AgentWatch(ctx context.Context, out chan<- []string) error {
 			}
 			data, err := r.ReadBytes(0)
 			if err != nil {
-				cwlog.DoLogCW("Agent watch read error: %v", err)
+				if !alerted {
+					alerted = true
+					cwlog.DoLogCW("Agent watch read error: %v", err)
+					cwlog.DoLogCW("Attempting to reconnect")
+					agentLost()
+				}
 				conn.Close()
 				conn = nil
 				time.Sleep(time.Second)
