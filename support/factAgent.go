@@ -31,23 +31,59 @@ const agentNotifyBuffered byte = 0x06
 const agentRespOK byte = byte(agentCmdStart)
 
 var (
-	agentConn  net.Conn
-	connLock   sync.Mutex
-	socketLock sync.Mutex
-	dialFn     = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
+	agentConn    net.Conn
+	connLock     sync.Mutex
+	socketLock   sync.Mutex
+	dialFn       = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
+	retryingConn bool
 )
+
+func markBadConn() {
+	connLock.Lock()
+	if agentConn != nil {
+		agentConn.Close()
+		agentConn = nil
+	}
+	connLock.Unlock()
+}
 
 func getConn() (net.Conn, error) {
 	connLock.Lock()
-	defer connLock.Unlock()
 	if agentConn != nil {
-		return agentConn, nil
+		c := agentConn
+		connLock.Unlock()
+		return c, nil
 	}
+	connLock.Unlock()
+
 	c, err := dialFn()
 	if err != nil {
+		connLock.Lock()
+		if !retryingConn {
+			retryingConn = true
+			cwlog.DoLogCW("Agent connection failed, retrying...")
+			go func() {
+				for {
+					time.Sleep(time.Second)
+					nc, nerr := dialFn()
+					if nerr == nil {
+						connLock.Lock()
+						agentConn = nc
+						retryingConn = false
+						connLock.Unlock()
+						cwlog.DoLogCW("Agent connection established")
+						return
+					}
+				}
+			}()
+		}
+		connLock.Unlock()
 		return nil, err
 	}
+	connLock.Lock()
 	agentConn = c
+	retryingConn = false
+	connLock.Unlock()
 	return agentConn, nil
 }
 
@@ -64,6 +100,7 @@ func (agentWriter) Write(p []byte) (int, error) {
 	}
 	_, err = conn.Write(append([]byte{byte(agentCmdWrite)}, p...))
 	if err != nil {
+		markBadConn()
 		return 0, err
 	}
 	return len(p), nil
@@ -89,6 +126,9 @@ func AgentStart(bin string, args []string) error {
 		buf = append(buf, '\n')
 	}
 	_, err = conn.Write(buf)
+	if err != nil {
+		markBadConn()
+	}
 	return err
 }
 
@@ -100,6 +140,9 @@ func AgentStop() error {
 		return err
 	}
 	_, err = conn.Write([]byte{byte(agentCmdStop)})
+	if err != nil {
+		markBadConn()
+	}
 	return err
 }
 
@@ -111,10 +154,12 @@ func AgentRunning() bool {
 		return false
 	}
 	if _, err = conn.Write([]byte{byte(agentCmdRunning)}); err != nil {
+		markBadConn()
 		return false
 	}
 	resp := make([]byte, 1)
 	if _, err = conn.Read(resp); err != nil {
+		markBadConn()
 		return false
 	}
 	return resp[0] == 1
@@ -128,6 +173,9 @@ func AgentWrite(line string) error {
 		return err
 	}
 	_, err = conn.Write(append([]byte{byte(agentCmdWrite)}, []byte(line+"\n")...))
+	if err != nil {
+		markBadConn()
+	}
 	return err
 }
 
@@ -139,11 +187,13 @@ func AgentReadBuffered() ([]string, error) {
 		return nil, err
 	}
 	if _, err = conn.Write([]byte{byte(agentCmdRead)}); err != nil {
+		markBadConn()
 		return nil, err
 	}
 	r := bufio.NewReader(conn)
 	data, err := r.ReadBytes(0)
 	if err != nil {
+		markBadConn()
 		return nil, err
 	}
 	data = data[:len(data)-1]

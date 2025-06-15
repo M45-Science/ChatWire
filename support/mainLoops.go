@@ -64,6 +64,10 @@ func MainLoops() {
 					}
 				}
 
+				if AttachRunningFactorio(nil) {
+					continue
+				}
+
 				if fact.QueueFactReboot {
 					if cfg.Local.Options.AutoStart {
 						fact.SetAutolaunch(true, false)

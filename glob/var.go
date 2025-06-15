@@ -19,6 +19,8 @@ var (
 	UpdateMessage     *discordgo.Message
 	UpdateMessageLock sync.Mutex
 
+	WaitAgentNotice bool
+
 	FactorioCmd     *exec.Cmd
 	FactorioContext context.Context
 	FactorioCancel  context.CancelFunc
