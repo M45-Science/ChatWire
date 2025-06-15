@@ -1,12 +1,12 @@
 package moderator
 
 import (
-       "ChatWire/fact"
-       "sync"
+	"ChatWire/fact"
+	"sync"
 )
 
 const (
-       saveGameName = "save-game"
+	saveGameName = "save-game"
 )
 
 var (

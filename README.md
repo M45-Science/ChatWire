@@ -17,7 +17,7 @@ Factorio Server Manager & Discord Bridge
 Linux<br>
 Golang 1.24+<br>
 <br>
-ChatWire is approximately 15k lines of go code over 77 files.
+ChatWire is approximately 16k lines of Go code across 80 files.
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
@@ -52,7 +52,12 @@ Binary:<br>
 `./cw-a/factorio/bin/x64/Factorio`<br>
 **This is setup to have many servers running, and so some files and directories are setup to be common.**<br>
 <br>
-        
+
+### Example files
+The `example-files` directory contains sample systemd units, configuration files
+and helper scripts for managing multiple servers. Copy them and adjust the paths
+as needed for your environment.<br>
+
 ### Launch parameters:
 
 | Flag | Description |
@@ -109,6 +114,10 @@ Create a file in the ChatWire directory to control the running game:
 * `.queue` queues a reboot once the current game ends.
 * `.rfact` restarts Factorio.
 
+### Automatic reloads
+ChatWire monitors the local and global configuration files, the player database
+and the ban list for modifications. Any changes are loaded automatically so you
+can update settings without restarting the bot.
 
 ### Web Control Panel (Work In Progress)
 
