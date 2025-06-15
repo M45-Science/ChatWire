@@ -31,23 +31,50 @@ const agentNotifyBuffered byte = 0x06
 const agentRespOK byte = byte(agentCmdStart)
 
 var (
-	agentConn  net.Conn
-	connLock   sync.Mutex
-	socketLock sync.Mutex
-	dialFn     = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
+	agentConn    net.Conn
+	connLock     sync.Mutex
+	socketLock   sync.Mutex
+	dialFn       = func() (net.Conn, error) { return net.Dial("unix", agentSocket) }
+	retryingConn bool
 )
 
 func getConn() (net.Conn, error) {
 	connLock.Lock()
-	defer connLock.Unlock()
 	if agentConn != nil {
-		return agentConn, nil
+		c := agentConn
+		connLock.Unlock()
+		return c, nil
 	}
+	connLock.Unlock()
+
 	c, err := dialFn()
 	if err != nil {
+		connLock.Lock()
+		if !retryingConn {
+			retryingConn = true
+			cwlog.DoLogCW("Agent connection failed, retrying...")
+			go func() {
+				for {
+					time.Sleep(time.Second)
+					nc, nerr := dialFn()
+					if nerr == nil {
+						connLock.Lock()
+						agentConn = nc
+						retryingConn = false
+						connLock.Unlock()
+						cwlog.DoLogCW("Agent connection established")
+						return
+					}
+				}
+			}()
+		}
+		connLock.Unlock()
 		return nil, err
 	}
+	connLock.Lock()
 	agentConn = c
+	retryingConn = false
+	connLock.Unlock()
 	return agentConn, nil
 }
 
