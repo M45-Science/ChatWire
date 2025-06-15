@@ -6,8 +6,6 @@ import (
 	"context"
 	"io"
 	"net"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -17,13 +15,7 @@ import (
 	"ChatWire/glob"
 )
 
-var agentSocket = func() string {
-	ex, err := os.Executable()
-	if err != nil {
-		return "factorio-agent.sock"
-	}
-	return filepath.Join(filepath.Dir(ex), "factorio-agent.sock")
-}()
+const agentSocket = "factorio-agent.sock"
 
 type agentCmd byte
 
