@@ -66,34 +66,6 @@ func agentReconnected() {
 		disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, "Reconnected to Factorio agent.")
 	}
 
-	if fact.FactIsRunning || fact.FactorioBooted {
-		return
-	}
-
-	if AttachRunningFactorio(context.Background()) {
-		return
-	}
-
-	if fact.FactAutoStart && !*glob.NoAutoLaunch {
-		launchFactorio()
-	}
-}
-
-func agentLost() {
-	if !alertAgent {
-		alertAgent = true
-		cwlog.DoLogCW("Agent connection lost, attempting to reconnect")
-		disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, "Lost connection to Factorio agent, attempting to reconnect.")
-	}
-}
-
-func agentReconnected() {
-	if alertAgent {
-		alertAgent = false
-		cwlog.DoLogCW("Agent connection established")
-		disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, "Reconnected to Factorio agent.")
-	}
-
 	if fact.FactIsRunning {
 		return
 	}
