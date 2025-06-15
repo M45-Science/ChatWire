@@ -611,26 +611,6 @@ func retryAgentStart(ctx context.Context, bin string, args []string, logArgs []s
 	}()
 }
 
-func retryAgentStart(ctx context.Context, bin string, args []string) {
-	go func() {
-		alert := true
-		for {
-			if ctx != nil && ctx.Err() != nil {
-				return
-			}
-			if err := AgentStart(bin, args); err != nil {
-				if alert {
-					cwlog.DoLogCW("Waiting for agent socket...")
-					alert = false
-				}
-				time.Sleep(time.Second)
-				continue
-			}
-			return
-		}
-	}()
-}
-
 func ConfigSoftMod() {
 	fact.WriteFact("/cname " + strings.ToUpper(cfg.Local.Callsign+"-"+cfg.Local.Name))
 
