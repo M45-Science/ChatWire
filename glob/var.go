@@ -54,6 +54,9 @@ var (
 	CWLogDesc    *os.File
 	AuditLogDesc *os.File
 
+	// CWLogger is set by the cwlog package and should point to cwlog.DoLogCW.
+	CWLogger func(format string, args ...interface{})
+
 	/* CW reboot */
 	DoRebootCW = false
 
