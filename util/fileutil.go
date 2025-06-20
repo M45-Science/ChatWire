@@ -30,5 +30,9 @@ func WriteJSONAtomic(path string, data interface{}, perm os.FileMode) error {
 	if err := os.WriteFile(tempPath, outbuf.Bytes(), perm); err != nil {
 		return err
 	}
-	return os.Rename(tempPath, path)
+	if err := os.Rename(tempPath, path); err != nil {
+		_ = os.Remove(tempPath)
+		return err
+	}
+	return nil
 }
