@@ -117,7 +117,7 @@ func ReadBanFile(firstboot bool) {
 	err = json.Unmarshal(data, &names)
 
 	if err != nil {
-		fmt.Print("")
+		cwlog.DoLogCW("ReadBanFile: legacy format parse error: %v", err)
 		//Ignore error
 	}
 
