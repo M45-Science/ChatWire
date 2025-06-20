@@ -323,7 +323,7 @@ func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message
 
 // InteractionEphemeralResponseColor sends an ephemeral response with a specific embed color.
 func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, message string, color int) *discordgo.Message {
-	glob.BootMessage = nil
+	glob.SetBootMessage(nil)
 	glob.ResetUpdateMessage()
 
 	if DS == nil || i == nil {
@@ -357,7 +357,7 @@ func InteractionEphemeralResponseColor(i *discordgo.InteractionCreate, title, me
 
 // InteractionEphemeralFileResponse sends an ephemeral embed with an attached file.
 func InteractionEphemeralFileResponse(i *discordgo.InteractionCreate, title, message, filename string, data []byte) *discordgo.Message {
-	glob.BootMessage = nil
+	glob.SetBootMessage(nil)
 	glob.ResetUpdateMessage()
 
 	if DS == nil || i == nil {

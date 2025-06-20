@@ -165,7 +165,7 @@ func MainLoops() {
 							addlen := len(line)
 							if oldlen+addlen >= constants.MaxDiscordMsgLen {
 								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
-								glob.BootMessage = nil
+								glob.SetBootMessage(nil)
 								glob.ResetUpdateMessage()
 								buf = line
 							} else {
@@ -174,7 +174,7 @@ func MainLoops() {
 						}
 						if buf != "" {
 							disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
-							glob.BootMessage = nil
+							glob.SetBootMessage(nil)
 							glob.ResetUpdateMessage()
 						}
 

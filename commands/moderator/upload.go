@@ -83,7 +83,7 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		}
 
 		if doLaunch {
-			glob.BootMessage = nil
+			glob.SetBootMessage(nil)
 			glob.RelaunchThrottle = 0
 			fact.SetAutolaunch(true, false)
 		}
