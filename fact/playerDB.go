@@ -1,9 +1,7 @@
 package fact
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -13,6 +11,7 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
+	"ChatWire/util"
 	"ChatWire/watcher"
 )
 
@@ -428,27 +427,9 @@ func WritePlayers() {
 	glob.PlayerListLock.RLock()
 	defer glob.PlayerListLock.RUnlock()
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	if err := enc.Encode(glob.PlayerList); err != nil {
-		cwlog.DoLogCW("WritePlayers: enc.Encode failure")
-		return
-	}
+	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-	nfilename := fmt.Sprintf("pdb-%s.tmp", cfg.Local.Callsign)
-	err := os.WriteFile(nfilename, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't write db temp file.")
-		return
-	}
-
-	oldName := nfilename
-	newName := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-	err = os.Rename(oldName, newName)
-
-	if err != nil {
-		cwlog.DoLogCW("Couldn't rename db temp file.")
-		return
+	if err := util.WriteJSONAtomic(finalPath, glob.PlayerList, 0644); err != nil {
+		cwlog.DoLogCW("WritePlayers: " + err.Error())
 	}
 }
