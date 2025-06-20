@@ -172,14 +172,14 @@ func SetAutolaunch(autolaunch, report bool) {
 	if !autolaunch && FactAutoStart {
 		FactAutoStart = false
 		if report {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Auto-reboot has been turned OFF.", glob.COLOR_GREEN)
+			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Auto-reboot has been turned OFF.", glob.COLOR_GREEN))
 		}
 		cwlog.DoLogCW("Autolaunch disabled.")
 	} else if autolaunch && !FactAutoStart {
 		FactAutoStart = true
 		cwlog.DoLogCW("Autolaunch enabled.")
 		if report {
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Auto-reboot has been ENABLED.", glob.COLOR_GREEN)
+			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Auto-reboot has been ENABLED.", glob.COLOR_GREEN))
 		}
 	}
 
@@ -206,10 +206,10 @@ func SetFactRunning(run, report bool) {
 		if report {
 			if run {
 				cwlog.DoLogGame("Factorio " + FactorioVersion + " is now online.")
-				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Ready", "Factorio "+FactorioVersion+" is now online.", glob.COLOR_GREEN)
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "Factorio "+FactorioVersion+" is now online.", glob.COLOR_GREEN))
 			} else {
 				cwlog.DoLogCW("Factorio has closed.")
-				glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Offline", "Factorio is now offline.", glob.COLOR_RED)
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "Factorio is now offline.", glob.COLOR_RED))
 			}
 		}
 		UpdateChannelName()
@@ -362,7 +362,7 @@ func WriteWhitelist() int {
 /* Quit Factorio */
 func QuitFactorio(message string) {
 	if FactIsRunning {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Quitting Factorio: "+message, glob.COLOR_ORANGE)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Quitting Factorio: "+message, glob.COLOR_ORANGE))
 	}
 
 	if message == "" {
@@ -1171,7 +1171,7 @@ func MakeSteamURL() (string, bool) {
 /* Program shutdown */
 func DoExit(delay bool) {
 
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", constants.ProgName+" shutting down.", glob.COLOR_RED)
+	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", constants.ProgName+" shutting down.", glob.COLOR_RED))
 
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {

@@ -399,7 +399,7 @@ func launchFactorio() {
 	fact.SetLastBan("")
 
 	waitForDiscord()
-	glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Notice", "Launching Factorio...", glob.COLOR_GREEN)
+	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Launching Factorio...", glob.COLOR_GREEN))
 	fact.QueueFactReboot = false
 
 	/* Allow crash reports right away */
@@ -419,7 +419,7 @@ func launchFactorio() {
 		cfg.Global.Paths.Folders.FactorioDir
 
 	if _, err := os.Stat(checkFactPath); os.IsNotExist(err) {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Factorio is not installed. Use `/factorio install-factorio` to install it.", glob.COLOR_RED)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Factorio is not installed. Use `/factorio install-factorio` to install it.", glob.COLOR_RED))
 
 		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
 		fact.SetAutolaunch(false, true)
@@ -429,7 +429,7 @@ func launchFactorio() {
 	/* Find, test and load newest save game available */
 	found, fileName, folderName := GetSaveGame(true)
 	if !found {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to access save-games.", glob.COLOR_RED)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Unable to access save-games.", glob.COLOR_RED))
 		fact.SetAutolaunch(false, true)
 		return
 	}
@@ -442,7 +442,7 @@ func launchFactorio() {
 
 		if delay > 0 {
 			buf := fmt.Sprintf("Rate limiting: Waiting for %v seconds before launching Factorio.", delay)
-			glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Warning", buf, glob.COLOR_ORANGE)
+			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Warning", buf, glob.COLOR_ORANGE))
 
 			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning && glob.RelaunchThrottle > 0; i++ {
 				time.Sleep(100 * time.Millisecond)
@@ -505,7 +505,7 @@ func launchFactorio() {
 
 	modFiles := GetModFiles()
 	if len(modFiles) > 0 {
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "Status", "Loading mods...", glob.COLOR_GREEN)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", "Loading mods...", glob.COLOR_GREEN))
 	}
 
 	if glob.FactorioCancel != nil {
@@ -535,7 +535,7 @@ func launchFactorio() {
 	if !fact.GenerateFactorioConfig() {
 		fact.SetAutolaunch(false, true)
 
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Unable to write a config file for Fatorio.", glob.COLOR_RED)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Unable to write a config file for Fatorio.", glob.COLOR_RED))
 
 		return
 	}
@@ -589,7 +589,7 @@ func launchFactorio() {
 	/* Factorio is not happy. */
 	if errp != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
 
 		/* close lock  */
 		fact.DoExit(true)
@@ -607,7 +607,7 @@ func launchFactorio() {
 	err = glob.FactorioCmd.Start()
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
-		glob.BootMessage = disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.BootMessage, "ERROR", "Launching Factorio failed!", glob.COLOR_RED)
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
 		fact.DoExit(true)
 		return
 	}

@@ -16,6 +16,7 @@ var (
 	FactorioLock      sync.Mutex
 	UpdatersLock      sync.Mutex
 	BootMessage       *discordgo.Message
+	BootMessageLock   sync.Mutex
 	UpdateMessage     *discordgo.Message
 	UpdateMessageLock sync.Mutex
 
