@@ -46,7 +46,7 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		} else {
 			line = item.Name
 		}
-		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" {
+		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" && !strings.EqualFold(v, "auto") {
 			line += " **(FORCE " + v + ")**"
 		}
 		ebuf += line
@@ -68,7 +68,7 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		} else {
 			line = item.Name
 		}
-		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" {
+		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" && !strings.EqualFold(v, "auto") {
 			line += " (force " + v + ")"
 		}
 		dbuf += line
