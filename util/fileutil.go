@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // TempFilePrefix is applied to temporary files created by WriteJSONAtomic.
@@ -16,7 +17,12 @@ func SetTempFilePrefix(prefix string) {
 }
 
 // WriteJSONAtomic writes data to path as JSON using a temporary file.
+var WriteJSONLock sync.Mutex
+
 func WriteJSONAtomic(path string, data interface{}, perm os.FileMode) error {
+	WriteJSONLock.Lock()
+	defer WriteJSONLock.Unlock()
+
 	tmpName := TempFilePrefix + filepath.Base(path) + ".tmp"
 	tempPath := filepath.Join(filepath.Dir(path), tmpName)
 
