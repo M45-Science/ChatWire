@@ -1,10 +1,7 @@
 package fact
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -15,12 +12,12 @@ import (
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
+	"ChatWire/util"
 )
 
 /* Generate a server-settings.json file for Factorio */
 func GenerateFactorioConfig() bool {
 
-	tempPath := constants.ServSettingsName + ".tmp"
 	finalPath := cfg.GetFactorioFolder() +
 		constants.ServSettingsName
 
@@ -224,29 +221,10 @@ func GenerateFactorioConfig() bool {
 		}
 	}
 
-	outbuf := new(bytes.Buffer)
-	enc := json.NewEncoder(outbuf)
-	enc.SetIndent("", "\t")
-	enc.SetEscapeHTML(false)
-
-	if err := enc.Encode(conf); err != nil {
-		cwlog.DoLogCW("GenerateFactorioConfig: enc.Encode failure")
+	if err := util.WriteJSONAtomic(finalPath, conf, 0644); err != nil {
+		cwlog.DoLogCW("GenerateFactorioConfig: " + err.Error())
 		return false
 	}
 
-	err := os.WriteFile(tempPath, outbuf.Bytes(), 0644)
-
-	if err != nil {
-		cwlog.DoLogCW("GenerateFactorioConfig: WriteFile failure")
-		return false
-	}
-
-	err = os.Rename(tempPath, finalPath)
-	if err != nil {
-		cwlog.DoLogCW("GenerateFactorioConfig: Rename failure: " + err.Error() + ", " + tempPath + ", " + finalPath)
-		return false
-	}
-
-	//cwlog.DoLogCW("Server settings json written.")
 	return true
 }
