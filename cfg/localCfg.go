@@ -172,6 +172,7 @@ func createLCfg() local {
 // WatchLCfg monitors the local configuration file for changes.
 func WatchLCfg() {
 	watcher.Watch(constants.CWLocalConfig, 5*time.Second, &glob.ServerRunning, func() {
+		time.Sleep(time.Second)
 		glob.LocalCfgUpdatedLock.Lock()
 		glob.LocalCfgUpdated = true
 		glob.LocalCfgUpdatedLock.Unlock()

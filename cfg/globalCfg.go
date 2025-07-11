@@ -187,6 +187,7 @@ func createGCfg() global {
 // WatchGCfg monitors the global configuration file for changes.
 func WatchGCfg() {
 	watcher.Watch(constants.CWGlobalConfig, 5*time.Second, &glob.ServerRunning, func() {
+		time.Sleep(time.Second)
 		glob.GlobalCfgUpdatedLock.Lock()
 		glob.GlobalCfgUpdated = true
 		glob.GlobalCfgUpdatedLock.Unlock()

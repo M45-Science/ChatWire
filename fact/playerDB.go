@@ -36,6 +36,7 @@ func WatchDatabaseFile() {
 	filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
 	watcher.Watch(filePath, 5*time.Second, &glob.ServerRunning, func() {
+		time.Sleep(time.Second)
 		setPlayerListUpdated()
 	})
 }

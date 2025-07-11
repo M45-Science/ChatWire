@@ -36,6 +36,7 @@ import (
 	"ChatWire/modupdate"
 	"ChatWire/support"
 	"ChatWire/watcher"
+
 	"github.com/hako/durafmt"
 )
 
@@ -78,6 +79,7 @@ func loadTemplate() {
 
 // WatchTemplate monitors the panel template and reloads it when changed.
 func WatchTemplate() {
+	time.Sleep(time.Second)
 	loadTemplate()
 	watcher.Watch(constants.PanelTemplateFile, 5*time.Second, &glob.ServerRunning, loadTemplate)
 }

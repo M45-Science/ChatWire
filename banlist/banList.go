@@ -82,6 +82,7 @@ func WatchBanFile() {
 	}
 
 	watcher.Watch(cfg.Global.Paths.DataFiles.Bans, 5*time.Second, &glob.ServerRunning, func() {
+		time.Sleep(time.Second)
 		ReadBanFile(false)
 	})
 }
