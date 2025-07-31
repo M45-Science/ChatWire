@@ -8,6 +8,7 @@ import (
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 )
@@ -26,7 +27,7 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	now := time.Now().Unix()
 	token := glob.RandomBase64String(20)
-	var orig int64 = now
+	orig := now
 	glob.PanelTokenLock.Lock()
 	for k, v := range glob.PanelTokens {
 		if v.DiscID == i.Member.User.ID {
@@ -61,6 +62,8 @@ func WebPanelLink(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	err := disc.DS.InteractionRespond(i.Interaction, resp)
 	if err != nil {
 		newResp := &discordgo.WebhookEdit{Embeds: &embeds}
-		disc.DS.InteractionResponseEdit(i.Interaction, newResp)
+		if _, e := disc.DS.InteractionResponseEdit(i.Interaction, newResp); e != nil {
+			cwlog.DoLogCW("panelCmd: failed to send response: %v", e)
+		}
 	}
 }

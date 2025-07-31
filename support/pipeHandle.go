@@ -563,7 +563,7 @@ func handleMapLoad(input *handleData) bool {
 			fullpath := input.noTimecodeList[2]
 			size := input.noTimecodeList[3]
 			sizei, _ := strconv.Atoi(size)
-			fullpath = strings.Replace(fullpath, ":", "", -1)
+			fullpath = strings.ReplaceAll(fullpath, ":", "")
 
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 			filename := regaa.ReplaceAllString(fullpath, "")
@@ -781,7 +781,7 @@ func handleExitSave(input *handleData) bool {
 			fullpath := strings.Join(input.noTimecodeList[5:], " ")
 			regaa := regexp.MustCompile(`\/.*?\/saves\/`)
 			filename := regaa.ReplaceAllString(fullpath, "")
-			filename = strings.Replace(filename, ":", "", -1)
+			filename = strings.ReplaceAll(filename, ":", "")
 
 			/* Increment backup number */
 			if cfg.Local.LastSaveBackup < constants.MaxSaveBackups {
@@ -1080,7 +1080,7 @@ func handleChatMsg(input *handleData) bool {
 		cwlog.DoLogGame(input.noDatestamp)
 
 		if input.noDatestampListLen > 1 {
-			input.noDatestampList[1] = strings.Replace(input.noDatestampList[1], ":", "", -1)
+			input.noDatestampList[1] = strings.ReplaceAll(input.noDatestampList[1], ":", "")
 			pname := input.noDatestampList[1]
 
 			if pname != "<server>" {

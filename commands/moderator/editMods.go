@@ -3,6 +3,7 @@ package moderator
 import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -120,7 +121,9 @@ func addMod(i *discordgo.InteractionCreate, input string) string {
 	}
 
 	if buf != "" {
-		modupdate.CheckModUpdates(false)
+		if _, err := modupdate.CheckModUpdates(false); err != nil {
+			cwlog.DoLogCW("CheckModUpdates failed: %v", err)
+		}
 		return "Adding mods: " + buf
 	}
 
@@ -294,6 +297,8 @@ func setVersion(input string) string {
 		buf += seg[0] + " set to " + vers
 	}
 
-	modupdate.CheckModUpdates(false)
+	if _, err := modupdate.CheckModUpdates(false); err != nil {
+		cwlog.DoLogCW("CheckModUpdates failed: %v", err)
+	}
 	return buf
 }

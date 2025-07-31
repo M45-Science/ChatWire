@@ -58,7 +58,7 @@ func ModPack(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	modPath := cfg.GetModsFolder()
-	var modsList []string = []string{}
+	var modsList []string
 	modFiles := 0
 	for _, item := range jfile.Mods {
 		if modupdate.IsBaseMod(item.Name) {
@@ -132,7 +132,11 @@ func makeZipFromFileList(files []string, dest string) bool {
 		cwlog.DoLogCW(err.Error())
 		return true
 	}
-	defer archive.Close()
+	defer func() {
+		if err := archive.Close(); err != nil {
+			cwlog.DoLogCW("modPack: failed to close archive: %v", err)
+		}
+	}()
 
 	mitem := cfg.ModPackData{Path: dest, Created: time.Now()}
 	cfg.Local.ModPackList = append(cfg.Local.ModPackList, mitem)
@@ -142,10 +146,14 @@ func makeZipFromFileList(files []string, dest string) bool {
 	for _, file := range files {
 		fileLower := strings.ToLower(file)
 		if strings.HasSuffix(fileLower, ".zip") || strings.HasSuffix(fileLower, ".json") || strings.HasSuffix(fileLower, ".dat") {
-			addFileToZip(zipWriter, file)
+			if err := addFileToZip(zipWriter, file); err != nil {
+				cwlog.DoLogCW("modPack: failed to add file %v: %v", file, err)
+			}
 		}
 	}
-	zipWriter.Close()
+	if err := zipWriter.Close(); err != nil {
+		cwlog.DoLogCW("modPack: failed to close zip writer: %v", err)
+	}
 	return false
 }
 

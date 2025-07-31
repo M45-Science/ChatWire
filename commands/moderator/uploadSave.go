@@ -84,7 +84,9 @@ func insertSaveGame(i *discordgo.InteractionCreate, saveFileName string, saveGam
 		msg := "**THE " + strings.ToUpper(saveGameName) + " MAY CONTAIN A ZIP-BOMB ATTACK, ABORTING. UPLOADED BY: ID: " + i.Member.User.ID + " USERNAME: " + i.Member.User.Username + " INCIDENT LOGGED. **"
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), msgTitle, msg, glob.COLOR_RED))
 		cwlog.DoLogAudit(msg)
-		os.Remove(saveFilePath)
+		if err := os.Remove(saveFilePath); err != nil {
+			cwlog.DoLogCW("uploadSave: failed to remove suspicious save: %v", err)
+		}
 		return true
 	}
 	return false

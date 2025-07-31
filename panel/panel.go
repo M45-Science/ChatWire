@@ -179,7 +179,7 @@ func Start() {
 func GenerateToken(id string) string {
 	now := time.Now().Unix()
 	token := glob.RandomBase64String(128)
-	var orig int64 = now
+	orig := now
 	glob.PanelTokenLock.Lock()
 	for k, v := range glob.PanelTokens {
 		if v.DiscID == id {
@@ -250,10 +250,7 @@ func buildPanelData(tok string) panelData {
 		accessLevel = 1
 	}
 
-	paused := false
-	if fact.PausedTicks > 4 {
-		paused = true
-	}
+	paused := fact.PausedTicks > 4
 
 	var mem, reg, vet, mods, ban int
 	glob.PlayerListLock.RLock()

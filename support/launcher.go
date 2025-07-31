@@ -53,7 +53,7 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 		return false
 	}
 
-	var tempargs []string = []string{"--sync-mods", fileName}
+	tempargs := []string{"--sync-mods", fileName}
 
 	// Create a context with the timeout
 	ctx, cancel := context.WithTimeout(context.Background(), syncModsTimeout)
