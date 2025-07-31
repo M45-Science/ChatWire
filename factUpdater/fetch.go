@@ -2,6 +2,7 @@ package factUpdater
 
 import (
 	"ChatWire/constants"
+	"ChatWire/cwlog"
 	"ChatWire/glob"
 	"errors"
 	"fmt"
@@ -67,7 +68,11 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 
 	//Close once complete, if valid
 	if res.Body != nil {
-		defer res.Body.Close()
+		defer func() {
+			if err := res.Body.Close(); err != nil {
+				cwlog.DoLogCW("fetch: failed to close body: %v", err)
+			}
+		}()
 	}
 
 	//Read all

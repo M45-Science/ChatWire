@@ -1194,9 +1194,15 @@ func DoExit(delay bool) {
 	glob.PlayerListWriteLock.Lock()
 
 	cwlog.DoLogCW("Closing log files.")
-	glob.GameLogDesc.Close()
-	glob.CWLogDesc.Close()
-	glob.AuditLogDesc.Close()
+	if err := glob.GameLogDesc.Close(); err != nil {
+		cwlog.DoLogCW("DoExit: failed to close game log: %v", err)
+	}
+	if err := glob.CWLogDesc.Close(); err != nil {
+		cwlog.DoLogCW("DoExit: failed to close cw log: %v", err)
+	}
+	if err := glob.AuditLogDesc.Close(); err != nil {
+		cwlog.DoLogCW("DoExit: failed to close audit log: %v", err)
+	}
 	if fi, err := os.Stat(glob.AuditLogName); err == nil && fi.Size() == 0 {
 		_ = os.Remove(glob.AuditLogName)
 	}
@@ -1204,7 +1210,9 @@ func DoExit(delay bool) {
 	_ = os.Remove("cw.lock")
 	/* Logs are closed, don't report */
 
-	os.Remove("log/newest.log")
+	if err := os.Remove("log/newest.log"); err != nil {
+		cwlog.DoLogCW("DoExit: failed to remove newest.log: %v", err)
+	}
 	fmt.Println("Goodbye.")
 	if delay {
 		time.Sleep(constants.ErrorDelayShutdown * time.Second)

@@ -277,7 +277,11 @@ func quickArchive() {
 		LogCMS(cfg.Local.Channel.ChatChannel, buf)
 		return
 	}
-	defer from.Close()
+	defer func() {
+		if err := from.Close(); err != nil {
+			cwlog.DoLogCW("mapReset: failed to close source map: %v", err)
+		}
+	}()
 
 	/* Attach map, send to chat */
 	dData := &discordgo.MessageSend{Files: []*discordgo.File{
@@ -308,7 +312,11 @@ func quickArchive() {
 		LogCMS(cfg.Local.Channel.ChatChannel, buf)
 		return
 	}
-	defer to.Close()
+	defer func() {
+		if err := to.Close(); err != nil {
+			cwlog.DoLogCW("mapReset: failed to close archive file: %v", err)
+		}
+	}()
 
 	_, errc := io.Copy(to, from)
 	if errc != nil {

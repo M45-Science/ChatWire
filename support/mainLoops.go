@@ -55,10 +55,6 @@ func MainLoops() {
 					fact.FactorioBootedAt = time.Time{}
 					if glob.CrashLoopCount >= 3 {
 						fact.SetAutolaunch(false, true)
-						mapName := fact.GameMapName
-						if mapName == "" {
-							mapName = "<unknown>"
-						}
 						msg := fmt.Sprintf("%s-%s: %s: Factorio crashed repeatedly during startup while loading. Moderator attention required, auto-start option disabled.",
 							cfg.Global.GroupName, cfg.Local.Callsign, cfg.Local.Name)
 						cfg.Local.Options.AutoStart = false

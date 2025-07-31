@@ -103,7 +103,11 @@ func ReadBanFile(firstboot bool) {
 		//log.Println(err)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			cwlog.DoLogCW("ReadBanFile: failed to close ban file: %v", err)
+		}
+	}()
 
 	data, err := io.ReadAll(file)
 

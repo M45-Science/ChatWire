@@ -179,7 +179,6 @@ func FormatResetInterval() string {
 		if !first {
 			buf = buf + ", "
 		}
-		first = false
 		buf = buf + fmt.Sprintf("%v hour%v", i.Hours, plural(i.Hours))
 	}
 

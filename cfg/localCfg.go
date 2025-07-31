@@ -91,7 +91,9 @@ func setLocalDefaults() {
 			"softmod/"
 		Local.Options.SoftModOptions.SoftModPath = path
 
-		os.Mkdir(path, os.ModePerm)
+		if err := os.Mkdir(path, os.ModePerm); err != nil {
+			cwlog.DoLogCW("ReadLCfg: unable to create softmod path %v: %v", path, err)
+		}
 	}
 	if !Local.Options.RegularsOnly {
 		Local.Settings.AdminOnlyPause = true

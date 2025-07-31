@@ -399,7 +399,6 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			if banCount > 5 {
 				doBan = false
 			}
-			didBan = false
 			//Autopromote to veteran
 			if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
 				tempData[pname].Level = 3
