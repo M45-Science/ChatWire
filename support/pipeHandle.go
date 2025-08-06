@@ -144,11 +144,18 @@ func handlePlayerReport(input *handleData) bool {
 				}
 				buf := ""
 				if cfg.GetGameLogURL() == "" {
-					buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\n%v",
-						cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), pingStr)
+					buf = fmt.Sprintf("Server: <#%v> (%v)\nReporter: %v\n\n%v\n%v",
+						cfg.Local.Channel.ChatChannel, cfg.Local.Callsign+"-"+cfg.Local.Name,
+						input.wordList[1],
+						strings.Join(input.wordList[2:], " "),
+						pingStr)
 				} else {
-					buf = fmt.Sprintf("Server: %v, Reporter: %v: Report:\n %v\nLog: %v\n%v",
-						cfg.Local.Callsign+"-"+cfg.Local.Name, input.wordList[1], strings.Join(input.wordList[2:], " "), cfg.GetGameLogURL(), pingStr)
+					buf = fmt.Sprintf("Server: <#%v> (%v)\nReporter: %v\n\n%v\n\nLog: %v\n%v",
+						cfg.Local.Channel.ChatChannel, cfg.Local.Callsign+"-"+cfg.Local.Name,
+						input.wordList[1],
+						strings.Join(input.wordList[2:], " "),
+						cfg.GetGameLogURL(),
+						pingStr)
 				}
 				fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, buf)
 			}
