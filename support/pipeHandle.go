@@ -124,41 +124,26 @@ func handlePlayerReport(input *handleData) bool {
 	if strings.HasPrefix(input.line, "[REPORT]") {
 		cwlog.DoLogGame(input.line)
 		if input.wordListLen >= 3 {
-			msg := strings.Join(input.wordList[1:], " ")
-			lmsg := strings.ToLower(msg)
-			if strings.HasSuffix(lmsg, "has been banished.") {
-				pingStr := ""
-				if cfg.Global.Discord.BanishPingRole != "" {
-					pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.BanishPingRole)
-				}
-				sbuf := cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + msg
-				if pingStr != "" {
-					fact.CMS(cfg.Global.Discord.ReportChannel, fmt.Sprintf("%v\n%v", sbuf, pingStr))
-				} else {
-					fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
-				}
-			} else {
-				pingStr := ""
-				if cfg.Global.Discord.SusPingRole != "" {
-					pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
-				}
-				buf := ""
-				if cfg.GetGameLogURL() == "" {
-					buf = fmt.Sprintf("Server: <#%v> (%v)\nReporter: %v\n\n%v\n%v",
-						cfg.Local.Channel.ChatChannel, cfg.Local.Callsign+"-"+cfg.Local.Name,
-						input.wordList[1],
-						strings.Join(input.wordList[2:], " "),
-						pingStr)
-				} else {
-					buf = fmt.Sprintf("Server: <#%v> (%v)\nReporter: %v\n\n%v\n\nLog: %v\n%v",
-						cfg.Local.Channel.ChatChannel, cfg.Local.Callsign+"-"+cfg.Local.Name,
-						input.wordList[1],
-						strings.Join(input.wordList[2:], " "),
-						cfg.GetGameLogURL(),
-						pingStr)
-				}
-				fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, buf)
+			reporter := "Reporter: " + input.wordList[1] + "\n"
+			msg := strings.Join(input.wordList[2:], " ") + "\n"
+
+			serverTag := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
+			if cfg.Local.Channel.ChatChannel != "" {
+				serverTag = fmt.Sprintf("<#%v> [%v]\n", cfg.Local.Channel.ChatChannel, serverTag)
 			}
+			logURL := ""
+			if cfg.GetGameLogURL() != "" {
+				logURL = "Log: " + cfg.GetGameLogURL() + "\n"
+			}
+			pingTag := ""
+			if cfg.Global.Discord.BanishPingRole != "" {
+				pingTag = fmt.Sprintf("\n<@&%v>", cfg.Global.Discord.BanishPingRole)
+			}
+
+			buf := serverTag + reporter + msg + logURL + pingTag
+			fact.LogCMS(cfg.Global.Discord.ReportChannel, buf)
+
+			fact.FactChat("REPORT: %v: %v", reporter, msg)
 		}
 		return true
 	}
@@ -464,22 +449,25 @@ func handleActMsg(input *handleData) bool {
 								glob.LastSusWarning = time.Now()
 
 								if !cfg.Global.Options.ShutupSusWarn {
-									pingStr := ""
+									suspect := "Possible suspicious activity: " + pname + "\n"
+
+									serverTag := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
+									if cfg.Local.Channel.ChatChannel != "" {
+										serverTag = fmt.Sprintf("<#%v> [%v]\n", cfg.Local.Channel.ChatChannel, serverTag)
+									}
+									logURL := ""
+									if cfg.GetGameLogURL() != "" {
+										logURL = "Log: " + cfg.GetGameLogURL() + "\n"
+									}
+									pingTag := ""
 									if cfg.Global.Discord.SusPingRole != "" {
-										pingStr = fmt.Sprintf("<@&%v>", cfg.Global.Discord.SusPingRole)
+										pingTag = fmt.Sprintf("\n<@&%v>", cfg.Global.Discord.SusPingRole)
 									}
-									sbuf := fmt.Sprintf("*WARNING*: Player: '%v': Possible suspicious activity!)\n%v", pname, cfg.GetGameLogURL())
 
-									fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, sbuf)
+									buf := serverTag + suspect + logURL + pingTag
+									fact.LogCMS(cfg.Global.Discord.ReportChannel, buf)
 
-									sbuf = cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": " + cfg.Local.Name + ": " + sbuf
-
-									if pingStr != "" {
-										reportMsg := fmt.Sprintf("%v\n%v", sbuf, pingStr)
-										fact.CMS(cfg.Global.Discord.ReportChannel, reportMsg)
-									} else {
-										fact.CMS(cfg.Global.Discord.ReportChannel, sbuf)
-									}
+									fact.FactChat(suspect)
 								}
 
 								p.SusScore = 0
