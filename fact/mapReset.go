@@ -187,6 +187,7 @@ func GenNewMap() string {
 	t := time.Now()
 	ourseed := int(t.UnixNano() - constants.CWEpoch)
 	cfg.Local.Options.Speed = 1
+	cfg.Local.Settings.AutoPause = true
 	haveSeed := false
 
 	//Use seed if specified, then clear it
