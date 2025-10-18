@@ -5,12 +5,28 @@ import (
 	"ChatWire/cwlog"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hako/durafmt"
 )
 
-const units = "year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,ms:ms,us:us"
+const unitsSpec = "year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,ms:ms,us:us"
+
+var (
+	unitsOnce      sync.Once
+	cachedUnits    string
+	cachedUnitsErr error
+)
+
+func loadResetUnits() (string, error) {
+	unitsOnce.Do(func() {
+		cachedUnits, cachedUnitsErr = durafmt.DefaultUnitsCoder.Decode(unitsSpec)
+	})
+
+	return cachedUnits, cachedUnitsErr
+}
+
 const maxResetWindow = time.Hour * 3
 
 func CheckMapReset() {
@@ -44,11 +60,13 @@ func CheckMapReset() {
 
 		//Reset was some time ago, skip
 		if until < -maxResetWindow {
-			units, err := durafmt.DefaultUnitsCoder.Decode(units)
+			units, err := loadResetUnits()
 			if err != nil {
-				panic(err)
+				cwlog.DoLogCW(fmt.Sprintf("failed to load reset duration units: %v", err))
+				LogCMS(cfg.Local.Channel.ChatChannel, "❇️ Scheduled map reset was over "+maxResetWindow.String()+" ago. Skipping.")
+			} else {
+				LogCMS(cfg.Local.Channel.ChatChannel, "❇️ Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
 			}
-			LogCMS(cfg.Local.Channel.ChatChannel, "❇️ Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
 		} else {
 			if err := Map_reset(false); err != nil {
 				cwlog.DoLogCW(fmt.Sprintf("Scheduled map reset failed: %v", err))
@@ -132,9 +150,10 @@ func TimeTillReset() string {
 	} else {
 		next = next.Round(time.Second)
 	}
-	units, err := durafmt.DefaultUnitsCoder.Decode(units)
+	units, err := loadResetUnits()
 	if err != nil {
-		panic(err)
+		cwlog.DoLogCW(fmt.Sprintf("failed to load reset duration units: %v", err))
+		return next.String()
 	}
 
 	dura := durafmt.Parse(next)
