@@ -17,6 +17,8 @@ import (
 	"github.com/martinhoefling/goxkcdpwgen/xkcdpwgen"
 )
 
+var executableLookup = os.Executable
+
 // GetGameLogURL builds the web URL to the current game log.
 func GetGameLogURL() string {
 	if Global.Paths.URLs.LogsPathWeb == "" {
@@ -55,16 +57,18 @@ func setLocalDefaults() {
 		Local.Name = g.GeneratePasswordString()
 	}
 	if Local.Callsign == "" {
-		ex, err := os.Executable()
+		ex, err := executableLookup()
 		if err != nil {
-			panic(err)
-		}
-		exPath := filepath.Dir(ex)
-		exPath = strings.TrimPrefix(exPath, "cw-")
-		if len(exPath) > 0 && len(exPath) < 4 {
-			Local.Callsign = exPath
+			cwlog.DoLogCW("setLocalDefaults: unable to resolve executable path: %v", err)
+			Local.Callsign = "cw"
 		} else {
-			Local.Callsign = "a"
+			exPath := filepath.Dir(ex)
+			exPath = strings.TrimPrefix(exPath, "cw-")
+			if len(exPath) > 0 && len(exPath) < 4 {
+				Local.Callsign = exPath
+			} else {
+				Local.Callsign = "a"
+			}
 		}
 	}
 	if Local.Port <= 0 {
