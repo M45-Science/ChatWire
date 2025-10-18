@@ -46,7 +46,7 @@ func getMapTypeName(num int) string {
 }
 
 /* Generate map */
-func Map_reset(doReport bool) {
+func Map_reset(doReport bool) error {
 
 	/* If Factorio is running, and there is a argument... echo it
 	 * Otherwise, stop Factorio and generate a new map */
@@ -58,7 +58,7 @@ func Map_reset(doReport bool) {
 		SetAutolaunch(false, false)
 		QuitFactorio("Server rebooting for map reset!")
 	} else {
-		return
+		return nil
 	}
 
 	/* Wait for server to stop if running */
@@ -69,7 +69,11 @@ func Map_reset(doReport bool) {
 		quickArchive()
 	}
 
-	GenNewMap()
+	if _, err := GenNewMap(); err != nil {
+		msg := fmt.Sprintf("Map reset failed: %v", err)
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
+		return err
+	}
 
 	/* If available, use per-server ping setting... otherwise use global */
 	pingstr := ""
@@ -162,9 +166,10 @@ func Map_reset(doReport bool) {
 	WriteVotes()
 
 	SetAutolaunch(true, false)
+	return nil
 }
 
-func GenNewMap() string {
+func GenNewMap() (string, error) {
 	SetResetDate()
 
 	glob.FactorioLock.Lock()
@@ -176,7 +181,8 @@ func GenNewMap() string {
 	genpath := cfg.GetSavesFolder()
 	flist, err := filepath.Glob(genpath + "/gen-*.zip")
 	if err != nil {
-		panic(err)
+		cwlog.DoLogCW(fmt.Sprintf("mapReset: failed to list generated maps: %v", err))
+		return "", err
 	}
 	for _, f := range flist {
 		if err := os.Remove(f); err != nil {
@@ -204,8 +210,9 @@ func GenNewMap() string {
 	MapPreset := cfg.Local.Settings.MapPreset
 
 	if strings.EqualFold(MapPreset, "error") {
-		cwlog.DoLogCW("Invalid map preset.")
-		return "Invalid map preset"
+		err := fmt.Errorf("invalid map preset")
+		cwlog.DoLogCW(err.Error())
+		return "", err
 	}
 
 	/* Generate code to make filename */
@@ -246,13 +253,12 @@ func GenNewMap() string {
 	_, aerr := cmd.CombinedOutput()
 
 	if aerr != nil {
-		buf := fmt.Sprintf("An error occurred attempting to generate the map: %s", aerr)
-		cwlog.DoLogCW(buf)
-		LogCMS(cfg.Local.Channel.ChatChannel, buf)
-		return aerr.Error()
+		err := fmt.Errorf("an error occurred attempting to generate the map: %w", aerr)
+		cwlog.DoLogCW(err.Error())
+		return "", err
 	}
 
-	return sName
+	return sName, nil
 }
 
 func quickArchive() {
