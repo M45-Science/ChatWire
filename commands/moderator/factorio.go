@@ -31,7 +31,12 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	disc.InteractionEphemeralResponse(i, "Status:", "Generating new map.")
-	fileName := fact.GenNewMap()
+	fileName, err := fact.GenNewMap()
+	if err != nil {
+		msg := fmt.Sprintf("Unable to generate new map: %v", err)
+		disc.InteractionEphemeralResponseColor(i, "Error:", msg, glob.COLOR_RED)
+		return
+	}
 
 	if i != nil {
 		newHist := modupdate.ModHistoryItem{InfoItem: true,

@@ -2,6 +2,7 @@ package fact
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/cwlog"
 	"fmt"
 	"strings"
 	"time"
@@ -49,7 +50,9 @@ func CheckMapReset() {
 			}
 			LogCMS(cfg.Local.Channel.ChatChannel, "❇️ Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
 		} else {
-			Map_reset(false)
+			if err := Map_reset(false); err != nil {
+				cwlog.DoLogCW(fmt.Sprintf("Scheduled map reset failed: %v", err))
+			}
 		}
 	}
 }

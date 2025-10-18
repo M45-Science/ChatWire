@@ -935,7 +935,11 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 func DoChangeMap(arg string) {
 
 	if strings.EqualFold(arg, "new-map") {
-		Map_reset(false)
+		if err := Map_reset(false); err != nil {
+			msg := fmt.Sprintf("Unable to reset map: %v", err)
+			LogCMS(cfg.Local.Channel.ChatChannel, msg)
+			FactChat(msg)
+		}
 
 		return
 	}
