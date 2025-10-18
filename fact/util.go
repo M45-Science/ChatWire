@@ -755,19 +755,29 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		}
 	}
 
-	for i := 0; i < numFiles; i++ {
+	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
+	if err != nil {
+		msg := fmt.Sprintf("Unable to decode duration units: %v", err)
+		cwlog.DoLogCW(msg)
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
+		return
+	}
 
-		f := tempf[i]
+	if units == nil {
+		msg := "Unable to decode duration units: result was nil"
+		cwlog.DoLogCW(msg)
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
+		return
+	}
+
+	for idx := 0; idx < numFiles; idx++ {
+
+		f := tempf[idx]
 		fName := f.Name()
 
 		if strings.HasSuffix(fName, ".zip") {
 			saveName := strings.TrimSuffix(fName, ".zip")
 			step++
-
-			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
-			if err != nil {
-				panic(err)
-			}
 
 			/* Get mod date */
 			info, _ := f.Info()
@@ -879,20 +889,30 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 		numFiles = constants.MaxFullMapResults
 	}
 
-	for i := 0; i < numFiles; i++ {
+	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
+	if err != nil {
+		msg := fmt.Sprintf("Unable to decode duration units: %v", err)
+		cwlog.DoLogCW(msg)
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
+		return
+	}
 
-		f := tempf[i]
+	if units == nil {
+		msg := "Unable to decode duration units: result was nil"
+		cwlog.DoLogCW(msg)
+		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
+		return
+	}
+
+	for idx := 0; idx < numFiles; idx++ {
+
+		f := tempf[idx]
 		fName := f.Name()
 
 		if strings.HasSuffix(fName, ".zip") {
 			saveName := strings.TrimSuffix(fName, ".zip")
 			saveName = strings.TrimPrefix(saveName, "_autosave")
 			step++
-
-			units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
-			if err != nil {
-				panic(err)
-			}
 
 			/* Get mod date */
 			info, _ := f.Info()
@@ -901,7 +921,7 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 			modStr := durafmt.Parse(modDate).LimitFirstN(2).Format(units)
 
 			sepStr := ", "
-			if i%2 == 0 {
+			if idx%2 == 0 {
 				sepStr = "\n"
 			}
 			tempStr := fmt.Sprintf("%v: %v%v", saveName, modStr, sepStr)
