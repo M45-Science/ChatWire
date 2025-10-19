@@ -7,6 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/hako/durafmt"
 
+	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/glob"
 )
@@ -20,7 +21,9 @@ func Scoreboard(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
 	if err != nil {
-		panic(err)
+		cwlog.DoLogCW("Scoreboard: failed to load duration units: %v", err)
+		disc.InteractionEphemeralResponse(i, "Scoreboard", "An error occurred while generating the scoreboard. Please try again later.")
+		return
 	}
 
 	//Make list of scores
