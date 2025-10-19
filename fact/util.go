@@ -763,13 +763,6 @@ func ShowMapList(i *discordgo.InteractionCreate, voteMode bool) {
 		return
 	}
 
-	if units == nil {
-		msg := "Unable to decode duration units: result was nil"
-		cwlog.DoLogCW(msg)
-		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
-		return
-	}
-
 	for idx := 0; idx < numFiles; idx++ {
 
 		f := tempf[idx]
@@ -892,13 +885,6 @@ func ShowFullMapList(i *discordgo.InteractionCreate) {
 	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,μs:μs")
 	if err != nil {
 		msg := fmt.Sprintf("Unable to decode duration units: %v", err)
-		cwlog.DoLogCW(msg)
-		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
-		return
-	}
-
-	if units == nil {
-		msg := "Unable to decode duration units: result was nil"
 		cwlog.DoLogCW(msg)
 		disc.InteractionEphemeralResponse(i, "Error:", "Unable to process save durations.")
 		return

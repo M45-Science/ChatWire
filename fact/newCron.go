@@ -15,11 +15,11 @@ const unitsSpec = "year:years,week:weeks,day:days,hour:hours,minute:minutes,seco
 
 var (
 	unitsOnce      sync.Once
-	cachedUnits    string
+	cachedUnits    durafmt.Units
 	cachedUnitsErr error
 )
 
-func loadResetUnits() (string, error) {
+func loadResetUnits() (durafmt.Units, error) {
 	unitsOnce.Do(func() {
 		cachedUnits, cachedUnitsErr = durafmt.DefaultUnitsCoder.Decode(unitsSpec)
 	})
