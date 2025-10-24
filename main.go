@@ -247,14 +247,15 @@ func checkLockFile() {
 		} else {
 			cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
 
-			/* Recent lockfile, probable crash loop */
-			if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
+            /* Recent lockfile, probable crash loop */
+            if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
 
-				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes))
+                fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes))
 
-				time.Sleep(constants.RestartLimitMinutes * time.Minute)
-				_ = os.Remove("cw.lock")
-			}
+                /* Sleep for the configured sleep minutes, not the detection window */
+                time.Sleep(constants.RestartLimitSleepMinutes * time.Minute)
+                _ = os.Remove("cw.lock")
+            }
 		}
 	}
 

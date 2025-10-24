@@ -268,7 +268,7 @@ func buildPanelData(tok string) panelData {
 			mods++
 		}
 	}
-	bCount := len(banlist.BanList)
+    bCount := banlist.Count()
 	ban += bCount
 	glob.PlayerListLock.RUnlock()
 	total := ban + mem + reg + vet + mods

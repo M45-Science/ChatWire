@@ -135,7 +135,7 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			mod++
 		}
 	}
-	bCount := len(banlist.BanList)
+    bCount := banlist.Count()
 	ban += bCount
 
 	total := ban + mem + reg + vet + mod
