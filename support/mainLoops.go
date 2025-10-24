@@ -846,10 +846,9 @@ func MainLoops() {
 
 		for glob.ServerRunning {
 			<-ticker.C
-			if fact.FactIsRunning &&
-				fact.FactorioBooted {
-				fact.CheckMapReset()
-			}
+			// Run reset checks regardless of Factorio state so scheduled resets
+			// can still generate a new map even if the server is down.
+			fact.CheckMapReset()
 		}
 	}()
 
