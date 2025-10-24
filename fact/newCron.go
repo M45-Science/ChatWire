@@ -115,6 +115,8 @@ func AdvanceReset() {
 	partB := partA.Add(time.Duration(s.Weeks) * time.Hour * 24 * 7)
 	partC := partB.Add(time.Duration(s.Hours) * time.Hour)
 	cfg.Local.Options.NextReset = partC.Round(time.Second)
+	// Persist the updated NextReset so a process restart doesn’t lose the skip/advance
+	cfg.WriteLCfg()
 }
 
 func HasResetInterval() bool {
