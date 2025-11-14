@@ -459,9 +459,19 @@ var cmds = []glob.CommandData{
 		Type:        discordgo.ChatApplicationCommand,
 		Options: []glob.OptionData{
 			{
-				Name:        "pause-now",
-				Description: "Pauses map while you connect, expires after 3 mins.",
-				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Name:        "action",
+				Description: "Choose whether to pause for connect or cancel a pending pause.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Choices: []glob.ChoiceData{
+					{
+						Name:  "Pause now",
+						Value: "pause",
+					},
+					{
+						Name:  "Cancel pause-on-connect",
+						Value: "cancel",
+					},
+				},
 			},
 		},
 	},
