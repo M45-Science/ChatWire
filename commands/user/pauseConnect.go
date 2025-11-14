@@ -101,7 +101,8 @@ func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		glob.PausedFor = factname
 		glob.PausedCount++
 
-		fact.LogGameCMS(true, cfg.Global.Discord.ReportChannel, cfg.Global.GroupName+"-"+cfg.Local.Callsign+": Pause-on-connect, requested by: "+factname)
+		statusMsg := cfg.Global.GroupName + "-" + cfg.Local.Callsign + ": Pause-on-connect, requested by: " + factname
+		fact.ReportStatus(statusMsg)
 	} else {
 		buf := fmt.Sprintf("The map was paused %v ago, you must wait an additional %v to pause again. (%v total)",
 			time.Since(glob.PausedAt).Round(time.Second),

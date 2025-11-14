@@ -167,7 +167,8 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 		if t.Count >= constants.VotesNeeded {
 			msg := fmt.Sprintf("%v-%v: Players voted for: %v", cfg.Local.Callsign, cfg.Local.Name, t.Selection)
 
-			LogGameCMS(true, cfg.Global.Discord.ReportChannel, msg)
+			ReportStatus(msg)
+			FactChat(msg)
 			found = true
 			chosenMap = t.Selection
 			break

@@ -1290,6 +1290,16 @@ func LogCMS(channel string, text string) {
 	CMS(channel, text)
 }
 
+// ReportStatus sends a message to both the moderation-report channel and the main chat channel.
+func ReportStatus(text string) {
+	if cfg.Global.Discord.ReportChannel != "" {
+		LogCMS(cfg.Global.Discord.ReportChannel, text)
+	}
+	if cfg.Local.Channel.ChatChannel != "" {
+		CMS(cfg.Local.Channel.ChatChannel, text)
+	}
+}
+
 /* Log AND send this message to Discord  and Factorio chat */
 func LogGameCMS(chat bool, channel string, text string) {
 	cwlog.DoLogGame(text)

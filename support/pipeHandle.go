@@ -465,7 +465,7 @@ func handleActMsg(input *handleData) bool {
 									}
 
 									buf := serverTag + suspect + logURL + pingTag
-									fact.LogCMS(cfg.Global.Discord.ReportChannel, buf)
+									fact.ReportStatus(buf)
 
 									fact.FactChat(suspect)
 								}
