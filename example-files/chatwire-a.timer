@@ -3,6 +3,7 @@ Description=delayed-cw-a
 
 [Timer]
 OnBootSec=6sec
+Unit=chatwire-a.service
 
 [Install]
 WantedBy=basic.target
