@@ -31,7 +31,7 @@ func startOnlinePollLoop() {
 	* Poll online players once in a while
 	**********************************/
 	go func() {
-		for {
+		for glob.ServerRunning {
 			if isIdle() {
 				time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
 				continue

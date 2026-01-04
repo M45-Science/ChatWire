@@ -50,6 +50,14 @@ type handleData struct {
 	trimmedWordsLen, noDatestampListLen, lowerListLen, noTimecodeListLen, wordListLen int
 }
 
+func runHandles(handles []funcList, input *handleData) {
+	for _, handle := range handles {
+		if handle.function(input) {
+			return
+		}
+	}
+}
+
 /*  Chat pipes in-game chat to Discord, and handles log events */
 func HandleChat() {
 
@@ -98,21 +106,13 @@ func HandleChat() {
 				/*
 				 * No-chat handles
 				 */
-				for _, handle := range noChatHandles {
-					if handle.function(input) {
-						continue
-					}
-				}
+				runHandles(noChatHandles, input)
 
 				/*
 				 * Soft-mod only
 				 */
 				if glob.SoftModVersion != constants.Unknown {
-					for _, handle := range softModHandles {
-						if handle.function(input) {
-							continue
-						}
-					}
+					runHandles(softModHandles, input)
 				}
 
 			} else {

@@ -111,3 +111,4 @@ Send `SIGUSR2` to reload `cw-local-config.json` and `../cw-global-config.json`.
 ### Automatic reloads
 ChatWire monitors the player database and ban list for modifications.
 Configuration files are reloaded via `/chatwire action reload-config` or `SIGUSR2`.
+To reload configs for all running instances at once, see `example-files/reload-config.sh`.
