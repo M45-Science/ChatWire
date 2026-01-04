@@ -17,16 +17,11 @@ import (
 )
 
 var (
-	playerListDirtyCh     = make(chan struct{}, 1)
-	playerListSeenDirtyCh = make(chan struct{}, 1)
+	playerListDirtyCh = make(chan struct{}, 1)
 )
 
 func PlayerListDirtySignal() <-chan struct{} {
 	return playerListDirtyCh
-}
-
-func PlayerListSeenDirtySignal() <-chan struct{} {
-	return playerListSeenDirtyCh
 }
 
 /* Local use only */
@@ -82,15 +77,12 @@ func SetPlayerListDirty() {
 	}
 }
 
-/* Mark DB as SeenDirty (low priority) */
-func setPlayerListSeenDirty() {
-	glob.PlayerListSeenDirtyLock.Lock()
-	glob.PlayerListSeenDirty = true
-	glob.PlayerListSeenDirtyLock.Unlock()
-	select {
-	case playerListSeenDirtyCh <- struct{}{}:
-	default:
-	}
+// SetPlayerStatsDirty marks player stats as updated (LastSeen / Minutes).
+// These changes are saved on a slower cadence than full DB changes.
+func SetPlayerStatsDirty() {
+	glob.PlayerStatsDirtyLock.Lock()
+	glob.PlayerStatsDirty = true
+	glob.PlayerStatsDirtyLock.Unlock()
 }
 
 func PlayerSetBanReason(pname string, reason string, doban bool) bool {
@@ -191,7 +183,7 @@ func UpdateSeen(pname string) {
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].LastSeen = compactNow()
 
-		setPlayerListSeenDirty()
+		SetPlayerStatsDirty()
 		return
 	}
 }
@@ -216,7 +208,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 			SetPlayerListDirty()
 			WhitelistPlayer(pname, level)
 		} else {
-			setPlayerListSeenDirty()
+			SetPlayerStatsDirty()
 		}
 
 		/* Delete discord id upon delete */
@@ -331,7 +323,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 		/* Found in list */
 		glob.PlayerList[pname].LastSeen = compactNow()
 		level := glob.PlayerList[pname].Level
-		setPlayerListSeenDirty()
+		SetPlayerStatsDirty()
 		return level
 	}
 

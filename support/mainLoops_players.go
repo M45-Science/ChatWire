@@ -60,13 +60,18 @@ func startPlayerTimeLoop() {
 				continue
 			}
 			now := time.Now()
+			updated := false
 			glob.PlayerListLock.Lock() //Lock
 			for _, p := range glob.PlayerList {
 				if now.Sub(fact.ExpandTime(p.LastSeen)) <= time.Minute {
 					p.Minutes++
+					updated = true
 				}
 			}
 			glob.PlayerListLock.Unlock() //Unlock
+			if updated {
+				fact.SetPlayerStatsDirty()
+			}
 			time.Sleep(time.Minute)
 		}
 	}()

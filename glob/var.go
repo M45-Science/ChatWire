@@ -75,12 +75,12 @@ var (
 	PasswordListLock sync.RWMutex
 
 	/* Player database status */
-	PlayerListUpdated       = false
-	PlayerListUpdatedLock   sync.Mutex
-	PlayerListDirty         = false
-	PlayerListDirtyLock     sync.Mutex
-	PlayerListSeenDirty     = false
-	PlayerListSeenDirtyLock sync.Mutex
+	PlayerListUpdated     = false
+	PlayerListUpdatedLock sync.Mutex
+	PlayerListDirty       = false
+	PlayerListDirtyLock   sync.Mutex
+	PlayerStatsDirty      = false
+	PlayerStatsDirtyLock  sync.Mutex
 
 	/* Global config status */
 	GlobalCfgUpdated     = false

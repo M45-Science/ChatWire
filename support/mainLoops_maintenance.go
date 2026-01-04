@@ -61,26 +61,25 @@ func startPlayerListSaveLoop() {
 }
 
 func startPlayerSeenSaveLoop() {
-	/***********************************************************
-	 * Save database (less often), if last seen is marked dirty
-	 ***********************************************************/
+	/************************************************************
+	 * Save database (low priority) when player stats are dirty.
+	 * This covers LastSeen and Minutes, and saves on a slower
+	 * cadence to reduce churn.
+	 ************************************************************/
 	go func() {
-		time.Sleep(time.Minute)
-		saveSeenDirty := newDebounce(30*time.Second, func() {
-			worker.Submit(func() {
-				//cwlog.DoLogCW("Database last seen flagged, saving.")
-				fact.WritePlayers()
-			})
-		})
+		ticker := time.NewTicker(15 * time.Minute)
+		defer ticker.Stop()
 
 		for glob.ServerRunning {
-			<-fact.PlayerListSeenDirtySignal()
-			glob.PlayerListSeenDirtyLock.Lock()
-			wasDirty := glob.PlayerListSeenDirty
-			glob.PlayerListSeenDirty = false
-			glob.PlayerListSeenDirtyLock.Unlock()
+			<-ticker.C
+			glob.PlayerStatsDirtyLock.Lock()
+			wasDirty := glob.PlayerStatsDirty
+			glob.PlayerStatsDirty = false
+			glob.PlayerStatsDirtyLock.Unlock()
 			if wasDirty {
-				saveSeenDirty.trigger()
+				worker.Submit(func() {
+					fact.WritePlayers()
+				})
 			}
 		}
 	}()
