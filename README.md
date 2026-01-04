@@ -14,9 +14,9 @@ Factorio Server Manager & Discord Bridge
 
 ### Requirements:
 Linux<br>
-Golang 1.24+<br>
+Golang 1.24.11+<br>
 <br>
-ChatWire is approximately 16k lines of Go code across 80 files.
+ChatWire is approximately 15.9k lines of Go code across 120 files.
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
