@@ -36,10 +36,6 @@ func ExpandTime(input int64) time.Time {
 	return out
 }
 
-func compactTime(input int64) int64 {
-	return (input - constants.SeenEpoch) / constants.SeenDivisor
-}
-
 /* Screw fsnotify */
 func WatchDatabaseFile() {
 	filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
@@ -48,15 +44,6 @@ func WatchDatabaseFile() {
 		time.Sleep(time.Second)
 		setPlayerListUpdated()
 	})
-}
-
-/* Check if DB has been updated */
-func isPlayerListUpdated() bool {
-	glob.PlayerListUpdatedLock.Lock()
-	reply := glob.PlayerListUpdated
-	glob.PlayerListUpdatedLock.Unlock()
-
-	return reply
 }
 
 /* Set DB as updated */

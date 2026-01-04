@@ -36,28 +36,19 @@ func getMapTypeNum(mapt string) int {
 	return -1
 }
 
-func getMapTypeName(num int) string {
-
-	numMaps := len(constants.MapTypes)
-	if num >= 0 && num < numMaps {
-		return constants.MapTypes[num]
-	}
-	return "Error"
-}
-
 /* Generate map */
 func Map_reset(doReport bool) error {
-    /* If Factorio is running, stop it first. If not, still proceed to generate a map. */
-    if FactorioBooted || FactIsRunning {
-        QueueReboot = false      //Skip queued reboot
-        QueueFactReboot = false  //Skip queued fact reboot
-        DoUpdateFactorio = false //Skip queued updates
+	/* If Factorio is running, stop it first. If not, still proceed to generate a map. */
+	if FactorioBooted || FactIsRunning {
+		QueueReboot = false      //Skip queued reboot
+		QueueFactReboot = false  //Skip queued fact reboot
+		DoUpdateFactorio = false //Skip queued updates
 
-        SetAutolaunch(false, false)
-        QuitFactorio("Server rebooting for map reset!")
-        /* Wait for server to stop if running */
-        WaitFactQuit(false)
-    }
+		SetAutolaunch(false, false)
+		QuitFactorio("Server rebooting for map reset!")
+		/* Wait for server to stop if running */
+		WaitFactQuit(false)
+	}
 
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
@@ -165,7 +156,7 @@ func Map_reset(doReport bool) error {
 }
 
 func GenNewMap() (string, error) {
-    SetResetDate()
+	SetResetDate()
 
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
@@ -191,17 +182,17 @@ func GenNewMap() (string, error) {
 	cfg.Local.Settings.AutoPause = true
 	haveSeed := false
 
-    //Use seed if specified, then clear it
-    if cfg.Local.Settings.Seed > 0 {
-        haveSeed = true
-        origSeed := cfg.Local.Settings.Seed
-        ourseed = origSeed
-        cfg.Local.Settings.Seed = 0
-        cfg.WriteLCfg()
+	//Use seed if specified, then clear it
+	if cfg.Local.Settings.Seed > 0 {
+		haveSeed = true
+		origSeed := cfg.Local.Settings.Seed
+		ourseed = origSeed
+		cfg.Local.Settings.Seed = 0
+		cfg.WriteLCfg()
 
-        msg := fmt.Sprintf("Using custom map seed: %v", origSeed)
-        LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
-    }
+		msg := fmt.Sprintf("Using custom map seed: %v", origSeed)
+		LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
+	}
 
 	MapPreset := cfg.Local.Settings.MapPreset
 

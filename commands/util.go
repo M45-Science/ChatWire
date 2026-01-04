@@ -139,9 +139,9 @@ func DeregisterCommands() {
 
 //https://discord.com/developers/docs/topics/permissions
 
-var adminPerms int64 = discordgo.PermissionAdministrator     //Admin
-var modPerms int64 = discordgo.PermissionManageRoles         //Manage Roles
-var playerPerms int64 = discordgo.PermissionUseSlashCommands //Use slash commands
+var adminPerms int64 = discordgo.PermissionAdministrator           //Admin
+var modPerms int64 = discordgo.PermissionManageRoles               //Manage Roles
+var playerPerms int64 = discordgo.PermissionUseApplicationCommands //Use application commands
 
 /*  RegisterCommands registers the commands on start up. */
 func RegisterCommands() {
