@@ -1,7 +1,6 @@
 package support
 
 import (
-	"bufio"
 	"strings"
 	"time"
 
@@ -56,73 +55,74 @@ func HandleChat() {
 
 	/* Don't log if the game isn't set to run */
 	for glob.ServerRunning {
-		time.Sleep(time.Millisecond * 10)
+		lines := fact.GameLineCh
+		if lines == nil {
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
 
-		/* Check if there is anything in the input buffer */
-		if fact.GameBuffer != nil {
-			reader := bufio.NewScanner(fact.GameBuffer)
+		readLine, ok := <-lines
+		if !ok {
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+		rawLine := sclean.UnicodeCleanup(readLine)
 
-			for reader.Scan() {
-				readLine := reader.Text()
-				rawLine := sclean.UnicodeCleanup(readLine)
+		/* We have input, server is alive */
+		//fact.SetFactRunning(true, false)
+		glob.NoResponseCount = 0
 
-				/* We have input, server is alive */
-				//fact.SetFactRunning(true, false)
-				glob.NoResponseCount = 0
+		/* Decrement every time we see activity, if we see time not progressing, add two */
+		if fact.PausedTicks > 0 {
+			fact.PausedTicks--
+		}
 
-				/* Decrement every time we see activity, if we see time not progressing, add two */
-				if fact.PausedTicks > 0 {
-					fact.PausedTicks--
+		/* Reject short lines */
+		if rawLine == "" {
+			continue
+		}
+
+		input := preProcessFactorioOutput(rawLine)
+
+		/*********************************
+		 * FILTERED AREA
+		 * NO CONSOLE CHAT
+		 **********************************/
+		if !strings.HasPrefix(input.line, "<server>") {
+
+			/*********************************
+			 * NO CHAT OR COMMAND LOG AREA
+			 *********************************/
+			if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") {
+
+				/*
+				 * No-chat handles
+				 */
+				for _, handle := range noChatHandles {
+					if handle.function(input) {
+						continue
+					}
 				}
 
-				/* Reject short lines */
-				if rawLine == "" {
-					continue
-				}
-
-				input := preProcessFactorioOutput(rawLine)
-
-				/*********************************
-				 * FILTERED AREA
-				 * NO CONSOLE CHAT
-				 **********************************/
-				if !strings.HasPrefix(input.line, "<server>") {
-
-					/*********************************
-					 * NO CHAT OR COMMAND LOG AREA
-					 *********************************/
-					if !strings.HasPrefix(input.noDatestamp, "[CHAT]") && !strings.HasPrefix(input.noDatestamp, "[SHOUT]") {
-
-						/*
-						 * No-chat handles
-						 */
-						for _, handle := range noChatHandles {
-							if handle.function(input) {
-								continue
-							}
-						}
-
-						/*
-						 * Soft-mod only
-						 */
-						if glob.SoftModVersion != constants.Unknown {
-							for _, handle := range softModHandles {
-								if handle.function(input) {
-									continue
-								}
-							}
-						}
-
-					} else {
-
-						/*
-						 * Chat only
-						 */
-						/* Dont send leaked register codes to chat, warn */
-						if !handleIdiots(input) {
-							handleChatMsg(input)
+				/*
+				 * Soft-mod only
+				 */
+				if glob.SoftModVersion != constants.Unknown {
+					for _, handle := range softModHandles {
+						if handle.function(input) {
+							continue
 						}
 					}
+				}
+
+			} else {
+
+				/*
+				 * Chat only
+				 */
+				/* Dont send leaked register codes to chat, warn */
+				if !handleIdiots(input) {
+					handleChatMsg(input)
 				}
 			}
 		}

@@ -1,7 +1,6 @@
 package fact
 
 import (
-	"bytes"
 	"io"
 	"sync"
 	"time"
@@ -13,7 +12,7 @@ var (
 	/*Factorio stdio links */
 	Pipe       io.WriteCloser
 	PipeLock   sync.Mutex
-	GameBuffer *bytes.Buffer
+	GameLineCh chan string
 
 	/* Factorio patch info */
 	FactorioVersion = constants.Unknown

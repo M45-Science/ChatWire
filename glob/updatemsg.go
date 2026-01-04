@@ -11,8 +11,8 @@ func SetUpdateMessage(m *discordgo.Message) {
 
 // GetUpdateMessage safely retrieves the update message pointer.
 func GetUpdateMessage() *discordgo.Message {
-	UpdateMessageLock.Lock()
-	defer UpdateMessageLock.Unlock()
+	UpdateMessageLock.RLock()
+	defer UpdateMessageLock.RUnlock()
 	m := UpdateMessage
 	return m
 }

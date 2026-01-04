@@ -105,15 +105,9 @@ go build
 ```
 Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
 
-### Signal files
+### Signals
 
-Create a file in the ChatWire directory to control the running game:
-
-* `.start` starts Factorio if it is not running.
-* `.stop` stops the game gracefully.
-* `.queue` queues a reboot once the current game ends.
-* `.rfact` restarts Factorio.
-
+Send `SIGUSR1` to queue a reboot once there are no players online.
 ### Automatic reloads
 ChatWire monitors the local and global configuration files, the player database
 and the ban list for modifications. Any changes are loaded automatically so you
@@ -131,4 +125,3 @@ can update settings without restarting the bot.
 - With `-localTest` the URL uses `127.0.0.1` for local access.
 - Mirrors `/info verbose` showing the last save name and UPS stats.
 - Extra forms adjust play hours, schedule map resets and set player levels.
-

@@ -81,6 +81,7 @@ func checkHours() {
 						fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, buf)
 						break
 					}
+					time.Sleep(time.Second)
 				}
 
 				if !WithinHours() {

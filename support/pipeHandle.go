@@ -1084,29 +1084,30 @@ func handleChatMsg(input *handleData) bool {
 
 				if !cfg.Global.Options.DisableSpamProtect {
 					glob.ChatterLock.Lock()
+					now := time.Now()
 
 					//Do not ban for chat spam if game is lagging
 					if nores < 5 && fact.PlayerLevelGet(pname, true) != 255 {
 
 						//Lower score if they cool off
-						if time.Since(glob.ChatterList[pname]) > constants.SpamResetThres {
+						if now.Sub(glob.ChatterList[pname]) > constants.SpamResetThres {
 							glob.ChatterSpamScore[pname] = 0
-							glob.ChatterList[pname] = time.Now()
-						} else if time.Since(glob.ChatterList[pname]) > constants.SpamCoolThres {
+							glob.ChatterList[pname] = now
+						} else if now.Sub(glob.ChatterList[pname]) > constants.SpamCoolThres {
 							if glob.ChatterSpamScore[pname] > 0 {
 								glob.ChatterSpamScore[pname]--
 							}
-							glob.ChatterList[pname] = time.Now()
+							glob.ChatterList[pname] = now
 						}
 
 						//Normal chat, add one point
-						if time.Since(glob.ChatterList[pname]) < constants.SpamSlowThres {
+						if now.Sub(glob.ChatterList[pname]) < constants.SpamSlowThres {
 							glob.ChatterSpamScore[pname]++
-							glob.ChatterList[pname] = time.Now()
+							glob.ChatterList[pname] = now
 							//Super spammy, add two points
-						} else if time.Since(glob.ChatterList[pname]) < constants.SpamFastThres {
+						} else if now.Sub(glob.ChatterList[pname]) < constants.SpamFastThres {
 							glob.ChatterSpamScore[pname] += 2
-							glob.ChatterList[pname] = time.Now()
+							glob.ChatterList[pname] = now
 						}
 
 						if glob.ChatterSpamScore[pname] > constants.SpamScoreWarning {

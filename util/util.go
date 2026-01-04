@@ -1,11 +1,6 @@
 package util
 
-import (
-	"os"
-	"strings"
-
-	"ChatWire/cwlog"
-)
+import "strings"
 
 // TrimPrefixIgnoreCase removes prefix from s in a case-insensitive manner.
 func TrimPrefixIgnoreCase(s, prefix string) string {
@@ -54,29 +49,4 @@ func BoolToOnOff(b bool) string {
 		return "on"
 	}
 	return "off"
-}
-
-// ClearOldSignals removes leftover signal files from previous runs.
-func ClearOldSignals() {
-	if err := os.Remove(".qrestart"); err == nil {
-		cwlog.DoLogCW("old .qrestart removed.")
-	}
-	if err := os.Remove(".queue"); err == nil {
-		cwlog.DoLogCW("old .queue removed.")
-	}
-	if err := os.Remove(".stop"); err == nil {
-		cwlog.DoLogCW("old .stop removed.")
-	}
-	if err := os.Remove(".newmap"); err == nil {
-		cwlog.DoLogCW("old .newmap removed.")
-	}
-	if err := os.Remove(".message"); err == nil {
-		cwlog.DoLogCW("old .message removed.")
-	}
-	if err := os.Remove(".start"); err == nil {
-		cwlog.DoLogCW("old .start removed.")
-	}
-	if err := os.Remove(".halt"); err == nil {
-		cwlog.DoLogCW("old .halt removed.")
-	}
 }

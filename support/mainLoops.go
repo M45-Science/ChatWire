@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -21,10 +22,37 @@ import (
 	"ChatWire/glob"
 	"ChatWire/modupdate"
 	"ChatWire/util"
+	"ChatWire/watcher"
+	"ChatWire/worker"
 )
 
 func linuxSetProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+}
+
+func isIdle() bool {
+	return !fact.FactIsRunning || !fact.FactorioBooted || fact.PausedTicks > constants.PauseThresh
+}
+
+type debounce struct {
+	mu    sync.Mutex
+	wait  time.Duration
+	timer *time.Timer
+	fn    func()
+}
+
+func newDebounce(wait time.Duration, fn func()) *debounce {
+	return &debounce{wait: wait, fn: fn}
+}
+
+func (d *debounce) trigger() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	if d.timer != nil {
+		d.timer.Stop()
+	}
+	d.timer = time.AfterFunc(d.wait, d.fn)
 }
 
 /********************
@@ -114,91 +142,108 @@ func MainLoops() {
 	 *  Send buffered messages to Discord, batched.
 	 *************************************************/
 	go func() {
+		tokens := make(chan struct{}, 5)
+		for i := 0; i < cap(tokens); i++ {
+			tokens <- struct{}{}
+		}
+		refill := time.NewTicker(5 * time.Second)
+		defer refill.Stop()
+		go func() {
+			for range refill.C {
+				for len(tokens) < cap(tokens) {
+					tokens <- struct{}{}
+				}
+			}
+		}()
+
 		for glob.ServerRunning {
 
 			if disc.DS != nil {
+				select {
+				case first := <-disc.CMSChan:
+					lcopy := []disc.CMSBuf{first}
+					timer := time.NewTimer(constants.CMSRate)
 
-				/* Check if buffer is active */
-				active := false
-				disc.CMSBufferLock.Lock()
-				if disc.CMSBuffer != nil {
-					active = true
-				}
-				disc.CMSBufferLock.Unlock()
-
-				/* If buffer is active, sleep and wait for it to fill up */
-				if active {
-					time.Sleep(constants.CMSRate)
-
-					/* Waited for buffer to fill up, grab and clear buffers */
-					disc.CMSBufferLock.Lock()
-					lcopy := disc.CMSBuffer
-					disc.CMSBuffer = nil
-					disc.CMSBufferLock.Unlock()
-
-					if lcopy != nil {
-
-						var factmsg []string
-						var moder []string
-
-						/* Put messages into proper lists */
-						for _, msg := range lcopy {
-							if strings.EqualFold(msg.Channel, cfg.Local.Channel.ChatChannel) {
-								factmsg = append(factmsg, msg.Text)
-							} else if strings.EqualFold(msg.Channel, cfg.Global.Discord.ReportChannel) {
-								moder = append(moder, msg.Text)
-							} else {
-								disc.SmartWriteDiscord(msg.Channel, msg.Text)
-							}
+				collect:
+					for {
+						select {
+						case msg := <-disc.CMSChan:
+							lcopy = append(lcopy, msg)
+						case <-timer.C:
+							break collect
 						}
-
-						/* Send out buffer, split up if needed */
-						/* Factorio */
-						buf := ""
-
-						for _, line := range factmsg {
-							oldlen := len(buf) + 1
-							addlen := len(line)
-							if oldlen+addlen >= constants.MaxDiscordMsgLen {
-								disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
-								glob.SetBootMessage(nil)
-								glob.ResetUpdateMessage()
-								buf = line
-							} else {
-								buf = buf + "\n" + line
-							}
+					}
+					if !timer.Stop() {
+						select {
+						case <-timer.C:
+						default:
 						}
-						if buf != "" {
+					}
+
+					var factmsg []string
+					var moder []string
+
+					/* Put messages into proper lists */
+					for _, msg := range lcopy {
+						if strings.EqualFold(msg.Channel, cfg.Local.Channel.ChatChannel) {
+							factmsg = append(factmsg, msg.Text)
+						} else if strings.EqualFold(msg.Channel, cfg.Global.Discord.ReportChannel) {
+							moder = append(moder, msg.Text)
+						} else {
+							<-tokens
+							disc.SmartWriteDiscord(msg.Channel, msg.Text)
+						}
+					}
+
+					/* Send out buffer, split up if needed */
+					/* Factorio */
+					buf := ""
+
+					for _, line := range factmsg {
+						oldlen := len(buf) + 1
+						addlen := len(line)
+						if oldlen+addlen >= constants.MaxDiscordMsgLen {
+							<-tokens
 							disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 							glob.SetBootMessage(nil)
 							glob.ResetUpdateMessage()
+							buf = line
+						} else {
+							buf = buf + "\n" + line
 						}
+					}
+					if buf != "" {
+						<-tokens
+						disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
+						glob.SetBootMessage(nil)
+						glob.ResetUpdateMessage()
+					}
 
-						/* Moderation */
-						buf = ""
-						for _, line := range moder {
-							oldlen := len(buf) + 1
-							addlen := len(line)
-							if oldlen+addlen >= constants.MaxDiscordMsgLen {
-								disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
-								buf = line
-							} else {
-								buf = buf + "\n" + line
-							}
-						}
-						if buf != "" {
+					/* Moderation */
+					buf = ""
+					for _, line := range moder {
+						oldlen := len(buf) + 1
+						addlen := len(line)
+						if oldlen+addlen >= constants.MaxDiscordMsgLen {
+							<-tokens
 							disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
+							buf = line
+						} else {
+							buf = buf + "\n" + line
 						}
+					}
+					if buf != "" {
+						<-tokens
+						disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
 					}
 
 					/* Don't send any more messages for a while (throttle) */
 					time.Sleep(constants.CMSRestTime)
+				case <-time.After(constants.CMSPollRate):
 				}
-
+			} else {
+				time.Sleep(constants.CMSPollRate)
 			}
-
-			/* Sleep for a moment before checking buffer again */
-			time.Sleep(constants.CMSPollRate)
 		}
 	}()
 
@@ -248,28 +293,21 @@ func MainLoops() {
 	 ********************************/
 	go func() {
 		time.Sleep(time.Minute)
+		saveDirty := newDebounce(10*time.Second, func() {
+			worker.Submit(func() {
+				cwlog.DoLogCW("Database marked dirty, saving.")
+				fact.WritePlayers()
+			})
+		})
 
 		for glob.ServerRunning {
-			time.Sleep(5 * time.Second)
-
-			wasDirty := false
-
+			<-fact.PlayerListDirtySignal()
 			glob.PlayerListDirtyLock.Lock()
-
-			if glob.PlayerListDirty {
-				glob.PlayerListDirty = false
-				wasDirty = true
-				/* Prevent recursive lock */
-				go func() {
-					cwlog.DoLogCW("Database marked dirty, saving.")
-					fact.WritePlayers()
-				}()
-			}
+			wasDirty := glob.PlayerListDirty
+			glob.PlayerListDirty = false
 			glob.PlayerListDirtyLock.Unlock()
-
-			/* Sleep after saving */
 			if wasDirty {
-				time.Sleep(10 * time.Second)
+				saveDirty.trigger()
 			}
 		}
 	}()
@@ -279,120 +317,73 @@ func MainLoops() {
 	 ***********************************************************/
 	go func() {
 		time.Sleep(time.Minute)
+		saveSeenDirty := newDebounce(30*time.Second, func() {
+			worker.Submit(func() {
+				//cwlog.DoLogCW("Database last seen flagged, saving.")
+				fact.WritePlayers()
+			})
+		})
 
 		for glob.ServerRunning {
-			time.Sleep(5 * time.Minute)
+			<-fact.PlayerListSeenDirtySignal()
 			glob.PlayerListSeenDirtyLock.Lock()
-
-			if glob.PlayerListSeenDirty {
-				glob.PlayerListSeenDirty = false
-
-				/* Prevent deadlock */
-				go func() {
-					//cwlog.DoLogCW("Database last seen flagged, saving.")
-					fact.WritePlayers()
-				}()
-			}
+			wasDirty := glob.PlayerListSeenDirty
+			glob.PlayerListSeenDirty = false
 			glob.PlayerListSeenDirtyLock.Unlock()
+			if wasDirty {
+				saveSeenDirty.trigger()
+			}
 		}
 	}()
 
 	/************************************
 	 * Database file modification watching
 	 ************************************/
-	go fact.WatchDatabaseFile()
+	go func() {
+		filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
+		reload := newDebounce(time.Second, func() {
+			//cwlog.DoLogCW("Database file modified, loading.")
+			fact.LoadPlayers(false, false, false)
+		})
+		watcher.Watch(filePath, 5*time.Second, &glob.ServerRunning, func() {
+			time.Sleep(time.Second)
+			reload.trigger()
+		})
+	}()
 
 	/****************************************
 	 * Global config file modification watching
 	 ****************************************/
-	go cfg.WatchGCfg()
+	go func() {
+		reload := newDebounce(time.Second, func() {
+			if cfg.ReadGCfg() {
+				ConfigSoftMod()
+				fact.GenerateFactorioConfig()
+				fact.DoUpdateChannelName()
+			}
+		})
+		watcher.Watch(constants.CWGlobalConfig, 5*time.Second, &glob.ServerRunning, func() {
+			time.Sleep(time.Second)
+			reload.trigger()
+		})
+	}()
 
 	/****************************************
 	 * Local config file modification watching
 	 ****************************************/
-	go cfg.WatchLCfg()
-
-	/* Read database, if the file was modified */
 	go func() {
-		updated := false
-
-		for glob.ServerRunning {
-
-			time.Sleep(5 * time.Second)
-
-			/* Detect update */
-			glob.PlayerListUpdatedLock.Lock()
-			if glob.PlayerListUpdated {
-				updated = true
-				glob.PlayerListUpdated = false
+		reload := newDebounce(time.Second, func() {
+			if cfg.ReadLCfg() {
+				util.SetTempFilePrefix(cfg.Local.Callsign + "-")
+				ConfigSoftMod()
+				fact.GenerateFactorioConfig()
+				fact.DoUpdateChannelName()
 			}
-			glob.PlayerListUpdatedLock.Unlock()
-
-			if updated {
-				updated = false
-
-				//cwlog.DoLogCW("Database file modified, loading.")
-				fact.LoadPlayers(false, false, false)
-			}
-
-		}
-	}()
-
-	/* Reload global config if the file was modified */
-	go func() {
-		updated := false
-
-		for glob.ServerRunning {
-
-			time.Sleep(5 * time.Second)
-
-			glob.GlobalCfgUpdatedLock.Lock()
-			if glob.GlobalCfgUpdated {
-				updated = true
-				glob.GlobalCfgUpdated = false
-			}
-			glob.GlobalCfgUpdatedLock.Unlock()
-
-			if updated {
-				updated = false
-
-				if cfg.ReadGCfg() {
-					ConfigSoftMod()
-					fact.GenerateFactorioConfig()
-					fact.DoUpdateChannelName()
-				}
-			}
-
-		}
-	}()
-
-	/* Reload local config if the file was modified */
-	go func() {
-		updated := false
-
-		for glob.ServerRunning {
-
-			time.Sleep(5 * time.Second)
-
-			glob.LocalCfgUpdatedLock.Lock()
-			if glob.LocalCfgUpdated {
-				updated = true
-				glob.LocalCfgUpdated = false
-			}
-			glob.LocalCfgUpdatedLock.Unlock()
-
-			if updated {
-				updated = false
-
-				if cfg.ReadLCfg() {
-					util.SetTempFilePrefix(cfg.Local.Callsign + "-")
-					ConfigSoftMod()
-					fact.GenerateFactorioConfig()
-					fact.DoUpdateChannelName()
-				}
-			}
-
-		}
+		})
+		watcher.Watch(constants.CWLocalConfig, 5*time.Second, &glob.ServerRunning, func() {
+			time.Sleep(time.Second)
+			reload.trigger()
+		})
 	}()
 
 	/***************************
@@ -466,7 +457,7 @@ func MainLoops() {
 		time.Sleep(time.Minute)
 		for glob.ServerRunning {
 
-			if fact.FactorioBooted {
+			if !isIdle() {
 				disc.UpdateRoleList()
 
 				/* Live update server description */
@@ -476,7 +467,7 @@ func MainLoops() {
 				}
 				disc.RoleListUpdated = false
 			}
-			time.Sleep(time.Minute)
+			time.Sleep(time.Duration(cfg.Local.Options.RoleRefreshIntervalSec) * time.Second)
 		}
 	}()
 
@@ -484,9 +475,11 @@ func MainLoops() {
 	 * Reboot if queued, when server empty
 	 ************************************/
 	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
 
 		for glob.ServerRunning {
-			time.Sleep(5 * time.Second)
+			<-ticker.C
 
 			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 {
 
@@ -555,77 +548,15 @@ func MainLoops() {
 		}
 	}()
 
-	/*********************
-	 * Check signal files
-	 *********************/
-	go func() {
-		util.ClearOldSignals()
-		failureReported := false
-		for glob.ServerRunning {
-
-			time.Sleep(10 * time.Second)
-
-			var err error
-			var errb error
-
-			/* Queued reboots, regardless of game state */
-			if _, err = os.Stat(".queue"); err == nil {
-				if errb = os.Remove(".queue"); errb == nil {
-					if !fact.QueueReboot {
-						fact.QueueReboot = true
-						cwlog.DoLogCW("Reboot queued!")
-					}
-				} else if !failureReported {
-					failureReported = true
-					cwlog.DoLogCW("Failed to remove .queue file, ignoring.")
-				}
-			}
-			/* Only if game is running */
-			if fact.FactIsRunning && fact.FactorioBooted {
-				/* Stop game */
-				if _, err = os.Stat(".stop"); err == nil {
-					if errb = os.Remove(".stop"); errb == nil {
-						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio stopping!")
-						fact.SetAutolaunch(false, false)
-						fact.QuitFactorio("Server stopping for maintenance.")
-					} else if !failureReported {
-						failureReported = true
-						cwlog.DoLogCW("Failed to remove .stop file, ignoring.")
-					}
-				}
-
-				/* Restart game */
-				if _, err = os.Stat(".rfact"); err == nil {
-					if errb = os.Remove(".rfact"); errb == nil {
-						fact.QueueFactReboot = true
-					} else if !failureReported {
-						failureReported = true
-						cwlog.DoLogCW("Failed to remove .rfact file, ignoring.")
-					}
-				}
-			} else { /*  Only if game is NOT running */
-				/* Start game */
-				if _, err = os.Stat(".start"); err == nil {
-					if errb = os.Remove(".start"); errb == nil {
-						fact.SetAutolaunch(true, false)
-						fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "Factorio starting!")
-					} else if !failureReported {
-						failureReported = true
-						cwlog.DoLogCW("Failed to remove .start file, ignoring.")
-					}
-				}
-			}
-
-		}
-	}()
-
 	/***********************************
 	 * Fix lost connection to log files
 	 ***********************************/
 	go func() {
+		ticker := time.NewTicker(300 * time.Second)
+		defer ticker.Stop()
 
 		for glob.ServerRunning {
-			time.Sleep(time.Second * 5)
+			<-ticker.C
 
 			var err error
 			if _, err = os.Stat(glob.CWLogName); err != nil {
@@ -660,7 +591,8 @@ func MainLoops() {
 	go func() {
 
 		if *glob.ProxyURL != "" {
-			ticker := time.NewTicker(1 * time.Second)
+			ticker := time.NewTicker(time.Minute)
+			defer ticker.Stop()
 
 			for glob.ServerRunning {
 				<-ticker.C
@@ -670,10 +602,6 @@ func MainLoops() {
 				}
 
 				cTime := time.Now()
-				if cTime.Second() != 0 {
-					continue
-				}
-
 				if cTime.Minute() == 15 || cTime.Minute() == 45 {
 					checkFactUpdate()
 				}
@@ -698,15 +626,20 @@ func MainLoops() {
 	go func() {
 
 		for glob.ServerRunning {
-			fact.UpdateChannelName()
-			fact.DoUpdateChannelName()
+			if !isIdle() {
+				fact.UpdateChannelName()
+				fact.DoUpdateChannelName()
+			}
 
-			time.Sleep(time.Minute * 6)
+			time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
 		}
 	}()
 
 	/* Check for expired pauses */
 	go func() {
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+
 		for glob.ServerRunning {
 			glob.PausedLock.Lock()
 
@@ -714,7 +647,8 @@ func MainLoops() {
 
 				limit := time.Minute * 3
 
-				if time.Since(glob.PausedAt) > limit {
+				now := time.Now()
+				if now.Sub(glob.PausedAt) > limit {
 
 					fact.WriteFact(
 						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
@@ -731,16 +665,17 @@ func MainLoops() {
 			} else {
 				/* Eventually reset timers */
 				if glob.PausedCount > 0 {
-					if time.Since(glob.PausedAt) > time.Minute*30 {
+					now := time.Now()
+					if now.Sub(glob.PausedAt) > time.Minute*30 {
 						glob.PausedCount = 0
-						glob.PausedAt = time.Now()
+						glob.PausedAt = now
 						glob.PausedFor = ""
 						glob.PausedConnectAttempt = false
 					}
 				}
 			}
 			glob.PausedLock.Unlock()
-			time.Sleep(time.Second * 2)
+			<-ticker.C
 		}
 	}()
 
@@ -749,6 +684,10 @@ func MainLoops() {
 	**********************************/
 	go func() {
 		for {
+			if isIdle() {
+				time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
+				continue
+			}
 			//Game booted
 			if fact.FactIsRunning && fact.FactorioBooted {
 
@@ -757,7 +696,7 @@ func MainLoops() {
 					fact.WriteFact(glob.OnlineCommand)
 				}
 			}
-			time.Sleep(time.Minute * 5)
+			time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
 		}
 	}()
 
@@ -768,7 +707,8 @@ func MainLoops() {
 	go func() {
 
 		if *glob.ProxyURL != "" {
-			ticker := time.NewTicker(time.Second)
+			ticker := time.NewTicker(time.Minute)
+			defer ticker.Stop()
 
 			for glob.ServerRunning {
 				<-ticker.C
@@ -777,9 +717,6 @@ func MainLoops() {
 				}
 
 				cTime := time.Now()
-				if cTime.Second() != 0 {
-					continue
-				}
 				if cTime.Minute() != 0 {
 					continue
 				}
@@ -811,9 +748,14 @@ func MainLoops() {
 	/****************************/
 	go func() {
 		for glob.ServerRunning {
+			if isIdle() {
+				time.Sleep(time.Minute)
+				continue
+			}
+			now := time.Now()
 			glob.PlayerListLock.Lock() //Lock
 			for _, p := range glob.PlayerList {
-				if time.Since(fact.ExpandTime(p.LastSeen)) <= time.Minute {
+				if now.Sub(fact.ExpandTime(p.LastSeen)) <= time.Minute {
 					p.Minutes++
 				}
 			}
@@ -842,13 +784,22 @@ func MainLoops() {
 	/* Check for map resets	    */
 	/****************************/
 	go func() {
-		ticker := time.NewTicker(time.Second)
-
 		for glob.ServerRunning {
-			<-ticker.C
 			// Run reset checks regardless of Factorio state so scheduled resets
 			// can still generate a new map even if the server is down.
 			fact.CheckMapReset()
+			interval := time.Duration(cfg.Local.Options.MapResetCheckIntervalSec) * time.Second
+			if fact.HasResetTime() {
+				now := time.Now().UTC()
+				until := cfg.Local.Options.NextReset.Sub(now)
+				if until <= time.Minute {
+					interval = time.Second
+				}
+			}
+			if interval <= 0 {
+				interval = time.Minute
+			}
+			time.Sleep(interval)
 		}
 	}()
 
@@ -857,37 +808,35 @@ func MainLoops() {
 	 * at the set expire time
 	/****************************/
 	go func() {
-		delme := -1
-
 		for glob.ServerRunning {
 
 			time.Sleep(time.Minute)
 			numItems := len(cfg.Local.ModPackList)
 
 			if numItems > 0 {
-				for i, item := range cfg.Local.ModPackList {
-					if item.Path == "" {
-						delme = i
-						break
-					} else if time.Since(item.Created) > (constants.ModPackLifeMins * time.Minute) {
-						delme = i
-						break
-					}
-				}
-				if delme >= 0 {
-					err := os.Remove(cfg.Local.ModPackList[delme].Path)
-					if err != nil {
-						cwlog.DoLogCW("Unable to delete expired modpack!")
-					}
+				changed := false
+				kept := make([]cfg.ModPackData, 0, numItems)
 
-					cwlog.DoLogCW("Deleted expired modpack: " + cfg.Local.ModPackList[delme].Path)
-					if numItems > 1 {
-						cfg.Local.ModPackList = append(cfg.Local.ModPackList[:delme], cfg.Local.ModPackList[delme+1:]...)
-					} else {
-						cfg.Local.ModPackList = []cfg.ModPackData{}
+				for _, item := range cfg.Local.ModPackList {
+					expired := item.Path == "" || time.Since(item.Created) > (constants.ModPackLifeMins*time.Minute)
+					if !expired {
+						kept = append(kept, item)
+						continue
+					}
+					changed = true
+					if item.Path != "" {
+						if err := os.Remove(item.Path); err != nil {
+							cwlog.DoLogCW("Unable to delete expired modpack!")
+						} else {
+							cwlog.DoLogCW("Deleted expired modpack: " + item.Path)
+						}
 					}
 				}
-				cfg.WriteLCfg()
+
+				if changed {
+					cfg.Local.ModPackList = kept
+					cfg.WriteLCfg()
+				}
 			}
 		}
 	}()

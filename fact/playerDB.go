@@ -1,7 +1,6 @@
 package fact
 
 import (
-	"encoding/json"
 	"os"
 	"strconv"
 	"strings"
@@ -13,7 +12,22 @@ import (
 	"ChatWire/glob"
 	"ChatWire/util"
 	"ChatWire/watcher"
+
+	"github.com/bytedance/sonic"
 )
+
+var (
+	playerListDirtyCh     = make(chan struct{}, 1)
+	playerListSeenDirtyCh = make(chan struct{}, 1)
+)
+
+func PlayerListDirtySignal() <-chan struct{} {
+	return playerListDirtyCh
+}
+
+func PlayerListSeenDirtySignal() <-chan struct{} {
+	return playerListSeenDirtyCh
+}
 
 /* Local use only */
 func compactNow() int64 {
@@ -62,6 +76,10 @@ func SetPlayerListDirty() {
 	glob.PlayerListDirtyLock.Lock()
 	glob.PlayerListDirty = true
 	glob.PlayerListDirtyLock.Unlock()
+	select {
+	case playerListDirtyCh <- struct{}{}:
+	default:
+	}
 }
 
 /* Mark DB as SeenDirty (low priority) */
@@ -69,6 +87,10 @@ func setPlayerListSeenDirty() {
 	glob.PlayerListSeenDirtyLock.Lock()
 	glob.PlayerListSeenDirty = true
 	glob.PlayerListSeenDirtyLock.Unlock()
+	select {
+	case playerListSeenDirtyCh <- struct{}{}:
+	default:
+	}
 }
 
 func PlayerSetBanReason(pname string, reason string, doban bool) bool {
@@ -349,7 +371,7 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 	if filedata != nil {
 
 		var tempData = make(map[string]*glob.PlayerData)
-		err = json.Unmarshal(filedata, &tempData)
+		err = sonic.Unmarshal(filedata, &tempData)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
@@ -429,7 +451,12 @@ func WritePlayers() {
 
 	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-	if err := util.WriteJSONAtomic(finalPath, glob.PlayerList, 0644); err != nil {
+	data, err := sonic.MarshalIndent(glob.PlayerList, "", "\t")
+	if err != nil {
+		cwlog.DoLogCW("WritePlayers: " + err.Error())
+		return
+	}
+	if err := util.WriteBytesAtomic(finalPath, data, 0644); err != nil {
 		cwlog.DoLogCW("WritePlayers: " + err.Error())
 	}
 }

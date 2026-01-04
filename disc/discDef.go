@@ -16,9 +16,8 @@ var (
 	// DS is the active Discord session.
 	DS *discordgo.Session
 
-	// CMSBuffer holds queued messages destined for Discord.
-	CMSBuffer     []CMSBuf
-	CMSBufferLock sync.Mutex
+	// CMSChan holds queued messages destined for Discord.
+	CMSChan = make(chan CMSBuf, 1024)
 
 	// OldChanName caches the previous channel name during updates.
 	OldChanName = constants.Unknown

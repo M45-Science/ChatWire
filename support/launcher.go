@@ -3,7 +3,6 @@ package support
 import (
 	"archive/zip"
 	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -579,10 +578,14 @@ func launchFactorio() {
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
 	linuxSetProcessGroup(glob.FactorioCmd)
-	/* Connect Factorio stdout to a buffer for processing */
-	fact.GameBuffer = new(bytes.Buffer)
-	logwriter := io.MultiWriter(fact.GameBuffer)
-	glob.FactorioCmd.Stdout = logwriter
+	/* Connect Factorio stdout to a blocking reader */
+	stdout, err := glob.FactorioCmd.StdoutPipe()
+	if err != nil {
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdoutPipe() Details: %s", err))
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
+		fact.DoExit(true)
+		return
+	}
 	/* Stdin */
 	tpipe, errp := glob.FactorioCmd.StdinPipe()
 
@@ -611,6 +614,21 @@ func launchFactorio() {
 		fact.DoExit(true)
 		return
 	}
+
+	fact.GameLineCh = make(chan string, 256)
+	go func(r io.ReadCloser, lines chan<- string) {
+		defer r.Close()
+		defer close(lines)
+		scanner := bufio.NewScanner(r)
+		buf := make([]byte, 0, 64*1024)
+		scanner.Buffer(buf, 1024*1024)
+		for scanner.Scan() {
+			lines <- scanner.Text()
+		}
+		if err := scanner.Err(); err != nil {
+			cwlog.DoLogCW("Factorio stdout scan error: %v", err)
+		}
+	}(stdout, fact.GameLineCh)
 }
 
 func ConfigSoftMod() {

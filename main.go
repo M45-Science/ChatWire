@@ -98,6 +98,19 @@ func main() {
 		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
 	}
 
+	usr1c := make(chan os.Signal, 1)
+	signal.Notify(usr1c, syscall.SIGUSR1)
+	go func() {
+		for range usr1c {
+			if !fact.QueueReboot {
+				fact.QueueReboot = true
+				cwlog.DoLogCW("SIGUSR1 received, reboot queued.")
+			} else {
+				cwlog.DoLogCW("SIGUSR1 received, reboot already queued.")
+			}
+		}
+	}()
+
 	/* Wait here for process signals */
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
@@ -307,6 +320,7 @@ func initTime() {
 	fact.Gametime = (constants.Unknown)
 	glob.PausedAt = time.Now()
 	glob.Uptime = time.Now().UTC().Round(time.Second)
+	fact.LoadChannelUpdateCooldown()
 }
 
 func readConfigs() {

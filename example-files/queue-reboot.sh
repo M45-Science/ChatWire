@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-USER_NAME=$(whoami)
+pids=$(pgrep -f "ChatWire" || true)
+if [ -z "${pids}" ]; then
+    echo "No ChatWire processes found." >&2
+    exit 1
+fi
 
-for letter in {a..r}; do
-    : > "/home/$USER_NAME/cw-$letter/.queue"
-done
+kill -USR1 ${pids}
