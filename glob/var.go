@@ -35,7 +35,6 @@ var (
 	LocalTestMode        *bool
 	NoAutoLaunch         *bool
 	NoDiscord            *bool
-	PanelFlag            *bool
 	ProxyURL             *string
 
 	/* Vote map */
@@ -74,10 +73,6 @@ var (
 	/* Registration codes */
 	PassList         map[string]*PassData
 	PasswordListLock sync.RWMutex
-
-	/* Web panel tokens */
-	PanelTokens    map[string]*PanelTokenData
-	PanelTokenLock sync.RWMutex
 
 	/* Player database status */
 	PlayerListUpdated       = false

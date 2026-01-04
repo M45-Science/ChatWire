@@ -23,7 +23,6 @@ import (
 	"ChatWire/factUpdater"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
-	"ChatWire/panel"
 	"ChatWire/support"
 	"ChatWire/util"
 )
@@ -41,7 +40,6 @@ func main() {
 	glob.LocalTestMode = flag.Bool("localTest", false, "Disable public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Disable auto-launch")
 	glob.NoDiscord = flag.Bool("noDiscord", false, "Disable Discord")
-	glob.PanelFlag = flag.Bool("panel", false, "Enable web panel")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
@@ -80,9 +78,6 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
-	if *glob.PanelFlag {
-		panel.Start()
-	}
 	if !*glob.NoDiscord {
 		go support.MainLoops()
 		go support.HandleChat()
@@ -108,6 +103,14 @@ func main() {
 			} else {
 				cwlog.DoLogCW("SIGUSR1 received, reboot already queued.")
 			}
+		}
+	}()
+
+	usr2c := make(chan os.Signal, 1)
+	signal.Notify(usr2c, syscall.SIGUSR2)
+	go func() {
+		for range usr2c {
+			support.ReloadConfigFiles("SIGUSR2")
 		}
 	}()
 
@@ -260,15 +263,15 @@ func checkLockFile() {
 		} else {
 			cwlog.DoLogCW("Lockfile found, last run was " + glob.Uptime.Sub(lastTime).String())
 
-            /* Recent lockfile, probable crash loop */
-            if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
+			/* Recent lockfile, probable crash loop */
+			if time.Since(lastTime) < (constants.RestartLimitMinutes * time.Minute) {
 
-                fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes))
+				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("Recent lockfile found, possible crash. Sleeping for %v minutes.", constants.RestartLimitSleepMinutes))
 
-                /* Sleep for the configured sleep minutes, not the detection window */
-                time.Sleep(constants.RestartLimitSleepMinutes * time.Minute)
-                _ = os.Remove("cw.lock")
-            }
+				/* Sleep for the configured sleep minutes, not the detection window */
+				time.Sleep(constants.RestartLimitSleepMinutes * time.Minute)
+				_ = os.Remove("cw.lock")
+			}
 		}
 	}
 
@@ -294,7 +297,6 @@ func initMaps() {
 	glob.ChatterSpamScore = make(map[string]int)
 	glob.PlayerList = make(map[string]*glob.PlayerData)
 	glob.PassList = make(map[string]*glob.PassData)
-	glob.PanelTokens = make(map[string]*glob.PanelTokenData)
 
 	/* Generate number to alpha map, used for auto port assignment starting at constants.RconPortOffset */
 	pos := constants.RconPortOffset

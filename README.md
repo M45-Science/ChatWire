@@ -23,7 +23,7 @@ Needs permissions to create files and directories in its own directory, and **up
 Some dirs and files that can be auto-created:<br>
 cw-local-config.json, ../cw-global-config.json<br>
 cw.lock, ../playerdb.json<br>
-../map-gen-json/, ./logs/, ../update-cache/, ../public_html/archive/<br>
+../map-gen-json/, ./log/, ./audit-log/, ../www/public_html/archive/<br>
 `Discord token, appid,  guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
 ### Building ChatWire:<br>
@@ -67,7 +67,6 @@ as needed for your environment.<br>
 | `-localTest` | Disable public/auth mode for testing. |
 | `-noAutoLaunch` | Disable auto-launch. |
 | `-noDiscord` | Disable Discord integration. |
-| `-panel` | Enable web control panel. |
 | `-proxy` | HTTP caching proxy URL. Format: `proxy/http://example.domain/path`. |
 | `-regCommands` | Register Discord commands. |
 <br>
@@ -107,20 +106,8 @@ Ensure the generated configuration files contain your Discord token, application
 ### Signals
 
 Send `SIGUSR1` to queue a reboot once there are no players online.
+Send `SIGUSR2` to reload `cw-local-config.json` and `../cw-global-config.json`.
+
 ### Automatic reloads
-ChatWire monitors the local and global configuration files, the player database
-and the ban list for modifications. Any changes are loaded automatically so you
-can update settings without restarting the bot.
-
-### Web Control Panel (Work In Progress)
-
-- Start ChatWire with `-panel` to enable the panel server.
-- Generate a temporary token with the `/web-panel` command.
-- See `/info` details like versions, uptime, next map reset and player stats.
-- Buttons let you start/stop Factorio, sync mods and update the game.
-- The map section lists recent saves for one-click loading or custom filenames.
-- Send arbitrary RCON commands from the browser.
-- Styled in a dark theme similar to the staff docs.
-- With `-localTest` the URL uses `127.0.0.1` for local access.
-- Mirrors `/info verbose` showing the last save name and UPS stats.
-- Extra forms adjust play hours, schedule map resets and set player levels.
+ChatWire monitors the player database and ban list for modifications.
+Configuration files are reloaded via `/chatwire action reload-config` or `SIGUSR2`.

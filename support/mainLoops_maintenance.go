@@ -34,28 +34,6 @@ func startPasscodeCleanup() {
 	}()
 }
 
-func startPanelTokenCleanup() {
-	/********************************
-	 * Delete expired panel tokens
-	 ********************************/
-	go func() {
-
-		for glob.ServerRunning {
-			time.Sleep(1 * time.Minute)
-
-			t := time.Now()
-
-			glob.PanelTokenLock.Lock()
-			for k, tok := range glob.PanelTokens {
-				if (t.Unix()-tok.Time) > constants.PassExpireSec || (t.Unix()-tok.Orig) > constants.PanelTokenLimitSec {
-					delete(glob.PanelTokens, k)
-				}
-			}
-			glob.PanelTokenLock.Unlock()
-		}
-	}()
-}
-
 func startPlayerListSaveLoop() {
 	/********************************
 	 * Save database, if marked dirty

@@ -369,11 +369,5 @@ func moderatorCommands() []glob.CommandData {
 			},
 		},
 			Function: moderator.ChangeMap, ModeratorOnly: true},
-		{AppCmd: glob.AppCmdData{
-			Name:        "web-panel",
-			Description: "Get a temporary control panel link",
-			Type:        discordgo.ChatApplicationCommand,
-		},
-			Function: moderator.WebPanelLink, ModeratorOnly: true},
 	}
 }
