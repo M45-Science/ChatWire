@@ -5,7 +5,6 @@
 Factorio Server Manager & Discord Bridge
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-<br>
 [![Go CI](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
 [![Go Report](https://goreportcard.com/badge/github.com/Distortions81/M45-ChatWire)](https://goreportcard.com/report/github.com/Distortions81/M45-ChatWire)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/Distortions81/M45-ChatWire)](https://github.com/Distortions81/M45-ChatWire)
