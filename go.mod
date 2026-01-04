@@ -1,6 +1,6 @@
 module ChatWire
 
-go 1.24.1
+go 1.24.11
 
 require (
 	github.com/Clinet/discordgo-embed v0.0.0-20220113222025-bafe0c917646

@@ -6,10 +6,10 @@ Factorio Server Manager & Discord Bridge
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 <br>
-[![Go](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
-[![ReportCard](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
-[![CodeQL](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
-[![BinaryBuild](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/build-linux64.yml)
+[![Go CI](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
+[![Go Report](https://goreportcard.com/badge/github.com/Distortions81/M45-ChatWire)](https://goreportcard.com/report/github.com/Distortions81/M45-ChatWire)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/Distortions81/M45-ChatWire)](https://github.com/Distortions81/M45-ChatWire)
+[![Vulncheck](https://github.com/Distortions81/M45-ChatWire/actions/workflows/vulncheck.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/vulncheck.yml)
 
 [Command Overview](https://m45sci.xyz/help-discord-staff.html)
 
