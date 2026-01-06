@@ -16,10 +16,8 @@ func startChannelNameLoop() {
 	go func() {
 
 		for glob.ServerRunning {
-			if !isIdle() {
-				fact.UpdateChannelName()
-				fact.DoUpdateChannelName()
-			}
+			fact.UpdateChannelName()
+			fact.DoUpdateChannelName()
 
 			time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
 		}
