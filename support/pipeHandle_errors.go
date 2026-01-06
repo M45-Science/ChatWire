@@ -26,9 +26,9 @@ func handleDesync(input *handleData) bool {
 				Name: "Desync", Notes: input.noTimecode, Date: time.Now()}
 			modupdate.AddModHistory(newItem)
 
-			if time.Since(glob.Uptime) >= time.Hour && !fact.QueueFactReboot {
+			if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) >= 15*time.Minute && !fact.QueueFactReboot {
 				fact.QueueFactReboot = true
-				cwlog.DoLogCW("Desync detected after 1h uptime; Factorio reboot queued.")
+					cwlog.DoLogCW("Desync detected after 15m Factorio uptime; reboot queued.")
 				fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Desync detected; Factorio reboot queued.**")
 			}
 			return true
