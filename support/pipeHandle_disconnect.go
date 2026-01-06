@@ -13,11 +13,13 @@ func handleDisconnect(input *handleData) bool {
 
 	if strings.HasPrefix(input.noTimecode, "Info ServerMultiplayerManager") {
 
-		if glob.SoftModVersion == constants.Unknown {
-			if strings.Contains(input.line, "removing peer") {
+		if strings.Contains(input.line, "removing peer") {
+			if glob.SoftModVersion == constants.Unknown {
 				fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, "A player has disconnected.")
-				fact.WriteFact(glob.OnlineCommand)
 			}
+			// Always refresh player count on disconnect events so channel names
+			// and reboot-when-empty logic don't get stuck with stale player data.
+			fact.WriteFact(glob.OnlineCommand)
 		}
 	}
 

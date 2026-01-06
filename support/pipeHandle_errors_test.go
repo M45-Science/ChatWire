@@ -9,10 +9,9 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
-	"ChatWire/glob"
 )
 
-func TestHandleDesyncQueuesFactorioRebootAfterHour(t *testing.T) {
+func TestHandleDesyncQueuesFactorioRebootAfterFifteenMinutes(t *testing.T) {
 	origWD, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("Getwd: %v", err)
@@ -22,8 +21,13 @@ func TestHandleDesyncQueuesFactorioRebootAfterHour(t *testing.T) {
 		t.Fatalf("Chdir: %v", err)
 	}
 
+	origBootedAt := fact.FactorioBootedAt
+	t.Cleanup(func() {
+		fact.FactorioBootedAt = origBootedAt
+	})
+
 	cfg.Local.Channel.ChatChannel = "test-channel"
-	glob.Uptime = time.Now().Add(-2 * time.Hour)
+	fact.FactorioBootedAt = time.Now().Add(-20 * time.Minute)
 	fact.QueueFactReboot = false
 
 	input := &handleData{noTimecode: "Info X DesyncedWaitingForMap Y"}
@@ -59,8 +63,13 @@ func TestHandleDesyncDoesNotQueueBeforeHour(t *testing.T) {
 		t.Fatalf("Chdir: %v", err)
 	}
 
+	origBootedAt := fact.FactorioBootedAt
+	t.Cleanup(func() {
+		fact.FactorioBootedAt = origBootedAt
+	})
+
 	cfg.Local.Channel.ChatChannel = "test-channel"
-	glob.Uptime = time.Now().Add(-30 * time.Minute)
+	fact.FactorioBootedAt = time.Now().Add(-5 * time.Minute)
 	fact.QueueFactReboot = false
 
 	input := &handleData{noTimecode: "Info X DesyncedWaitingForMap Y"}

@@ -121,10 +121,13 @@ func handlePlayerLeave(input *handleData) bool {
 			/* Show quit if there is no soft-mod */
 			if glob.SoftModVersion == constants.Unknown {
 				buf := fmt.Sprintf("%v left.", pname)
-				fact.WriteFact(glob.OnlineCommand)
 				fact.CMS(cfg.Local.Channel.ChatChannel, buf)
-
 			}
+
+			// Refresh player count on leave events even when the soft-mod is active.
+			// Some servers auto-pause when empty, which can prevent the periodic /online
+			// poll from running and leave the channel name stuck with a stale count.
+			fact.WriteFact(glob.OnlineCommand)
 
 			go func(factname string) {
 				fact.UpdateSeen(factname)
@@ -189,6 +192,8 @@ func handleOnlineMsg(input *handleData) bool {
 		newPlayerList := []glob.OnlinePlayerData{}
 		count := 0
 
+		prevCount := fact.NumPlayers
+
 		//cwlog.DoLogCW(input.line)
 		line := strings.TrimPrefix(input.line, tag)
 
@@ -233,13 +238,21 @@ func handleOnlineMsg(input *handleData) bool {
 				glob.OnlinePlayers = newPlayerList
 
 				fact.OnlinePlayersLock.Unlock()
+				if fact.NumPlayers != prevCount {
+					fact.UpdateChannelName()
+				}
 				return true
 			}
 		}
 
 		/* Otherwise clear list */
 		fact.NumPlayers = (0)
+		fact.OnlinePlayersLock.Lock()
 		glob.OnlinePlayers = []glob.OnlinePlayerData{}
+		fact.OnlinePlayersLock.Unlock()
+		if prevCount != 0 {
+			fact.UpdateChannelName()
+		}
 
 		return true
 	}
