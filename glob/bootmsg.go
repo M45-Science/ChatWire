@@ -11,8 +11,8 @@ func SetBootMessage(m *discordgo.Message) {
 
 // GetBootMessage safely retrieves the boot message pointer.
 func GetBootMessage() *discordgo.Message {
-	BootMessageLock.Lock()
-	defer BootMessageLock.Unlock()
+	BootMessageLock.RLock()
+	defer BootMessageLock.RUnlock()
 	m := BootMessage
 	return m
 }

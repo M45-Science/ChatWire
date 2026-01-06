@@ -42,3 +42,21 @@ func WriteJSONAtomic(path string, data interface{}, perm os.FileMode) error {
 	}
 	return nil
 }
+
+// WriteBytesAtomic writes raw bytes to path using a temporary file.
+func WriteBytesAtomic(path string, data []byte, perm os.FileMode) error {
+	WriteJSONLock.Lock()
+	defer WriteJSONLock.Unlock()
+
+	tmpName := TempFilePrefix + filepath.Base(path) + ".tmp"
+	tempPath := filepath.Join(filepath.Dir(path), tmpName)
+
+	if err := os.WriteFile(tempPath, data, perm); err != nil {
+		return err
+	}
+	if err := os.Rename(tempPath, path); err != nil {
+		_ = os.Remove(tempPath)
+		return err
+	}
+	return nil
+}

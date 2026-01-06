@@ -285,7 +285,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	}
 
 	glob.SetBootMessage(nil)
-	return false, errors.New("No mod updates available.")
+	return false, errors.New("no mod updates available")
 }
 
 type incMod struct {

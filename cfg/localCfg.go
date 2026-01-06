@@ -83,6 +83,15 @@ func setLocalDefaults() {
 	if Local.Settings.AutosaveMin <= 0 {
 		Local.Settings.AutosaveMin = 15
 	}
+	if Local.Options.PlayerPollIntervalSec <= 0 {
+		Local.Options.PlayerPollIntervalSec = 300
+	}
+	if Local.Options.RoleRefreshIntervalSec <= 0 {
+		Local.Options.RoleRefreshIntervalSec = 300
+	}
+	if Local.Options.MapResetCheckIntervalSec <= 0 {
+		Local.Options.MapResetCheckIntervalSec = 300
+	}
 	if Local.Channel.ChatChannel == "" {
 		cwlog.DoLogCW("ReadLCfg: ChatID not set, this MUST be set to a valid Discord channel ID!")
 		Local.Channel.ChatChannel = "MY DISCORD CHANNEL ID"

@@ -5,25 +5,25 @@
 Factorio Server Manager & Discord Bridge
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-<br>
-[![Go](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
-[![ReportCard](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/report.yml)
-[![CodeQL](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/codeql-analysis.yml)
+[![Go CI](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/go.yml)
+[![Go Report](https://goreportcard.com/badge/github.com/Distortions81/M45-ChatWire)](https://goreportcard.com/report/github.com/Distortions81/M45-ChatWire)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/Distortions81/M45-ChatWire)](https://github.com/Distortions81/M45-ChatWire)
+[![Vulncheck](https://github.com/Distortions81/M45-ChatWire/actions/workflows/vulncheck.yml/badge.svg)](https://github.com/Distortions81/M45-ChatWire/actions/workflows/vulncheck.yml)
 
 [Command Overview](https://m45sci.xyz/help-discord-staff.html)
 
 ### Requirements:
 Linux<br>
-Golang 1.24+<br>
+Golang 1.24.11+<br>
 <br>
-ChatWire is approximately 16k lines of Go code across 80 files.
+ChatWire is approximately 15.9k lines of Go code across 120 files.
 Launching will create a default auto-config to get you started.<br>
 Needs permissions to create files and directories in its own directory, and **up one directory**.<br>
 <br>
 Some dirs and files that can be auto-created:<br>
 cw-local-config.json, ../cw-global-config.json<br>
 cw.lock, ../playerdb.json<br>
-../map-gen-json/, ./logs/, ../update-cache/, ../public_html/archive/<br>
+../map-gen-json/, ./log/, ./audit-log/, ../www/public_html/archive/<br>
 `Discord token, appid,  guild-id and channel-id are required, as well as Factorio username and token.`<br>
 <br>
 ### Building ChatWire:<br>
@@ -67,7 +67,6 @@ as needed for your environment.<br>
 | `-localTest` | Disable public/auth mode for testing. |
 | `-noAutoLaunch` | Disable auto-launch. |
 | `-noDiscord` | Disable Discord integration. |
-| `-panel` | Enable web control panel. |
 | `-proxy` | HTTP caching proxy URL. Format: `proxy/http://example.domain/path`. |
 | `-regCommands` | Register Discord commands. |
 <br>
@@ -104,30 +103,12 @@ go build
 ```
 Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
 
-### Signal files
+### Signals
 
-Create a file in the ChatWire directory to control the running game:
-
-* `.start` starts Factorio if it is not running.
-* `.stop` stops the game gracefully.
-* `.queue` queues a reboot once the current game ends.
-* `.rfact` restarts Factorio.
+Send `SIGUSR1` to queue a reboot once there are no players online.
+Send `SIGUSR2` to reload `cw-local-config.json` and `../cw-global-config.json`.
 
 ### Automatic reloads
-ChatWire monitors the local and global configuration files, the player database
-and the ban list for modifications. Any changes are loaded automatically so you
-can update settings without restarting the bot.
-
-### Web Control Panel (Work In Progress)
-
-- Start ChatWire with `-panel` to enable the panel server.
-- Generate a temporary token with the `/web-panel` command.
-- See `/info` details like versions, uptime, next map reset and player stats.
-- Buttons let you start/stop Factorio, sync mods and update the game.
-- The map section lists recent saves for one-click loading or custom filenames.
-- Send arbitrary RCON commands from the browser.
-- Styled in a dark theme similar to the staff docs.
-- With `-localTest` the URL uses `127.0.0.1` for local access.
-- Mirrors `/info verbose` showing the last save name and UPS stats.
-- Extra forms adjust play hours, schedule map resets and set player levels.
-
+ChatWire monitors the player database and ban list for modifications.
+Configuration files are reloaded via `/chatwire action reload-config` or `SIGUSR2`.
+To reload configs for all running instances at once, see `example-files/reload-config.sh`.

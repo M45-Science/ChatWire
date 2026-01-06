@@ -2,6 +2,7 @@ package cwlog
 
 import (
 	"ChatWire/glob"
+	"ChatWire/worker"
 	"fmt"
 	"os"
 	"path"
@@ -205,9 +206,11 @@ func AutoRotateLogs() {
 			currentDay := time.Now().UTC().Day()
 			if currentDay != startDay {
 				startDay = currentDay
-				StartCWLog()
-				StartGameLog()
-				StartAuditLog()
+				worker.Submit(func() {
+					StartCWLog()
+					StartGameLog()
+					StartAuditLog()
+				})
 			}
 			time.Sleep(time.Second)
 		}

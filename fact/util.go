@@ -623,8 +623,48 @@ func UpdateChannelName() {
 
 }
 
-var oldTopic string
-var chPos int
+const (
+	channelUpdateCooldown  = 5 * time.Minute
+	channelUpdateStateFile = ".cw-channel-update"
+)
+
+var (
+	oldTopic string
+	chPos    int
+
+	channelUpdateMu    sync.Mutex
+	channelUpdateTimer *time.Timer
+	lastChannelUpdate  time.Time
+)
+
+func LoadChannelUpdateCooldown() {
+	data, err := os.ReadFile(channelUpdateStateFile)
+	if err != nil {
+		return
+	}
+	if err := os.Remove(channelUpdateStateFile); err != nil {
+		cwlog.DoLogCW("channel update cooldown: failed to remove state file: %v", err)
+	}
+	when, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(data)))
+	if err != nil {
+		cwlog.DoLogCW("channel update cooldown: invalid timestamp: %v", err)
+		return
+	}
+	channelUpdateMu.Lock()
+	lastChannelUpdate = when
+	channelUpdateMu.Unlock()
+}
+
+func markChannelUpdateAttempted() {
+	now := time.Now()
+	channelUpdateMu.Lock()
+	lastChannelUpdate = now
+	channelUpdateMu.Unlock()
+
+	if err := os.WriteFile(channelUpdateStateFile, []byte(now.UTC().Format(time.RFC3339Nano)), 0644); err != nil {
+		cwlog.DoLogCW("channel update cooldown: failed to persist timestamp: %v", err)
+	}
+}
 
 /* When appropriate, actually update the channel name */
 func DoUpdateChannelName() {
@@ -633,6 +673,31 @@ func DoUpdateChannelName() {
 	if disc.DS == nil {
 		return
 	}
+
+	channelUpdateMu.Lock()
+	if !lastChannelUpdate.IsZero() {
+		elapsed := time.Since(lastChannelUpdate)
+		if elapsed < channelUpdateCooldown {
+			wait := channelUpdateCooldown - elapsed
+			if channelUpdateTimer == nil {
+				channelUpdateTimer = time.AfterFunc(wait, func() {
+					DoUpdateChannelName()
+					channelUpdateMu.Lock()
+					channelUpdateTimer = nil
+					channelUpdateMu.Unlock()
+				})
+			} else {
+				channelUpdateTimer.Reset(wait)
+			}
+			channelUpdateMu.Unlock()
+			return
+		}
+	}
+	if channelUpdateTimer != nil {
+		channelUpdateTimer.Stop()
+		channelUpdateTimer = nil
+	}
+	channelUpdateMu.Unlock()
 
 	disc.UpdateChannelLock.Lock()
 	chname := disc.NewChanName
@@ -653,6 +718,7 @@ func DoUpdateChannelName() {
 	if (chname != oldchname || oldTopic != newTopic) &&
 		cfg.Local.Channel.ChatChannel != "" &&
 		cfg.Local.Channel.ChatChannel != "MY DISCORD CHANNEL ID" {
+		markChannelUpdateAttempted()
 		disc.UpdateChannelLock.Lock()
 		disc.OldChanName = disc.NewChanName
 		disc.UpdateChannelLock.Unlock()
@@ -1185,7 +1251,7 @@ func DoExit(delay bool) {
 
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {
-		if len(disc.CMSBuffer) > 0 {
+		if len(disc.CMSChan) > 0 {
 			time.Sleep(time.Millisecond * 100)
 		} else {
 			break
@@ -1271,17 +1337,13 @@ func CMS(channel string, text string) {
 	/* Split at newlines, so we can batch neatly */
 	lines := strings.Split(text, "\n")
 
-	disc.CMSBufferLock.Lock()
-
 	for _, line := range lines {
 		var item disc.CMSBuf
 		item.Channel = channel
 		item.Text = line
 
-		disc.CMSBuffer = append(disc.CMSBuffer, item)
+		disc.CMSChan <- item
 	}
-
-	disc.CMSBufferLock.Unlock()
 }
 
 /* Log AND send this message to Discord */

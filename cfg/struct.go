@@ -178,6 +178,10 @@ type localOptions struct {
 
 	ResetPingRole string `form:"-"`
 
+	PlayerPollIntervalSec   int `web:"Player Poll Interval Sec"`
+	RoleRefreshIntervalSec  int `web:"Role Refresh Interval Sec"`
+	MapResetCheckIntervalSec int `web:"Map Reset Check Interval Sec"`
+
 	MembersOnly     bool `web:"-"`
 	RegularsOnly    bool `web:"-"`
 	CustomWhitelist bool `web:"Private Whitelist"`

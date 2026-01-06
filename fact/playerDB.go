@@ -1,7 +1,6 @@
 package fact
 
 import (
-	"encoding/json"
 	"os"
 	"strconv"
 	"strings"
@@ -13,7 +12,17 @@ import (
 	"ChatWire/glob"
 	"ChatWire/util"
 	"ChatWire/watcher"
+
+	"github.com/bytedance/sonic"
 )
+
+var (
+	playerListDirtyCh = make(chan struct{}, 1)
+)
+
+func PlayerListDirtySignal() <-chan struct{} {
+	return playerListDirtyCh
+}
 
 /* Local use only */
 func compactNow() int64 {
@@ -27,10 +36,6 @@ func ExpandTime(input int64) time.Time {
 	return out
 }
 
-func compactTime(input int64) int64 {
-	return (input - constants.SeenEpoch) / constants.SeenDivisor
-}
-
 /* Screw fsnotify */
 func WatchDatabaseFile() {
 	filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
@@ -39,15 +44,6 @@ func WatchDatabaseFile() {
 		time.Sleep(time.Second)
 		setPlayerListUpdated()
 	})
-}
-
-/* Check if DB has been updated */
-func isPlayerListUpdated() bool {
-	glob.PlayerListUpdatedLock.Lock()
-	reply := glob.PlayerListUpdated
-	glob.PlayerListUpdatedLock.Unlock()
-
-	return reply
 }
 
 /* Set DB as updated */
@@ -62,13 +58,18 @@ func SetPlayerListDirty() {
 	glob.PlayerListDirtyLock.Lock()
 	glob.PlayerListDirty = true
 	glob.PlayerListDirtyLock.Unlock()
+	select {
+	case playerListDirtyCh <- struct{}{}:
+	default:
+	}
 }
 
-/* Mark DB as SeenDirty (low priority) */
-func setPlayerListSeenDirty() {
-	glob.PlayerListSeenDirtyLock.Lock()
-	glob.PlayerListSeenDirty = true
-	glob.PlayerListSeenDirtyLock.Unlock()
+// SetPlayerStatsDirty marks player stats as updated (LastSeen / Minutes).
+// These changes are saved on a slower cadence than full DB changes.
+func SetPlayerStatsDirty() {
+	glob.PlayerStatsDirtyLock.Lock()
+	glob.PlayerStatsDirty = true
+	glob.PlayerStatsDirtyLock.Unlock()
 }
 
 func PlayerSetBanReason(pname string, reason string, doban bool) bool {
@@ -169,7 +170,7 @@ func UpdateSeen(pname string) {
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].LastSeen = compactNow()
 
-		setPlayerListSeenDirty()
+		SetPlayerStatsDirty()
 		return
 	}
 }
@@ -194,7 +195,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 			SetPlayerListDirty()
 			WhitelistPlayer(pname, level)
 		} else {
-			setPlayerListSeenDirty()
+			SetPlayerStatsDirty()
 		}
 
 		/* Delete discord id upon delete */
@@ -309,7 +310,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 		/* Found in list */
 		glob.PlayerList[pname].LastSeen = compactNow()
 		level := glob.PlayerList[pname].Level
-		setPlayerListSeenDirty()
+		SetPlayerStatsDirty()
 		return level
 	}
 
@@ -349,7 +350,7 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 	if filedata != nil {
 
 		var tempData = make(map[string]*glob.PlayerData)
-		err = json.Unmarshal(filedata, &tempData)
+		err = sonic.Unmarshal(filedata, &tempData)
 		if err != nil {
 			cwlog.DoLogCW(err.Error())
 		}
@@ -429,7 +430,12 @@ func WritePlayers() {
 
 	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
 
-	if err := util.WriteJSONAtomic(finalPath, glob.PlayerList, 0644); err != nil {
+	data, err := sonic.MarshalIndent(glob.PlayerList, "", "\t")
+	if err != nil {
+		cwlog.DoLogCW("WritePlayers: " + err.Error())
+		return
+	}
+	if err := util.WriteBytesAtomic(finalPath, data, 0644); err != nil {
 		cwlog.DoLogCW("WritePlayers: " + err.Error())
 	}
 }

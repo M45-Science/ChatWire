@@ -16,9 +16,9 @@ var (
 	FactorioLock      sync.Mutex
 	UpdatersLock      sync.Mutex
 	BootMessage       *discordgo.Message
-	BootMessageLock   sync.Mutex
+	BootMessageLock   sync.RWMutex
 	UpdateMessage     *discordgo.Message
-	UpdateMessageLock sync.Mutex
+	UpdateMessageLock sync.RWMutex
 
 	FactorioCmd     *exec.Cmd
 	FactorioContext context.Context
@@ -35,7 +35,6 @@ var (
 	LocalTestMode        *bool
 	NoAutoLaunch         *bool
 	NoDiscord            *bool
-	PanelFlag            *bool
 	ProxyURL             *string
 
 	/* Vote map */
@@ -75,17 +74,13 @@ var (
 	PassList         map[string]*PassData
 	PasswordListLock sync.RWMutex
 
-	/* Web panel tokens */
-	PanelTokens    map[string]*PanelTokenData
-	PanelTokenLock sync.RWMutex
-
 	/* Player database status */
-	PlayerListUpdated       = false
-	PlayerListUpdatedLock   sync.Mutex
-	PlayerListDirty         = false
-	PlayerListDirtyLock     sync.Mutex
-	PlayerListSeenDirty     = false
-	PlayerListSeenDirtyLock sync.Mutex
+	PlayerListUpdated     = false
+	PlayerListUpdatedLock sync.Mutex
+	PlayerListDirty       = false
+	PlayerListDirtyLock   sync.Mutex
+	PlayerStatsDirty      = false
+	PlayerStatsDirtyLock  sync.Mutex
 
 	/* Global config status */
 	GlobalCfgUpdated     = false
