@@ -53,6 +53,14 @@ func handleFactReady(input *handleData) bool {
 		fact.FactorioBootedAt = time.Now()
 		fact.FactIsRunning = false
 		glob.CrashLoopCount = 0
+
+		// A Factorio boot implies no players online yet; clear any stale count so the
+		// Discord channel name can be refreshed immediately.
+		fact.NumPlayers = 0
+		fact.OnlinePlayersLock.Lock()
+		glob.OnlinePlayers = []glob.OnlinePlayerData{}
+		fact.OnlinePlayersLock.Unlock()
+
 		fact.SetFactRunning(true, true)
 
 		newHist := modupdate.ModHistoryItem{Name: modupdate.BootName, Date: time.Now(), InfoItem: true}

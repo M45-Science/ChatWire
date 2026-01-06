@@ -217,7 +217,7 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 		/* Update the string for the channel name and topic */
 		fact.UpdateChannelName()
 		/* Send the new string to discord */
-		fact.DoUpdateChannelName()
+		fact.DoUpdateChannelNameForce()
 	}()
 
 	cwlog.DoLogCW("Discord bot ready.")

@@ -202,6 +202,7 @@ func SetFactRunning(run, report bool) {
 		if !run {
 			FactorioBooted = false
 			FactorioBootedAt = time.Time{}
+			clearOnlinePlayers()
 		}
 		if report {
 			if run {
@@ -213,8 +214,16 @@ func SetFactRunning(run, report bool) {
 			}
 		}
 		UpdateChannelName()
+		DoUpdateChannelNameForce()
 		return
 	}
+}
+
+func clearOnlinePlayers() {
+	NumPlayers = 0
+	OnlinePlayersLock.Lock()
+	glob.OnlinePlayers = []glob.OnlinePlayerData{}
+	OnlinePlayersLock.Unlock()
 }
 
 /* Whitelist a specific player. */
@@ -664,6 +673,23 @@ func markChannelUpdateAttempted() {
 	if err := os.WriteFile(channelUpdateStateFile, []byte(now.UTC().Format(time.RFC3339Nano)), 0644); err != nil {
 		cwlog.DoLogCW("channel update cooldown: failed to persist timestamp: %v", err)
 	}
+}
+
+func resetChannelUpdateCooldown() {
+	channelUpdateMu.Lock()
+	if channelUpdateTimer != nil {
+		channelUpdateTimer.Stop()
+		channelUpdateTimer = nil
+	}
+	lastChannelUpdate = time.Time{}
+	channelUpdateMu.Unlock()
+}
+
+// DoUpdateChannelNameForce updates the Discord channel name immediately, bypassing
+// the normal cooldown.
+func DoUpdateChannelNameForce() {
+	resetChannelUpdateCooldown()
+	DoUpdateChannelName()
 }
 
 /* When appropriate, actually update the channel name */
