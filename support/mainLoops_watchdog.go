@@ -81,6 +81,14 @@ func startGameWatchdog() {
 					glob.RelaunchThrottle = 0
 					fact.QuitFactorio(msg)
 				}
+			} else if fact.FactIsRunning && !fact.FactorioBooted {
+				/* Startup hang watchdog: Factorio started but never became "ready" */
+				if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) > constants.FactorioStartupTimeout {
+					msg := fmt.Sprintf("Factorio startup exceeded %v; forcing restart.", constants.FactorioStartupTimeout)
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, msg)
+					glob.RelaunchThrottle = 0
+					fact.QuitFactorio(msg)
+				}
 			}
 		}
 	}()

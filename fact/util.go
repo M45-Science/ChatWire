@@ -405,9 +405,34 @@ func QuitFactorio(message string) {
 
 	if (FactorioBooted || FactIsRunning) && glob.FactorioCmd != nil {
 		cwlog.DoLogCW("Factorio still has not closed, sending interrupt.")
-		glob.FactorioCmd.Process.Signal(os.Interrupt)
-		glob.FactorioCmd.Wait()
+		if glob.FactorioCancel != nil {
+			glob.FactorioCancel()
+		}
+		if glob.FactorioCmd.Process != nil {
+			_ = glob.FactorioCmd.Process.Signal(os.Interrupt)
+		}
+		if !waitForFactorioExit(glob.FactorioCmd, constants.FactorioStopInterruptTimeout) {
+			cwlog.DoLogCW("Factorio did not exit after interrupt; killing.")
+			if glob.FactorioCmd.Process != nil {
+				_ = glob.FactorioCmd.Process.Kill()
+			}
+			_ = waitForFactorioExit(glob.FactorioCmd, constants.FactorioStopKillTimeout)
+		}
 		SetFactRunning(false, false)
+	}
+}
+
+func waitForFactorioExit(cmd interface{ Wait() error }, timeout time.Duration) bool {
+	done := make(chan struct{})
+	go func() {
+		_ = cmd.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+		return true
+	case <-time.After(timeout):
+		return false
 	}
 }
 

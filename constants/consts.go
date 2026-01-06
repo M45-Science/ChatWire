@@ -84,6 +84,12 @@ const (
 	/* Maximum time to wait for Factorio to close */
 	MaxFactorioCloseWait = 45 * 10 //Loop sleep is 1/10 of a second
 
+	/* Factorio launch/stop robustness */
+	FactorioStartupTimeout        = 5 * time.Minute
+	FactorioStdoutChannelCapacity = 8192
+	FactorioStopInterruptTimeout  = 20 * time.Second
+	FactorioStopKillTimeout       = 5 * time.Second
+
 	/* How often to check if Factorio server is alive */
 	WatchdogInterval = time.Second
 

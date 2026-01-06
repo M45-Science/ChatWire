@@ -150,7 +150,7 @@ func launchFactorio() {
 			cwlog.DoLogCW("Killing Previous Factorio process.")
 
 			glob.FactorioCmd.Process.Kill()
-			glob.FactorioCmd.Wait()
+			waitForCmdExit(glob.FactorioCmd, constants.FactorioStopKillTimeout)
 		}
 	}
 	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
@@ -182,7 +182,7 @@ func launchFactorio() {
 	}
 
 	/* Run Factorio */
-	glob.FactorioCmd = exec.Command(fact.GetFactorioBinary(), tempargs...)
+	glob.FactorioCmd = exec.CommandContext(glob.FactorioContext, fact.GetFactorioBinary(), tempargs...)
 	glob.FactorioCmd.WaitDelay = time.Minute
 
 	/* Hide RCON password and port */
@@ -249,18 +249,57 @@ func launchFactorio() {
 		return
 	}
 
-	fact.GameLineCh = make(chan string, 256)
+	fact.GameLineCh = make(chan string, constants.FactorioStdoutChannelCapacity)
 	go func(r io.ReadCloser, lines chan<- string) {
 		defer r.Close()
 		defer close(lines)
 		scanner := bufio.NewScanner(r)
 		buf := make([]byte, 0, 64*1024)
 		scanner.Buffer(buf, 1024*1024)
+		dropped := 0
+		lastDropLog := time.Time{}
 		for scanner.Scan() {
-			lines <- scanner.Text()
+			line := scanner.Text()
+			select {
+			case lines <- line:
+			default:
+				// Prevent Factorio from blocking on stdout if the consumer is slow.
+				dropped++
+				if isCriticalFactorioLine(line) {
+					input := preProcessFactorioOutput(line)
+					runHandles(noChatHandles, input)
+				}
+				if lastDropLog.IsZero() || time.Since(lastDropLog) > time.Second*10 {
+					lastDropLog = time.Now()
+					cwlog.DoLogCW("Factorio stdout backlog: dropped %v lines (consumer slow).", dropped)
+				}
+			}
 		}
 		if err := scanner.Err(); err != nil {
 			cwlog.DoLogCW("Factorio stdout scan error: %v", err)
 		}
 	}(stdout, fact.GameLineCh)
+}
+
+func waitForCmdExit(cmd *exec.Cmd, timeout time.Duration) bool {
+	if cmd == nil {
+		return true
+	}
+	done := make(chan struct{})
+	go func() {
+		_ = cmd.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+		return true
+	case <-time.After(timeout):
+		return false
+	}
+}
+
+func isCriticalFactorioLine(line string) bool {
+	// These are used to transition ChatWire state; dropping them can leave the server stuck in "booting".
+	return strings.Contains(line, "Info RemoteCommandProcessor") && strings.Contains(line, "Starting RCON interface") ||
+		strings.Contains(line, "Goodbye")
 }
