@@ -62,10 +62,24 @@ func setLocalDefaults() {
 			cwlog.DoLogCW("setLocalDefaults: unable to resolve executable path: %v", err)
 			Local.Callsign = "cw"
 		} else {
-			exPath := filepath.Dir(ex)
-			exPath = strings.TrimPrefix(exPath, "cw-")
-			if len(exPath) > 0 && len(exPath) < 4 {
-				Local.Callsign = exPath
+			dir := filepath.Dir(ex)
+			candidate := ""
+			for depth := 0; depth < 3; depth++ {
+				base := filepath.Base(dir)
+				base = strings.TrimPrefix(base, "cw-")
+				base = strings.ToLower(base)
+				if _, ok := glob.AlphaValue[base]; ok {
+					candidate = base
+					break
+				}
+				parent := filepath.Dir(dir)
+				if parent == dir {
+					break
+				}
+				dir = parent
+			}
+			if candidate != "" {
+				Local.Callsign = candidate
 			} else {
 				Local.Callsign = "a"
 			}
@@ -104,7 +118,7 @@ func setLocalDefaults() {
 			"softmod/"
 		Local.Options.SoftModOptions.SoftModPath = path
 
-		if err := os.Mkdir(path, os.ModePerm); err != nil {
+		if err := os.MkdirAll(path, os.ModePerm); err != nil {
 			cwlog.DoLogCW("ReadLCfg: unable to create softmod path %v: %v", path, err)
 		}
 	}

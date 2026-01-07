@@ -2,9 +2,9 @@ name: Vulncheck
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, master ]
   schedule:
     - cron: "21 3 * * 1"
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.23
+        go-version-file: go.mod
     - name: Install govulncheck
       run: go install golang.org/x/vuln/cmd/govulncheck@latest
     - name: Run govulncheck

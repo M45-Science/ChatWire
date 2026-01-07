@@ -13,6 +13,9 @@ func ProtectIdiots(text string) bool {
 	checkme := strings.ToLower(text)
 	checkme = sclean.AlphaOnly(checkme)
 
+	glob.PasswordListLock.Lock()
+	defer glob.PasswordListLock.Unlock()
+
 	/* Only run if there are active registration codes */
 	if len(glob.PassList) > 0 {
 		for i, o := range glob.PassList {

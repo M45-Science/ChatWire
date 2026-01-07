@@ -214,7 +214,10 @@ func handleOnlineMsg(input *handleData) bool {
 					pscore := fields[1]
 					ptime := fields[2]
 					ptype := fields[3]
-					pafk := fields[4]
+					pafk := ""
+					if len(fields) > 4 {
+						pafk = fields[4]
+					}
 
 					plevel := fact.StringToLevel(ptype)
 

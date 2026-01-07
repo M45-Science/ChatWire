@@ -34,7 +34,7 @@ func checkHours() {
 				shutTime = shutTime.Add(time.Minute * 10)
 
 				for fact.NumPlayers > 0 {
-					if time.Now().UTC().Sub(shutTime) <= time.Second {
+					if time.Now().After(shutTime) {
 						break
 					}
 					if WithinHours() {
