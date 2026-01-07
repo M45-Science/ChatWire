@@ -69,6 +69,9 @@ func fullPackage(info *InfoData) error {
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
 	fact.DoUpdateFactorio = true
+	defer func() {
+		fact.DoUpdateFactorio = false
+	}()
 	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Downloading Factorio", "Download verified!", glob.COLOR_CYAN))
 	fact.WaitFactQuit(true)
 
@@ -100,7 +103,6 @@ func fullPackage(info *InfoData) error {
 
 	fact.FactorioVersion = info.VersInt.IntToString()
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
-	fact.DoUpdateFactorio = false
 
 	return nil
 }
