@@ -24,6 +24,7 @@ func handleOnlinePlayers(input *handleData) bool {
 	if strings.HasPrefix(input.line, "Online players") {
 
 		if input.wordListLen > 2 {
+			prevCount := fact.NumPlayers
 			poc := strings.Join(input.wordList[2:], " ")
 			poc = strings.ReplaceAll(poc, "(", "")
 			poc = strings.ReplaceAll(poc, ")", "")
@@ -34,6 +35,11 @@ func handleOnlinePlayers(input *handleData) bool {
 			fact.NumPlayers = (nump)
 
 			fact.UpdateChannelName()
+			// If the last player logs out, update immediately so the channel name
+			// doesn't sit stale behind the normal cooldown.
+			if prevCount != 0 && nump == 0 {
+				fact.DoUpdateChannelNameForce()
+			}
 		}
 		return true
 	}
@@ -252,6 +258,8 @@ func handleOnlineMsg(input *handleData) bool {
 		fact.OnlinePlayersLock.Unlock()
 		if prevCount != 0 {
 			fact.UpdateChannelName()
+			// Last player left; force an immediate channel name refresh.
+			fact.DoUpdateChannelNameForce()
 		}
 
 		return true
