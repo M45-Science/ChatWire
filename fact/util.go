@@ -100,10 +100,6 @@ func doBan(name, outString string) {
 	banLock.Lock()
 	defer banLock.Unlock()
 
-	if name == lastBanName {
-		return
-	}
-
 	lastBanName = name
 	WriteFact("/ban " + outString)
 	WriteFact("/purge " + name)
