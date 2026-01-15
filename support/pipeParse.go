@@ -69,9 +69,16 @@ func HandleChat() {
 			continue
 		}
 
-		readLine, ok := <-lines
-		if !ok {
-			time.Sleep(100 * time.Millisecond)
+		// Factorio restarts replace fact.GameLineCh. Avoid blocking forever on a stale channel.
+		var readLine string
+		var ok bool
+		select {
+		case readLine, ok = <-lines:
+			if !ok {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+		case <-time.After(250 * time.Millisecond):
 			continue
 		}
 		rawLine := sclean.UnicodeCleanup(readLine)
