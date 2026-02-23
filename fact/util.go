@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -1274,12 +1275,51 @@ func FactWhisper(player, format string, args ...interface{}) {
 }
 
 func WaitFactQuit(waiting bool) {
+	checkProcessAlive := func() bool {
+		cmd := glob.FactorioCmd
+		if cmd == nil || cmd.Process == nil {
+			return false
+		}
+		if cmd.ProcessState != nil && cmd.ProcessState.Exited() {
+			return false
+		}
+		if err := cmd.Process.Signal(syscall.Signal(0)); err != nil {
+			return false
+		}
+		// When cmd.Wait() hasn't been called yet, an exited child can remain as a zombie
+		// and still answer signal 0 successfully. Treat zombies as not alive.
+		if data, err := os.ReadFile(fmt.Sprintf("/proc/%d/stat", cmd.Process.Pid)); err == nil {
+			if s := string(data); s != "" {
+				if idx := strings.LastIndex(s, ") "); idx >= 0 && len(s) > idx+2 && s[idx+2] == 'Z' {
+					return false
+				}
+			}
+		}
+		return true
+	}
+
 	if waiting {
+		started := time.Now()
 		for FactIsRunning && FactorioBooted && glob.ServerRunning {
+			// "Goodbye" log parsing normally clears FactIsRunning. If that line is missed,
+			// fall back to the actual process state so update/reboot flows do not hang forever.
+			if !checkProcessAlive() {
+				cwlog.DoLogCW("WaitFactQuit: Factorio state was stale; process is no longer alive.")
+				SetFactRunning(false, false)
+				break
+			}
+			if time.Since(started) > 2*time.Minute {
+				cwlog.DoLogCW("WaitFactQuit: timed out after 2m waiting for Factorio to quit.")
+				break
+			}
 			time.Sleep(time.Millisecond * 100)
 		}
 	} else {
 		for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && FactorioBooted && glob.ServerRunning; x++ {
+			if !checkProcessAlive() {
+				SetFactRunning(false, false)
+				break
+			}
 			time.Sleep(time.Millisecond * 100)
 		}
 	}
