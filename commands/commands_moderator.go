@@ -257,6 +257,39 @@ func moderatorCommands() []glob.CommandData {
 		},
 			Function: moderator.RCONCmd, ModeratorOnly: true, Global: true},
 		{AppCmd: glob.AppCmdData{
+			Name:        "ip-ban",
+			Description: "Manage UFW deny rules for public IPv4 addresses.",
+			Type:        discordgo.ChatApplicationCommand,
+			Options: []glob.OptionData{
+				{
+					Name:        "action",
+					Description: "Ban, unban, or list UFW deny entries",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    true,
+					Choices: []glob.ChoiceData{
+						{
+							Name:  "ban",
+							Value: "ban",
+						},
+						{
+							Name:  "unban",
+							Value: "unban",
+						},
+						{
+							Name:  "list",
+							Value: "list",
+						},
+					},
+				},
+				{
+					Name:        "ip",
+					Description: "Public IPv4 to ban or unban",
+					Type:        discordgo.ApplicationCommandOptionString,
+				},
+			},
+		},
+			Function: moderator.IPBan, ModeratorOnly: true},
+		{AppCmd: glob.AppCmdData{
 			Name:        "map-reset",
 			Description: "Force a map reset, will kick players.",
 			Type:        discordgo.ChatApplicationCommand,

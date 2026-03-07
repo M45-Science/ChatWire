@@ -103,6 +103,22 @@ go build
 ```
 Ensure the generated configuration files contain your Discord token, application ID, guild ID and channel ID, along with Factorio credentials.
 
+### Firewall IP bans
+
+The moderator slash command `/ip-ban` manages UFW deny rules for public IPv4 addresses.<br>
+Use `action=ban` to add a deny rule, `action=unban` to remove a deny rule, and `action=list` to show current IPv4 deny entries.<br>
+This requires UFW to be installed at `/usr/sbin/ufw` and requires the ChatWire service user to be allowed to run `sudo ufw` without a password.<br>
+<br>
+Add a sudoers entry with `visudo` or `visudo -f /etc/sudoers.d/chatwire-ufw`:<br>
+
+```sudoers
+chatwire ALL=(root) NOPASSWD: /usr/sbin/ufw
+Defaults!/usr/sbin/ufw !requiretty
+```
+
+Replace `chatwire` with the actual user running the ChatWire service.<br>
+After adding new slash commands, run `./ChatWire -regCommands` again so Discord picks up `/ip-ban`.<br>
+
 ### Signals
 
 Send `SIGUSR1` to queue a reboot once there are no players online.
