@@ -288,7 +288,7 @@ func moderatorCommands() []glob.CommandData {
 				},
 			},
 		},
-			Function: moderator.IPBan, ModeratorOnly: true},
+			Function: moderator.IPBan, ModeratorOnly: true, PrimaryOnly: true},
 		{AppCmd: glob.AppCmdData{
 			Name:        "map-reset",
 			Description: "Force a map reset, will kick players.",
