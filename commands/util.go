@@ -21,7 +21,10 @@ import (
 var commandLock sync.Mutex
 
 func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
-	commandLock.Lock()
+	if !commandLock.TryLock() {
+		disc.InteractionEphemeralResponse(i, "Busy", "Another command is already in progress. Please wait and try again.")
+		return
+	}
 	defer commandLock.Unlock()
 
 	/* Ignore appid that aren't relevant to us */

@@ -91,6 +91,18 @@ func writeTestSave(t *testing.T, path string) {
 	}
 }
 
+func waitForCondition(t *testing.T, timeout time.Duration, fn func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if fn() {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatal("condition not met before timeout")
+}
+
 func TestLifecycleRestartFactorioStartsExactlyOnce(t *testing.T) {
 	resetLifecycleTestState(t)
 
@@ -374,5 +386,250 @@ func TestLifecycleStopReturnsErrorIfProcessNeverExits(t *testing.T) {
 	}
 	if interrupts != 1 || kills != 1 {
 		t.Fatalf("expected interrupt+kill once, got interrupts=%d kills=%d", interrupts, kills)
+	}
+}
+
+func TestLifecycleRestartChatWireExitsOnlyAfterStop(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleStopGraceTimeout = time.Millisecond
+	lifecycleStopInterruptTimeout = time.Millisecond
+	lifecycleStopKillTimeout = time.Millisecond
+	lifecycleStopPollInterval = time.Millisecond
+	lifecycleProcessAlive = func() bool { return false }
+
+	exitCalls := 0
+	var lm *lifecycleManager
+	lm = newTestLifecycleManager(LifecycleHooks{
+		ExitChatWire: func(delay bool) {
+			exitCalls++
+			state := lm.GetState()
+			if state.Phase != LifecycleStopped {
+				t.Fatalf("expected stopped before chatwire exit, got %q", state.Phase)
+			}
+		},
+	})
+	lm.phase = LifecycleRunning
+	lm.currentGeneration = 1
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.execute(lifecycleRequest{Request: Request{Kind: ActionRestartChatWire, Reason: "chatwire"}})
+
+	if exitCalls != 1 {
+		t.Fatalf("expected one chatwire exit call, got %d", exitCalls)
+	}
+}
+
+func TestLifecycleRunAutoStartsWithinHours(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	launchCh := make(chan struct{}, 1)
+	StartLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			select {
+			case launchCh <- struct{}{}:
+			default:
+			}
+			glob.ServerRunning = false
+			return nil
+		},
+		WithinHours: func() bool { return true },
+	})
+	defer func() {
+		glob.ServerRunning = false
+	}()
+
+	FactAutoStart = true
+	waitForCondition(t, 200*time.Millisecond, func() bool {
+		select {
+		case <-launchCh:
+			return true
+		default:
+			return false
+		}
+	})
+}
+
+func TestLifecycleRunDoesNotAutoStartOutsideHours(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	launches := 0
+	StartLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			launches++
+			return nil
+		},
+		WithinHours: func() bool { return false },
+	})
+	defer func() {
+		glob.ServerRunning = false
+	}()
+
+	FactAutoStart = true
+	time.Sleep(50 * time.Millisecond)
+	if launches != 0 {
+		t.Fatalf("expected no autostart launches outside hours, got %d", launches)
+	}
+}
+
+func TestLifecycleExitBeforeReadyLeavesStopped(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStarting
+	lm.currentGeneration = 7
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.handleExitEvent(processExitEvent{generation: 7, err: nil})
+	lm.handleReadyEvent(7)
+
+	state := lm.GetState()
+	if state.Phase != LifecycleStopped {
+		t.Fatalf("expected stopped after exit-before-ready, got %q", state.Phase)
+	}
+	if state.Booted {
+		t.Fatal("expected booted=false after exit-before-ready")
+	}
+}
+
+func TestLifecycleReadyThenExitEndsStopped(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStarting
+	lm.currentGeneration = 8
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.handleReadyEvent(8)
+	if state := lm.GetState(); state.Phase != LifecycleRunning || !state.Booted {
+		t.Fatalf("expected running booted state after ready, got phase=%q booted=%t", state.Phase, state.Booted)
+	}
+
+	lm.handleExitEvent(processExitEvent{generation: 8, err: nil})
+	state := lm.GetState()
+	if state.Phase != LifecycleStopped || state.Booted {
+		t.Fatalf("expected stopped after ready-then-exit, got phase=%q booted=%t", state.Phase, state.Booted)
+	}
+}
+
+func TestLifecycleDuplicateGoodbyeDoesNotChangeRunningState(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = true
+	lm.currentGeneration = 9
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.handleGoodbyeEvent(9)
+	lm.handleGoodbyeEvent(9)
+
+	state := lm.GetState()
+	if state.Phase != LifecycleRunning || !state.Booted {
+		t.Fatalf("expected running state after duplicate goodbye without exit, got phase=%q booted=%t", state.Phase, state.Booted)
+	}
+}
+
+func TestDoChangeMapAfterStopMissingSourceReturnsError(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	root := t.TempDir()
+	cfg.Global.Paths.Folders.ServersRoot = root + "/"
+	cfg.Global.Paths.ChatWirePrefix = ""
+	cfg.Local.Callsign = "srv"
+	cfg.Local.Name = "alpha"
+	cfg.Global.Paths.Folders.FactorioDir = "factorio"
+	cfg.Global.Paths.Folders.Saves = "saves"
+
+	savesDir := filepath.Join(root, cfg.Local.Callsign, cfg.Global.Paths.Folders.FactorioDir, cfg.Global.Paths.Folders.Saves)
+	if err := os.MkdirAll(savesDir, 0o755); err != nil {
+		t.Fatalf("mkdir saves: %v", err)
+	}
+
+	err := doChangeMapAfterStop("missing")
+	if err == nil || err.Error() != "an error occurred when attempting to open the selected save" {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestDoChangeMapAfterStopReplacementRemoveFailureReturnsError(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	root := t.TempDir()
+	cfg.Global.Paths.Folders.ServersRoot = root + "/"
+	cfg.Global.Paths.ChatWirePrefix = ""
+	cfg.Local.Callsign = "srv"
+	cfg.Local.Name = "alpha"
+	cfg.Global.Paths.Folders.FactorioDir = "factorio"
+	cfg.Global.Paths.Folders.Saves = "saves"
+
+	savesDir := filepath.Join(root, cfg.Local.Callsign, cfg.Global.Paths.Folders.FactorioDir, cfg.Global.Paths.Folders.Saves)
+	if err := os.MkdirAll(savesDir, 0o755); err != nil {
+		t.Fatalf("mkdir saves: %v", err)
+	}
+	writeTestSave(t, filepath.Join(savesDir, "candidate.zip"))
+
+	targetDir := filepath.Join(savesDir, cfg.Local.Name+"_new.zip")
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+		t.Fatalf("mkdir target dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(targetDir, "keep"), []byte("x"), 0o644); err != nil {
+		t.Fatalf("write keep file: %v", err)
+	}
+
+	err := doChangeMapAfterStop("candidate")
+	if err == nil || err.Error() != "an error occurred when attempting to remove the existing replacement save" {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestLifecycleChangeMapLaunchFailureLeavesStopped(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	root := t.TempDir()
+	cfg.Global.Paths.Folders.ServersRoot = root + "/"
+	cfg.Global.Paths.ChatWirePrefix = ""
+	cfg.Local.Callsign = "srv"
+	cfg.Local.Name = "alpha"
+	cfg.Global.Paths.Folders.FactorioDir = "factorio"
+	cfg.Global.Paths.Folders.Saves = "saves"
+
+	savesDir := filepath.Join(root, cfg.Local.Callsign, cfg.Global.Paths.Folders.FactorioDir, cfg.Global.Paths.Folders.Saves)
+	if err := os.MkdirAll(savesDir, 0o755); err != nil {
+		t.Fatalf("mkdir saves: %v", err)
+	}
+	writeTestSave(t, filepath.Join(savesDir, "candidate.zip"))
+
+	lm := newTestLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			return errors.New("launch failed")
+		},
+	})
+	lm.phase = LifecycleRunning
+	lm.booted = false
+	lm.currentGeneration = 1
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+	lifecycleProcessAlive = func() bool { return false }
+	lifecycleStopGraceTimeout = time.Millisecond
+	lifecycleStopInterruptTimeout = time.Millisecond
+	lifecycleStopKillTimeout = time.Millisecond
+	lifecycleStopPollInterval = time.Millisecond
+
+	lm.execute(lifecycleRequest{Request: Request{Kind: ActionChangeMap, Reason: "map", SaveName: "candidate"}})
+
+	if _, err := os.Stat(filepath.Join(savesDir, cfg.Local.Name+"_new.zip")); err != nil {
+		t.Fatalf("expected prepared replacement save even when launch fails: %v", err)
+	}
+	state := lm.GetState()
+	if state.Phase != LifecycleStopped {
+		t.Fatalf("expected stopped phase after launch failure, got %q", state.Phase)
+	}
+	if state.LastError != "launch failed" {
+		t.Fatalf("expected last error to capture launch failure, got %q", state.LastError)
 	}
 }
