@@ -181,6 +181,12 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 }
 
 func CheckModUpdates(dryRun bool) (bool, error) {
+	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+	fact.DoModOperation = true
+	defer func() {
+		fact.DoModOperation = false
+	}()
+
 	// If needed, get Factorio version
 	getFactorioVersion()
 
@@ -199,6 +205,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	// Check if we need to proceed
 	if len(installedMods) == 0 {
 		emsg := "the game has no installed mods to update"
+		fact.FailOperation(opToken, "Mod Updates", emsg, glob.COLOR_RED)
 		return false, errors.New(emsg)
 	}
 
@@ -212,6 +219,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		newInfo, err := DownloadModInfo(item.Name)
 		if err != nil {
 			cwlog.DoLogCW("NEWCheckModUpdates: DownloadModInfo" + err.Error())
+			fact.FailOperation(opToken, "Mod Updates", "Checking mod updates failed: "+err.Error(), glob.COLOR_RED)
 			return false, err
 		}
 
@@ -226,12 +234,14 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
+		fact.FailOperation(opToken, "Mod Updates", "Resolving mod dependencies failed: "+err.Error(), glob.COLOR_RED)
 		return false, err
 	}
 
 	_, err = checkIncompatible(installedMods, downloadList)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
+		fact.FailOperation(opToken, "Mod Updates", err.Error(), glob.COLOR_RED)
 		return false, err
 	}
 
@@ -269,6 +279,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		for _, dl := range downloadList {
 			cwlog.DoLogCW("%v-%v: %v", dl.Name, dl.Data.Version, dl.Filename)
 		}
+		fact.CompleteOperation(opToken, "Mod Updates", "Mod update check complete.", glob.COLOR_GREEN)
 		return false, nil
 	}
 
@@ -285,10 +296,12 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 			fact.FactChat("Mod updates: " + shortBuf + " (Mods will update on reboot, when server is empty)")
 		}
 		glob.SetBootMessage(nil)
+		fact.CompleteOperation(opToken, "Mod Updates", "Mod updates are ready and will apply on reboot.", glob.COLOR_GREEN)
 		return true, nil
 	}
 
 	glob.SetBootMessage(nil)
+	fact.CompleteOperation(opToken, "Mod Updates", "No mod updates available.", glob.COLOR_GREEN)
 	return false, errors.New("no mod updates available")
 }
 

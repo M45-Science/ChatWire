@@ -22,12 +22,16 @@ func newTestLifecycleManager(hooks LifecycleHooks) *lifecycleManager {
 		readyCh:    make(chan uint64, 8),
 		goodbyeCh:  make(chan uint64, 8),
 		exitCh:     make(chan processExitEvent, 8),
+		progressCh: make(chan lifecycleProgressEvent, 8),
+		healthCh:   make(chan lifecycleHealthEvent, 8),
 		started:    true,
 	}
 }
 
 func resetLifecycleTestState(t *testing.T) {
 	t.Helper()
+	glob.ServerRunning = false
+	time.Sleep(10 * time.Millisecond)
 	lifecycleMu.Lock()
 	lifecycle = nil
 	lifecycleMu.Unlock()
@@ -39,6 +43,7 @@ func resetLifecycleTestState(t *testing.T) {
 	FactorioBootedAt = time.Time{}
 	FactAutoStart = false
 	DoUpdateFactorio = false
+	DoModOperation = false
 	NumPlayers = 0
 	QueueReboot = false
 	QueueFactReboot = false
@@ -46,10 +51,14 @@ func resetLifecycleTestState(t *testing.T) {
 	glob.ServerRunning = true
 
 	lifecycleStopGraceTimeout = time.Duration(constants.MaxFactorioCloseWait) * 100 * time.Millisecond
+	lifecycleStopIdleTimeout = constants.FactorioStopIdleTimeout
+	lifecycleStopSaveTimeout = constants.FactorioStopSaveTimeout
 	lifecycleStopInterruptTimeout = constants.FactorioStopInterruptTimeout
 	lifecycleStopKillTimeout = constants.FactorioStopKillTimeout
 	lifecycleStopPollInterval = 100 * time.Millisecond
 	lifecyclePlayerWarnDelay = 3 * time.Second
+	lifecycleStartupIdleTimeout = constants.FactorioStartupIdleTimeout
+	lifecycleStartupHardTimeout = constants.FactorioStartupHardTimeout
 	lifecycleSendQuit = func() { WriteFact("/quit") }
 	lifecycleInterruptProcess = func() {
 		if glob.FactorioCancel != nil {
@@ -193,13 +202,102 @@ func TestLifecyclePriorityPrefersChatWireReboot(t *testing.T) {
 	}
 }
 
+func TestLifecycleUpdateBlocksNonStopRequests(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	DoUpdateFactorio = true
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.queue = []lifecycleRequest{
+		{Request: Request{Kind: ActionChangeMap, SaveName: "candidate"}},
+		{Request: Request{Kind: ActionMapReset, Reason: "reset"}},
+		{Request: Request{Kind: ActionRestartFactorio, Reason: "restart"}},
+		{Request: Request{Kind: ActionStart, Reason: "start"}},
+	}
+	lm.syncCompatibilityLocked()
+
+	if _, ok := lm.nextRequest(); ok {
+		t.Fatal("expected update-in-progress to block non-stop requests")
+	}
+}
+
+func TestLifecycleModOperationBlocksNonStopRequests(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	DoModOperation = true
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStopped
+	lm.queue = []lifecycleRequest{
+		{Request: Request{Kind: ActionChangeMap, SaveName: "candidate"}},
+		{Request: Request{Kind: ActionMapReset, Reason: "reset"}},
+		{Request: Request{Kind: ActionRestartFactorio, Reason: "restart"}},
+		{Request: Request{Kind: ActionStart, Reason: "start"}},
+	}
+	lm.syncCompatibilityLocked()
+
+	if _, ok := lm.nextRequest(); ok {
+		t.Fatal("expected mod operation to block non-stop requests")
+	}
+}
+
+func TestLifecycleUpdateAllowsStopRequest(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	DoUpdateFactorio = true
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.queue = []lifecycleRequest{
+		{Request: Request{Kind: ActionChangeMap, SaveName: "candidate"}},
+		{Request: Request{Kind: ActionStop, Reason: "update stop"}},
+	}
+	lm.syncCompatibilityLocked()
+
+	req, ok := lm.nextRequest()
+	if !ok {
+		t.Fatal("expected stop request to remain runnable during update")
+	}
+	if req.Kind != ActionStop {
+		t.Fatalf("expected stop request during update, got %q", req.Kind)
+	}
+}
+
+func TestLifecycleQueuedRequestsResumeAfterUpdateFinishes(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	DoUpdateFactorio = true
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStopped
+	lm.queue = []lifecycleRequest{
+		{Request: Request{Kind: ActionChangeMap, SaveName: "candidate"}},
+		{Request: Request{Kind: ActionRestartFactorio, Reason: "restart"}},
+	}
+	lm.syncCompatibilityLocked()
+
+	if _, ok := lm.nextRequest(); ok {
+		t.Fatal("expected no runnable requests while update is active")
+	}
+
+	DoUpdateFactorio = false
+	req, ok := lm.nextRequest()
+	if !ok {
+		t.Fatal("expected queued requests to resume after update completes")
+	}
+	if req.Kind != ActionChangeMap {
+		t.Fatalf("expected change-map to resume first after update, got %q", req.Kind)
+	}
+}
+
 func TestLifecycleStartupTimeoutQueuesRestart(t *testing.T) {
 	resetLifecycleTestState(t)
 
 	lm := newTestLifecycleManager(LifecycleHooks{})
 	lm.phase = LifecycleStarting
-	lm.startedAt = time.Now().Add(-constants.FactorioStartupTimeout - time.Second)
+	lifecycleStartupIdleTimeout = 10 * time.Millisecond
+	lifecycleStartupHardTimeout = time.Minute
+	lm.startedAt = time.Now().Add(-lifecycleStartupIdleTimeout - time.Second)
 	lm.phaseSince = lm.startedAt
+	lm.lastProgressAt = lm.startedAt
+	lm.lastProgressKind = "spawn"
 	lm.syncCompatibilityLocked()
 
 	lifecycleMu.Lock()
@@ -219,6 +317,67 @@ func TestLifecycleStartupTimeoutQueuesRestart(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("expected startup-timeout restart request")
+	}
+}
+
+func TestLifecycleStartupProgressDefersTimeout(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStarting
+	lifecycleStartupIdleTimeout = 15 * time.Millisecond
+	lifecycleStartupHardTimeout = time.Minute
+	lm.startedAt = time.Now().Add(-time.Second)
+	lm.phaseSince = lm.startedAt
+	lm.lastProgressAt = time.Now()
+	lm.lastProgressKind = "mod-load"
+	lm.syncCompatibilityLocked()
+
+	lifecycleMu.Lock()
+	lifecycle = lm
+	lifecycleMu.Unlock()
+
+	lm.checkStartupTimeout()
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	for _, req := range lm.queue {
+		if req.Kind == ActionRestartFactorio {
+			t.Fatal("did not expect startup restart while progress is still recent")
+		}
+	}
+}
+
+func TestLifecycleStartupHardTimeoutOverridesProgress(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStarting
+	lifecycleStartupIdleTimeout = time.Hour
+	lifecycleStartupHardTimeout = 20 * time.Millisecond
+	lm.startedAt = time.Now().Add(-time.Second)
+	lm.phaseSince = lm.startedAt
+	lm.lastProgressAt = time.Now()
+	lm.lastProgressKind = "mod-load"
+	lm.syncCompatibilityLocked()
+
+	lifecycleMu.Lock()
+	lifecycle = lm
+	lifecycleMu.Unlock()
+
+	lm.checkStartupTimeout()
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	found := false
+	for _, req := range lm.queue {
+		if req.Kind == ActionRestartFactorio {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("expected hard-timeout restart request despite recent progress")
 	}
 }
 
@@ -389,6 +548,41 @@ func TestLifecycleStopReturnsErrorIfProcessNeverExits(t *testing.T) {
 	}
 }
 
+func TestLifecycleStopSaveProgressExtendsDeadline(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleStopGraceTimeout = 5 * time.Millisecond
+	lifecycleStopIdleTimeout = 5 * time.Millisecond
+	lifecycleStopSaveTimeout = 40 * time.Millisecond
+	lifecycleStopPollInterval = time.Millisecond
+
+	alive := true
+	interrupts := 0
+	lifecycleProcessAlive = func() bool { return alive }
+	lifecycleInterruptProcess = func() { interrupts++ }
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = false
+	lm.currentGeneration = 1
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	go func() {
+		time.Sleep(3 * time.Millisecond)
+		lm.progressCh <- lifecycleProgressEvent{generation: 1, kind: "save", at: time.Now()}
+		time.Sleep(10 * time.Millisecond)
+		alive = false
+	}()
+
+	if err := lm.executeStop("save progress"); err != nil {
+		t.Fatalf("expected stop to succeed with save progress, got %v", err)
+	}
+	if interrupts != 0 {
+		t.Fatalf("expected no interrupt while save progress extends deadline, got %d", interrupts)
+	}
+}
+
 func TestLifecycleRestartChatWireExitsOnlyAfterStop(t *testing.T) {
 	resetLifecycleTestState(t)
 
@@ -470,6 +664,52 @@ func TestLifecycleRunDoesNotAutoStartOutsideHours(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 	if launches != 0 {
 		t.Fatalf("expected no autostart launches outside hours, got %d", launches)
+	}
+}
+
+func TestLifecycleRunDoesNotAutoStartDuringUpdate(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	launches := 0
+	DoUpdateFactorio = true
+	StartLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			launches++
+			return nil
+		},
+		WithinHours: func() bool { return true },
+	})
+	defer func() {
+		glob.ServerRunning = false
+	}()
+
+	FactAutoStart = true
+	time.Sleep(50 * time.Millisecond)
+	if launches != 0 {
+		t.Fatalf("expected no autostart launches during update, got %d", launches)
+	}
+}
+
+func TestLifecycleRunDoesNotAutoStartDuringModOperation(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	launches := 0
+	DoModOperation = true
+	StartLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			launches++
+			return nil
+		},
+		WithinHours: func() bool { return true },
+	})
+	defer func() {
+		glob.ServerRunning = false
+	}()
+
+	FactAutoStart = true
+	time.Sleep(50 * time.Millisecond)
+	if launches != 0 {
+		t.Fatalf("expected no autostart launches during mod operation, got %d", launches)
 	}
 }
 
@@ -631,5 +871,148 @@ func TestLifecycleChangeMapLaunchFailureLeavesStopped(t *testing.T) {
 	}
 	if state.LastError != "launch failed" {
 		t.Fatalf("expected last error to capture launch failure, got %q", state.LastError)
+	}
+}
+
+func TestLifecycleExecuteStartFailsDuringUpdate(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	DoUpdateFactorio = true
+	lm := newTestLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			t.Fatal("launch should not be called while update is in progress")
+			return nil
+		},
+	})
+
+	err := lm.executeStart("update guarded start")
+	if err == nil || err.Error() != "factorio update or mod operation is in progress" {
+		t.Fatalf("expected update guard error, got %v", err)
+	}
+}
+
+func TestLifecycleExecuteStartFailsDuringModOperation(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	DoModOperation = true
+	lm := newTestLifecycleManager(LifecycleHooks{
+		LaunchFactorio: func(generation uint64) error {
+			t.Fatal("launch should not be called while mod operation is in progress")
+			return nil
+		},
+	})
+
+	err := lm.executeStart("mod guarded start")
+	if err == nil || err.Error() != "factorio update or mod operation is in progress" {
+		t.Fatalf("expected mod-operation guard error, got %v", err)
+	}
+}
+
+func TestLifecycleHealthEventQueuesRestartWhenProcessAlive(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleProcessAlive = func() bool { return true }
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = true
+	lm.currentGeneration = 12
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.handleHealthEvent(lifecycleHealthEvent{
+		generation: 12,
+		kind:       "stdin-broken-pipe",
+		err:        "broken pipe",
+		at:         time.Now(),
+	})
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	if !lm.healthRestartQueued {
+		t.Fatal("expected health restart to be queued")
+	}
+	found := false
+	for _, req := range lm.queue {
+		if req.Kind == ActionRestartFactorio {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("expected restart-factorio request after health issue")
+	}
+}
+
+func TestLifecycleHealthEventFinalizesStoppedWhenProcessDead(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleProcessAlive = func() bool { return false }
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = true
+	lm.currentGeneration = 13
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.handleHealthEvent(lifecycleHealthEvent{
+		generation: 13,
+		kind:       "stdout-closed",
+		err:        "closed",
+		at:         time.Now(),
+	})
+
+	state := lm.GetState()
+	if state.Phase != LifecycleStopped {
+		t.Fatalf("expected stopped after dead-process health event, got %q", state.Phase)
+	}
+}
+
+func TestLifecycleReconcileProcessHealthStopsMissingProcess(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleProcessAlive = func() bool { return false }
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = true
+	lm.currentGeneration = 14
+	lm.currentPID = 1234
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.reconcileProcessHealth()
+
+	state := lm.GetState()
+	if state.Phase != LifecycleStopped {
+		t.Fatalf("expected stopped after health reconciliation, got %q", state.Phase)
+	}
+}
+
+func TestLifecycleReconcileProcessHealthQueuesRestartOnMissingPipe(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleProcessAlive = func() bool { return true }
+	PipeLock.Lock()
+	Pipe = nil
+	PipeLock.Unlock()
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = true
+	lm.currentGeneration = 15
+	lm.currentPID = 4321
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lifecycleMu.Lock()
+	lifecycle = lm
+	lifecycleMu.Unlock()
+
+	lm.reconcileProcessHealth()
+	lm.drainAsyncEvents()
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	if !lm.healthRestartQueued {
+		t.Fatal("expected health restart queued when stdin pipe is missing")
 	}
 }

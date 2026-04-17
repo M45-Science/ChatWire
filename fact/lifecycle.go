@@ -38,12 +38,12 @@ const (
 )
 
 type Request struct {
-	Kind               ActionKind
-	Reason             string
-	SaveName           string
-	ForceChatWireExit  bool
-	RequestID          string
-	WhenEmpty          bool
+	Kind              ActionKind
+	Reason            string
+	SaveName          string
+	ForceChatWireExit bool
+	RequestID         string
+	WhenEmpty         bool
 }
 
 type State struct {
@@ -72,25 +72,46 @@ type processExitEvent struct {
 	err        error
 }
 
+type lifecycleProgressEvent struct {
+	generation uint64
+	kind       string
+	at         time.Time
+}
+
+type lifecycleHealthEvent struct {
+	generation uint64
+	kind       string
+	err        string
+	at         time.Time
+}
+
 type lifecycleManager struct {
-	mu                 sync.Mutex
-	hooks              LifecycleHooks
-	phase              LifecyclePhase
-	phaseSince         time.Time
-	booted             bool
-	currentPID         int
-	currentGeneration  uint64
-	currentAction      string
-	lastError          string
-	startedAt          time.Time
-	readyAt            time.Time
-	queue              []lifecycleRequest
-	signalCh           chan struct{}
-	readyCh            chan uint64
-	goodbyeCh          chan uint64
-	exitCh             chan processExitEvent
-	started            bool
-	shutdownRequested  bool
+	mu                  sync.Mutex
+	hooks               LifecycleHooks
+	phase               LifecyclePhase
+	phaseSince          time.Time
+	booted              bool
+	currentPID          int
+	currentGeneration   uint64
+	currentAction       string
+	lastError           string
+	startedAt           time.Time
+	readyAt             time.Time
+	queue               []lifecycleRequest
+	signalCh            chan struct{}
+	readyCh             chan uint64
+	goodbyeCh           chan uint64
+	exitCh              chan processExitEvent
+	progressCh          chan lifecycleProgressEvent
+	healthCh            chan lifecycleHealthEvent
+	started             bool
+	shutdownRequested   bool
+	healthRestartQueued bool
+	operationToken      string
+	operationKind       ActionKind
+	operationSaveName   string
+	lastProgressAt      time.Time
+	lastProgressKind    string
 }
 
 var (
@@ -99,10 +120,14 @@ var (
 	reqCounter  atomic.Uint64
 
 	lifecycleStopGraceTimeout     = time.Duration(constants.MaxFactorioCloseWait) * 100 * time.Millisecond
+	lifecycleStopIdleTimeout      = constants.FactorioStopIdleTimeout
+	lifecycleStopSaveTimeout      = constants.FactorioStopSaveTimeout
 	lifecycleStopInterruptTimeout = constants.FactorioStopInterruptTimeout
 	lifecycleStopKillTimeout      = constants.FactorioStopKillTimeout
 	lifecycleStopPollInterval     = 100 * time.Millisecond
 	lifecyclePlayerWarnDelay      = 3 * time.Second
+	lifecycleStartupIdleTimeout   = constants.FactorioStartupIdleTimeout
+	lifecycleStartupHardTimeout   = constants.FactorioStartupHardTimeout
 	lifecycleSendQuit             = func() { WriteFact("/quit") }
 	lifecycleInterruptProcess     = func() {
 		if glob.FactorioCancel != nil {
@@ -138,6 +163,8 @@ func StartLifecycleManager(hooks LifecycleHooks) {
 		readyCh:    make(chan uint64, 8),
 		goodbyeCh:  make(chan uint64, 8),
 		exitCh:     make(chan processExitEvent, 8),
+		progressCh: make(chan lifecycleProgressEvent, 32),
+		healthCh:   make(chan lifecycleHealthEvent, 16),
 		started:    true,
 	}
 	lifecycle.syncCompatibilityLocked()
@@ -252,6 +279,47 @@ func NotifyFactorioProcessExit(generation uint64, err error) {
 	lm.signal()
 }
 
+func NotifyFactorioProgress(kind string) {
+	lifecycleMu.Lock()
+	lm := lifecycle
+	lifecycleMu.Unlock()
+	if lm == nil || kind == "" {
+		return
+	}
+	evt := lifecycleProgressEvent{
+		generation: lm.getCurrentGeneration(),
+		kind:       kind,
+		at:         time.Now(),
+	}
+	select {
+	case lm.progressCh <- evt:
+	default:
+	}
+	lm.signal()
+}
+
+func NotifyFactorioHealth(kind string, err error) {
+	lifecycleMu.Lock()
+	lm := lifecycle
+	lifecycleMu.Unlock()
+	if lm == nil || kind == "" {
+		return
+	}
+	evt := lifecycleHealthEvent{
+		generation: lm.getCurrentGeneration(),
+		kind:       kind,
+		at:         time.Now(),
+	}
+	if err != nil {
+		evt.err = err.Error()
+	}
+	select {
+	case lm.healthCh <- evt:
+	default:
+	}
+	lm.signal()
+}
+
 func WaitForLifecycleStop(timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
 	for {
@@ -330,6 +398,7 @@ func (lm *lifecycleManager) run() {
 
 	for glob.ServerRunning {
 		lm.drainAsyncEvents()
+		lm.reconcileProcessHealth()
 		lm.checkStartupTimeout()
 
 		if req, ok := lm.nextRequest(); ok {
@@ -340,8 +409,8 @@ func (lm *lifecycleManager) run() {
 		if lm.shouldAutoStart() {
 			lm.execute(lifecycleRequest{
 				Request: Request{
-					Kind:     ActionStart,
-					Reason:   "auto-start",
+					Kind:      ActionStart,
+					Reason:    "auto-start",
 					RequestID: fmt.Sprintf("auto-%d", reqCounter.Add(1)),
 				},
 				acceptedAt: time.Now(),
@@ -362,6 +431,7 @@ func (lm *lifecycleManager) shouldAutoStart() bool {
 	return lm.phase == LifecycleStopped &&
 		FactAutoStart &&
 		!DoUpdateFactorio &&
+		!DoModOperation &&
 		lm.hooks.LaunchFactorio != nil &&
 		(lm.hooks.WithinHours == nil || lm.hooks.WithinHours())
 }
@@ -393,6 +463,9 @@ func (lm *lifecycleManager) nextRequest() (lifecycleRequest, bool) {
 }
 
 func (lm *lifecycleManager) requestRunnableLocked(req lifecycleRequest) bool {
+	if (DoUpdateFactorio || DoModOperation) && req.Kind != ActionStop {
+		return false
+	}
 	if req.WhenEmpty && lm.phase != LifecycleStopped && NumPlayers > 0 {
 		return false
 	}
@@ -416,9 +489,109 @@ func actionPriority(kind ActionKind) int {
 	}
 }
 
+func lifecycleOperationTitle(kind ActionKind) string {
+	switch kind {
+	case ActionStart:
+		return "Starting Factorio"
+	case ActionStop:
+		return "Stopping Factorio"
+	case ActionRestartFactorio:
+		return "Restarting Factorio"
+	case ActionRestartChatWire:
+		return "Restarting ChatWire"
+	case ActionChangeMap:
+		return "Changing Map"
+	case ActionMapReset:
+		return "Resetting Map"
+	default:
+		return "Operation"
+	}
+}
+
+func lifecycleOperationDescriptionForKind(kind ActionKind, saveName string) string {
+	switch kind {
+	case ActionStart:
+		return "Starting Factorio. This may take a while while mods and the map load."
+	case ActionStop:
+		return "Stopping Factorio. Waiting for save and shutdown."
+	case ActionRestartFactorio:
+		return "Restarting Factorio. Waiting for a clean stop before starting again."
+	case ActionRestartChatWire:
+		return "Restarting ChatWire. Waiting for Factorio to stop cleanly first."
+	case ActionChangeMap:
+		if saveName != "" {
+			return fmt.Sprintf("Changing map to %s. Waiting for Factorio to stop cleanly, then loading the selected map.", saveName)
+		}
+		return "Changing map. Waiting for Factorio to stop cleanly, then loading the selected map."
+	case ActionMapReset:
+		return "Resetting the map. Waiting for Factorio to stop cleanly, then archiving and generating a fresh map."
+	default:
+		return "Operation in progress."
+	}
+}
+
+func (lm *lifecycleManager) beginOperation(req lifecycleRequest) {
+	title := lifecycleOperationTitle(req.Kind)
+	description := lifecycleOperationDescriptionForKind(req.Kind, req.SaveName)
+	token := BeginOperation(title, description)
+
+	lm.mu.Lock()
+	lm.operationToken = token
+	lm.operationKind = req.Kind
+	lm.operationSaveName = req.SaveName
+	lm.mu.Unlock()
+}
+
+func (lm *lifecycleManager) refreshOperationAnnouncement() {
+	lm.mu.Lock()
+	token := lm.operationToken
+	kind := lm.operationKind
+	saveName := lm.operationSaveName
+	lm.mu.Unlock()
+	if token == "" || kind == "" {
+		return
+	}
+	UpdateOperation(token, lifecycleOperationTitle(kind), lifecycleOperationDescriptionForKind(kind, saveName), glob.COLOR_CYAN)
+}
+
+func (lm *lifecycleManager) finishOperationSuccess(description string, color int) {
+	lm.mu.Lock()
+	token := lm.operationToken
+	title := lifecycleOperationTitle(lm.operationKind)
+	lm.operationToken = ""
+	lm.operationKind = ""
+	lm.operationSaveName = ""
+	lm.mu.Unlock()
+	CompleteOperation(token, title, description, color)
+}
+
+func (lm *lifecycleManager) finishOperationError(err error) {
+	if err == nil {
+		return
+	}
+	lm.mu.Lock()
+	token := lm.operationToken
+	title := lifecycleOperationTitle(lm.operationKind)
+	lm.operationToken = ""
+	lm.operationKind = ""
+	lm.operationSaveName = ""
+	lm.mu.Unlock()
+	FailOperation(token, title, err.Error(), glob.COLOR_RED)
+}
+
+func (lm *lifecycleManager) updateOperationProgress(description string) {
+	lm.mu.Lock()
+	token := lm.operationToken
+	title := lifecycleOperationTitle(lm.operationKind)
+	lm.mu.Unlock()
+	UpdateOperationProgress(token, title, description, glob.COLOR_CYAN)
+}
+
 func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	started := time.Now()
 	var err error
+
+	lm.beginOperation(req)
 
 	switch req.Kind {
 	case ActionStart:
@@ -468,6 +641,17 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	lm.syncCompatibilityLocked()
 	lm.mu.Unlock()
 
+	if err != nil {
+		lm.finishOperationError(err)
+	} else {
+		switch req.Kind {
+		case ActionStop:
+			lm.finishOperationSuccess("Factorio is now offline.", glob.COLOR_RED)
+		case ActionRestartChatWire:
+			lm.finishOperationSuccess("Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
+		}
+	}
+
 	if req.done != nil {
 		req.done <- err
 	}
@@ -480,6 +664,11 @@ func (lm *lifecycleManager) executeStart(reason string) error {
 		lm.mu.Unlock()
 		return nil
 	}
+	if DoUpdateFactorio || DoModOperation {
+		lm.currentAction = ""
+		lm.mu.Unlock()
+		return errors.New("factorio update or mod operation is in progress")
+	}
 	if lm.hooks.WithinHours != nil && !lm.hooks.WithinHours() {
 		lm.currentAction = ""
 		lm.mu.Unlock()
@@ -488,6 +677,8 @@ func (lm *lifecycleManager) executeStart(reason string) error {
 	lm.phase = LifecycleStarting
 	lm.phaseSince = time.Now()
 	lm.startedAt = lm.phaseSince
+	lm.lastProgressAt = lm.phaseSince
+	lm.lastProgressKind = "spawn"
 	lm.readyAt = time.Time{}
 	lm.booted = false
 	lm.currentPID = 0
@@ -532,6 +723,8 @@ func (lm *lifecycleManager) executeStop(reason string) error {
 	}
 	lm.phase = LifecycleStopping
 	lm.phaseSince = time.Now()
+	lm.lastProgressAt = lm.phaseSince
+	lm.lastProgressKind = "stop-requested"
 	gen := lm.currentGeneration
 	booted := lm.booted
 	lm.syncCompatibilityLocked()
@@ -588,6 +781,19 @@ func (lm *lifecycleManager) waitForStop(generation uint64, timeout time.Duration
 	goodbyeSeen := false
 
 	for {
+		lm.mu.Lock()
+		lastProgressAt := lm.lastProgressAt
+		lastProgressKind := lm.lastProgressKind
+		lm.mu.Unlock()
+		if lastProgressKind == "save" && !lastProgressAt.IsZero() {
+			if saveDeadline := lastProgressAt.Add(lifecycleStopSaveTimeout); saveDeadline.After(deadline) {
+				deadline = saveDeadline
+			}
+		} else if shouldExtendStopDeadline(lastProgressKind) && !lastProgressAt.IsZero() {
+			if progressDeadline := lastProgressAt.Add(lifecycleStopIdleTimeout); progressDeadline.After(deadline) {
+				deadline = progressDeadline
+			}
+		}
 		if allowGoodbye && goodbyeSeen && !lifecycleProcessAlive() {
 			lm.finalizeStopped(generation, nil, true)
 			return true
@@ -616,8 +822,19 @@ func (lm *lifecycleManager) waitForStop(generation uint64, timeout time.Duration
 			if gen == generation {
 				lm.handleReadyEvent(gen)
 			}
+		case evt := <-lm.progressCh:
+			lm.handleProgressEvent(evt)
 		case <-time.After(lifecycleStopPollInterval):
 		}
+	}
+}
+
+func shouldExtendStopDeadline(kind string) bool {
+	switch kind {
+	case "", "stop-requested", "spawn":
+		return false
+	default:
+		return true
 	}
 }
 
@@ -630,17 +847,100 @@ func (lm *lifecycleManager) drainAsyncEvents() {
 			lm.handleGoodbyeEvent(gen)
 		case evt := <-lm.exitCh:
 			lm.handleExitEvent(evt)
+		case evt := <-lm.progressCh:
+			lm.handleProgressEvent(evt)
+		case evt := <-lm.healthCh:
+			lm.handleHealthEvent(evt)
 		default:
 			return
 		}
 	}
 }
 
+func (lm *lifecycleManager) handleProgressEvent(evt lifecycleProgressEvent) {
+	lm.mu.Lock()
+	if evt.generation != lm.currentGeneration || evt.generation == 0 {
+		lm.mu.Unlock()
+		return
+	}
+	lm.lastProgressAt = evt.at
+	lm.lastProgressKind = evt.kind
+	opKind := lm.operationKind
+	saveName := lm.operationSaveName
+	lm.mu.Unlock()
+
+	cwlog.DoLogCW("lifecycle: progress observed generation=%d kind=%s", evt.generation, evt.kind)
+
+	switch evt.kind {
+	case "mod-load":
+		lm.updateOperationProgress("Factorio is loading mods. Large modpacks can take a while to finish.")
+	case "map-load":
+		if opKind == ActionChangeMap && saveName != "" {
+			lm.updateOperationProgress(fmt.Sprintf("Factorio is loading the new map: %s.", saveName))
+		} else {
+			lm.updateOperationProgress("Factorio is loading the map.")
+		}
+	case "save":
+		lm.updateOperationProgress("Factorio is saving the map before shutdown.")
+	case "rcon-ready":
+		lm.updateOperationProgress("Factorio finished loading and is bringing the server online.")
+	}
+}
+
+func (lm *lifecycleManager) handleHealthEvent(evt lifecycleHealthEvent) {
+	if evt.generation == 0 {
+		return
+	}
+
+	shouldSignal := false
+
+	lm.mu.Lock()
+	if evt.generation != lm.currentGeneration {
+		lm.mu.Unlock()
+		return
+	}
+	if evt.err != "" {
+		lm.lastError = evt.err
+	}
+	phase := lm.phase
+	if phase == LifecycleStopping || phase == LifecycleStopped {
+		lm.mu.Unlock()
+		cwlog.DoLogCW("lifecycle: health event ignored generation=%d phase=%s kind=%s err=%q", evt.generation, phase, evt.kind, evt.err)
+		return
+	}
+	if !lifecycleProcessAlive() {
+		lm.mu.Unlock()
+		cwlog.DoLogCW("lifecycle: health event observed generation=%d kind=%s err=%q process_alive=false", evt.generation, evt.kind, evt.err)
+		lm.finishOperationError(errors.New(evt.kind))
+		lm.finalizeStopped(evt.generation, errors.New(evt.kind), true)
+		return
+	}
+	if !lm.healthRestartQueued {
+		lm.queue = append(lm.queue, lifecycleRequest{
+			Request: Request{
+				Kind:      ActionRestartFactorio,
+				Reason:    fmt.Sprintf("Factorio health issue detected (%s): %s", evt.kind, evt.err),
+				RequestID: fmt.Sprintf("health-%d-%s", evt.generation, evt.kind),
+			},
+			acceptedAt: time.Now(),
+		})
+		lm.healthRestartQueued = true
+		lm.syncCompatibilityLocked()
+		shouldSignal = true
+	}
+	lm.mu.Unlock()
+
+	cwlog.DoLogCW("lifecycle: health event observed generation=%d kind=%s err=%q process_alive=true", evt.generation, evt.kind, evt.err)
+	lm.updateOperationProgress(fmt.Sprintf("Detected a Factorio health issue (%s). A controlled restart has been queued.", evt.kind))
+	if shouldSignal {
+		lm.signal()
+	}
+}
+
 func (lm *lifecycleManager) handleReadyEvent(generation uint64) {
 	lm.mu.Lock()
-	defer lm.mu.Unlock()
-
 	if generation != lm.currentGeneration || lm.phase != LifecycleStarting {
+		lm.mu.Unlock()
 		return
 	}
 
@@ -656,6 +956,27 @@ func (lm *lifecycleManager) handleReadyEvent(generation uint64) {
 	DoUpdateChannelNameForce()
 	glob.CrashLoopCount = 0
 	cwlog.DoLogCW("lifecycle: ready observed generation=%d ready_elapsed=%v", generation, lm.readyAt.Sub(lm.startedAt).Round(time.Millisecond))
+
+	token := lm.operationToken
+	kind := lm.operationKind
+	saveName := lm.operationSaveName
+	lm.operationToken = ""
+	lm.operationKind = ""
+	lm.operationSaveName = ""
+	lm.mu.Unlock()
+
+	switch kind {
+	case ActionStart, ActionRestartFactorio:
+		CompleteOperation(token, lifecycleOperationTitle(kind), "Factorio is now online.", glob.COLOR_GREEN)
+	case ActionChangeMap:
+		desc := "Map change complete. Factorio is now online."
+		if saveName != "" {
+			desc = fmt.Sprintf("Map change to %s complete. Factorio is now online.", saveName)
+		}
+		CompleteOperation(token, lifecycleOperationTitle(kind), desc, glob.COLOR_GREEN)
+	case ActionMapReset:
+		CompleteOperation(token, lifecycleOperationTitle(kind), "Map reset complete. Factorio is now online.", glob.COLOR_GREEN)
+	}
 }
 
 func (lm *lifecycleManager) handleGoodbyeEvent(generation uint64) {
@@ -676,21 +997,29 @@ func (lm *lifecycleManager) handleExitEvent(evt processExitEvent) {
 
 func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, report bool) {
 	lm.mu.Lock()
-	defer lm.mu.Unlock()
-
 	if generation != lm.currentGeneration && generation != 0 {
+		lm.mu.Unlock()
 		return
 	}
 
 	wasStarting := lm.phase == LifecycleStarting
 	startedAt := lm.startedAt
 	stoppedAfter := time.Since(lm.phaseSince).Round(time.Millisecond)
+	opToken := lm.operationToken
+	opKind := lm.operationKind
+	opSaveName := lm.operationSaveName
 
 	lm.phase = LifecycleStopped
 	lm.phaseSince = time.Now()
 	lm.booted = false
 	lm.startedAt = time.Time{}
 	lm.readyAt = time.Time{}
+	lm.lastProgressAt = time.Time{}
+	lm.lastProgressKind = ""
+	lm.healthRestartQueued = false
+	lm.operationToken = ""
+	lm.operationKind = ""
+	lm.operationSaveName = ""
 	lm.currentPID = 0
 	lm.currentAction = ""
 	if exitErr != nil && !strings.Contains(exitErr.Error(), "signal: killed") {
@@ -731,22 +1060,89 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	}
 
 	cwlog.DoLogCW("lifecycle: process exit observed generation=%d stop_elapsed=%v", generation, stoppedAfter)
+	lm.mu.Unlock()
+
+	if opToken != "" && exitErr == nil {
+		switch opKind {
+		case ActionStop:
+			CompleteOperation(opToken, lifecycleOperationTitle(opKind), "Factorio is now offline.", glob.COLOR_RED)
+		case ActionRestartChatWire:
+			CompleteOperation(opToken, lifecycleOperationTitle(opKind), "Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
+		}
+	}
+	if opToken != "" && (wasStarting || exitErr != nil) {
+		desc := "Factorio stopped unexpectedly."
+		if wasStarting {
+			desc = "Factorio stopped before startup completed."
+		}
+		if exitErr != nil && !strings.Contains(exitErr.Error(), "signal: killed") {
+			desc = exitErr.Error()
+		}
+		if opKind == ActionChangeMap && opSaveName != "" && wasStarting {
+			desc = fmt.Sprintf("Map change to %s did not complete.", opSaveName)
+		}
+		FailOperation(opToken, lifecycleOperationTitle(opKind), desc, glob.COLOR_RED)
+	}
 }
 
 func (lm *lifecycleManager) checkStartupTimeout() {
 	lm.mu.Lock()
-	if lm.phase != LifecycleStarting || lm.startedAt.IsZero() || time.Since(lm.startedAt) <= constants.FactorioStartupTimeout {
+	if lm.phase != LifecycleStarting || lm.startedAt.IsZero() {
 		lm.mu.Unlock()
 		return
 	}
+	startedAt := lm.startedAt
+	lastProgressAt := lm.lastProgressAt
+	lastProgressKind := lm.lastProgressKind
 	lm.mu.Unlock()
 
-	cwlog.DoLogCW("lifecycle: startup timeout hit after %v", constants.FactorioStartupTimeout)
+	now := time.Now()
+	if now.Sub(startedAt) <= lifecycleStartupHardTimeout {
+		progressRef := startedAt
+		if !lastProgressAt.IsZero() {
+			progressRef = lastProgressAt
+		}
+		if now.Sub(progressRef) <= lifecycleStartupIdleTimeout {
+			return
+		}
+		cwlog.DoLogCW("lifecycle: startup idle timeout hit after %v without progress (last=%s)", lifecycleStartupIdleTimeout, lastProgressKind)
+	} else {
+		cwlog.DoLogCW("lifecycle: startup hard timeout hit after %v", lifecycleStartupHardTimeout)
+	}
+	lm.finishOperationError(fmt.Errorf("Factorio startup timed out after %v (last progress: %s)", now.Sub(startedAt).Round(time.Second), lastProgressKind))
 	_ = SubmitLifecycleRequest(Request{
-		Kind:     ActionRestartFactorio,
-		Reason:   fmt.Sprintf("Factorio startup exceeded %v; forcing restart.", constants.FactorioStartupTimeout),
+		Kind:      ActionRestartFactorio,
+		Reason:    fmt.Sprintf("Factorio startup timed out after %v (last progress: %s); forcing restart.", now.Sub(startedAt).Round(time.Second), lastProgressKind),
 		RequestID: fmt.Sprintf("startup-timeout-%d", reqCounter.Add(1)),
 	})
+}
+
+func (lm *lifecycleManager) reconcileProcessHealth() {
+	lm.mu.Lock()
+	phase := lm.phase
+	generation := lm.currentGeneration
+	currentPID := lm.currentPID
+	lm.mu.Unlock()
+
+	if phase == LifecycleStopped || generation == 0 {
+		return
+	}
+
+	if !lifecycleProcessAlive() {
+		cwlog.DoLogCW("lifecycle: process health reconciliation observed missing process generation=%d pid=%d phase=%s", generation, currentPID, phase)
+		lm.finalizeStopped(generation, errors.New("factorio process no longer alive"), true)
+		return
+	}
+
+	if (phase == LifecycleStarting || phase == LifecycleRunning) && !hasFactorioPipe() {
+		NotifyFactorioHealth("stdin-missing", errors.New("factorio stdin pipe is not available"))
+	}
+}
+
+func hasFactorioPipe() bool {
+	PipeLock.Lock()
+	defer PipeLock.Unlock()
+	return Pipe != nil
 }
 
 func isCurrentFactorioProcessAlive() bool {

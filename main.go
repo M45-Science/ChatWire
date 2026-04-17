@@ -40,10 +40,14 @@ func main() {
 	glob.LocalTestMode = flag.Bool("localTest", false, "Disable public/auth mode for testing")
 	glob.NoAutoLaunch = flag.Bool("noAutoLaunch", false, "Disable auto-launch")
 	glob.NoDiscord = flag.Bool("noDiscord", false, "Disable Discord")
+	runtimeSelfTest := flag.String("runtimeSelfTest", "", "Run runtime self-test cases (comma-separated), then exit. Example: start,restart,stop,change-map,update-check,chatwire-reboot")
+	runtimeSelfTestTimeout := flag.Duration("runtimeSelfTestTimeout", 5*time.Minute, "Per-step timeout for runtime self-test.")
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
 	flag.Parse()
+
+	runtimeTestMode := strings.TrimSpace(*runtimeSelfTest) != ""
 
 	/* Start cw logs */
 	cwlog.StartCWLog()
@@ -78,10 +82,20 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
+	runtimeChatWireExitCh := make(chan bool, 1)
+	exitHook := fact.DoExit
+	if runtimeTestMode {
+		exitHook = func(delay bool) {
+			select {
+			case runtimeChatWireExitCh <- delay:
+			default:
+			}
+		}
+	}
 	fact.StartLifecycleManager(fact.LifecycleHooks{
 		LaunchFactorio: support.LaunchFactorio,
 		WithinHours:    support.WithinHours,
-		ExitChatWire:   fact.DoExit,
+		ExitChatWire:   exitHook,
 	})
 	if !*glob.NoDiscord {
 		go support.MainLoops()
@@ -89,13 +103,28 @@ func main() {
 	}
 
 	//If autolaunch is off, get current factorio version
-	if cfg.Local.Options.AutoStart && !*glob.NoAutoLaunch {
+	if runtimeTestMode {
+		fact.SetAutolaunch(false, false)
+	} else if cfg.Local.Options.AutoStart && !*glob.NoAutoLaunch {
 		fact.SetAutolaunch(true, false)
 	} else if *glob.NoAutoLaunch {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 		factUpdater.GetFactorioVersion(info)
 		fact.FactorioVersion = info.VersInt.IntToString()
 		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
+	}
+
+	if runtimeTestMode {
+		err := runRuntimeSelfTest(*runtimeSelfTest, *runtimeSelfTestTimeout, runtimeChatWireExitCh)
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Runtime self-test cleanup."})
+		fact.WaitFactQuit(false)
+		fact.DoExit(false)
+		if err != nil {
+			cwlog.DoLogCW("Runtime self-test failed: %v", err)
+			os.Exit(1)
+		}
+		cwlog.DoLogCW("Runtime self-test completed successfully.")
+		return
 	}
 
 	usr1c := make(chan os.Signal, 1)

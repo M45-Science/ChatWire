@@ -3,6 +3,7 @@ package watcher
 import (
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 )
@@ -17,7 +18,8 @@ func TestWatchCreationEvent(t *testing.T) {
 
 	running := true
 	done := make(chan struct{})
-	go Watch(path, 5*time.Millisecond, &running, func() { close(done) })
+	var once sync.Once
+	go Watch(path, 5*time.Millisecond, &running, func() { once.Do(func() { close(done) }) })
 
 	// Give watcher time to start and attempt the first stat.
 	time.Sleep(20 * time.Millisecond)
@@ -54,7 +56,8 @@ func TestWatchModificationEvent(t *testing.T) {
 
 	running := true
 	done := make(chan struct{})
-	go Watch(path, 5*time.Millisecond, &running, func() { close(done) })
+	var once sync.Once
+	go Watch(path, 5*time.Millisecond, &running, func() { once.Do(func() { close(done) }) })
 
 	// Allow watcher to record initial state.
 	time.Sleep(20 * time.Millisecond)

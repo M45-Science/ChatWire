@@ -89,6 +89,18 @@ go test ./...
 These are the same checks executed by the CI pipeline.
 Some integration tests connect to Discord. Set CW_TEST_TOKEN, CW_TEST_GUILD and CW_TEST_APP to enable them.
 
+### RecentChanges
+
+- Factorio lifecycle handling was refactored behind a single controller that owns start, stop, restart, map change, map reset, update, and ChatWire reboot transitions.
+- Startup and shutdown now use progress-aware time limits. Long mod loads, map loads, save operations, and sync-mod activity extend timeouts only when logs show real progress.
+- Process health detection was tightened. Broken stdin pipes, closed stdout, and missing child-process state now feed lifecycle health events and can trigger a controlled restart or immediate transition to `stopped`.
+- Long-running operations now use a single delayed status message in Discord. If an operation finishes quickly, nothing is posted. If it runs longer than a few seconds, one message is shown and edited in place for progress, completion, or failure.
+- Added runtime self-test flags:
+  - `-runtimeSelfTest`
+  - `-runtimeSelfTestTimeout`
+  These can exercise lifecycle actions such as start, stop, restart, change-map, map-reset, update-check, update-install, mod-update-check, sync-mods, and chatwire-reboot.
+- Test coverage was expanded across lifecycle sequencing, timeout behavior, health-event handling, parser behavior, command busy handling, and watcher stability.
+
 ### Regenerating configuration
 
 If you need to reset the configuration files, delete `cw-local-config.json` and `../cw-global-config.json` and start ChatWire again. Fresh copies will be generated automatically. You can also reload the configs at runtime using the `ReloadConfig` moderator command.

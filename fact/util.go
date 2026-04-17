@@ -409,6 +409,7 @@ func WriteFact(format string, args ...interface{}) {
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
 			cwlog.DoLogCW("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input)
+			NotifyFactorioHealth(classifyFactorioPipeError(err), err)
 			NotifyFactorioGoodbye()
 			if glob.FactorioCancel != nil {
 				glob.FactorioCancel()
@@ -416,9 +417,32 @@ func WriteFact(format string, args ...interface{}) {
 			return
 		}
 	} else {
-		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
+		NotifyFactorioHealth("stdin-missing", errors.New("factorio stdin pipe is nil"))
 		NotifyFactorioGoodbye()
 		return
+	}
+}
+
+func classifyFactorioPipeError(err error) string {
+	if err == nil {
+		return "stdin-write-failed"
+	}
+	switch {
+	case errors.Is(err, io.ErrClosedPipe):
+		return "stdin-closed"
+	case errors.Is(err, os.ErrClosed):
+		return "stdin-closed"
+	}
+	lowerErr := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(lowerErr, "broken pipe"):
+		return "stdin-broken-pipe"
+	case strings.Contains(lowerErr, "file already closed"):
+		return "stdin-closed"
+	case strings.Contains(lowerErr, "closed pipe"):
+		return "stdin-closed"
+	default:
+		return "stdin-write-failed"
 	}
 }
 

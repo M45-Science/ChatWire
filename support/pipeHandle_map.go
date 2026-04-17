@@ -22,6 +22,7 @@ func handleMapLoad(input *handleData) bool {
 	 * MAP LOAD
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Loading map") {
+		fact.NotifyFactorioProgress("map-load")
 		cwlog.DoLogCW(input.noTimecode)
 
 		/* Strip file path */
@@ -52,6 +53,7 @@ func handleSaveMsg(input *handleData) bool {
 	 * CAPTURE SAVE MESSAGES
 	 *************************/
 	if strings.HasPrefix(input.noTimecode, "Info AppManager") && strings.Contains(input.noTimecode, "Saving to") {
+		fact.NotifyFactorioProgress("save")
 		if !cfg.Local.Options.HideAutosaves {
 			savreg := regexp.MustCompile(`Info AppManager.cpp:\d+: Saving to _(autosave\d+)`)
 			savmatch := savreg.FindStringSubmatch(input.noTimecode)
@@ -76,6 +78,7 @@ func handleExitSave(input *handleData) bool {
 	 * CAPTURE MAP NAME, ON EXIT
 	 *****************************/
 	if strings.HasPrefix(input.noTimecode, "Info MainLoop") && strings.Contains(input.noTimecode, "Saving map as") {
+		fact.NotifyFactorioProgress("save")
 		cwlog.DoLogCW(input.noTimecode)
 
 		/* Strip file path */

@@ -36,6 +36,7 @@ var (
 	FactorioBooted   = false
 	FactorioBootedAt time.Time
 	DoUpdateFactorio = false
+	DoModOperation   = false
 
 	/* Factorio autostart */
 	FactAutoStart = false

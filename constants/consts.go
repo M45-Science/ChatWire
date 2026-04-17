@@ -86,9 +86,15 @@ const (
 
 	/* Factorio launch/stop robustness */
 	FactorioStartupTimeout        = 5 * time.Minute
+	FactorioStartupIdleTimeout    = 2 * time.Minute
+	FactorioStartupHardTimeout    = 15 * time.Minute
 	FactorioStdoutChannelCapacity = 8192
+	FactorioStopIdleTimeout       = 20 * time.Second
+	FactorioStopSaveTimeout       = 3 * time.Minute
 	FactorioStopInterruptTimeout  = 20 * time.Second
 	FactorioStopKillTimeout       = 5 * time.Second
+	SyncModsIdleTimeout           = 60 * time.Second
+	SyncModsHardTimeout           = 30 * time.Minute
 
 	/* How often to check if Factorio server is alive */
 	WatchdogInterval = time.Second

@@ -252,7 +252,11 @@ func LaunchFactorio(generation uint64) error {
 		}
 		if err := scanner.Err(); err != nil {
 			cwlog.DoLogCW("Factorio stdout scan error: %v", err)
+			fact.NotifyFactorioHealth("stdout-scan-error", err)
+			return
 		}
+		cwlog.DoLogCW("Factorio stdout stream closed.")
+		fact.NotifyFactorioHealth("stdout-closed", nil)
 	}(stdout, fact.GameLineCh)
 	go func() {
 		err := cmd.Wait()
