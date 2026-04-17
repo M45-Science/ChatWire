@@ -48,23 +48,85 @@ func BeginOperation(title, description string) string {
 		startedAt:   time.Now(),
 	}
 	operationStatusLock.Unlock()
-
 	go func(tok, ttl, desc string) {
 		time.Sleep(operationAnnounceDelay)
-		UpdateOperation(tok, ttl, desc, glob.COLOR_CYAN)
+		AnnouncePendingOperation(tok, glob.COLOR_CYAN)
 	}(token, title, description)
 	return token
 }
 
 func UpdateOperation(token, title, description string, color int) {
-	updateOperation(token, title, description, color, false)
+	updateOperation(token, title, description, color, false, false)
+}
+
+func AnnouncePendingOperation(token string, color int) {
+	if token == "" {
+		return
+	}
+
+	operationStatusLock.Lock()
+	if token != operationStatus.token || operationStatus.announced {
+		operationStatusLock.Unlock()
+		return
+	}
+	if time.Since(operationStatus.startedAt) < operationAnnounceDelay {
+		operationStatusLock.Unlock()
+		return
+	}
+	title := operationStatus.title
+	description := operationStatus.description
+	operationStatus.announced = true
+	operationStatusLock.Unlock()
+
+	cwlog.DoLogCW("%s: %s", title, description)
+	if cfg.Local.Channel.ChatChannel != "" {
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+	}
+}
+
+func AnnounceOperationNow(token, title, description string, color int) {
+	updateOperation(token, title, description, color, false, true)
 }
 
 func UpdateOperationProgress(token, title, description string, color int) {
-	updateOperation(token, title, description, color, true)
+	updateOperation(token, title, description, color, true, false)
 }
 
-func updateOperation(token, title, description string, color int, throttled bool) {
+func UpdateOperationProgressDelayed(token, title, description string, color int, delay time.Duration) {
+	title = strings.TrimSpace(title)
+	description = strings.TrimSpace(description)
+	if token == "" || title == "" || description == "" {
+		return
+	}
+	if delay <= 0 {
+		UpdateOperationProgress(token, title, description, color)
+		return
+	}
+
+	operationStatusLock.Lock()
+	if token != operationStatus.token {
+		operationStatusLock.Unlock()
+		return
+	}
+	operationStatus.title = title
+	operationStatus.description = description
+	operationStatusLock.Unlock()
+
+	go func(tok, ttl, desc string, wait time.Duration) {
+		time.Sleep(wait)
+
+		operationStatusLock.Lock()
+		if tok != operationStatus.token || operationStatus.title != ttl || operationStatus.description != desc {
+			operationStatusLock.Unlock()
+			return
+		}
+		operationStatusLock.Unlock()
+
+		UpdateOperationProgress(tok, ttl, desc, color)
+	}(token, title, description, delay)
+}
+
+func updateOperation(token, title, description string, color int, throttled bool, force bool) {
 	title = strings.TrimSpace(title)
 	description = strings.TrimSpace(description)
 	if token == "" || title == "" || description == "" {
@@ -78,7 +140,7 @@ func updateOperation(token, title, description string, color int, throttled bool
 	}
 
 	now := time.Now()
-	if !operationStatus.announced && now.Sub(operationStatus.startedAt) < operationAnnounceDelay {
+	if !force && !operationStatus.announced && now.Sub(operationStatus.startedAt) < operationAnnounceDelay {
 		operationStatus.title = title
 		operationStatus.description = description
 		operationStatusLock.Unlock()
@@ -112,6 +174,10 @@ func CompleteOperation(token, title, description string, color int) {
 
 func FailOperation(token, title, description string, color int) {
 	finalizeOperation(token, title, description, color)
+}
+
+func CancelOperation(token string) {
+	finalizeOperation(token, "", "", 0)
 }
 
 func finalizeOperation(token, title, description string, color int) {

@@ -274,8 +274,8 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 	//Only on first connect
 	if !support.BotIsReady {
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN))
-		if fact.FactIsRunning || fact.FactorioBooted {
-			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "Factorio "+fact.FactorioVersion+" is online.", glob.COLOR_GREEN))
+		if (fact.FactIsRunning || fact.FactorioBooted) && fact.FactorioVersion != "" && fact.FactorioVersion != constants.Unknown {
+			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "🟢 Factorio "+fact.FactorioVersion+" is online.", glob.COLOR_GREEN))
 		}
 	}
 

@@ -144,17 +144,11 @@ func SmartWriteDiscordEmbed(ch string, embed *discordgo.MessageEmbed) *discordgo
 }
 
 func formatStatusMessage(title, description string) string {
-	title = strings.TrimSpace(title)
 	description = strings.TrimSpace(description)
-
-	switch {
-	case title == "":
+	if description != "" {
 		return description
-	case description == "":
-		return title
-	default:
-		return title + ": " + description
 	}
+	return strings.TrimSpace(title)
 }
 
 // SmartEditDiscordEmbed is kept for compatibility with existing status call sites.

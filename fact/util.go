@@ -28,8 +28,37 @@ import (
 )
 
 const (
-	MaxZipSize = 1024 * 1024 * 1024 //1gb
+	MaxZipSize                  = 1024 * 1024 * 1024 //1gb
+	factorioReadyVersionTimeout = 3 * time.Second
+	factorioReadyVersionPoll    = 100 * time.Millisecond
 )
+
+func factorioReadyStatusKnown() bool {
+	return strings.TrimSpace(FactorioVersion) != "" && !strings.EqualFold(FactorioVersion, constants.Unknown)
+}
+
+func factorioReadyStatus() string {
+	if !factorioReadyStatusKnown() {
+		return "🟢 Factorio is online."
+	}
+	return "🟢 Factorio " + FactorioVersion + " is online."
+}
+
+func waitForFactorioReadyStatus(timeout time.Duration) string {
+	if factorioReadyStatusKnown() || timeout <= 0 {
+		return factorioReadyStatus()
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		time.Sleep(factorioReadyVersionPoll)
+		if factorioReadyStatusKnown() {
+			return factorioReadyStatus()
+		}
+	}
+
+	return factorioReadyStatus()
+}
 
 var (
 	lastBanName     string
@@ -207,11 +236,12 @@ func SetFactRunning(run, report bool) {
 		}
 		if report {
 			if run {
-				cwlog.DoLogGame("Factorio " + FactorioVersion + " is now online.")
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "Factorio "+FactorioVersion+" is now online.", glob.COLOR_GREEN))
+				readyMsg := waitForFactorioReadyStatus(factorioReadyVersionTimeout)
+				cwlog.DoLogGame(readyMsg)
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", readyMsg, glob.COLOR_GREEN))
 			} else {
 				cwlog.DoLogCW("Factorio has closed.")
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "Factorio is now offline.", glob.COLOR_RED))
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "🔴 Factorio is now offline.", glob.COLOR_RED))
 			}
 		}
 		UpdateChannelName()

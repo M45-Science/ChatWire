@@ -23,7 +23,6 @@ func LaunchFactorio(generation uint64) error {
 	fact.SetLastBan("")
 
 	waitForDiscord()
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Launching Factorio...", glob.COLOR_GREEN))
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
@@ -124,11 +123,6 @@ func LaunchFactorio(generation uint64) error {
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly || cfg.Local.Options.CustomWhitelist {
 		tempargs = append(tempargs, "--use-server-whitelist")
 		tempargs = append(tempargs, "true")
-	}
-
-	modFiles := GetModFiles()
-	if len(modFiles) > 0 {
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", "Loading mods...", glob.COLOR_GREEN))
 	}
 
 	/* Inject softmod */

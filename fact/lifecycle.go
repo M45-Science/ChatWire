@@ -78,6 +78,8 @@ type lifecycleProgressEvent struct {
 	at         time.Time
 }
 
+const lifecycleOptionalProgressDelay = 3 * time.Second
+
 type lifecycleHealthEvent struct {
 	generation uint64
 	kind       string
@@ -543,23 +545,27 @@ func lifecycleOperationTitle(kind ActionKind) string {
 func lifecycleOperationDescriptionForKind(kind ActionKind, saveName string) string {
 	switch kind {
 	case ActionStart:
-		return "Starting Factorio. This may take a while while mods and the map load."
+		return "Starting Factorio."
 	case ActionStop:
-		return "Stopping Factorio. Waiting for save and shutdown."
+		return "Stopping Factorio."
 	case ActionRestartFactorio:
-		return "Restarting Factorio. Waiting for a clean stop before starting again."
+		return "Restarting Factorio."
 	case ActionRestartChatWire:
-		return "Restarting ChatWire. Waiting for Factorio to stop cleanly first."
+		return "Restarting ChatWire."
 	case ActionChangeMap:
 		if saveName != "" {
-			return fmt.Sprintf("Changing map to %s. Waiting for Factorio to stop cleanly, then loading the selected map.", saveName)
+			return fmt.Sprintf("Changing map to %s.", saveName)
 		}
-		return "Changing map. Waiting for Factorio to stop cleanly, then loading the selected map."
+		return "Changing map."
 	case ActionMapReset:
-		return "Resetting the map. Waiting for Factorio to stop cleanly, then archiving and generating a fresh map."
+		return "Resetting map."
 	default:
 		return "Operation in progress."
 	}
+}
+
+func shouldAnnounceOperationStart(kind ActionKind) bool {
+	return true
 }
 
 func (lm *lifecycleManager) beginOperation(req lifecycleRequest) {
@@ -572,6 +578,10 @@ func (lm *lifecycleManager) beginOperation(req lifecycleRequest) {
 	lm.operationKind = req.Kind
 	lm.operationSaveName = req.SaveName
 	lm.mu.Unlock()
+
+	if shouldAnnounceOperationStart(req.Kind) {
+		AnnounceOperationNow(token, title, description, glob.COLOR_CYAN)
+	}
 }
 
 func (lm *lifecycleManager) refreshOperationAnnouncement() {
@@ -617,6 +627,14 @@ func (lm *lifecycleManager) updateOperationProgress(description string) {
 	title := lifecycleOperationTitle(lm.operationKind)
 	lm.mu.Unlock()
 	UpdateOperationProgress(token, title, description, glob.COLOR_CYAN)
+}
+
+func (lm *lifecycleManager) updateOperationProgressDelayed(description string, delay time.Duration) {
+	lm.mu.Lock()
+	token := lm.operationToken
+	title := lifecycleOperationTitle(lm.operationKind)
+	lm.mu.Unlock()
+	UpdateOperationProgressDelayed(token, title, description, glob.COLOR_CYAN, delay)
 }
 
 func (lm *lifecycleManager) execute(req lifecycleRequest) {
@@ -678,7 +696,7 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	} else {
 		switch req.Kind {
 		case ActionStop:
-			lm.finishOperationSuccess("Factorio is now offline.", glob.COLOR_RED)
+			lm.finishOperationSuccess("🔴 Factorio is now offline.", glob.COLOR_RED)
 		case ActionRestartChatWire:
 			lm.finishOperationSuccess("Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
 		}
@@ -905,17 +923,17 @@ func (lm *lifecycleManager) handleProgressEvent(evt lifecycleProgressEvent) {
 
 	switch evt.kind {
 	case "mod-load":
-		lm.updateOperationProgress("Factorio is loading mods. Large modpacks can take a while to finish.")
+		lm.updateOperationProgressDelayed("Loading mods...", lifecycleOptionalProgressDelay)
 	case "map-load":
 		if opKind == ActionChangeMap && saveName != "" {
-			lm.updateOperationProgress(fmt.Sprintf("Factorio is loading the new map: %s.", saveName))
+			lm.updateOperationProgressDelayed(fmt.Sprintf("Loading map %s.", saveName), lifecycleOptionalProgressDelay)
 		} else {
-			lm.updateOperationProgress("Factorio is loading the map.")
+			lm.updateOperationProgressDelayed("Loading map.", lifecycleOptionalProgressDelay)
 		}
 	case "save":
-		lm.updateOperationProgress("Factorio is saving the map before shutdown.")
+		lm.updateOperationProgressDelayed("Saving map before shutdown.", lifecycleOptionalProgressDelay)
 	case "rcon-ready":
-		lm.updateOperationProgress("Factorio finished loading and is bringing the server online.")
+		lm.updateOperationProgressDelayed("Factorio finished loading and is bringing the server online.", lifecycleOptionalProgressDelay)
 	}
 }
 
@@ -982,32 +1000,34 @@ func (lm *lifecycleManager) handleReadyEvent(generation uint64) {
 	lm.readyAt = lm.phaseSince
 	lm.syncCompatibilityLocked()
 
-	cwlog.DoLogGame("Factorio " + FactorioVersion + " is now online.")
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "Factorio "+FactorioVersion+" is now online.", glob.COLOR_GREEN))
-	UpdateChannelName()
-	DoUpdateChannelNameForce()
-	glob.CrashLoopCount = 0
-	cwlog.DoLogCW("lifecycle: ready observed generation=%d ready_elapsed=%v", generation, lm.readyAt.Sub(lm.startedAt).Round(time.Millisecond))
-
 	token := lm.operationToken
 	kind := lm.operationKind
 	saveName := lm.operationSaveName
+	readyElapsed := lm.readyAt.Sub(lm.startedAt).Round(time.Millisecond)
 	lm.operationToken = ""
 	lm.operationKind = ""
 	lm.operationSaveName = ""
 	lm.mu.Unlock()
 
+	readyMsg := waitForFactorioReadyStatus(factorioReadyVersionTimeout)
+	cwlog.DoLogGame(readyMsg)
+	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", readyMsg, glob.COLOR_GREEN))
+	UpdateChannelName()
+	DoUpdateChannelNameForce()
+	glob.CrashLoopCount = 0
+	cwlog.DoLogCW("lifecycle: ready observed generation=%d ready_elapsed=%v", generation, readyElapsed)
+
 	switch kind {
 	case ActionStart, ActionRestartFactorio:
-		CompleteOperation(token, lifecycleOperationTitle(kind), "Factorio is now online.", glob.COLOR_GREEN)
+		CompleteOperation(token, "", "", glob.COLOR_GREEN)
 	case ActionChangeMap:
-		desc := "Map change complete. Factorio is now online."
+		desc := "Map change complete. Factorio is online."
 		if saveName != "" {
-			desc = fmt.Sprintf("Map change to %s complete. Factorio is now online.", saveName)
+			desc = fmt.Sprintf("Map change to %s complete. Factorio is online.", saveName)
 		}
 		CompleteOperation(token, lifecycleOperationTitle(kind), desc, glob.COLOR_GREEN)
 	case ActionMapReset:
-		CompleteOperation(token, lifecycleOperationTitle(kind), "Map reset complete. Factorio is now online.", glob.COLOR_GREEN)
+		CompleteOperation(token, lifecycleOperationTitle(kind), "Map reset complete. Factorio is online.", glob.COLOR_GREEN)
 	}
 }
 
@@ -1070,7 +1090,7 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	DoUpdateChannelNameForce()
 	if report {
 		cwlog.DoLogCW("Factorio has closed.")
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "Factorio is now offline.", glob.COLOR_RED))
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "🔴 Factorio is now offline.", glob.COLOR_RED))
 	}
 
 	if wasStarting {
@@ -1097,7 +1117,7 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	if opToken != "" && exitErr == nil {
 		switch opKind {
 		case ActionStop:
-			CompleteOperation(opToken, lifecycleOperationTitle(opKind), "Factorio is now offline.", glob.COLOR_RED)
+			CancelOperation(opToken)
 		case ActionRestartChatWire:
 			CompleteOperation(opToken, lifecycleOperationTitle(opKind), "Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
 		}
