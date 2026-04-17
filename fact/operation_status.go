@@ -25,6 +25,7 @@ type operationStatusState struct {
 	lastProgressKey      string
 	lastProgressUpdateAt time.Time
 	announced            bool
+	pendingDelayID       uint64
 }
 
 var (
@@ -108,22 +109,22 @@ func UpdateOperationProgressDelayed(token, title, description string, color int,
 		operationStatusLock.Unlock()
 		return
 	}
-	operationStatus.title = title
-	operationStatus.description = description
+	operationStatus.pendingDelayID++
+	delayID := operationStatus.pendingDelayID
 	operationStatusLock.Unlock()
 
-	go func(tok, ttl, desc string, wait time.Duration) {
+	go func(tok, ttl, desc string, wait time.Duration, id uint64) {
 		time.Sleep(wait)
 
 		operationStatusLock.Lock()
-		if tok != operationStatus.token || operationStatus.title != ttl || operationStatus.description != desc {
+		if tok != operationStatus.token || id != operationStatus.pendingDelayID {
 			operationStatusLock.Unlock()
 			return
 		}
 		operationStatusLock.Unlock()
 
 		UpdateOperationProgress(tok, ttl, desc, color)
-	}(token, title, description, delay)
+	}(token, title, description, delay, delayID)
 }
 
 func updateOperation(token, title, description string, color int, throttled bool, force bool) {
@@ -138,6 +139,7 @@ func updateOperation(token, title, description string, color int, throttled bool
 		operationStatusLock.Unlock()
 		return
 	}
+	operationStatus.pendingDelayID++
 
 	now := time.Now()
 	if !force && !operationStatus.announced && now.Sub(operationStatus.startedAt) < operationAnnounceDelay {
