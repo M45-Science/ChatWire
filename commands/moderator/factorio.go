@@ -140,10 +140,11 @@ func StartFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	} else if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Restarting Factorio..."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
-		fact.QuitFactorio("Server rebooting...")
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionRestartFactorio, Reason: "Server rebooting..."})
 	} else {
 		buf := "Starting Factorio..."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStart, Reason: "Starting Factorio..."})
 	}
 
 	fact.SetAutolaunch(true, false)
@@ -159,7 +160,7 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		buf := "Stopping Factorio."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
-		fact.QuitFactorio("Server quitting...")
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Server quitting..."})
 	} else {
 		buf := "Factorio isn't running, disabling auto-reboot."
 		disc.InteractionEphemeralResponseColor(i, "Warning:", buf, glob.COLOR_RED)

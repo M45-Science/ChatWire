@@ -16,12 +16,10 @@ var (
 
 func stopWaitFact(msg string) {
 	if fact.FactorioBooted || fact.FactIsRunning {
-		fact.QueueReboot = false      //Skip queued reboot
-		fact.QueueFactReboot = false  //Skip queued reboot
 		fact.DoUpdateFactorio = false //Skip queued updates
 
 		fact.SetAutolaunch(false, false)
-		fact.QuitFactorio(msg)
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: msg})
 		fact.WaitFactQuit(false)
 	}
 }

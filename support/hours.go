@@ -50,7 +50,7 @@ func checkHours() {
 
 				if !WithinHours() {
 					fact.SetAutolaunch(false, false)
-					fact.QuitFactorio("Time is up...")
+					_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Time is up..."})
 				}
 
 			} else if WithinHours() && !fact.FactIsRunning && !fact.FactAutoStart {

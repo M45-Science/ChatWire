@@ -34,7 +34,11 @@ func CheckMods(force bool, reportNone bool) {
 		}
 	}
 	if updated && fact.FactIsRunning {
-		fact.QueueFactReboot = true
+		_ = fact.SubmitLifecycleRequest(fact.Request{
+			Kind:      fact.ActionRestartFactorio,
+			Reason:    "Rebooting Factorio.",
+			WhenEmpty: true,
+		})
 	}
 }
 

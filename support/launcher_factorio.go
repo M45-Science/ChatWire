@@ -19,21 +19,11 @@ import (
 )
 
 /* Create config files, launch factorio */
-func launchFactorio() {
-
-	if fact.FactIsRunning {
-		cwlog.DoLogCW("launchFactorio: Factorio is already running.")
-		return
-	}
-
-	glob.FactorioLock.Lock()
-	defer glob.FactorioLock.Unlock()
-
+func LaunchFactorio(generation uint64) error {
 	fact.SetLastBan("")
 
 	waitForDiscord()
 	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Launching Factorio...", glob.COLOR_GREEN))
-	fact.QueueFactReboot = false
 
 	/* Allow crash reports right away */
 	glob.LastCrashReport = time.Time{}
@@ -56,7 +46,7 @@ func launchFactorio() {
 
 		cwlog.DoLogCW("Factorio does not appear to be installed at the configured path: " + checkFactPath)
 		fact.SetAutolaunch(false, true)
-		return
+		return fmt.Errorf("factorio is not installed at %s", checkFactPath)
 	}
 
 	/* Find, test and load newest save game available */
@@ -64,7 +54,7 @@ func launchFactorio() {
 	if !found {
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Unable to access save-games.", glob.COLOR_RED))
 		fact.SetAutolaunch(false, true)
-		return
+		return fmt.Errorf("unable to access save-games")
 	}
 
 	/* Relaunch Throttling */
@@ -141,20 +131,6 @@ func launchFactorio() {
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", "Loading mods...", glob.COLOR_GREEN))
 	}
 
-	if glob.FactorioCancel != nil {
-		cwlog.DoLogCW("Canceling existing context.")
-		glob.FactorioCancel()
-	}
-	if glob.FactorioCmd != nil {
-		if isProcessRunning(glob.FactorioCmd) || isProcessAlive(glob.FactorioCmd.Process.Pid) {
-			cwlog.DoLogCW("Killing Previous Factorio process.")
-
-			glob.FactorioCmd.Process.Kill()
-			waitForCmdExit(glob.FactorioCmd, constants.FactorioStopKillTimeout)
-		}
-	}
-	glob.FactorioContext, glob.FactorioCancel = context.WithCancel(context.Background())
-
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
 		if cfg.Local.Settings.Scenario == "" || cfg.Local.Settings.Scenario == "none" {
@@ -170,7 +146,7 @@ func launchFactorio() {
 
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Unable to write a config file for Fatorio.", glob.COLOR_RED))
 
-		return
+		return fmt.Errorf("unable to write factorio config")
 	}
 
 	/* Write or delete whitelist */
@@ -181,9 +157,9 @@ func launchFactorio() {
 		}
 	}
 
-	/* Run Factorio */
-	glob.FactorioCmd = exec.CommandContext(glob.FactorioContext, fact.GetFactorioBinary(), tempargs...)
-	glob.FactorioCmd.WaitDelay = time.Minute
+	ctx, cancel := context.WithCancel(context.Background())
+	cmd := exec.CommandContext(ctx, fact.GetFactorioBinary(), tempargs...)
+	cmd.WaitDelay = time.Minute
 
 	/* Hide RCON password and port */
 	for i, targ := range tempargs {
@@ -195,15 +171,10 @@ func launchFactorio() {
 		}
 	}
 
-	/* Okay, prep for factorio launch */
-	fact.SetFactRunning(true, false)
-	fact.FactorioBooted = false
-
 	//Reset relaunch throttle
 	if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) > time.Hour {
 		glob.RelaunchThrottle = 0
 	}
-	fact.FactorioBootedAt = time.Now()
 
 	fact.Gametime = (constants.Unknown)
 	glob.NoResponseCount = 0
@@ -211,42 +182,46 @@ func launchFactorio() {
 
 	/* Launch Factorio */
 	cwlog.DoLogCW("Executing: " + fact.GetFactorioBinary() + " " + strings.Join(tempargs, " "))
-	linuxSetProcessGroup(glob.FactorioCmd)
+	linuxSetProcessGroup(cmd)
 	/* Connect Factorio stdout to a blocking reader */
-	stdout, err := glob.FactorioCmd.StdoutPipe()
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdoutPipe() Details: %s", err))
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
-		fact.DoExit(true)
-		return
+		cancel()
+		return err
 	}
 	/* Stdin */
-	tpipe, errp := glob.FactorioCmd.StdinPipe()
+	tpipe, errp := cmd.StdinPipe()
 
 	/* Factorio is not happy. */
 	if errp != nil {
 		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to execute cmd.StdinPipe() Details: %s", errp))
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
-
-		/* close lock  */
-		fact.DoExit(true)
-		return
+		cancel()
+		return errp
 	}
+
+	/* Handle launch errors */
+	err = cmd.Start()
+	if err != nil {
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
+		cancel()
+		return err
+	}
+
+	glob.FactorioLock.Lock()
+	glob.FactorioContext = ctx
+	glob.FactorioCancel = cancel
+	glob.FactorioCmd = cmd
+	glob.FactorioLock.Unlock()
 
 	/* Save pipe */
 	if tpipe != nil {
 		fact.PipeLock.Lock()
 		fact.Pipe = tpipe
 		fact.PipeLock.Unlock()
-	}
-
-	/* Handle launch errors */
-	err = glob.FactorioCmd.Start()
-	if err != nil {
-		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("An error occurred when attempting to start the game. Details: %s", err))
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Launching Factorio failed!", glob.COLOR_RED))
-		fact.DoExit(true)
-		return
 	}
 
 	fact.GameLineCh = make(chan string, constants.FactorioStdoutChannelCapacity)
@@ -279,23 +254,12 @@ func launchFactorio() {
 			cwlog.DoLogCW("Factorio stdout scan error: %v", err)
 		}
 	}(stdout, fact.GameLineCh)
-}
-
-func waitForCmdExit(cmd *exec.Cmd, timeout time.Duration) bool {
-	if cmd == nil {
-		return true
-	}
-	done := make(chan struct{})
 	go func() {
-		_ = cmd.Wait()
-		close(done)
+		err := cmd.Wait()
+		fact.NotifyFactorioProcessExit(generation, err)
 	}()
-	select {
-	case <-done:
-		return true
-	case <-time.After(timeout):
-		return false
-	}
+
+	return nil
 }
 
 func isCriticalFactorioLine(line string) bool {

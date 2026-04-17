@@ -78,6 +78,11 @@ func main() {
 	banlist.ReadBanFile(true)
 	fact.ReadVotes()
 	cwlog.StartGameLog()
+	fact.StartLifecycleManager(fact.LifecycleHooks{
+		LaunchFactorio: support.LaunchFactorio,
+		WithinHours:    support.WithinHours,
+		ExitChatWire:   fact.DoExit,
+	})
 	if !*glob.NoDiscord {
 		go support.MainLoops()
 		go support.HandleChat()
@@ -97,12 +102,12 @@ func main() {
 	signal.Notify(usr1c, syscall.SIGUSR1)
 	go func() {
 		for range usr1c {
-			if !fact.QueueReboot {
-				fact.QueueReboot = true
-				cwlog.DoLogCW("SIGUSR1 received, reboot queued.")
-			} else {
-				cwlog.DoLogCW("SIGUSR1 received, reboot already queued.")
-			}
+			_ = fact.SubmitLifecycleRequest(fact.Request{
+				Kind:      fact.ActionRestartChatWire,
+				Reason:    "SIGUSR1 queued reboot.",
+				WhenEmpty: true,
+			})
+			cwlog.DoLogCW("SIGUSR1 received, reboot queued.")
 		}
 	}()
 
@@ -121,10 +126,7 @@ func main() {
 
 	_ = os.Remove("cw.lock")
 	fact.SetAutolaunch(false, false)
-	glob.DoRebootCW = false
-	fact.QueueReboot = false
-	fact.QueueFactReboot = false
-	fact.QuitFactorio("Server quitting...")
+	_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Server quitting..."})
 	fact.WaitFactQuit(false)
 
 	fact.DoExit(false)
