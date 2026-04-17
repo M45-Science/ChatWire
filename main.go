@@ -116,6 +116,7 @@ func main() {
 
 	if runtimeTestMode {
 		err := runRuntimeSelfTest(*runtimeSelfTest, *runtimeSelfTestTimeout, runtimeChatWireExitCh)
+		fact.SetAutolaunch(false, false)
 		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Runtime self-test cleanup."})
 		fact.WaitFactQuit(false)
 		fact.DoExit(false)

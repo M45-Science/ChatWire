@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
 	"ChatWire/cfg"
+	"ChatWire/fact"
 )
 
 func TestParseRuntimeSelfTestCasesDefault(t *testing.T) {
@@ -64,5 +66,37 @@ func TestChooseRuntimeTestSave(t *testing.T) {
 	}
 	if got != "candidate" {
 		t.Fatalf("unexpected save choice: %q", got)
+	}
+}
+
+func TestWaitForLifecycleRestartRequiresCycle(t *testing.T) {
+	states := []fact.State{
+		{Phase: fact.LifecycleRunning, Booted: true, PID: 100, Since: time.Unix(100, 0)},
+		{Phase: fact.LifecycleStopping, Booted: false, PID: 100, Since: time.Unix(101, 0)},
+		{Phase: fact.LifecycleRunning, Booted: true, PID: 200, Since: time.Unix(102, 0)},
+	}
+	idx := 0
+	getState := func() fact.State {
+		if idx >= len(states) {
+			return states[len(states)-1]
+		}
+		s := states[idx]
+		idx++
+		return s
+	}
+
+	before := states[0]
+	if err := waitForLifecycleRestartWithGetter(2*time.Second, before, getState); err != nil {
+		t.Fatalf("waitForLifecycleRestartWithGetter returned error: %v", err)
+	}
+}
+
+func TestWaitForLifecycleRestartTimesOutWithoutCycle(t *testing.T) {
+	state := fact.State{Phase: fact.LifecycleRunning, Booted: true, PID: 100, Since: time.Unix(100, 0)}
+	getState := func() fact.State { return state }
+
+	err := waitForLifecycleRestartWithGetter(50*time.Millisecond, state, getState)
+	if err == nil {
+		t.Fatal("expected timeout when restart cycle never occurs")
 	}
 }

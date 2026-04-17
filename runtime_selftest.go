@@ -69,6 +69,7 @@ func runRuntimeSelfTest(casesCSV string, stepTimeout time.Duration, chatwireExit
 		if err != nil {
 			return fmt.Errorf("case %q failed after %v: %w", testCase, time.Since(started).Round(time.Millisecond), err)
 		}
+		fact.SetAutolaunch(false, false)
 
 		cwlog.DoLogCW("runtimeSelfTest: passed case=%s elapsed=%v", testCase, time.Since(started).Round(time.Millisecond))
 	}
@@ -109,10 +110,11 @@ func runStopCase(timeout time.Duration) error {
 }
 
 func runRestartCase(timeout time.Duration) error {
+	before := fact.GetLifecycleState()
 	if err := fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionRestartFactorio, Reason: "runtime self-test restart"}); err != nil {
 		return err
 	}
-	return waitForLifecycleRunning(timeout)
+	return waitForLifecycleRestart(timeout, before)
 }
 
 func runChangeMapCase(timeout time.Duration) error {
@@ -190,6 +192,7 @@ func runSyncModsCase() error {
 }
 
 func runChatWireRebootCase(timeout time.Duration, chatwireExitCh <-chan bool) error {
+	fact.SetAutolaunch(false, false)
 	drainRuntimeSelfTestExitChannel(chatwireExitCh)
 	if err := fact.SubmitLifecycleRequest(fact.Request{
 		Kind:   fact.ActionRestartChatWire,
@@ -232,6 +235,34 @@ func waitForLifecycleRunning(timeout time.Duration) error {
 		}
 		if time.Now().After(deadline) {
 			return fmt.Errorf("timed out waiting for lifecycle running; phase=%s booted=%t last_error=%q", state.Phase, state.Booted, state.LastError)
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+}
+
+func waitForLifecycleRestart(timeout time.Duration, before fact.State) error {
+	return waitForLifecycleRestartWithGetter(timeout, before, fact.GetLifecycleState)
+}
+
+func waitForLifecycleRestartWithGetter(timeout time.Duration, before fact.State, getState func() fact.State) error {
+	deadline := time.Now().Add(timeout)
+	sawNotRunning := before.Phase == fact.LifecycleStopped
+	for {
+		state := getState()
+		if state.Phase != fact.LifecycleRunning || !state.Booted {
+			sawNotRunning = true
+		}
+		if sawNotRunning &&
+			state.Phase == fact.LifecycleRunning &&
+			state.Booted &&
+			(state.Since.After(before.Since) || state.PID != before.PID) {
+			return nil
+		}
+		if state.Phase == fact.LifecycleStopped && state.LastError != "" {
+			return fmt.Errorf("lifecycle stopped with error: %s", state.LastError)
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timed out waiting for lifecycle restart; phase=%s booted=%t pid=%d last_error=%q", state.Phase, state.Booted, state.PID, state.LastError)
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
