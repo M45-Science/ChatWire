@@ -19,7 +19,7 @@ func startDBFileWatcher() {
 			//cwlog.DoLogCW("Database file modified, loading.")
 			fact.LoadPlayers(false, false, false)
 		})
-		watcher.Watch(filePath, 5*time.Second, &glob.ServerRunning, func() {
+		watcher.Watch(filePath, 5*time.Second, glob.RuntimeContext(), func() {
 			time.Sleep(time.Second)
 			reload.trigger()
 		})

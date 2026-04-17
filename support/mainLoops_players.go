@@ -15,7 +15,7 @@ func startChannelNameLoop() {
 	****************************/
 	go func() {
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			fact.UpdateChannelName()
 			fact.DoUpdateChannelName()
 
@@ -29,7 +29,7 @@ func startOnlinePollLoop() {
 	* Poll online players once in a while
 	**********************************/
 	go func() {
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			if isIdle() {
 				time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
 				continue
@@ -52,7 +52,7 @@ func startPlayerTimeLoop() {
 	/* Update player time       */
 	/****************************/
 	go func() {
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			if isIdle() {
 				time.Sleep(time.Minute)
 				continue

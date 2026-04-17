@@ -19,7 +19,7 @@ func startGuildSyncLoop() {
 	 * Needed for Discord roles
 	 ***************************/
 	go func() {
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
 			/* Get guild id, if we need it */
 
@@ -85,7 +85,7 @@ func startRoleRefreshLoop() {
 	 *******************************/
 	go func() {
 		time.Sleep(time.Minute)
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
 			if !isIdle() {
 				disc.UpdateRoleList()

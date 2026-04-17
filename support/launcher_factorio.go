@@ -67,7 +67,7 @@ func LaunchFactorio(generation uint64) error {
 			buf := fmt.Sprintf("Rate limiting: Waiting for %v seconds before launching Factorio.", delay)
 			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Warning", buf, glob.COLOR_ORANGE))
 
-			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning && glob.RelaunchThrottle > 0; i++ {
+			for i := 0; i < delay*11 && throt > 0 && glob.ServerRunning() && glob.RelaunchThrottle > 0; i++ {
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
@@ -177,7 +177,7 @@ func LaunchFactorio(generation uint64) error {
 	}
 
 	fact.Gametime = (constants.Unknown)
-	glob.NoResponseCount = 0
+	glob.ResetNoResponseCount()
 	cwlog.DoLogCW("Factorio booting...")
 
 	/* Launch Factorio */
@@ -224,7 +224,8 @@ func LaunchFactorio(generation uint64) error {
 		fact.PipeLock.Unlock()
 	}
 
-	fact.GameLineCh = make(chan string, constants.FactorioStdoutChannelCapacity)
+	lines := make(chan string, constants.FactorioStdoutChannelCapacity)
+	fact.SetGameLineCh(lines)
 	go func(r io.ReadCloser, lines chan<- string) {
 		defer r.Close()
 		defer close(lines)
@@ -257,7 +258,7 @@ func LaunchFactorio(generation uint64) error {
 		}
 		cwlog.DoLogCW("Factorio stdout stream closed.")
 		fact.NotifyFactorioHealth("stdout-closed", nil)
-	}(stdout, fact.GameLineCh)
+	}(stdout, lines)
 	go func() {
 		err := cmd.Wait()
 		fact.NotifyFactorioProcessExit(generation, err)

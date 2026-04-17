@@ -16,7 +16,7 @@ func startLogFileWatchLoop() {
 		ticker := time.NewTicker(300 * time.Second)
 		defer ticker.Stop()
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			<-ticker.C
 
 			var err error

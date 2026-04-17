@@ -34,8 +34,7 @@ func handleActMsg(input *handleData) bool {
 				return true
 			}
 
-			/* Mark as seen, async */
-			go fact.UpdateSeen(pname)
+			fact.UpdateSeen(pname)
 			if pname != "" {
 
 				p := disc.GetPlayerDataFromName(pname)

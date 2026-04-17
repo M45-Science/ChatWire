@@ -29,7 +29,7 @@ func startCMSBuffer() {
 			}
 		}()
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
 			if disc.DS != nil {
 				select {

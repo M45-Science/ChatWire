@@ -68,8 +68,8 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if fact.GametimeString != constants.Unknown {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
 	}
-	if fact.NumPlayers > 0 || verbose {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayers)
+	if fact.NumPlayersCurrent() > 0 || verbose {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayersCurrent())
 	}
 
 	if fact.HasResetTime() {
@@ -135,7 +135,7 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			mod++
 		}
 	}
-    bCount := banlist.Count()
+	bCount := banlist.Count()
 	ban += bCount
 
 	total := ban + mem + reg + vet + mod

@@ -10,6 +10,24 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func attachmentURL(i *discordgo.InteractionCreate, item *discordgo.ApplicationCommandInteractionDataOption) (string, bool) {
+	if i == nil || item == nil {
+		return "", false
+	}
+
+	attachmentID, ok := item.Value.(string)
+	if !ok || attachmentID == "" {
+		return "", false
+	}
+
+	attachment, ok := i.ApplicationCommandData().Resolved.Attachments[attachmentID]
+	if !ok || attachment == nil || attachment.URL == "" {
+		return "", false
+	}
+
+	return attachment.URL, true
+}
+
 func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	//Just in case
@@ -38,18 +56,20 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	//Preprocessing
 	for _, item := range i.ApplicationCommandData().Options {
 		tName := item.Name
-
-		attachmentID := item.Value.(string)
-		attachmentUrl := i.ApplicationCommandData().Resolved.Attachments[attachmentID].URL
+		attachmentURL, ok := attachmentURL(i, item)
+		if !ok {
+			continue
+		}
+		foundOption = true
 
 		switch tName {
 		case "save-game":
 			foundSave = true
 		case "mod-list":
 			foundModList = true
-			modListBytes = handleDataFile(attachmentUrl, constants.ModListName)
+			modListBytes = handleDataFile(attachmentURL, constants.ModListName)
 		case "mod-settings":
-			modSettingsBytes = handleDataFile(attachmentUrl, constants.ModSettingsName)
+			modSettingsBytes = handleDataFile(attachmentURL, constants.ModSettingsName)
 		default:
 			continue
 		}
@@ -58,15 +78,16 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	//Processing
 	for _, item := range i.ApplicationCommandData().Options {
 		tName := item.Name
-
-		attachmentID := item.Value.(string)
-		attachmentUrl := i.ApplicationCommandData().Resolved.Attachments[attachmentID].URL
+		attachmentURL, ok := attachmentURL(i, item)
+		if !ok {
+			continue
+		}
 
 		var doLaunch bool
 
 		switch tName {
 		case "save-game":
-			handleCustomSave(i, attachmentUrl, modSettingsBytes)
+			handleCustomSave(i, attachmentURL, modSettingsBytes)
 		case "mod-list":
 			if !foundSave {
 				stopWaitFact("Server rebooting to load a new a new " + constants.ModListName + " file.")

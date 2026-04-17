@@ -18,18 +18,18 @@ import (
 )
 
 var (
-    // BanList holds the current list of bans loaded from disk.
-    BanList []banDataType
-    // banListLock protects access to BanList.
-    banListLock sync.Mutex
+	// BanList holds the current list of bans loaded from disk.
+	BanList []banDataType
+	// banListLock protects access to BanList.
+	banListLock sync.Mutex
 )
 
 // Count returns the number of bans (including revoked) in a thread-safe manner.
 // Use this instead of reading BanList directly from other packages.
 func Count() int {
-    banListLock.Lock()
-    defer banListLock.Unlock()
-    return len(BanList)
+	banListLock.Lock()
+	defer banListLock.Unlock()
+	return len(BanList)
 }
 
 type banDataType struct {
@@ -89,7 +89,7 @@ func WatchBanFile() {
 		return
 	}
 
-	watcher.Watch(cfg.Global.Paths.DataFiles.Bans, 5*time.Second, &glob.ServerRunning, func() {
+	watcher.Watch(cfg.Global.Paths.DataFiles.Bans, 5*time.Second, glob.RuntimeContext(), func() {
 		time.Sleep(time.Second)
 		ReadBanFile(false)
 	})

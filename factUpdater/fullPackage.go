@@ -68,9 +68,9 @@ func fullPackage(info *InfoData) error {
 	}
 	factPath := strings.Join(pathParts[:numParts-4], "/")
 
-	fact.DoUpdateFactorio = true
+	fact.SetUpdateInProgress(true)
 	defer func() {
-		fact.DoUpdateFactorio = false
+		fact.SetUpdateInProgress(false)
 	}()
 	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Downloading Factorio", "Download verified!", glob.COLOR_CYAN))
 	fact.WaitFactQuit(true)

@@ -23,7 +23,7 @@ func startModUpdateLoop() {
 			ticker := time.NewTicker(time.Minute)
 			defer ticker.Stop()
 
-			for glob.ServerRunning {
+			for glob.ServerRunning() {
 				<-ticker.C
 				if !cfg.Local.Options.ModUpdate {
 					continue
@@ -41,7 +41,7 @@ func startModUpdateLoop() {
 			}
 		} else {
 
-			for glob.ServerRunning {
+			for glob.ServerRunning() {
 				time.Sleep(time.Hour * 3)
 
 				if cfg.Local.Options.ModUpdate {
@@ -63,7 +63,7 @@ func startModPackCleanupLoop() {
 	 * at the set expire time
 	/****************************/
 	go func() {
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
 			time.Sleep(time.Minute)
 			numItems := len(cfg.Local.ModPackList)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 )
 
 func newTestLifecycleManager(hooks LifecycleHooks) *lifecycleManager {
+	doneCh := make(chan struct{})
+	close(doneCh)
 	return &lifecycleManager{
 		hooks:      hooks,
 		phase:      LifecycleStopped,
@@ -25,30 +28,29 @@ func newTestLifecycleManager(hooks LifecycleHooks) *lifecycleManager {
 		progressCh: make(chan lifecycleProgressEvent, 8),
 		healthCh:   make(chan lifecycleHealthEvent, 8),
 		started:    true,
+		stopCh:     make(chan struct{}),
+		doneCh:     doneCh,
 	}
 }
 
 func resetLifecycleTestState(t *testing.T) {
 	t.Helper()
-	glob.ServerRunning = false
-	time.Sleep(10 * time.Millisecond)
-	lifecycleMu.Lock()
-	lifecycle = nil
-	lifecycleMu.Unlock()
+	StopLifecycleManager()
+	glob.SetServerRunning(false)
 	glob.FactorioCmd = nil
 	glob.FactorioCancel = nil
 	glob.FactorioContext = nil
 	FactIsRunning = false
 	FactorioBooted = false
 	FactorioBootedAt = time.Time{}
-	FactAutoStart = false
-	DoUpdateFactorio = false
-	DoModOperation = false
-	NumPlayers = 0
+	setAutostartEnabled(false)
+	SetUpdateInProgress(false)
+	SetModOperationInProgress(false)
+	SetNumPlayers(0)
 	QueueReboot = false
 	QueueFactReboot = false
 	glob.DoRebootCW = false
-	glob.ServerRunning = true
+	glob.SetServerRunning(true)
 
 	lifecycleStopGraceTimeout = time.Duration(constants.MaxFactorioCloseWait) * 100 * time.Millisecond
 	lifecycleStopIdleTimeout = constants.FactorioStopIdleTimeout
@@ -205,7 +207,7 @@ func TestLifecyclePriorityPrefersChatWireReboot(t *testing.T) {
 func TestLifecycleUpdateBlocksNonStopRequests(t *testing.T) {
 	resetLifecycleTestState(t)
 
-	DoUpdateFactorio = true
+	SetUpdateInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{})
 	lm.phase = LifecycleRunning
 	lm.queue = []lifecycleRequest{
@@ -224,7 +226,7 @@ func TestLifecycleUpdateBlocksNonStopRequests(t *testing.T) {
 func TestLifecycleModOperationBlocksNonStopRequests(t *testing.T) {
 	resetLifecycleTestState(t)
 
-	DoModOperation = true
+	SetModOperationInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{})
 	lm.phase = LifecycleStopped
 	lm.queue = []lifecycleRequest{
@@ -243,7 +245,7 @@ func TestLifecycleModOperationBlocksNonStopRequests(t *testing.T) {
 func TestLifecycleUpdateAllowsStopRequest(t *testing.T) {
 	resetLifecycleTestState(t)
 
-	DoUpdateFactorio = true
+	SetUpdateInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{})
 	lm.phase = LifecycleRunning
 	lm.queue = []lifecycleRequest{
@@ -264,7 +266,7 @@ func TestLifecycleUpdateAllowsStopRequest(t *testing.T) {
 func TestLifecycleQueuedRequestsResumeAfterUpdateFinishes(t *testing.T) {
 	resetLifecycleTestState(t)
 
-	DoUpdateFactorio = true
+	SetUpdateInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{})
 	lm.phase = LifecycleStopped
 	lm.queue = []lifecycleRequest{
@@ -277,7 +279,7 @@ func TestLifecycleQueuedRequestsResumeAfterUpdateFinishes(t *testing.T) {
 		t.Fatal("expected no runnable requests while update is active")
 	}
 
-	DoUpdateFactorio = false
+	SetUpdateInProgress(false)
 	req, ok := lm.nextRequest()
 	if !ok {
 		t.Fatal("expected queued requests to resume after update completes")
@@ -466,7 +468,7 @@ func TestLifecycleWhenEmptyRequestWaitsForNoPlayers(t *testing.T) {
 	lm.phase = LifecycleRunning
 	lm.booted = true
 	lm.currentGeneration = 1
-	NumPlayers = 2
+	SetNumPlayers(2)
 	lm.queue = []lifecycleRequest{
 		{Request: Request{Kind: ActionRestartFactorio, Reason: "queued", WhenEmpty: true}},
 	}
@@ -479,7 +481,7 @@ func TestLifecycleWhenEmptyRequestWaitsForNoPlayers(t *testing.T) {
 		t.Fatal("expected compatibility queue flag to stay set")
 	}
 
-	NumPlayers = 0
+	SetNumPlayers(0)
 	req, ok := lm.nextRequest()
 	if !ok {
 		t.Fatal("expected queued request after players left")
@@ -556,9 +558,10 @@ func TestLifecycleStopSaveProgressExtendsDeadline(t *testing.T) {
 	lifecycleStopSaveTimeout = 40 * time.Millisecond
 	lifecycleStopPollInterval = time.Millisecond
 
-	alive := true
+	var alive atomic.Bool
+	alive.Store(true)
 	interrupts := 0
-	lifecycleProcessAlive = func() bool { return alive }
+	lifecycleProcessAlive = func() bool { return alive.Load() }
 	lifecycleInterruptProcess = func() { interrupts++ }
 
 	lm := newTestLifecycleManager(LifecycleHooks{})
@@ -572,7 +575,7 @@ func TestLifecycleStopSaveProgressExtendsDeadline(t *testing.T) {
 		time.Sleep(3 * time.Millisecond)
 		lm.progressCh <- lifecycleProgressEvent{generation: 1, kind: "save", at: time.Now()}
 		time.Sleep(10 * time.Millisecond)
-		alive = false
+		alive.Store(false)
 	}()
 
 	if err := lm.executeStop("save progress"); err != nil {
@@ -625,16 +628,17 @@ func TestLifecycleRunAutoStartsWithinHours(t *testing.T) {
 			case launchCh <- struct{}{}:
 			default:
 			}
-			glob.ServerRunning = false
+			glob.SetServerRunning(false)
 			return nil
 		},
 		WithinHours: func() bool { return true },
 	})
 	defer func() {
-		glob.ServerRunning = false
+		glob.SetServerRunning(false)
+		StopLifecycleManager()
 	}()
 
-	FactAutoStart = true
+	setAutostartEnabled(true)
 	waitForCondition(t, 200*time.Millisecond, func() bool {
 		select {
 		case <-launchCh:
@@ -657,10 +661,11 @@ func TestLifecycleRunDoesNotAutoStartOutsideHours(t *testing.T) {
 		WithinHours: func() bool { return false },
 	})
 	defer func() {
-		glob.ServerRunning = false
+		glob.SetServerRunning(false)
+		StopLifecycleManager()
 	}()
 
-	FactAutoStart = true
+	setAutostartEnabled(true)
 	time.Sleep(50 * time.Millisecond)
 	if launches != 0 {
 		t.Fatalf("expected no autostart launches outside hours, got %d", launches)
@@ -671,7 +676,7 @@ func TestLifecycleRunDoesNotAutoStartDuringUpdate(t *testing.T) {
 	resetLifecycleTestState(t)
 
 	launches := 0
-	DoUpdateFactorio = true
+	SetUpdateInProgress(true)
 	StartLifecycleManager(LifecycleHooks{
 		LaunchFactorio: func(generation uint64) error {
 			launches++
@@ -680,10 +685,11 @@ func TestLifecycleRunDoesNotAutoStartDuringUpdate(t *testing.T) {
 		WithinHours: func() bool { return true },
 	})
 	defer func() {
-		glob.ServerRunning = false
+		glob.SetServerRunning(false)
+		StopLifecycleManager()
 	}()
 
-	FactAutoStart = true
+	setAutostartEnabled(true)
 	time.Sleep(50 * time.Millisecond)
 	if launches != 0 {
 		t.Fatalf("expected no autostart launches during update, got %d", launches)
@@ -694,7 +700,7 @@ func TestLifecycleRunDoesNotAutoStartDuringModOperation(t *testing.T) {
 	resetLifecycleTestState(t)
 
 	launches := 0
-	DoModOperation = true
+	SetModOperationInProgress(true)
 	StartLifecycleManager(LifecycleHooks{
 		LaunchFactorio: func(generation uint64) error {
 			launches++
@@ -703,10 +709,11 @@ func TestLifecycleRunDoesNotAutoStartDuringModOperation(t *testing.T) {
 		WithinHours: func() bool { return true },
 	})
 	defer func() {
-		glob.ServerRunning = false
+		glob.SetServerRunning(false)
+		StopLifecycleManager()
 	}()
 
-	FactAutoStart = true
+	setAutostartEnabled(true)
 	time.Sleep(50 * time.Millisecond)
 	if launches != 0 {
 		t.Fatalf("expected no autostart launches during mod operation, got %d", launches)
@@ -877,7 +884,7 @@ func TestLifecycleChangeMapLaunchFailureLeavesStopped(t *testing.T) {
 func TestLifecycleExecuteStartFailsDuringUpdate(t *testing.T) {
 	resetLifecycleTestState(t)
 
-	DoUpdateFactorio = true
+	SetUpdateInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{
 		LaunchFactorio: func(generation uint64) error {
 			t.Fatal("launch should not be called while update is in progress")
@@ -894,7 +901,7 @@ func TestLifecycleExecuteStartFailsDuringUpdate(t *testing.T) {
 func TestLifecycleExecuteStartFailsDuringModOperation(t *testing.T) {
 	resetLifecycleTestState(t)
 
-	DoModOperation = true
+	SetModOperationInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{
 		LaunchFactorio: func(generation uint64) error {
 			t.Fatal("launch should not be called while mod operation is in progress")

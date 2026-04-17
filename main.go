@@ -119,6 +119,7 @@ func main() {
 		fact.SetAutolaunch(false, false)
 		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Runtime self-test cleanup."})
 		fact.WaitFactQuit(false)
+		fact.StopLifecycleManager()
 		fact.DoExit(false)
 		if err != nil {
 			cwlog.DoLogCW("Runtime self-test failed: %v", err)
@@ -158,6 +159,7 @@ func main() {
 	fact.SetAutolaunch(false, false)
 	_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Server quitting..."})
 	fact.WaitFactQuit(false)
+	fact.StopLifecycleManager()
 
 	fact.DoExit(false)
 }

@@ -23,9 +23,9 @@ const (
 
 func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 	opToken := fact.BeginOperation("Mod Sync", "Syncing mods. This can take a while on large modpacks or slow downloads.")
-	fact.DoModOperation = true
+	fact.SetModOperationInProgress(true)
 	defer func() {
-		fact.DoModOperation = false
+		fact.SetModOperationInProgress(false)
 	}()
 
 	glob.FactorioLock.Lock()

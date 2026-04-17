@@ -10,16 +10,16 @@ import (
 )
 
 func checkHours() {
-	for glob.ServerRunning {
+	for glob.ServerRunning() {
 		time.Sleep(time.Second * 15)
 
 		if cfg.Local.Options.PlayHourEnable {
 
 			graceString := " Server shutting down."
-			if fact.NumPlayers > 0 {
+			if fact.NumPlayersCurrent() > 0 {
 				graceString = " Server will shut down in 10 minutes."
 			}
-			if !WithinHours() && fact.FactIsRunning && fact.FactAutoStart {
+			if !WithinHours() && fact.FactIsRunning && fact.AutostartEnabled() {
 				buf := fmt.Sprintf("It is now time for the map to close (%v-%v GMT).%v",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour,
@@ -33,7 +33,7 @@ func checkHours() {
 				shutTime := time.Now()
 				shutTime = shutTime.Add(time.Minute * 10)
 
-				for fact.NumPlayers > 0 {
+				for fact.NumPlayersCurrent() > 0 {
 					if time.Now().After(shutTime) {
 						break
 					}
@@ -53,7 +53,7 @@ func checkHours() {
 					_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Time is up..."})
 				}
 
-			} else if WithinHours() && !fact.FactIsRunning && !fact.FactAutoStart {
+			} else if WithinHours() && !fact.FactIsRunning && !fact.AutostartEnabled() {
 				buf := fmt.Sprintf("It is now time for the map to open (%v-%v GMT). Server starting.",
 					cfg.Local.Options.PlayStartHour,
 					cfg.Local.Options.PlayEndHour)

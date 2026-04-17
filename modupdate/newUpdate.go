@@ -182,9 +182,9 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 
 func CheckModUpdates(dryRun bool) (bool, error) {
 	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
-	fact.DoModOperation = true
+	fact.SetModOperationInProgress(true)
 	defer func() {
-		fact.DoModOperation = false
+		fact.SetModOperationInProgress(false)
 	}()
 
 	// If needed, get Factorio version
@@ -292,7 +292,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	if getDownloadCount(downloadList) > 0 && len(installedMods) > 0 {
 		emsg := "Mod updates complete."
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Updates", emsg, glob.COLOR_CYAN))
-		if fact.NumPlayers > 0 && shortBuf != "" {
+		if fact.NumPlayersCurrent() > 0 && shortBuf != "" {
 			fact.FactChat("Mod updates: " + shortBuf + " (Mods will update on reboot, when server is empty)")
 		}
 		glob.SetBootMessage(nil)

@@ -16,7 +16,7 @@ var (
 
 func stopWaitFact(msg string) {
 	if fact.FactorioBooted || fact.FactIsRunning {
-		fact.DoUpdateFactorio = false //Skip queued updates
+		fact.SetUpdateInProgress(false) //Skip queued updates
 
 		fact.SetAutolaunch(false, false)
 		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: msg})

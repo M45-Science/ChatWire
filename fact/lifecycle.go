@@ -112,6 +112,8 @@ type lifecycleManager struct {
 	operationSaveName   string
 	lastProgressAt      time.Time
 	lastProgressKind    string
+	stopCh              chan struct{}
+	doneCh              chan struct{}
 }
 
 var (
@@ -166,10 +168,37 @@ func StartLifecycleManager(hooks LifecycleHooks) {
 		progressCh: make(chan lifecycleProgressEvent, 32),
 		healthCh:   make(chan lifecycleHealthEvent, 16),
 		started:    true,
+		stopCh:     make(chan struct{}),
+		doneCh:     make(chan struct{}),
 	}
 	lifecycle.syncCompatibilityLocked()
 
 	go lifecycle.run()
+}
+
+func StopLifecycleManager() {
+	lifecycleMu.Lock()
+	lm := lifecycle
+	lifecycleMu.Unlock()
+	if lm == nil {
+		return
+	}
+
+	lm.mu.Lock()
+	if !lm.shutdownRequested {
+		lm.shutdownRequested = true
+		close(lm.stopCh)
+	}
+	doneCh := lm.doneCh
+	lm.mu.Unlock()
+
+	<-doneCh
+
+	lifecycleMu.Lock()
+	if lifecycle == lm {
+		lifecycle = nil
+	}
+	lifecycleMu.Unlock()
 }
 
 func SubmitLifecycleRequest(req Request) error {
@@ -395,8 +424,9 @@ func (lm *lifecycleManager) syncCompatibilityLocked() {
 func (lm *lifecycleManager) run() {
 	ticker := time.NewTicker(250 * time.Millisecond)
 	defer ticker.Stop()
+	defer close(lm.doneCh)
 
-	for glob.ServerRunning {
+	for {
 		lm.drainAsyncEvents()
 		lm.reconcileProcessHealth()
 		lm.checkStartupTimeout()
@@ -419,6 +449,8 @@ func (lm *lifecycleManager) run() {
 		}
 
 		select {
+		case <-lm.stopCh:
+			return
 		case <-lm.signalCh:
 		case <-ticker.C:
 		}
@@ -429,9 +461,9 @@ func (lm *lifecycleManager) shouldAutoStart() bool {
 	lm.mu.Lock()
 	defer lm.mu.Unlock()
 	return lm.phase == LifecycleStopped &&
-		FactAutoStart &&
-		!DoUpdateFactorio &&
-		!DoModOperation &&
+		AutostartEnabled() &&
+		!UpdateInProgress() &&
+		!ModOperationInProgress() &&
 		lm.hooks.LaunchFactorio != nil &&
 		(lm.hooks.WithinHours == nil || lm.hooks.WithinHours())
 }
@@ -463,10 +495,10 @@ func (lm *lifecycleManager) nextRequest() (lifecycleRequest, bool) {
 }
 
 func (lm *lifecycleManager) requestRunnableLocked(req lifecycleRequest) bool {
-	if (DoUpdateFactorio || DoModOperation) && req.Kind != ActionStop {
+	if (UpdateInProgress() || ModOperationInProgress()) && req.Kind != ActionStop {
 		return false
 	}
-	if req.WhenEmpty && lm.phase != LifecycleStopped && NumPlayers > 0 {
+	if req.WhenEmpty && lm.phase != LifecycleStopped && NumPlayersCurrent() > 0 {
 		return false
 	}
 	return true
@@ -664,7 +696,7 @@ func (lm *lifecycleManager) executeStart(reason string) error {
 		lm.mu.Unlock()
 		return nil
 	}
-	if DoUpdateFactorio || DoModOperation {
+	if UpdateInProgress() || ModOperationInProgress() {
 		lm.currentAction = ""
 		lm.mu.Unlock()
 		return errors.New("factorio update or mod operation is in progress")
@@ -739,9 +771,9 @@ func (lm *lifecycleManager) executeStop(reason string) error {
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Quitting Factorio: "+reason, glob.COLOR_ORANGE))
 	}
 	glob.RelaunchThrottle = 0
-	glob.NoResponseCount = 0
+	glob.ResetNoResponseCount()
 
-	if booted && NumPlayers > 0 {
+	if booted && NumPlayersCurrent() > 0 {
 		FactChat("[color=red]" + reason + "[/color]")
 		FactChat("[color=green]" + reason + "[/color]")
 		FactChat("[color=blue]" + reason + "[/color]")

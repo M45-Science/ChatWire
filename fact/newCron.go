@@ -40,7 +40,7 @@ func CheckMapReset() {
 
 	for _, t := range warnTimes {
 		if until == t {
-			if NumPlayers == 0 {
+			if NumPlayersCurrent() == 0 {
 				if until < (time.Minute * 5) {
 					continue
 				}
@@ -80,7 +80,7 @@ func warnMapReset() {
 	buf = strings.ToUpper(buf)
 	LogCMS(cfg.Local.Channel.ChatChannel, "⚠️ **"+buf+"**")
 
-	if NumPlayers > 0 {
+	if NumPlayersCurrent() > 0 {
 		warn := "*** NOTICE: "
 		FactChat(warn + AddFactColor("red", buf))
 		FactChat(warn + AddFactColor("cyan", buf))

@@ -19,10 +19,10 @@ func startQueuedRebootLoop() {
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			<-ticker.C
 
-			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 && fact.DoUpdateFactorio {
+			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayersCurrent() == 0 && fact.UpdateInProgress() {
 				cwlog.DoLogCW("Stopping Factorio for update.")
 				_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Updating Factorio."})
 			}
@@ -36,10 +36,10 @@ func startUpdateNudgeLoop() {
 	 *******************************************/
 	go func() {
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
-			if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
-				if fact.NumPlayers > 0 {
+			if fact.FactIsRunning && fact.FactorioBooted && fact.UpdateInProgress() {
+				if fact.NumPlayersCurrent() > 0 {
 					/* Warn players */
 					if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
 						msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",

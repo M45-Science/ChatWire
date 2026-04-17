@@ -15,7 +15,7 @@ func startGameWatchdog() {
 	 ***************/
 	go func() {
 		time.Sleep(time.Second * 1)
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
 			time.Sleep(constants.WatchdogInterval)
 
@@ -25,8 +25,7 @@ func startGameWatchdog() {
 				nores := 0
 				if fact.PausedTicks <= constants.PauseThresh {
 
-					glob.NoResponseCount = glob.NoResponseCount + 1
-					nores = glob.NoResponseCount
+					nores = glob.IncrementNoResponseCount()
 
 					fact.WriteFact("/time")
 				}

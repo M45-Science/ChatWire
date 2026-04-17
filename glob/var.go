@@ -42,7 +42,6 @@ var (
 	VoteBoxLock sync.Mutex
 
 	/* Server status */
-	ServerRunning  bool = true
 	Uptime         time.Time
 	SoftModVersion = constants.Unknown
 

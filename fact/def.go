@@ -12,7 +12,7 @@ var (
 	/*Factorio stdio links */
 	Pipe       io.WriteCloser
 	PipeLock   sync.Mutex
-	GameLineCh chan string
+	gameLineCh chan string
 
 	/* Factorio patch info */
 	FactorioVersion = constants.Unknown

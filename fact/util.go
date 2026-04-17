@@ -170,14 +170,14 @@ func SetAutolaunch(autolaunch, report bool) {
 	AutoLaunchLock.Lock()
 	defer AutoLaunchLock.Unlock()
 
-	if !autolaunch && FactAutoStart {
-		FactAutoStart = false
+	if !autolaunch && AutostartEnabled() {
+		setAutostartEnabled(false)
 		if report {
 			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Auto-reboot has been turned OFF.", glob.COLOR_GREEN))
 		}
 		cwlog.DoLogCW("Autolaunch disabled.")
-	} else if autolaunch && !FactAutoStart {
-		FactAutoStart = true
+	} else if autolaunch && !AutostartEnabled() {
+		setAutostartEnabled(true)
 		cwlog.DoLogCW("Autolaunch enabled.")
 		if report {
 			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Auto-reboot has been ENABLED.", glob.COLOR_GREEN))
@@ -193,11 +193,11 @@ func SetFactRunning(run, report bool) {
 	wasrun := FactIsRunning
 	FactIsRunning = run
 
-	if run && glob.NoResponseCount >= 15 && !FactorioBootedAt.IsZero() && time.Since(FactorioBootedAt) > time.Minute {
+	if run && glob.GetNoResponseCount() >= 15 && !FactorioBootedAt.IsZero() && time.Since(FactorioBootedAt) > time.Minute {
 		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")
 		cwlog.DoLogCW("Server now appears to be responding again.")
 	}
-	glob.NoResponseCount = 0
+	glob.ResetNoResponseCount()
 
 	if wasrun != run {
 		if !run {
@@ -221,7 +221,7 @@ func SetFactRunning(run, report bool) {
 }
 
 func clearOnlinePlayers() {
-	NumPlayers = 0
+	SetNumPlayers(0)
 	OnlinePlayersLock.Lock()
 	glob.OnlinePlayers = []glob.OnlinePlayerData{}
 	OnlinePlayersLock.Unlock()
@@ -577,7 +577,7 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 func UpdateChannelName() {
 
 	var newchname string
-	nump := NumPlayers
+	nump := NumPlayersCurrent()
 	icon := "⚪"
 
 	if cfg.Local.Options.CustomWhitelist {
@@ -1268,7 +1268,7 @@ func DoExit(delay bool) {
 	time.Sleep(time.Second * 2)
 
 	/* This kills all loops! */
-	glob.ServerRunning = false
+	glob.SetServerRunning(false)
 
 	cwlog.DoLogCW("CW closing, load/save db.")
 	WritePlayers()

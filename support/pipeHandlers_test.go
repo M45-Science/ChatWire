@@ -23,7 +23,7 @@ func resetSupportTestState(t *testing.T) {
 	fact.GameMapPath = ""
 	fact.LastSaveName = ""
 	fact.Gametime = "12:34"
-	fact.NumPlayers = 0
+	fact.SetNumPlayers(0)
 	fact.FactIsRunning = false
 	fact.FactorioBooted = false
 	glob.OnlineCommand = "/online"
@@ -74,8 +74,8 @@ func TestHandleOnlinePlayersUpdatesCount(t *testing.T) {
 	if !handleOnlinePlayers(input) {
 		t.Fatal("expected online players line to be handled")
 	}
-	if fact.NumPlayers != 3 {
-		t.Fatalf("expected 3 players, got %d", fact.NumPlayers)
+	if fact.NumPlayersCurrent() != 3 {
+		t.Fatalf("expected 3 players, got %d", fact.NumPlayersCurrent())
 	}
 }
 

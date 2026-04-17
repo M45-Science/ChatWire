@@ -15,7 +15,7 @@ func startPauseExpiryLoop() {
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			glob.PausedLock.Lock()
 
 			if glob.PausedForConnect {

@@ -51,7 +51,7 @@ func handleFactReady(input *handleData) bool {
 
 		// A Factorio boot implies no players online yet; clear any stale count so the
 		// Discord channel name can be refreshed immediately.
-		fact.NumPlayers = 0
+		fact.SetNumPlayers(0)
 		fact.OnlinePlayersLock.Lock()
 		glob.OnlinePlayers = []glob.OnlinePlayerData{}
 		fact.OnlinePlayersLock.Unlock()
