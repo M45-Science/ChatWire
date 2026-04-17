@@ -637,6 +637,14 @@ func (lm *lifecycleManager) updateOperationProgressDelayed(description string, d
 	UpdateOperationProgressDelayed(token, title, description, glob.COLOR_CYAN, delay)
 }
 
+func (lm *lifecycleManager) updateOperationProgressDelayedWithReminder(description, reminder string, delay time.Duration) {
+	lm.mu.Lock()
+	token := lm.operationToken
+	title := lifecycleOperationTitle(lm.operationKind)
+	lm.mu.Unlock()
+	UpdateOperationProgressDelayedWithReminder(token, title, description, reminder, glob.COLOR_CYAN, delay)
+}
+
 func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	started := time.Now()
 	var err error
@@ -785,9 +793,6 @@ func (lm *lifecycleManager) executeStop(reason string) error {
 	}
 
 	cwlog.DoLogCW("lifecycle: stop initiated generation=%d reason=%q", gen, reason)
-	if FactIsRunning {
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Quitting Factorio: "+reason, glob.COLOR_ORANGE))
-	}
 	glob.RelaunchThrottle = 0
 	glob.ResetNoResponseCount()
 
@@ -923,17 +928,21 @@ func (lm *lifecycleManager) handleProgressEvent(evt lifecycleProgressEvent) {
 
 	switch evt.kind {
 	case "mod-load":
-		lm.updateOperationProgressDelayed("Loading mods...", lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder("Factorio is loading mods.", "Factorio is continuing to load mods.", lifecycleOptionalProgressDelay)
 	case "map-load":
 		if opKind == ActionChangeMap && saveName != "" {
-			lm.updateOperationProgressDelayed(fmt.Sprintf("Loading map %s.", saveName), lifecycleOptionalProgressDelay)
+			lm.updateOperationProgressDelayedWithReminder(
+				fmt.Sprintf("Factorio is loading map %s.", saveName),
+				fmt.Sprintf("Factorio is still loading map %s.", saveName),
+				lifecycleOptionalProgressDelay,
+			)
 		} else {
-			lm.updateOperationProgressDelayed("Loading map.", lifecycleOptionalProgressDelay)
+			lm.updateOperationProgressDelayedWithReminder("Factorio is loading the map.", "Factorio is still loading the map.", lifecycleOptionalProgressDelay)
 		}
 	case "save":
-		lm.updateOperationProgressDelayed("Saving map before shutdown.", lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder("Factorio is saving the map.", "Factorio is still saving the map.", lifecycleOptionalProgressDelay)
 	case "rcon-ready":
-		lm.updateOperationProgressDelayed("Factorio finished loading and is bringing the server online.", lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder("Factorio is bringing the server online.", "Factorio is still bringing the server online.", lifecycleOptionalProgressDelay)
 	}
 }
 

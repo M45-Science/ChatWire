@@ -14,7 +14,8 @@ import (
 
 const (
 	operationAnnounceDelay    = 3 * time.Second
-	operationProgressThrottle = 15 * time.Second
+	operationProgressThrottle = 10 * time.Second
+	operationReminderInterval = 10 * time.Second
 )
 
 type operationStatusState struct {
@@ -94,10 +95,18 @@ func UpdateOperationProgress(token, title, description string, color int) {
 }
 
 func UpdateOperationProgressDelayed(token, title, description string, color int, delay time.Duration) {
+	UpdateOperationProgressDelayedWithReminder(token, title, description, description, color, delay)
+}
+
+func UpdateOperationProgressDelayedWithReminder(token, title, description, reminderDescription string, color int, delay time.Duration) {
 	title = strings.TrimSpace(title)
 	description = strings.TrimSpace(description)
+	reminderDescription = strings.TrimSpace(reminderDescription)
 	if token == "" || title == "" || description == "" {
 		return
+	}
+	if reminderDescription == "" {
+		reminderDescription = description
 	}
 	if delay <= 0 {
 		UpdateOperationProgress(token, title, description, color)
@@ -113,18 +122,18 @@ func UpdateOperationProgressDelayed(token, title, description string, color int,
 	delayID := operationStatus.pendingDelayID
 	operationStatusLock.Unlock()
 
-	go func(tok, ttl, desc string, wait time.Duration, id uint64) {
-		time.Sleep(wait)
-
-		operationStatusLock.Lock()
-		if tok != operationStatus.token || id != operationStatus.pendingDelayID {
-			operationStatusLock.Unlock()
-			return
+	go func(tok, ttl, firstDesc, repeatDesc string, firstWait time.Duration, id uint64) {
+		wait := firstWait
+		desc := firstDesc
+		for {
+			time.Sleep(wait)
+			if !emitScheduledOperationProgress(tok, ttl, desc, color, id) {
+				return
+			}
+			desc = repeatDesc
+			wait = operationReminderInterval
 		}
-		operationStatusLock.Unlock()
-
-		UpdateOperationProgress(tok, ttl, desc, color)
-	}(token, title, description, delay, delayID)
+	}(token, title, description, reminderDescription, delay, delayID)
 }
 
 func updateOperation(token, title, description string, color int, throttled bool, force bool) {
@@ -168,6 +177,34 @@ func updateOperation(token, title, description string, color int, throttled bool
 	if cfg.Local.Channel.ChatChannel != "" {
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
 	}
+}
+
+func emitScheduledOperationProgress(token, title, description string, color int, delayID uint64) bool {
+	operationStatusLock.Lock()
+	if token != operationStatus.token || delayID != operationStatus.pendingDelayID {
+		operationStatusLock.Unlock()
+		return false
+	}
+
+	now := time.Now()
+	progressKey := title + "\n" + description
+	if progressKey == operationStatus.lastProgressKey && now.Sub(operationStatus.lastProgressUpdateAt) < operationProgressThrottle {
+		operationStatusLock.Unlock()
+		return true
+	}
+
+	operationStatus.title = title
+	operationStatus.description = description
+	operationStatus.lastProgressKey = progressKey
+	operationStatus.lastProgressUpdateAt = now
+	operationStatus.announced = true
+	operationStatusLock.Unlock()
+
+	cwlog.DoLogCW("%s: %s", title, description)
+	if cfg.Local.Channel.ChatChannel != "" {
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+	}
+	return true
 }
 
 func CompleteOperation(token, title, description string, color int) {
