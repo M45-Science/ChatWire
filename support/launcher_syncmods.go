@@ -17,10 +17,6 @@ import (
 	"ChatWire/glob"
 )
 
-const (
-	dotInterval = time.Second * 5
-)
-
 func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 	opToken := fact.BeginOperation("Mod Sync", "Syncing mods. This can take a while on large modpacks or slow downloads.")
 	fact.SetModOperationInProgress(true)
@@ -77,7 +73,6 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 	}()
 
 	modsLoading := false
-	var lastDot time.Time
 	lastProgress := time.Now()
 
 	for {
@@ -115,13 +110,6 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 					glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Sync",
 						msg, glob.COLOR_CYAN))
 					cwlog.DoLogCW(msg)
-				} else if time.Since(lastDot) > dotInterval {
-					lastDot = time.Now()
-					if glob.GetUpdateMessage() != nil && len(glob.GetUpdateMessage().Embeds) > 0 {
-						embed := glob.GetUpdateMessage().Embeds[0]
-						embed.Description = embed.Description + " ."
-						disc.DS.ChannelMessageEditEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage().ID, embed)
-					}
 				}
 			}
 			if numParts > 3 && parts[3] == "Downloading" {

@@ -268,7 +268,6 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 			cfg.Local.Channel.ChatChannel = channelid.ID
 			cfg.WriteLCfg()
 		}
-		return
 	}
 
 	//Only on first connect
