@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
@@ -16,6 +18,7 @@ const (
 	operationAnnounceDelay    = 3 * time.Second
 	operationProgressThrottle = 10 * time.Second
 	operationReminderInterval = 10 * time.Second
+	operationOptionalTTL      = 60 * time.Second
 )
 
 type operationStatusState struct {
@@ -32,6 +35,12 @@ type operationStatusState struct {
 var (
 	operationStatusLock sync.Mutex
 	operationStatus     operationStatusState
+	operationDeleteMessage = func(channelID, messageID string) error {
+		if disc.DS == nil {
+			return nil
+		}
+		return disc.DS.ChannelMessageDelete(channelID, messageID)
+	}
 )
 
 func BeginOperation(title, description string) string {
@@ -118,6 +127,7 @@ func UpdateOperationProgressDelayedWithReminder(token, title, description, remin
 		operationStatusLock.Unlock()
 		return
 	}
+	firstWait := nextOptionalProgressDelay(operationStatus.startedAt, operationStatus.announced, delay)
 	operationStatus.pendingDelayID++
 	delayID := operationStatus.pendingDelayID
 	operationStatusLock.Unlock()
@@ -133,7 +143,25 @@ func UpdateOperationProgressDelayedWithReminder(token, title, description, remin
 			desc = repeatDesc
 			wait = operationReminderInterval
 		}
-	}(token, title, description, reminderDescription, delay, delayID)
+	}(token, title, description, reminderDescription, firstWait, delayID)
+}
+
+func nextOptionalProgressDelay(startedAt time.Time, announced bool, delay time.Duration) time.Duration {
+	if delay <= 0 {
+		return 0
+	}
+	if announced {
+		return delay
+	}
+
+	elapsed := time.Since(startedAt)
+	if elapsed < 0 {
+		elapsed = 0
+	}
+	if elapsed < operationAnnounceDelay {
+		delay += operationAnnounceDelay - elapsed
+	}
+	return delay
 }
 
 func updateOperation(token, title, description string, color int, throttled bool, force bool) {
@@ -202,9 +230,38 @@ func emitScheduledOperationProgress(token, title, description string, color int,
 
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
-		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+		msg := disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color)
+		glob.SetUpdateMessage(msg)
+		scheduleOptionalOperationCleanup(msg)
 	}
 	return true
+}
+
+func scheduleOptionalOperationCleanup(msg *discordgo.Message) {
+	if msg == nil {
+		return
+	}
+
+	channelID := cfg.Local.Channel.ChatChannel
+	messageID := msg.ID
+	if channelID == "" || messageID == "" {
+		return
+	}
+
+	go func(chID, msgID string) {
+		time.Sleep(operationOptionalTTL)
+
+		current := glob.GetUpdateMessage()
+		if current == nil || current.ChannelID != chID || current.ID != msgID {
+			return
+		}
+
+		if err := operationDeleteMessage(chID, msgID); err != nil {
+			cwlog.DoLogCW("operation status cleanup: unable to delete message %s: %v", msgID, err)
+			return
+		}
+		glob.ResetUpdateMessage()
+	}(channelID, messageID)
 }
 
 func CompleteOperation(token, title, description string, color int) {

@@ -288,8 +288,10 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		AddModHistory(newHist)
 	}
 	shortBuf := downloadMods(downloadList)
+	requestedDownloads := getDownloadCount(downloadList)
+	completedDownloads := getCompletedDownloadCount(downloadList)
 
-	if getDownloadCount(downloadList) > 0 && len(installedMods) > 0 {
+	if requestedDownloads > 0 && completedDownloads == requestedDownloads && len(installedMods) > 0 {
 		emsg := "Mod updates complete."
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Updates", emsg, glob.COLOR_CYAN))
 		if fact.NumPlayersCurrent() > 0 && shortBuf != "" {
@@ -298,6 +300,18 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		glob.SetBootMessage(nil)
 		fact.CompleteOperation(opToken, "Mod Updates", "Mod updates are ready and will apply on reboot.", glob.COLOR_GREEN)
 		return true, nil
+	}
+	if requestedDownloads > 0 && completedDownloads > 0 {
+		emsg := fmt.Sprintf("Only %d of %d mod updates downloaded successfully. Restart canceled.", completedDownloads, requestedDownloads)
+		glob.SetBootMessage(nil)
+		fact.FailOperation(opToken, "Mod Updates", emsg, glob.COLOR_RED)
+		return false, errors.New(emsg)
+	}
+	if requestedDownloads > 0 {
+		emsg := "Mod update downloads failed. Restart canceled."
+		glob.SetBootMessage(nil)
+		fact.FailOperation(opToken, "Mod Updates", emsg, glob.COLOR_RED)
+		return false, errors.New(emsg)
 	}
 
 	glob.SetBootMessage(nil)

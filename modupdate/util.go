@@ -348,6 +348,16 @@ func getDownloadCount(downloadList []downloadData) int {
 	return len(downloadList)
 }
 
+func getCompletedDownloadCount(downloadList []downloadData) int {
+	count := 0
+	for _, item := range downloadList {
+		if item.Complete {
+			count++
+		}
+	}
+	return count
+}
+
 func downloadMods(downloadList []downloadData) string {
 
 	modPath := cfg.GetModsFolder()

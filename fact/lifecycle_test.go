@@ -799,6 +799,23 @@ func TestLifecycleReadyThenExitEndsStopped(t *testing.T) {
 	}
 }
 
+func TestShouldReportOfflineStatusSuppressesPlannedRestartTransitions(t *testing.T) {
+	for _, kind := range []ActionKind{ActionRestartFactorio, ActionRestartChatWire, ActionChangeMap, ActionMapReset} {
+		if shouldReportOfflineStatus(kind, nil) {
+			t.Fatalf("expected no offline status for planned transition %q", kind)
+		}
+	}
+}
+
+func TestShouldReportOfflineStatusReportsExplicitStopAndErrors(t *testing.T) {
+	if !shouldReportOfflineStatus(ActionStop, nil) {
+		t.Fatal("expected offline status for explicit stop")
+	}
+	if !shouldReportOfflineStatus(ActionRestartFactorio, errors.New("startup failed")) {
+		t.Fatal("expected offline status when restart exits with error")
+	}
+}
+
 func TestLifecycleDuplicateGoodbyeDoesNotChangeRunningState(t *testing.T) {
 	resetLifecycleTestState(t)
 

@@ -146,6 +146,21 @@ func TestImmediateUpdateInvalidatesQueuedDelayedReminder(t *testing.T) {
 	}
 }
 
+func TestNextOptionalProgressDelayWaitsForAnnouncementWindow(t *testing.T) {
+	delay := nextOptionalProgressDelay(time.Now().Add(-time.Second), false, 5*time.Second)
+	expected := 5*time.Second + operationAnnounceDelay - time.Second
+	if delay < expected-50*time.Millisecond || delay > expected+50*time.Millisecond {
+		t.Fatalf("expected delay near %v, got %v", expected, delay)
+	}
+}
+
+func TestNextOptionalProgressDelayUsesStepDelayAfterAnnouncement(t *testing.T) {
+	delay := nextOptionalProgressDelay(time.Now().Add(-operationAnnounceDelay-time.Second), true, 5*time.Second)
+	if delay != 5*time.Second {
+		t.Fatalf("expected announced step delay to remain 5s, got %v", delay)
+	}
+}
+
 func TestAnnouncePendingOperationUsesLatestQueuedDescription(t *testing.T) {
 	resetOperationStatusTestState()
 

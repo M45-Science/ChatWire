@@ -78,7 +78,7 @@ type lifecycleProgressEvent struct {
 	at         time.Time
 }
 
-const lifecycleOptionalProgressDelay = 3 * time.Second
+const lifecycleOptionalProgressDelay = 5 * time.Second
 
 type lifecycleHealthEvent struct {
 	generation uint64
@@ -702,8 +702,6 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 		switch req.Kind {
 		case ActionStop:
 			lm.finishOperationSuccess(StatusFactorioOffline(), glob.COLOR_RED)
-		case ActionRestartChatWire:
-			lm.finishOperationSuccess("Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
 		}
 	}
 
@@ -1049,6 +1047,18 @@ func (lm *lifecycleManager) handleExitEvent(evt processExitEvent) {
 	lm.finalizeStopped(evt.generation, evt.err, true)
 }
 
+func shouldReportOfflineStatus(opKind ActionKind, exitErr error) bool {
+	if exitErr != nil {
+		return true
+	}
+	switch opKind {
+	case ActionRestartFactorio, ActionRestartChatWire, ActionChangeMap, ActionMapReset:
+		return false
+	default:
+		return true
+	}
+}
+
 func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, report bool) {
 	lm.mu.Lock()
 	if generation != lm.currentGeneration && generation != 0 {
@@ -1090,7 +1100,7 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 
 	UpdateChannelName()
 	DoUpdateChannelNameForce()
-	if report {
+	if report && shouldReportOfflineStatus(opKind, exitErr) {
 		cwlog.DoLogCW("Factorio has closed.")
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", StatusFactorioOffline(), glob.COLOR_RED))
 	}
@@ -1124,8 +1134,6 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 		switch opKind {
 		case ActionStop:
 			CancelOperation(opToken)
-		case ActionRestartChatWire:
-			CompleteOperation(opToken, lifecycleOperationTitle(opKind), "Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
 		}
 	}
 	if opToken != "" && (wasStarting || exitErr != nil) {
