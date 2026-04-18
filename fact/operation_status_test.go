@@ -3,12 +3,20 @@ package fact
 import (
 	"testing"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+
+	"ChatWire/glob"
 )
 
 func resetOperationStatusTestState() {
 	operationStatusLock.Lock()
 	operationStatus = operationStatusState{}
 	operationStatusLock.Unlock()
+	glob.ResetUpdateMessage()
+	operationDeleteMessage = func(channelID, messageID string) error {
+		return nil
+	}
 }
 
 func TestCancelOperationDelayedProgressInvalidatesPendingReminder(t *testing.T) {
@@ -120,6 +128,73 @@ func TestFinalizeOperationRejectsOlderPendingReminders(t *testing.T) {
 	defer operationStatusLock.Unlock()
 	if operationStatus.token != "" {
 		t.Fatalf("expected finalized operation state to be cleared, got token %q", operationStatus.token)
+	}
+}
+
+func TestFinalizeOperationDeletesTrackedOptionalMessages(t *testing.T) {
+	resetOperationStatusTestState()
+
+	token := "op-test"
+	deleted := make([]string, 0, 2)
+	operationDeleteMessage = func(channelID, messageID string) error {
+		deleted = append(deleted, channelID+"/"+messageID)
+		return nil
+	}
+
+	operationStatusLock.Lock()
+	operationStatus = operationStatusState{
+		token:     token,
+		startedAt: time.Now().Add(-time.Minute),
+		announced: true,
+		optionalMessages: []operationMessageRef{
+			{channelID: "c1", messageID: "m1"},
+			{channelID: "c1", messageID: "m2"},
+		},
+	}
+	operationStatusLock.Unlock()
+	glob.SetUpdateMessage(&discordgo.Message{ChannelID: "c1", ID: "m2"})
+
+	CompleteOperation(token, "", "", 0)
+
+	if len(deleted) != 2 {
+		t.Fatalf("expected 2 optional messages to be deleted, got %v", deleted)
+	}
+	if glob.GetUpdateMessage() != nil {
+		t.Fatal("expected tracked update message to be cleared after deletion")
+	}
+}
+
+func TestImmediateUpdateDeletesTrackedOptionalMessages(t *testing.T) {
+	resetOperationStatusTestState()
+
+	token := "op-test"
+	deleted := make([]string, 0, 1)
+	operationDeleteMessage = func(channelID, messageID string) error {
+		deleted = append(deleted, channelID+"/"+messageID)
+		return nil
+	}
+
+	operationStatusLock.Lock()
+	operationStatus = operationStatusState{
+		token:     token,
+		startedAt: time.Now().Add(-time.Minute),
+		announced: true,
+		optionalMessages: []operationMessageRef{
+			{channelID: "c1", messageID: "m1"},
+		},
+	}
+	operationStatusLock.Unlock()
+	glob.SetUpdateMessage(&discordgo.Message{ChannelID: "c1", ID: "m1"})
+
+	UpdateOperation(token, "Starting Factorio.", "Factorio is loading mods.", 0)
+
+	if len(deleted) != 1 || deleted[0] != "c1/m1" {
+		t.Fatalf("expected optional message to be deleted, got %v", deleted)
+	}
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if len(operationStatus.optionalMessages) != 0 {
+		t.Fatalf("expected optional message tracking to be cleared, got %v", operationStatus.optionalMessages)
 	}
 }
 

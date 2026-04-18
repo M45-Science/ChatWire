@@ -30,11 +30,17 @@ type operationStatusState struct {
 	lastProgressUpdateAt time.Time
 	announced            bool
 	pendingDelayID       uint64
+	optionalMessages     []operationMessageRef
+}
+
+type operationMessageRef struct {
+	channelID string
+	messageID string
 }
 
 var (
-	operationStatusLock sync.Mutex
-	operationStatus     operationStatusState
+	operationStatusLock    sync.Mutex
+	operationStatus        operationStatusState
 	operationDeleteMessage = func(channelID, messageID string) error {
 		if disc.DS == nil {
 			return nil
@@ -196,11 +202,13 @@ func updateOperation(token, title, description string, color int, throttled bool
 		operationStatus.lastProgressUpdateAt = now
 	}
 
+	optionalMessages := clearTrackedOptionalMessagesLocked()
 	operationStatus.title = title
 	operationStatus.description = description
 	operationStatus.announced = true
 	operationStatusLock.Unlock()
 
+	deleteOperationMessages(optionalMessages)
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
@@ -232,36 +240,55 @@ func emitScheduledOperationProgress(token, title, description string, color int,
 	if cfg.Local.Channel.ChatChannel != "" {
 		msg := disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color)
 		glob.SetUpdateMessage(msg)
-		scheduleOptionalOperationCleanup(msg)
+		if ref, ok := trackOptionalOperationMessage(msg); ok {
+			scheduleOptionalOperationCleanup(ref)
+		}
 	}
 	return true
 }
 
-func scheduleOptionalOperationCleanup(msg *discordgo.Message) {
-	if msg == nil {
+func trackOptionalOperationMessage(msg *discordgo.Message) (operationMessageRef, bool) {
+	if msg == nil || msg.ChannelID == "" || msg.ID == "" {
+		return operationMessageRef{}, false
+	}
+	ref := operationMessageRef{
+		channelID: msg.ChannelID,
+		messageID: msg.ID,
+	}
+	operationStatusLock.Lock()
+	operationStatus.optionalMessages = append(operationStatus.optionalMessages, ref)
+	operationStatusLock.Unlock()
+	return ref, true
+}
+
+func scheduleOptionalOperationCleanup(ref operationMessageRef) {
+	if ref.channelID == "" || ref.messageID == "" {
 		return
 	}
 
-	channelID := cfg.Local.Channel.ChatChannel
-	messageID := msg.ID
-	if channelID == "" || messageID == "" {
-		return
-	}
-
-	go func(chID, msgID string) {
+	go func(ref operationMessageRef) {
 		time.Sleep(operationOptionalTTL)
 
-		current := glob.GetUpdateMessage()
-		if current == nil || current.ChannelID != chID || current.ID != msgID {
+		operationStatusLock.Lock()
+		found := false
+		for i, msg := range operationStatus.optionalMessages {
+			if msg == ref {
+				operationStatus.optionalMessages = append(operationStatus.optionalMessages[:i], operationStatus.optionalMessages[i+1:]...)
+				found = true
+				break
+			}
+		}
+		operationStatusLock.Unlock()
+		if !found {
 			return
 		}
 
-		if err := operationDeleteMessage(chID, msgID); err != nil {
-			cwlog.DoLogCW("operation status cleanup: unable to delete message %s: %v", msgID, err)
+		if err := operationDeleteMessage(ref.channelID, ref.messageID); err != nil {
+			cwlog.DoLogCW("operation status cleanup: unable to delete message %s: %v", ref.messageID, err)
 			return
 		}
-		glob.ResetUpdateMessage()
-	}(channelID, messageID)
+		resetUpdateMessageIfMatches(ref)
+	}(ref)
 }
 
 func CompleteOperation(token, title, description string, color int) {
@@ -302,9 +329,11 @@ func finalizeOperation(token, title, description string, color int) {
 		return
 	}
 	announced := operationStatus.announced || time.Since(operationStatus.startedAt) >= operationAnnounceDelay
+	optionalMessages := operationStatus.optionalMessages
 	operationStatus = operationStatusState{}
 	operationStatusLock.Unlock()
 
+	deleteOperationMessages(optionalMessages)
 	if !announced || title == "" || description == "" {
 		return
 	}
@@ -312,5 +341,34 @@ func finalizeOperation(token, title, description string, color int) {
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+	}
+}
+
+func clearTrackedOptionalMessagesLocked() []operationMessageRef {
+	if len(operationStatus.optionalMessages) == 0 {
+		return nil
+	}
+	msgs := append([]operationMessageRef(nil), operationStatus.optionalMessages...)
+	operationStatus.optionalMessages = nil
+	return msgs
+}
+
+func deleteOperationMessages(msgs []operationMessageRef) {
+	for _, msg := range msgs {
+		if msg.channelID == "" || msg.messageID == "" {
+			continue
+		}
+		if err := operationDeleteMessage(msg.channelID, msg.messageID); err != nil {
+			cwlog.DoLogCW("operation status cleanup: unable to delete message %s: %v", msg.messageID, err)
+			continue
+		}
+		resetUpdateMessageIfMatches(msg)
+	}
+}
+
+func resetUpdateMessageIfMatches(ref operationMessageRef) {
+	current := glob.GetUpdateMessage()
+	if current != nil && current.ChannelID == ref.channelID && current.ID == ref.messageID {
+		glob.ResetUpdateMessage()
 	}
 }
