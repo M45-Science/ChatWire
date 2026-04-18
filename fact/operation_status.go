@@ -219,6 +219,19 @@ func CancelOperation(token string) {
 	finalizeOperation(token, "", "", 0)
 }
 
+func CancelOperationDelayedProgress(token string) {
+	if token == "" {
+		return
+	}
+
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if token != operationStatus.token {
+		return
+	}
+	operationStatus.pendingDelayID++
+}
+
 func finalizeOperation(token, title, description string, color int) {
 	title = strings.TrimSpace(title)
 	description = strings.TrimSpace(description)

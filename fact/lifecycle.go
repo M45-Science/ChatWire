@@ -1123,6 +1123,10 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	cwlog.DoLogCW("lifecycle: process exit observed generation=%d stop_elapsed=%v", generation, stoppedAfter)
 	lm.mu.Unlock()
 
+	if opToken != "" {
+		CancelOperationDelayedProgress(opToken)
+	}
+
 	if opToken != "" && exitErr == nil {
 		switch opKind {
 		case ActionStop:
