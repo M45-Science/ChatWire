@@ -586,6 +586,43 @@ func TestLifecycleStopSaveProgressExtendsDeadline(t *testing.T) {
 	}
 }
 
+func TestLifecycleFinalizeStoppedCancelsDelayedSaveReminderForMapReset(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStopping
+	lm.currentGeneration = 1
+	lm.startedAt = time.Now()
+	lm.operationKind = ActionMapReset
+	lm.operationToken = BeginOperation(lifecycleOperationTitle(ActionMapReset), lifecycleOperationDescriptionForKind(ActionMapReset, ""))
+	lm.syncCompatibilityLocked()
+
+	UpdateOperationProgressDelayedWithReminder(
+		lm.operationToken,
+		lifecycleOperationTitle(ActionMapReset),
+		"Factorio is saving the map.",
+		"Factorio is still saving the map.",
+		0,
+		time.Hour,
+	)
+
+	operationStatusLock.Lock()
+	delayID := operationStatus.pendingDelayID
+	operationStatusLock.Unlock()
+
+	lm.finalizeStopped(1, nil, false)
+
+	if emitScheduledOperationProgress(lm.operationToken, lifecycleOperationTitle(ActionMapReset), "Factorio is saving the map.", 0, delayID) {
+		t.Fatal("expected stop completion to invalidate delayed save reminder for map reset")
+	}
+
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if operationStatus.token == "" {
+		t.Fatal("expected map-reset operation to remain active after stop completion")
+	}
+}
+
 func TestLifecycleRestartChatWireExitsOnlyAfterStop(t *testing.T) {
 	resetLifecycleTestState(t)
 
