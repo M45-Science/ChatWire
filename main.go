@@ -270,17 +270,25 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 		}
 	}
 
-	//Only on first connect
-	if !support.BotIsReady {
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", constants.ProgName+" "+constants.Version+" is now online.", glob.COLOR_GREEN))
-		if (fact.FactIsRunning || fact.FactorioBooted) && fact.FactorioVersion != "" && fact.FactorioVersion != constants.Unknown {
-			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "🟢 Factorio "+fact.FactorioVersion+" is online.", glob.COLOR_GREEN))
-		}
-	}
+	finishDiscordReady()
+}
 
-	//Reset attempt count, we are fully connected.
+func finishDiscordReady() {
+	firstConnect := !support.BotIsReady
 	discordConnectAttempts = 0
 	support.BotIsReady = true
+	emitDiscordLifecycleSnapshot(firstConnect)
+}
+
+func emitDiscordLifecycleSnapshot(firstConnect bool) {
+	if !firstConnect {
+		return
+	}
+
+	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", fact.StatusChatWireOnline(), glob.COLOR_GREEN))
+	if (fact.FactIsRunning || fact.FactorioBooted) && fact.FactorioVersion != "" && fact.FactorioVersion != constants.Unknown {
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", fact.StatusFactorioOnline(fact.FactorioVersion), glob.COLOR_GREEN))
+	}
 }
 
 func checkLockFile() {

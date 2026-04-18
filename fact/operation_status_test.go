@@ -122,3 +122,48 @@ func TestFinalizeOperationRejectsOlderPendingReminders(t *testing.T) {
 		t.Fatalf("expected finalized operation state to be cleared, got token %q", operationStatus.token)
 	}
 }
+
+func TestImmediateUpdateInvalidatesQueuedDelayedReminder(t *testing.T) {
+	resetOperationStatusTestState()
+
+	token := BeginOperation("Starting Factorio.", "Starting Factorio.")
+	UpdateOperationProgressDelayedWithReminder(token, "Starting Factorio.", StatusLoadingMap(""), StatusLoadingMapStill(""), 0, time.Hour)
+
+	operationStatusLock.Lock()
+	delayID := operationStatus.pendingDelayID
+	operationStatusLock.Unlock()
+
+	AnnounceOperationNow(token, "Starting Factorio", StatusStartingFactorio(), 0)
+
+	if emitScheduledOperationProgress(token, "Starting Factorio.", StatusLoadingMap(""), 0, delayID) {
+		t.Fatal("expected immediate update to invalidate queued delayed reminder")
+	}
+
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if operationStatus.description != StatusStartingFactorio() {
+		t.Fatalf("expected immediate status to remain current, got %q", operationStatus.description)
+	}
+}
+
+func TestAnnouncePendingOperationUsesLatestQueuedDescription(t *testing.T) {
+	resetOperationStatusTestState()
+
+	token := BeginOperation("Starting Factorio", StatusStartingFactorio())
+	UpdateOperation(token, "Starting Factorio", StatusLoadingMods(), 0)
+
+	operationStatusLock.Lock()
+	operationStatus.startedAt = time.Now().Add(-operationAnnounceDelay - time.Millisecond)
+	operationStatusLock.Unlock()
+
+	AnnouncePendingOperation(token, 0)
+
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if !operationStatus.announced {
+		t.Fatal("expected pending operation to be announced")
+	}
+	if operationStatus.description != StatusLoadingMods() {
+		t.Fatalf("expected latest queued description to be announced, got %q", operationStatus.description)
+	}
+}

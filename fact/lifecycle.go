@@ -545,20 +545,17 @@ func lifecycleOperationTitle(kind ActionKind) string {
 func lifecycleOperationDescriptionForKind(kind ActionKind, saveName string) string {
 	switch kind {
 	case ActionStart:
-		return "Starting Factorio."
+		return StatusStartingFactorio()
 	case ActionStop:
-		return "Stopping Factorio."
+		return StatusStoppingFactorio()
 	case ActionRestartFactorio:
-		return "Restarting Factorio."
+		return StatusRestartingFactorio()
 	case ActionRestartChatWire:
-		return "Restarting ChatWire."
+		return StatusRestartingChatWire()
 	case ActionChangeMap:
-		if saveName != "" {
-			return fmt.Sprintf("Changing map to %s.", saveName)
-		}
-		return "Changing map."
+		return StatusChangingMap(saveName)
 	case ActionMapReset:
-		return "Resetting map."
+		return StatusResettingMap()
 	default:
 		return "Operation in progress."
 	}
@@ -704,7 +701,7 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	} else {
 		switch req.Kind {
 		case ActionStop:
-			lm.finishOperationSuccess("🔴 Factorio is now offline.", glob.COLOR_RED)
+			lm.finishOperationSuccess(StatusFactorioOffline(), glob.COLOR_RED)
 		case ActionRestartChatWire:
 			lm.finishOperationSuccess("Factorio stopped. ChatWire restart is continuing.", glob.COLOR_ORANGE)
 		}
@@ -928,21 +925,17 @@ func (lm *lifecycleManager) handleProgressEvent(evt lifecycleProgressEvent) {
 
 	switch evt.kind {
 	case "mod-load":
-		lm.updateOperationProgressDelayedWithReminder("Factorio is loading mods.", "Factorio is continuing to load mods.", lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder(StatusLoadingMods(), StatusLoadingModsStill(), lifecycleOptionalProgressDelay)
 	case "map-load":
-		if opKind == ActionChangeMap && saveName != "" {
-			lm.updateOperationProgressDelayedWithReminder(
-				fmt.Sprintf("Factorio is loading map %s.", saveName),
-				fmt.Sprintf("Factorio is still loading map %s.", saveName),
-				lifecycleOptionalProgressDelay,
-			)
+		if opKind == ActionChangeMap {
+			lm.updateOperationProgressDelayedWithReminder(StatusLoadingMap(saveName), StatusLoadingMapStill(saveName), lifecycleOptionalProgressDelay)
 		} else {
-			lm.updateOperationProgressDelayedWithReminder("Factorio is loading the map.", "Factorio is still loading the map.", lifecycleOptionalProgressDelay)
+			lm.updateOperationProgressDelayedWithReminder(StatusLoadingMap(""), StatusLoadingMapStill(""), lifecycleOptionalProgressDelay)
 		}
 	case "save":
-		lm.updateOperationProgressDelayedWithReminder("Factorio is saving the map.", "Factorio is still saving the map.", lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder(StatusSavingMap(), StatusSavingMapStill(), lifecycleOptionalProgressDelay)
 	case "rcon-ready":
-		lm.updateOperationProgressDelayedWithReminder("Factorio is bringing the server online.", "Factorio is still bringing the server online.", lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder(StatusBringingServerOnline(), StatusBringingServerOnlineStill(), lifecycleOptionalProgressDelay)
 	}
 }
 
@@ -1099,7 +1092,7 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	DoUpdateChannelNameForce()
 	if report {
 		cwlog.DoLogCW("Factorio has closed.")
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "🔴 Factorio is now offline.", glob.COLOR_RED))
+		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", StatusFactorioOffline(), glob.COLOR_RED))
 	}
 
 	if wasStarting {

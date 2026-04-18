@@ -38,10 +38,7 @@ func factorioReadyStatusKnown() bool {
 }
 
 func factorioReadyStatus() string {
-	if !factorioReadyStatusKnown() {
-		return "🟢 Factorio is online."
-	}
-	return "🟢 Factorio " + FactorioVersion + " is online."
+	return StatusFactorioOnline(FactorioVersion)
 }
 
 func waitForFactorioReadyStatus(timeout time.Duration) string {
@@ -241,7 +238,7 @@ func SetFactRunning(run, report bool) {
 				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", readyMsg, glob.COLOR_GREEN))
 			} else {
 				cwlog.DoLogCW("Factorio has closed.")
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "🔴 Factorio is now offline.", glob.COLOR_RED))
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", StatusFactorioOffline(), glob.COLOR_RED))
 			}
 		}
 		UpdateChannelName()
@@ -1284,7 +1281,7 @@ func MakeSteamURL() (string, bool) {
 /* Program shutdown */
 func DoExit(delay bool) {
 
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", constants.ProgName+" shutting down.", glob.COLOR_RED))
+	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", StatusChatWireShuttingDown(), glob.COLOR_RED))
 
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {
