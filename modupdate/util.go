@@ -162,8 +162,17 @@ func modInfoRead(modName string, rawData []byte) *modZipInfo {
 var modListFileLock sync.Mutex
 var modPortalRequestLock sync.Mutex
 var lastModPortalRequest time.Time
+var modInfoCache = map[string]modPortalFullData{}
+
+func shouldThrottleModPortalRequest() bool {
+	return glob.ProxyURL == nil || *glob.ProxyURL == ""
+}
 
 func throttleModPortalRequest() {
+	if !shouldThrottleModPortalRequest() {
+		return
+	}
+
 	modPortalRequestLock.Lock()
 	defer modPortalRequestLock.Unlock()
 
@@ -514,6 +523,13 @@ func downloadMods(downloadList []downloadData) string {
 
 var ModInfoLock sync.Mutex
 
+func resetModInfoCache() {
+	ModInfoLock.Lock()
+	defer ModInfoLock.Unlock()
+
+	modInfoCache = map[string]modPortalFullData{}
+}
+
 func DownloadModInfo(name string) (modPortalFullData, error) {
 	ModInfoLock.Lock()
 	defer ModInfoLock.Unlock()
@@ -523,6 +539,9 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 	}
 
 	name = url.PathEscape(name)
+	if cached, ok := modInfoCache[name]; ok {
+		return cached, nil
+	}
 
 	URL := fmt.Sprintf(modPortalURL, name)
 	throttleModPortalRequest()
@@ -539,5 +558,6 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 		cwlog.DoLogCW(emsg)
 		return modPortalFullData{}, errors.New(emsg)
 	}
+	modInfoCache[name] = newInfo
 	return newInfo, nil
 }

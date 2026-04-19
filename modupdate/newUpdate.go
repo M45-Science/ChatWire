@@ -77,6 +77,25 @@ func (p *modUpdateProgress) emit(description string) {
 	p.lastEmit = time.Now()
 }
 
+func dependencySatisfied(depInfo depRequires, installedVersion string, planned []downloadData) (bool, error) {
+	version := installedVersion
+	for _, item := range planned {
+		if item.Name == depInfo.name {
+			version = item.Version
+			break
+		}
+	}
+
+	if version == "" {
+		return false, nil
+	}
+	if depInfo.version == "" {
+		return true, nil
+	}
+
+	return checkVersion(depInfo.equality, depInfo.version, version)
+}
+
 func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string, progress *modUpdateProgress) ([]downloadData, error) {
 
 	if depth > 10 {
@@ -186,6 +205,15 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
 							}
+							good, err := dependencySatisfied(depInfo, depPortalInfo.installed.Version, dl)
+							if err != nil {
+								cwlog.DoLogCW("resolveDeps: dep: dependencySatisfied: %v", err)
+								return []downloadData{}, err
+							}
+							if !good {
+								depsMet = false
+								continue
+							}
 							//Download dep and all of dep's deps.
 							if len(dl) > 0 {
 								for _, item := range dl {
@@ -222,6 +250,7 @@ func CheckModUpdates(dryRun bool, emitProgress bool) (bool, error) {
 	if emitProgress {
 		progress = newModUpdateProgress(opToken)
 	}
+	resetModInfoCache()
 	fact.SetModOperationInProgress(true)
 	defer func() {
 		fact.SetModOperationInProgress(false)
