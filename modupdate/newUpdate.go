@@ -21,7 +21,15 @@ const (
 	modUpdateTitle = "Found Mod Updates"
 )
 
-func CheckMods(force bool, reportNone bool) {
+func CheckModsManual(force bool) {
+	checkMods(force, true)
+}
+
+func CheckModsAuto(force bool) {
+	checkMods(force, false)
+}
+
+func checkMods(force bool, reportNone bool) {
 
 	if !cfg.Local.Options.ModUpdate && !force {
 		return

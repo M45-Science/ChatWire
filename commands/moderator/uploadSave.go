@@ -57,7 +57,7 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	}
 	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), msgTitle,
 		"Checking for mod updates.", glob.COLOR_CYAN))
-	modupdate.CheckMods(true, true)
+	modupdate.CheckModsManual(true)
 	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), msgTitle,
 		"Attempting to load the "+saveGameName+".", glob.COLOR_CYAN))
 	fact.DoChangeMap(strings.TrimSuffix(saveFileName, ".zip"))

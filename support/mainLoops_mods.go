@@ -35,7 +35,7 @@ func startModUpdateLoop() {
 				}
 				if cTime.Hour()%3 == 0 {
 					glob.UpdatersLock.Lock()
-					modupdate.CheckMods(false, false)
+					modupdate.CheckModsAuto(false)
 					glob.UpdatersLock.Unlock()
 				}
 			}
@@ -46,7 +46,7 @@ func startModUpdateLoop() {
 
 				if cfg.Local.Options.ModUpdate {
 					glob.UpdatersLock.Lock()
-					modupdate.CheckMods(false, false)
+					modupdate.CheckModsAuto(false)
 					glob.UpdatersLock.Unlock()
 				}
 
