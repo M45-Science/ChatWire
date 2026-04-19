@@ -16,16 +16,40 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/hako/durafmt"
 )
 
 var commandLock sync.Mutex
+var activeCommandMu sync.RWMutex
+
+type activeCommandState struct {
+	Name      string
+	User      string
+	StartedAt time.Time
+}
 
 func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 	if !commandLock.TryLock() {
-		disc.InteractionEphemeralResponse(i, "Busy", "Another command is already in progress. Please wait and try again.")
+		if isCommandLockExempt(i) {
+			runSlashCommand(i)
+			return
+		}
+		disc.InteractionEphemeralResponse(i, "Busy", formatBusyMessage(getActiveCommand()))
 		return
 	}
 	defer commandLock.Unlock()
+	defer setActiveCommand(activeCommandState{})
+
+	setActiveCommand(activeCommandState{
+		Name:      interactionCommandName(i),
+		User:      interactionUserName(i),
+		StartedAt: time.Now(),
+	})
+
+	runSlashCommand(i)
+}
+
+func runSlashCommand(i *discordgo.InteractionCreate) {
 
 	/* Ignore appid that aren't relevant to us */
 	if i.AppID != cfg.Global.Discord.Application {
@@ -115,12 +139,106 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+func isCommandLockExempt(i *discordgo.InteractionCreate) bool {
+	if i == nil || i.Interaction == nil || i.Type != discordgo.InteractionApplicationCommand {
+		return false
+	}
+
+	data := i.ApplicationCommandData()
+	if !strings.EqualFold(data.Name, "chatwire") {
+		return false
+	}
+
+	for _, option := range data.Options {
+		if strings.EqualFold(option.Name, "action") && strings.EqualFold(option.StringValue(), "force-reboot") {
+			return true
+		}
+	}
+
+	return false
+}
+
 func runCommand(c *glob.CommandData, i *discordgo.InteractionCreate) {
 	if c.Function == nil {
 		support.RunCommandOptions(c, i)
 	} else {
 		c.Function(c, i)
 	}
+}
+
+func setActiveCommand(state activeCommandState) {
+	activeCommandMu.Lock()
+	defer activeCommandMu.Unlock()
+
+	activeCommand = state
+}
+
+func getActiveCommand() activeCommandState {
+	activeCommandMu.RLock()
+	defer activeCommandMu.RUnlock()
+
+	return activeCommand
+}
+
+var activeCommand activeCommandState
+
+func formatBusyMessage(state activeCommandState) string {
+	if state.StartedAt.IsZero() {
+		return "Another command is already in progress. Please wait and try again."
+	}
+
+	name := state.Name
+	if name == "" {
+		name = "unknown command"
+	}
+
+	user := state.User
+	if user == "" {
+		user = "unknown user"
+	}
+
+	return fmt.Sprintf(
+		"Another command is already in progress: %q run by %s for %s. Please wait and try again.",
+		name,
+		user,
+		formatBusyElapsed(time.Since(state.StartedAt)),
+	)
+}
+
+func formatBusyElapsed(elapsed time.Duration) string {
+	if elapsed < 0 {
+		elapsed = 0
+	}
+
+	elapsed = elapsed.Round(time.Second)
+	return durafmt.Parse(elapsed).LimitFirstN(3).String()
+}
+
+func interactionCommandName(i *discordgo.InteractionCreate) string {
+	if i == nil {
+		return ""
+	}
+
+	if i.Type == discordgo.InteractionApplicationCommand {
+		return i.ApplicationCommandData().Name
+	}
+
+	if i.Type == discordgo.InteractionMessageComponent {
+		data := i.MessageComponentData()
+		if data.CustomID != "" {
+			return data.CustomID
+		}
+	}
+
+	return ""
+}
+
+func interactionUserName(i *discordgo.InteractionCreate) string {
+	if i == nil || i.Member == nil || i.Member.User == nil {
+		return ""
+	}
+
+	return i.Member.User.Username
 }
 
 func DeregisterCommands() {
