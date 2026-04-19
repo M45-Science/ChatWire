@@ -14,28 +14,29 @@ import (
 )
 
 const (
-	modPortalURL   = "https://mods.factorio.com/api/mods/%v/full"
-	displayURL     = "https://mods.factorio.com/mod/%v/changelog"
-	downloadPrefix = "https://mods.factorio.com"
-	downloadSuffix = "?username=%v&token=%v"
-	modUpdateTitle = "Found Mod Updates"
+	modPortalURL              = "https://mods.factorio.com/api/mods/%v/full"
+	displayURL                = "https://mods.factorio.com/mod/%v/changelog"
+	downloadPrefix            = "https://mods.factorio.com"
+	downloadSuffix            = "?username=%v&token=%v"
+	modUpdateTitle            = "Found Mod Updates"
+	modUpdateProgressInterval = time.Minute
 )
 
 func CheckModsManual(force bool) {
-	checkMods(force, true)
+	checkMods(force, true, true)
 }
 
 func CheckModsAuto(force bool) {
-	checkMods(force, false)
+	checkMods(force, false, false)
 }
 
-func checkMods(force bool, reportNone bool) {
+func checkMods(force bool, reportNone bool, emitProgress bool) {
 
 	if !cfg.Local.Options.ModUpdate && !force {
 		return
 	}
 
-	updated, err := CheckModUpdates(false)
+	updated, err := CheckModUpdates(false, emitProgress)
 	if reportNone || updated {
 		if err != nil {
 			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Warning:", err.Error(), glob.COLOR_CYAN))
@@ -52,14 +53,41 @@ func checkMods(force bool, reportNone bool) {
 
 const resolveDepsDebug = false
 
-func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string) ([]downloadData, error) {
+type modUpdateProgress struct {
+	token    string
+	lastEmit time.Time
+}
+
+func newModUpdateProgress(token string) modUpdateProgress {
+	return modUpdateProgress{
+		token:    token,
+		lastEmit: time.Now(),
+	}
+}
+
+func (p *modUpdateProgress) emit(description string) {
+	if p == nil || p.token == "" || description == "" {
+		return
+	}
+	if time.Since(p.lastEmit) < modUpdateProgressInterval {
+		return
+	}
+
+	fact.UpdateOperationProgress(p.token, "Mod Updates", description, glob.COLOR_CYAN)
+	p.lastEmit = time.Now()
+}
+
+func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string, progress *modUpdateProgress) ([]downloadData, error) {
 
 	if depth > 10 {
 		return []downloadData{}, nil
 	}
 
 	var downloadMods []downloadData
-	for _, item := range modPortalData {
+	for i, item := range modPortalData {
+		if progress != nil {
+			progress.emit(formatResolveDepsProgress(item.Name, i+1, len(modPortalData), depth))
+		}
 
 		// Don't follow circular deps
 		circular := false
@@ -153,7 +181,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 								}
 							}
 							// Recursively check dep's deps
-							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1, append(parents, item.Name))
+							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1, append(parents, item.Name), progress)
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
@@ -188,8 +216,12 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 	return downloadMods, nil
 }
 
-func CheckModUpdates(dryRun bool) (bool, error) {
+func CheckModUpdates(dryRun bool, emitProgress bool) (bool, error) {
 	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+	progress := modUpdateProgress{}
+	if emitProgress {
+		progress = newModUpdateProgress(opToken)
+	}
 	fact.SetModOperationInProgress(true)
 	defer func() {
 		fact.SetModOperationInProgress(false)
@@ -219,10 +251,19 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 	// Fetch mod portal data
 	modPortalData := []modPortalFullData{}
+	checkableMods := 0
+	for _, item := range installedMods {
+		if !IsBaseMod(item.Name) {
+			checkableMods++
+		}
+	}
+	checkedMods := 0
 	for _, item := range installedMods {
 		if IsBaseMod(item.Name) {
 			continue
 		}
+		checkedMods++
+		progress.emit(formatCheckModProgress(item.Name, checkedMods, checkableMods))
 		//cwlog.DoLogCW("Getting portal info: %v", item.Name)
 		newInfo, err := DownloadModInfo(item.Name)
 		if err != nil {
@@ -238,7 +279,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps(modPortalData, false, 0, nil)
+	downloadList, err := resolveDeps(modPortalData, false, 0, nil, &progress)
 
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
@@ -259,6 +300,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		if pref == "" || strings.EqualFold(pref, "auto") {
 			continue
 		}
+		progress.emit(fmt.Sprintf("Prefs: %s", inst.Name))
 
 		// Remove automatic updates for this mod
 		downloadList = removeDownload(inst.Name, downloadList)
@@ -325,6 +367,26 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	glob.SetBootMessage(nil)
 	fact.CompleteOperation(opToken, "Mod Updates", "No mod updates available.", glob.COLOR_GREEN)
 	return false, errors.New("no mod updates available")
+}
+
+func formatCheckModProgress(name string, current, total int) string {
+	if total <= 0 {
+		total = 0
+	}
+	if name == "" {
+		name = "unknown mod"
+	}
+	return fmt.Sprintf("Checking %d/%d: %s", current, total, name)
+}
+
+func formatResolveDepsProgress(name string, current, total, depth int) string {
+	if name == "" {
+		name = "unknown mod"
+	}
+	if total <= 0 {
+		return fmt.Sprintf("Deps d%d: %s", depth, name)
+	}
+	return fmt.Sprintf("Deps %d/%d d%d: %s", current, total, depth, name)
 }
 
 type incMod struct {
