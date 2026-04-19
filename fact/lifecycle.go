@@ -497,7 +497,9 @@ func (lm *lifecycleManager) nextRequest() (lifecycleRequest, bool) {
 }
 
 func (lm *lifecycleManager) requestRunnableLocked(req lifecycleRequest) bool {
-	if (UpdateInProgress() || ModOperationInProgress()) && req.Kind != ActionStop {
+	if (UpdateInProgress() || ModOperationInProgress()) &&
+		req.Kind != ActionStop &&
+		!(req.Kind == ActionRestartChatWire && req.ForceChatWireExit) {
 		return false
 	}
 	if req.WhenEmpty && lm.phase != LifecycleStopped && NumPlayersCurrent() > 0 {

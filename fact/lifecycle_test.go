@@ -242,6 +242,30 @@ func TestLifecycleModOperationBlocksNonStopRequests(t *testing.T) {
 	}
 }
 
+func TestLifecycleModOperationAllowsForcedChatWireRestart(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	SetModOperationInProgress(true)
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.queue = []lifecycleRequest{
+		{Request: Request{Kind: ActionRestartFactorio, Reason: "restart-factorio"}},
+		{Request: Request{Kind: ActionRestartChatWire, Reason: "force-chatwire", ForceChatWireExit: true}},
+	}
+	lm.syncCompatibilityLocked()
+
+	req, ok := lm.nextRequest()
+	if !ok {
+		t.Fatal("expected forced chatwire restart to remain runnable during mod operation")
+	}
+	if req.Kind != ActionRestartChatWire {
+		t.Fatalf("expected forced chatwire restart, got %q", req.Kind)
+	}
+	if !req.ForceChatWireExit {
+		t.Fatal("expected ForceChatWireExit to be preserved")
+	}
+}
+
 func TestLifecycleUpdateAllowsStopRequest(t *testing.T) {
 	resetLifecycleTestState(t)
 
