@@ -26,11 +26,15 @@ func handleDesync(input *handleData) bool {
 				Name: "Desync", Notes: input.noTimecode, Date: time.Now()}
 			modupdate.AddModHistory(newItem)
 
-			if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) >= 15*time.Minute && !fact.QueueFactReboot {
-				fact.QueueFactReboot = true
+				if !fact.FactorioBootedAt.IsZero() && time.Since(fact.FactorioBootedAt) >= 15*time.Minute {
+					_ = fact.SubmitLifecycleRequest(fact.Request{
+						Kind:      fact.ActionRestartFactorio,
+						Reason:    "Desync detected; Factorio reboot queued.",
+						WhenEmpty: true,
+					})
 					cwlog.DoLogCW("Desync detected after 15m Factorio uptime; reboot queued.")
-				fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Desync detected; Factorio reboot queued.**")
-			}
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Desync detected; Factorio reboot queued.**")
+				}
 			return true
 		}
 	}
@@ -65,14 +69,14 @@ func handleCrashes(input *handleData) bool {
 			modupdate.AddModHistory(newItem)
 
 			fact.SetAutolaunch(false, true)
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 			return true
 		}
 		/* Lock error */
 		if strings.Contains(input.noTimecode, "Couldn't acquire exclusive lock") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio is already running.")
 			fact.SetAutolaunch(false, true)
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 			return true
 		}
 		/* Mod Errors */
@@ -82,7 +86,7 @@ func handleCrashes(input *handleData) bool {
 			newHist := modupdate.ModHistoryItem{Name: "Factorio closed with a lua error.", Notes: input.noTimecode, Date: time.Now(), InfoItem: true}
 			modupdate.AddModHistory(newHist)
 
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 			return true
 		}
 		/* Stack traces */
@@ -93,20 +97,20 @@ func handleCrashes(input *handleData) bool {
 				fact.LogCMS(cfg.Local.Channel.ChatChannel, "Factorio was unable to load a multiplayer game.")
 			}
 			fact.SetAutolaunch(false, true)
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 			return true
 		}
 		/* level.dat */
 		if strings.Contains(input.noTimecode, "level.dat not found.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 			fact.SetAutolaunch(false, true)
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 			return true
 		}
 		/* Stack traces */
 		if strings.Contains(input.noTimecode, "Unexpected error occurred.") {
 			fact.LogCMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 
 			newItem := modupdate.ModHistoryItem{InfoItem: true,
 				Name: "Factorio crashed", Notes: input.noTimecode, Date: time.Now()}
@@ -117,7 +121,7 @@ func handleCrashes(input *handleData) bool {
 			if strings.Contains(input.noTimecode, "No latest save file found in") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "No save-game found.")
 				fact.SetAutolaunch(false, true)
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 		}
@@ -125,7 +129,7 @@ func handleCrashes(input *handleData) bool {
 			fact.CMS(cfg.Local.Channel.ChatChannel, "Invalid scenario specified, clearing scenario setting.")
 			cfg.Local.Settings.Scenario = ""
 			fact.SetAutolaunch(false, true)
-			fact.SetFactRunning(false, true)
+			fact.NotifyFactorioGoodbye()
 			return true
 		}
 
@@ -145,13 +149,13 @@ func handleCrashes(input *handleData) bool {
 			if strings.Contains(input.noTimecode, "Host address is already in use") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "The specified port is already in use: "+strconv.FormatInt(int64(cfg.Local.Port), 10))
 				fact.SetAutolaunch(false, true)
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 			if strings.Contains(input.noTimecode, "cannot be loaded because it is higher than the game version") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio version is too old for the save game.**")
 				fact.SetAutolaunch(false, true)
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 			if strings.Contains(input.noTimecode, "syntax error") || strings.Contains(input.noTimecode, "unexpected symbol") ||
@@ -162,7 +166,7 @@ func handleCrashes(input *handleData) bool {
 
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua syntax error and will stop.**")
 				fact.SetAutolaunch(false, true)
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 			if strings.Contains(input.noTimecode, "Error while running command") {
@@ -171,13 +175,13 @@ func handleCrashes(input *handleData) bool {
 				modupdate.AddModHistory(newItem)
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio encountered a lua command error.**")
 				fact.SetAutolaunch(false, true)
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 			if strings.Contains(input.noTimecode, "info.json not found") {
 				fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to load save-game.")
 				fact.SetAutolaunch(false, true)
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 			/* Bad zip file */
@@ -188,7 +192,7 @@ func handleCrashes(input *handleData) bool {
 						if err != nil {
 							cwlog.DoLogCW("Unable to remove bad zip file: " + input.trimmedWords[7])
 							fact.SetAutolaunch(false, true)
-							fact.SetFactRunning(false, true)
+							fact.NotifyFactorioGoodbye()
 							return true
 						} else {
 							cwlog.DoLogCW("Removed bad zip file: " + input.trimmedWords[7])
@@ -205,14 +209,14 @@ func handleCrashes(input *handleData) bool {
 					cwlog.DoLogCW("Unable to delete corrupt savegame. Details:\nfile: %v\nerr: %v", fact.GameMapPath, errs)
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Unable to remove corrupted save-game.")
 					fact.SetAutolaunch(false, true)
-					fact.SetFactRunning(false, true)
+					fact.NotifyFactorioGoodbye()
 					return true
 				} else {
 					cwlog.DoLogCW("Deleted corrupted savegame.")
 					fact.CMS(cfg.Local.Channel.ChatChannel, "Save-game corrupted, performing automatic roll-back.")
 				}
 
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 				return true
 			}
 
@@ -221,7 +225,7 @@ func handleCrashes(input *handleData) bool {
 					Name: "Factorio Crashed", Notes: input.noTimecode, Date: time.Now()}
 				modupdate.AddModHistory(newItem)
 				fact.CMS(cfg.Local.Channel.ChatChannel, "**Factorio crashed.**")
-				fact.SetFactRunning(false, true)
+				fact.NotifyFactorioGoodbye()
 			}
 		}
 		return true

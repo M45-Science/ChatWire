@@ -19,26 +19,12 @@ func startQueuedRebootLoop() {
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			<-ticker.C
 
-			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayers == 0 {
-
-				if fact.QueueReboot && !fact.DoUpdateFactorio {
-					cwlog.DoLogCW("No players currently online, performing scheduled reboot.")
-					fact.QuitFactorio("Server rebooting for maintenance.")
-					break //We don't need to loop anymore, rebooting chat wire.
-
-				} else if fact.QueueFactReboot && !fact.DoUpdateFactorio {
-					cwlog.DoLogCW("Stopping Factorio for reboot.")
-					fact.QuitFactorio("Rebooting Factorio.")
-					time.Sleep(time.Minute)
-
-				} else if fact.DoUpdateFactorio {
-					cwlog.DoLogCW("Stopping Factorio for update.")
-					fact.QuitFactorio("Updating Factorio.")
-					time.Sleep(time.Minute)
-				}
+			if fact.FactIsRunning && fact.FactorioBooted && fact.NumPlayersCurrent() == 0 && fact.UpdateInProgress() {
+				cwlog.DoLogCW("Stopping Factorio for update.")
+				_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Updating Factorio."})
 			}
 		}
 	}()
@@ -50,10 +36,10 @@ func startUpdateNudgeLoop() {
 	 *******************************************/
 	go func() {
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
-			if fact.FactIsRunning && fact.FactorioBooted && fact.DoUpdateFactorio {
-				if fact.NumPlayers > 0 {
+			if fact.FactIsRunning && fact.FactorioBooted && fact.UpdateInProgress() {
+				if fact.NumPlayersCurrent() > 0 {
 					/* Warn players */
 					if glob.UpdateWarnCounter < glob.UpdateGraceMinutes {
 						msg := fmt.Sprintf("(SYSTEM) Factorio update waiting %v. Please log off as soon as there is a good stopping point, players on the upgraded version will be unable to connect (%vm grace remaining)!",
@@ -74,16 +60,21 @@ func startUpdateNudgeLoop() {
 						msg := "(SYSTEM) Rebooting for Factorio update!"
 						fact.FactChat(msg)
 						glob.UpdateWarnCounter = 0
-						fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
-						time.Sleep(time.Minute * 15)
+						_ = fact.SubmitLifecycleRequest(fact.Request{
+							Kind:   fact.ActionStop,
+							Reason: "Rebooting for Factorio update: " + fact.NewVersion,
+						})
 					}
 					glob.UpdateWarnCounter = (glob.UpdateWarnCounter + 1)
 
 					time.Sleep(time.Minute)
 				} else {
 					glob.UpdateWarnCounter = 0
-					fact.QuitFactorio("Rebooting for Factorio update: " + fact.NewVersion)
-					time.Sleep(time.Minute * 10)
+					_ = fact.SubmitLifecycleRequest(fact.Request{
+						Kind:   fact.ActionStop,
+						Reason: "Rebooting for Factorio update: " + fact.NewVersion,
+					})
+					time.Sleep(time.Second * 5)
 				}
 			} else {
 				time.Sleep(time.Second * 5)

@@ -54,7 +54,7 @@ func handleChatMsg(input *handleData) bool {
 
 			if pname != "<server>" {
 
-				var nores int = glob.NoResponseCount
+				var nores int = glob.GetNoResponseCount()
 
 				if !cfg.Global.Options.DisableSpamProtect {
 					glob.ChatterLock.Lock()
@@ -128,10 +128,7 @@ func handleChatMsg(input *handleData) bool {
 					return true
 				}
 
-				/* Yeah, on different thread please. */
-				go func(ptemp string) {
-					fact.UpdateSeen(ptemp)
-				}(pname)
+				fact.UpdateSeen(pname)
 
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				dname := disc.GetNameFromID(did)

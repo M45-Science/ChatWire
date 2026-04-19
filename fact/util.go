@@ -3,6 +3,7 @@ package fact
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -13,7 +14,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -28,8 +28,34 @@ import (
 )
 
 const (
-	MaxZipSize = 1024 * 1024 * 1024 //1gb
+	MaxZipSize                  = 1024 * 1024 * 1024 //1gb
+	factorioReadyVersionTimeout = 3 * time.Second
+	factorioReadyVersionPoll    = 100 * time.Millisecond
 )
+
+func factorioReadyStatusKnown() bool {
+	return strings.TrimSpace(FactorioVersion) != "" && !strings.EqualFold(FactorioVersion, constants.Unknown)
+}
+
+func factorioReadyStatus() string {
+	return StatusFactorioOnline(FactorioVersion)
+}
+
+func waitForFactorioReadyStatus(timeout time.Duration) string {
+	if factorioReadyStatusKnown() || timeout <= 0 {
+		return factorioReadyStatus()
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		time.Sleep(factorioReadyVersionPoll)
+		if factorioReadyStatusKnown() {
+			return factorioReadyStatus()
+		}
+	}
+
+	return factorioReadyStatus()
+}
 
 var (
 	lastBanName     string
@@ -170,14 +196,14 @@ func SetAutolaunch(autolaunch, report bool) {
 	AutoLaunchLock.Lock()
 	defer AutoLaunchLock.Unlock()
 
-	if !autolaunch && FactAutoStart {
-		FactAutoStart = false
+	if !autolaunch && AutostartEnabled() {
+		setAutostartEnabled(false)
 		if report {
 			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Auto-reboot has been turned OFF.", glob.COLOR_GREEN))
 		}
 		cwlog.DoLogCW("Autolaunch disabled.")
-	} else if autolaunch && !FactAutoStart {
-		FactAutoStart = true
+	} else if autolaunch && !AutostartEnabled() {
+		setAutostartEnabled(true)
 		cwlog.DoLogCW("Autolaunch enabled.")
 		if report {
 			glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Auto-reboot has been ENABLED.", glob.COLOR_GREEN))
@@ -193,11 +219,11 @@ func SetFactRunning(run, report bool) {
 	wasrun := FactIsRunning
 	FactIsRunning = run
 
-	if run && glob.NoResponseCount >= 15 && !FactorioBootedAt.IsZero() && time.Since(FactorioBootedAt) > time.Minute {
+	if run && glob.GetNoResponseCount() >= 15 && !FactorioBootedAt.IsZero() && time.Since(FactorioBootedAt) > time.Minute {
 		//CMS(cfg.Local.Channel.ChatChannel, "Server now appears to be responding again.")
 		cwlog.DoLogCW("Server now appears to be responding again.")
 	}
-	glob.NoResponseCount = 0
+	glob.ResetNoResponseCount()
 
 	if wasrun != run {
 		if !run {
@@ -207,11 +233,12 @@ func SetFactRunning(run, report bool) {
 		}
 		if report {
 			if run {
-				cwlog.DoLogGame("Factorio " + FactorioVersion + " is now online.")
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", "Factorio "+FactorioVersion+" is now online.", glob.COLOR_GREEN))
+				readyMsg := waitForFactorioReadyStatus(factorioReadyVersionTimeout)
+				cwlog.DoLogGame(readyMsg)
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", readyMsg, glob.COLOR_GREEN))
 			} else {
 				cwlog.DoLogCW("Factorio has closed.")
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", "Factorio is now offline.", glob.COLOR_RED))
+				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", StatusFactorioOffline(), glob.COLOR_RED))
 			}
 		}
 		UpdateChannelName()
@@ -221,7 +248,7 @@ func SetFactRunning(run, report bool) {
 }
 
 func clearOnlinePlayers() {
-	NumPlayers = 0
+	SetNumPlayers(0)
 	OnlinePlayersLock.Lock()
 	glob.OnlinePlayers = []glob.OnlinePlayerData{}
 	OnlinePlayersLock.Unlock()
@@ -371,70 +398,10 @@ func WriteWhitelist() int {
 
 /* Quit Factorio */
 func QuitFactorio(message string) {
-	if FactIsRunning {
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Notice", "Quitting Factorio: "+message, glob.COLOR_ORANGE))
-	}
-
 	if message == "" {
 		message = "Server quitting."
 	}
-
-	glob.RelaunchThrottle = 0
-	glob.NoResponseCount = 0
-
-	/* Running but no players, just quit */
-	if (FactorioBooted && FactIsRunning) && NumPlayers <= 0 {
-		cwlog.DoLogCW("Quitting Factorio...")
-		cwlog.DoLogGame("Quitting Factorio...")
-		WriteFact("/quit")
-		WaitFactQuit(false)
-
-		/* Running, but players connected... Give them quick feedback. */
-	} else if FactorioBooted && FactIsRunning && NumPlayers > 0 {
-		FactChat("[color=red]" + message + "[/color]")
-		FactChat("[color=green]" + message + "[/color]")
-		FactChat("[color=blue]" + message + "[/color]")
-		FactChat("[color=white]" + message + "[/color]")
-		FactChat("[color=black]" + message + "[/color]")
-		time.Sleep(time.Second * 3)
-
-		cwlog.DoLogCW("Quitting Factorio...")
-		cwlog.DoLogGame("Quitting Factorio...")
-		WriteFact("/quit")
-		WaitFactQuit(false)
-	}
-
-	if (FactorioBooted || FactIsRunning) && glob.FactorioCmd != nil {
-		cwlog.DoLogCW("Factorio still has not closed, sending interrupt.")
-		if glob.FactorioCancel != nil {
-			glob.FactorioCancel()
-		}
-		if glob.FactorioCmd.Process != nil {
-			_ = glob.FactorioCmd.Process.Signal(os.Interrupt)
-		}
-		if !waitForFactorioExit(glob.FactorioCmd, constants.FactorioStopInterruptTimeout) {
-			cwlog.DoLogCW("Factorio did not exit after interrupt; killing.")
-			if glob.FactorioCmd.Process != nil {
-				_ = glob.FactorioCmd.Process.Kill()
-			}
-			_ = waitForFactorioExit(glob.FactorioCmd, constants.FactorioStopKillTimeout)
-		}
-		SetFactRunning(false, false)
-	}
-}
-
-func waitForFactorioExit(cmd interface{ Wait() error }, timeout time.Duration) bool {
-	done := make(chan struct{})
-	go func() {
-		_ = cmd.Wait()
-		close(done)
-	}()
-	select {
-	case <-done:
-		return true
-	case <-time.After(timeout):
-		return false
-	}
+	_ = SubmitLifecycleRequest(Request{Kind: ActionStop, Reason: message})
 }
 
 /* Send a string to Factorio, via stdin */
@@ -469,16 +436,40 @@ func WriteFact(format string, args ...interface{}) {
 		_, err := io.WriteString(gpipe, buf+"\n")
 		if err != nil {
 			cwlog.DoLogCW("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input)
-			SetFactRunning(false, true)
+			NotifyFactorioHealth(classifyFactorioPipeError(err), err)
+			NotifyFactorioGoodbye()
 			if glob.FactorioCancel != nil {
 				glob.FactorioCancel()
 			}
 			return
 		}
 	} else {
-		//cwlog.DoLogCW("An error occurred when attempting to write to Factorio (nil pipe)")
-		SetFactRunning(false, true)
+		NotifyFactorioHealth("stdin-missing", errors.New("factorio stdin pipe is nil"))
+		NotifyFactorioGoodbye()
 		return
+	}
+}
+
+func classifyFactorioPipeError(err error) string {
+	if err == nil {
+		return "stdin-write-failed"
+	}
+	switch {
+	case errors.Is(err, io.ErrClosedPipe):
+		return "stdin-closed"
+	case errors.Is(err, os.ErrClosed):
+		return "stdin-closed"
+	}
+	lowerErr := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(lowerErr, "broken pipe"):
+		return "stdin-broken-pipe"
+	case strings.Contains(lowerErr, "file already closed"):
+		return "stdin-closed"
+	case strings.Contains(lowerErr, "closed pipe"):
+		return "stdin-closed"
+	default:
+		return "stdin-write-failed"
 	}
 }
 
@@ -613,7 +604,7 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 func UpdateChannelName() {
 
 	var newchname string
-	nump := NumPlayers
+	nump := NumPlayersCurrent()
 	icon := "⚪"
 
 	if cfg.Local.Options.CustomWhitelist {
@@ -1095,15 +1086,20 @@ func DoChangeMap(arg string) {
 	}
 
 	SetAutolaunch(false, false)
-	QuitFactorio("Server rebooting for map vote!")
-	WaitFactQuit(false)
+	_ = SubmitLifecycleRequest(Request{
+		Kind:     ActionChangeMap,
+		Reason:   "Server rebooting for map vote!",
+		SaveName: arg,
+	})
+}
+
+func doChangeMapAfterStop(arg string) error {
+	path := cfg.GetSavesFolder()
+	saveStr := fmt.Sprintf("%v.zip", arg)
 	selSaveName := path + "/" + saveStr
 	from, erra := os.Open(selSaveName)
 	if erra != nil {
-		msg := "An error occurred when attempting to open the selected save."
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
-		return
+		return errors.New("an error occurred when attempting to open the selected save")
 	}
 	defer from.Close()
 
@@ -1112,34 +1108,24 @@ func DoChangeMap(arg string) {
 	if !os.IsNotExist(err) {
 		err = os.Remove(newmappath)
 		if err != nil {
-			msg := "An error occurred when attempting to open the selected save."
-			LogCMS(cfg.Local.Channel.ChatChannel, msg)
-			FactChat(msg)
-			return
+			return errors.New("an error occurred when attempting to remove the existing replacement save")
 		}
 	}
 	to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
 	if errb != nil {
-		msg := "An error occurred when attempting to create the save file. "
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
-		return
+		return errors.New("an error occurred when attempting to create the save file")
 	}
 	defer to.Close()
 
 	_, errc := io.Copy(to, from)
 	if errc != nil {
-		msg := "An error occurred when attempting to write the save file."
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
-		return
+		return errors.New("an error occurred when attempting to write the save file")
 	}
 
 	msg := fmt.Sprintf("Loading save: %v", arg)
 	cwlog.DoLogGame(msg)
 	glob.RelaunchThrottle = 0
-	SetAutolaunch(true, false)
-
+	return nil
 }
 
 func FileHasZipBomb(path string) bool {
@@ -1275,53 +1261,10 @@ func FactWhisper(player, format string, args ...interface{}) {
 }
 
 func WaitFactQuit(waiting bool) {
-	checkProcessAlive := func() bool {
-		cmd := glob.FactorioCmd
-		if cmd == nil || cmd.Process == nil {
-			return false
-		}
-		if cmd.ProcessState != nil && cmd.ProcessState.Exited() {
-			return false
-		}
-		if err := cmd.Process.Signal(syscall.Signal(0)); err != nil {
-			return false
-		}
-		// When cmd.Wait() hasn't been called yet, an exited child can remain as a zombie
-		// and still answer signal 0 successfully. Treat zombies as not alive.
-		if data, err := os.ReadFile(fmt.Sprintf("/proc/%d/stat", cmd.Process.Pid)); err == nil {
-			if s := string(data); s != "" {
-				if idx := strings.LastIndex(s, ") "); idx >= 0 && len(s) > idx+2 && s[idx+2] == 'Z' {
-					return false
-				}
-			}
-		}
-		return true
-	}
-
 	if waiting {
-		started := time.Now()
-		for FactIsRunning && FactorioBooted && glob.ServerRunning {
-			// "Goodbye" log parsing normally clears FactIsRunning. If that line is missed,
-			// fall back to the actual process state so update/reboot flows do not hang forever.
-			if !checkProcessAlive() {
-				cwlog.DoLogCW("WaitFactQuit: Factorio state was stale; process is no longer alive.")
-				SetFactRunning(false, false)
-				break
-			}
-			if time.Since(started) > 2*time.Minute {
-				cwlog.DoLogCW("WaitFactQuit: timed out after 2m waiting for Factorio to quit.")
-				break
-			}
-			time.Sleep(time.Millisecond * 100)
-		}
+		WaitForLifecycleStop(2 * time.Minute)
 	} else {
-		for x := 0; x < constants.MaxFactorioCloseWait && FactIsRunning && FactorioBooted && glob.ServerRunning; x++ {
-			if !checkProcessAlive() {
-				SetFactRunning(false, false)
-				break
-			}
-			time.Sleep(time.Millisecond * 100)
-		}
+		WaitForLifecycleStop(time.Duration(constants.MaxFactorioCloseWait) * 100 * time.Millisecond)
 	}
 }
 
@@ -1338,7 +1281,7 @@ func MakeSteamURL() (string, bool) {
 /* Program shutdown */
 func DoExit(delay bool) {
 
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", constants.ProgName+" shutting down.", glob.COLOR_RED))
+	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", StatusChatWireShuttingDown(), glob.COLOR_RED))
 
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {
@@ -1352,7 +1295,7 @@ func DoExit(delay bool) {
 	time.Sleep(time.Second * 2)
 
 	/* This kills all loops! */
-	glob.ServerRunning = false
+	glob.SetServerRunning(false)
 
 	cwlog.DoLogCW("CW closing, load/save db.")
 	WritePlayers()

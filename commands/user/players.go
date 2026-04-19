@@ -15,7 +15,7 @@ import (
 func Players(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if fact.FactorioBooted && fact.FactIsRunning {
 
-		if fact.NumPlayers == 0 {
+		if fact.NumPlayersCurrent() == 0 {
 			disc.InteractionEphemeralResponse(i, "Players Online:", "None")
 		} else {
 			buf := ""

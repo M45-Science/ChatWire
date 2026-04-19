@@ -23,7 +23,7 @@ func startModUpdateLoop() {
 			ticker := time.NewTicker(time.Minute)
 			defer ticker.Stop()
 
-			for glob.ServerRunning {
+			for glob.ServerRunning() {
 				<-ticker.C
 				if !cfg.Local.Options.ModUpdate {
 					continue
@@ -35,18 +35,18 @@ func startModUpdateLoop() {
 				}
 				if cTime.Hour()%3 == 0 {
 					glob.UpdatersLock.Lock()
-					modupdate.CheckMods(false, false)
+					modupdate.CheckModsAuto(false)
 					glob.UpdatersLock.Unlock()
 				}
 			}
 		} else {
 
-			for glob.ServerRunning {
+			for glob.ServerRunning() {
 				time.Sleep(time.Hour * 3)
 
 				if cfg.Local.Options.ModUpdate {
 					glob.UpdatersLock.Lock()
-					modupdate.CheckMods(false, false)
+					modupdate.CheckModsAuto(false)
 					glob.UpdatersLock.Unlock()
 				}
 
@@ -63,7 +63,7 @@ func startModPackCleanupLoop() {
 	 * at the set expire time
 	/****************************/
 	go func() {
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 
 			time.Sleep(time.Minute)
 			numItems := len(cfg.Local.ModPackList)

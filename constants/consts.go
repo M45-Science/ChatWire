@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2697-03.06.2026-0623p"
+	Version            = "2699-04.18.2026-1051p"
 	CWEpoch            = 1653239822390688174 //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -86,9 +86,15 @@ const (
 
 	/* Factorio launch/stop robustness */
 	FactorioStartupTimeout        = 5 * time.Minute
+	FactorioStartupIdleTimeout    = 2 * time.Minute
+	FactorioStartupHardTimeout    = 15 * time.Minute
 	FactorioStdoutChannelCapacity = 8192
+	FactorioStopIdleTimeout       = 20 * time.Second
+	FactorioStopSaveTimeout       = 3 * time.Minute
 	FactorioStopInterruptTimeout  = 20 * time.Second
 	FactorioStopKillTimeout       = 5 * time.Second
+	SyncModsIdleTimeout           = 60 * time.Second
+	SyncModsHardTimeout           = 30 * time.Minute
 
 	/* How often to check if Factorio server is alive */
 	WatchdogInterval = time.Second

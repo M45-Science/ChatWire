@@ -35,9 +35,7 @@ func handleFactGoodbye(input *handleData) bool {
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
 		fact.SetLastBan("")
-
-		fact.FactorioBootedAt = time.Time{}
-		fact.SetFactRunning(false, true)
+		fact.NotifyFactorioGoodbye()
 		return true
 	}
 	return false
@@ -48,20 +46,17 @@ func handleFactReady(input *handleData) bool {
 	 * READY MESSAGE
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Info RemoteCommandProcessor") && strings.Contains(input.noTimecode, "Starting RCON interface") {
+		fact.NotifyFactorioProgress("rcon-ready")
 		fact.WriteAdminlist()
-		fact.FactorioBooted = true
-		fact.FactorioBootedAt = time.Now()
-		fact.FactIsRunning = false
-		glob.CrashLoopCount = 0
 
 		// A Factorio boot implies no players online yet; clear any stale count so the
 		// Discord channel name can be refreshed immediately.
-		fact.NumPlayers = 0
+		fact.SetNumPlayers(0)
 		fact.OnlinePlayersLock.Lock()
 		glob.OnlinePlayers = []glob.OnlinePlayerData{}
 		fact.OnlinePlayersLock.Unlock()
 
-		fact.SetFactRunning(true, true)
+		fact.NotifyFactorioReady()
 
 		newHist := modupdate.ModHistoryItem{Name: modupdate.BootName, Date: time.Now(), InfoItem: true}
 		modupdate.AddModHistory(newHist)
@@ -77,10 +72,13 @@ func handleFactVersion(input *handleData) bool {
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(input.noTimecode, "Loading mod base") {
+		fact.NotifyFactorioProgress("mod-load")
 		//cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
 			fact.FactorioVersion = input.noTimecodeList[3]
 		}
+	} else if strings.HasPrefix(input.noTimecode, "Loading mod ") {
+		fact.NotifyFactorioProgress("mod-load")
 	}
 	return false
 }

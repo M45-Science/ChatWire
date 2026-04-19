@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,6 +17,8 @@ import (
 
 const httpDownloadTimeout = time.Minute * 15
 const httpGetTimeout = time.Second * 30
+const httpStatusBodyLimit = 256
+const httpMaxRetries = 5
 
 var HTTPLock sync.Mutex
 
@@ -46,24 +49,48 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 		URL = input
 	}
 
-	//HTTP GET
-	req, err := http.NewRequest(http.MethodGet, URL, nil)
-	if err != nil {
-		return nil, "", errors.New("get failed: " + err.Error())
-	}
+	var res *http.Response
+	var err error
+	for attempt := 0; attempt <= httpMaxRetries; attempt++ {
+		//HTTP GET
+		req, reqErr := http.NewRequest(http.MethodGet, URL, nil)
+		if reqErr != nil {
+			return nil, "", errors.New("get failed: " + reqErr.Error())
+		}
 
-	//Header
-	req.Header.Set("User-Agent", constants.ProgName+"-"+constants.Version)
+		//Header
+		req.Header.Set("User-Agent", constants.ProgName+"-"+constants.Version)
 
-	//Get response
-	res, err := hClient.Do(req)
-	if err != nil {
-		return nil, "", errors.New("failed to get response: " + err.Error())
+		//Get response
+		res, err = hClient.Do(req)
+		if err != nil {
+			return nil, "", errors.New("failed to get response: " + err.Error())
+		}
+
+		if res.StatusCode == http.StatusTooManyRequests && attempt < httpMaxRetries {
+			retryWait := retryAfterDelay(res, attempt)
+			if res.Body != nil {
+				if cerr := res.Body.Close(); cerr != nil {
+					cwlog.DoLogCW("fetch: failed to close body after 429: %v", cerr)
+				}
+			}
+			cwlog.DoLogCW("HttpGet: received 429 for %s, retrying in %v", input, retryWait)
+			time.Sleep(retryWait)
+			continue
+		}
+
+		break
 	}
 
 	//Check status code
-	if res.StatusCode != 200 {
-		return nil, "", fmt.Errorf("http status error: %v", res.StatusCode)
+	if res.StatusCode != http.StatusOK {
+		err = formatHTTPStatusError(res)
+		if res.Body != nil {
+			if cerr := res.Body.Close(); cerr != nil {
+				cwlog.DoLogCW("fetch: failed to close body after status error: %v", cerr)
+			}
+		}
+		return nil, "", err
 	}
 
 	//Close once complete, if valid
@@ -105,4 +132,49 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 	query := parts[len(parts)-1]
 	parts = strings.Split(query, "?")
 	return body, parts[0], nil
+}
+
+func retryAfterDelay(res *http.Response, attempt int) time.Duration {
+	if res != nil {
+		header := strings.TrimSpace(res.Header.Get("Retry-After"))
+		if header != "" {
+			if secs, err := strconv.Atoi(header); err == nil && secs >= 0 {
+				return time.Duration(secs) * time.Second
+			}
+			if t, err := http.ParseTime(header); err == nil {
+				wait := time.Until(t)
+				if wait > 0 {
+					return wait
+				}
+			}
+		}
+	}
+
+	wait := 2 * time.Second << attempt
+	return wait
+}
+
+func formatHTTPStatusError(res *http.Response) error {
+	if res == nil {
+		return errors.New("http status error: no response")
+	}
+
+	msg := fmt.Sprintf("http status error: %d %s", res.StatusCode, http.StatusText(res.StatusCode))
+	if res.Body == nil {
+		return errors.New(msg)
+	}
+
+	body, err := io.ReadAll(io.LimitReader(res.Body, httpStatusBodyLimit))
+	if err != nil {
+		return errors.New(msg)
+	}
+
+	snippet := strings.TrimSpace(string(body))
+	if snippet == "" {
+		return errors.New(msg)
+	}
+
+	snippet = strings.ReplaceAll(snippet, "\n", " ")
+	snippet = strings.ReplaceAll(snippet, "\r", " ")
+	return fmt.Errorf("%s: %s", msg, snippet)
 }

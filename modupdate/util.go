@@ -27,6 +27,8 @@ import (
 
 const modHistoryFile = "modUpdateHistory.dat"
 
+const modPortalRequestInterval = time.Second
+
 const (
 	BootName      = "Factorio Booted"
 	InstalledNote = "Installed"
@@ -158,6 +160,21 @@ func modInfoRead(modName string, rawData []byte) *modZipInfo {
 }
 
 var modListFileLock sync.Mutex
+var modPortalRequestLock sync.Mutex
+var lastModPortalRequest time.Time
+
+func throttleModPortalRequest() {
+	modPortalRequestLock.Lock()
+	defer modPortalRequestLock.Unlock()
+
+	if !lastModPortalRequest.IsZero() {
+		wait := time.Until(lastModPortalRequest.Add(modPortalRequestInterval))
+		if wait > 0 {
+			time.Sleep(wait)
+		}
+	}
+	lastModPortalRequest = time.Now()
+}
 
 func WriteModsList(modList ModListData) bool {
 	modListFileLock.Lock()
@@ -348,6 +365,16 @@ func getDownloadCount(downloadList []downloadData) int {
 	return len(downloadList)
 }
 
+func getCompletedDownloadCount(downloadList []downloadData) int {
+	count := 0
+	for _, item := range downloadList {
+		if item.Complete {
+			count++
+		}
+	}
+	return count
+}
+
 func downloadMods(downloadList []downloadData) string {
 
 	modPath := cfg.GetModsFolder()
@@ -392,6 +419,7 @@ func downloadMods(downloadList []downloadData) string {
 
 		//Fetch the mod link
 		dlSuffix := fmt.Sprintf(downloadSuffix, cfg.Global.Factorio.Username, cfg.Global.Factorio.Token)
+		throttleModPortalRequest()
 		data, _, err := factUpdater.HttpGet(false, downloadPrefix+dl.Data.DownloadURL+dlSuffix, false)
 		if err != nil {
 			emsg := "Unable to fetch URL"
@@ -497,6 +525,7 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 	name = url.PathEscape(name)
 
 	URL := fmt.Sprintf(modPortalURL, name)
+	throttleModPortalRequest()
 	data, _, err := factUpdater.HttpGet(false, URL, true)
 	if err != nil {
 		emsg := "Mod info request for " + name + " failed: " + err.Error()

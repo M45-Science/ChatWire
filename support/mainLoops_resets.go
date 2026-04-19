@@ -16,7 +16,7 @@ func startResetDurationLoop() {
 	go func() {
 		ticker := time.NewTicker(time.Minute)
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			<-ticker.C
 			if glob.SoftModVersion != constants.Unknown &&
 				fact.FactIsRunning &&
@@ -32,7 +32,7 @@ func startMapResetLoop() {
 	/* Check for map resets	    */
 	/****************************/
 	go func() {
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			// Run reset checks regardless of Factorio state so scheduled resets
 			// can still generate a new map even if the server is down.
 			fact.CheckMapReset()

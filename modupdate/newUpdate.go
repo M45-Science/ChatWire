@@ -21,7 +21,15 @@ const (
 	modUpdateTitle = "Found Mod Updates"
 )
 
-func CheckMods(force bool, reportNone bool) {
+func CheckModsManual(force bool) {
+	checkMods(force, true)
+}
+
+func CheckModsAuto(force bool) {
+	checkMods(force, false)
+}
+
+func checkMods(force bool, reportNone bool) {
 
 	if !cfg.Local.Options.ModUpdate && !force {
 		return
@@ -34,7 +42,11 @@ func CheckMods(force bool, reportNone bool) {
 		}
 	}
 	if updated && fact.FactIsRunning {
-		fact.QueueFactReboot = true
+		_ = fact.SubmitLifecycleRequest(fact.Request{
+			Kind:      fact.ActionRestartFactorio,
+			Reason:    "Rebooting Factorio.",
+			WhenEmpty: true,
+		})
 	}
 }
 
@@ -177,6 +189,12 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 }
 
 func CheckModUpdates(dryRun bool) (bool, error) {
+	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+	fact.SetModOperationInProgress(true)
+	defer func() {
+		fact.SetModOperationInProgress(false)
+	}()
+
 	// If needed, get Factorio version
 	getFactorioVersion()
 
@@ -195,6 +213,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 	// Check if we need to proceed
 	if len(installedMods) == 0 {
 		emsg := "the game has no installed mods to update"
+		fact.FailOperation(opToken, "Mod Updates", emsg, glob.COLOR_RED)
 		return false, errors.New(emsg)
 	}
 
@@ -208,6 +227,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		newInfo, err := DownloadModInfo(item.Name)
 		if err != nil {
 			cwlog.DoLogCW("NEWCheckModUpdates: DownloadModInfo" + err.Error())
+			fact.FailOperation(opToken, "Mod Updates", "Checking mod updates failed: "+err.Error(), glob.COLOR_RED)
 			return false, err
 		}
 
@@ -222,12 +242,14 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
+		fact.FailOperation(opToken, "Mod Updates", "Resolving mod dependencies failed: "+err.Error(), glob.COLOR_RED)
 		return false, err
 	}
 
 	_, err = checkIncompatible(installedMods, downloadList)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
+		fact.FailOperation(opToken, "Mod Updates", err.Error(), glob.COLOR_RED)
 		return false, err
 	}
 
@@ -265,6 +287,7 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		for _, dl := range downloadList {
 			cwlog.DoLogCW("%v-%v: %v", dl.Name, dl.Data.Version, dl.Filename)
 		}
+		fact.CompleteOperation(opToken, "Mod Updates", "Mod update check complete.", glob.COLOR_GREEN)
 		return false, nil
 	}
 
@@ -273,18 +296,34 @@ func CheckModUpdates(dryRun bool) (bool, error) {
 		AddModHistory(newHist)
 	}
 	shortBuf := downloadMods(downloadList)
+	requestedDownloads := getDownloadCount(downloadList)
+	completedDownloads := getCompletedDownloadCount(downloadList)
 
-	if getDownloadCount(downloadList) > 0 && len(installedMods) > 0 {
+	if requestedDownloads > 0 && completedDownloads == requestedDownloads && len(installedMods) > 0 {
 		emsg := "Mod updates complete."
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Updates", emsg, glob.COLOR_CYAN))
-		if fact.NumPlayers > 0 && shortBuf != "" {
+		if fact.NumPlayersCurrent() > 0 && shortBuf != "" {
 			fact.FactChat("Mod updates: " + shortBuf + " (Mods will update on reboot, when server is empty)")
 		}
 		glob.SetBootMessage(nil)
+		fact.CompleteOperation(opToken, "Mod Updates", "Mod updates are ready and will apply on reboot.", glob.COLOR_GREEN)
 		return true, nil
+	}
+	if requestedDownloads > 0 && completedDownloads > 0 {
+		emsg := fmt.Sprintf("Only %d of %d mod updates downloaded successfully. Restart canceled.", completedDownloads, requestedDownloads)
+		glob.SetBootMessage(nil)
+		fact.FailOperation(opToken, "Mod Updates", emsg, glob.COLOR_RED)
+		return false, errors.New(emsg)
+	}
+	if requestedDownloads > 0 {
+		emsg := "Mod update downloads failed. Restart canceled."
+		glob.SetBootMessage(nil)
+		fact.FailOperation(opToken, "Mod Updates", emsg, glob.COLOR_RED)
+		return false, errors.New(emsg)
 	}
 
 	glob.SetBootMessage(nil)
+	fact.CompleteOperation(opToken, "Mod Updates", "No mod updates available.", glob.COLOR_GREEN)
 	return false, errors.New("no mod updates available")
 }
 

@@ -376,7 +376,8 @@ func mustParseCIDRs(cidrs []string) []*net.IPNet {
 	for _, cidr := range cidrs {
 		_, ipNet, err := net.ParseCIDR(cidr)
 		if err != nil {
-			panic(err)
+			cwlog.DoLogCW("Skipping invalid blocked IPv4 CIDR %q: %v", cidr, err)
+			continue
 		}
 		out = append(out, ipNet)
 	}

@@ -17,7 +17,7 @@ func startPasscodeCleanup() {
 	 ************************************/
 	go func() {
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			time.Sleep(1 * time.Minute)
 
 			t := time.Now()
@@ -47,7 +47,7 @@ func startPlayerListSaveLoop() {
 			})
 		})
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			<-fact.PlayerListDirtySignal()
 			glob.PlayerListDirtyLock.Lock()
 			wasDirty := glob.PlayerListDirty
@@ -70,7 +70,7 @@ func startPlayerSeenSaveLoop() {
 		ticker := time.NewTicker(15 * time.Minute)
 		defer ticker.Stop()
 
-		for glob.ServerRunning {
+		for glob.ServerRunning() {
 			<-ticker.C
 			glob.PlayerStatsDirtyLock.Lock()
 			wasDirty := glob.PlayerStatsDirty

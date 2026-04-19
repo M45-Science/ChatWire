@@ -38,18 +38,15 @@ func getMapTypeNum(mapt string) int {
 
 /* Generate map */
 func Map_reset(doReport bool) error {
-	/* If Factorio is running, stop it first. If not, still proceed to generate a map. */
-	if FactorioBooted || FactIsRunning {
-		QueueReboot = false      //Skip queued reboot
-		QueueFactReboot = false  //Skip queued fact reboot
-		DoUpdateFactorio = false //Skip queued updates
+	SetAutolaunch(false, false)
+	return submitLifecycleRequestAndWait(Request{
+		Kind:     ActionMapReset,
+		Reason:   "Server rebooting for map reset!",
+		RequestID: fmt.Sprintf("map-reset-%d", time.Now().UnixNano()),
+	})
+}
 
-		SetAutolaunch(false, false)
-		QuitFactorio("Server rebooting for map reset!")
-		/* Wait for server to stop if running */
-		WaitFactQuit(false)
-	}
-
+func mapResetAfterStop(doReport bool) error {
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
 		quickArchive()
@@ -109,14 +106,10 @@ func Map_reset(doReport bool) error {
 			}
 
 			if strings.HasSuffix(f.Name(), ".zip") {
-
-				/* Delete mods queued up to be deleted */
 				if strings.HasPrefix(f.Name(), "deleteme-") {
-
 					delModName := f.Name()
 					err = os.Remove(qPath + delModName)
 					if err != nil {
-
 						modName := strings.TrimPrefix(delModName, "deleteme-")
 						err = os.Remove(modPath + modName)
 						if err != nil {
@@ -131,13 +124,10 @@ func Map_reset(doReport bool) error {
 						LogCMS(cfg.Local.Channel.ChatChannel, buf)
 					}
 				} else {
-
-					/* Otherwise, install new mod */
 					err := os.Rename(qPath+f.Name(), modPath+f.Name())
 					if err != nil {
 						msg := fmt.Sprintf("Unable to install mod: %v", f.Name())
 						LogCMS(cfg.Local.Channel.ChatChannel, msg)
-
 					} else {
 						buf := fmt.Sprintf("Installed mod: %v", f.Name())
 						LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
@@ -148,10 +138,8 @@ func Map_reset(doReport bool) error {
 	}
 
 	glob.VoteBox.LastMapChange = time.Now()
-	VoidAllVotes() /* Void all votes */
+	VoidAllVotes()
 	WriteVotes()
-
-	SetAutolaunch(true, false)
 	return nil
 }
 

@@ -67,7 +67,7 @@ func handleModList(modListBytes []byte) {
 				"Downloading: "+enabledModList, glob.COLOR_GREEN))
 			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Status",
 				"**Downloading the "+strconv.FormatInt(int64(enabledCount), 10)+" enabled mods in your "+constants.ModListName+" file, PLEASE WAIT...**", glob.COLOR_GREEN))
-			modupdate.CheckMods(true, true)
+			modupdate.CheckModsManual(true)
 		} else {
 			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Status",
 				"**Your "+constants.ModListName+" file contains no enabled mods!**", glob.COLOR_RED))

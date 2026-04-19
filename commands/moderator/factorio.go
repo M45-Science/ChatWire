@@ -21,6 +21,14 @@ import (
 	"ChatWire/support"
 )
 
+func shortFactorioVersion(version string) (string, bool) {
+	parts := strings.Split(version, ".")
+	if len(parts) < 3 {
+		return "", false
+	}
+	return strings.Join(parts[0:2], "."), true
+}
+
 /* Generate map */
 func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
@@ -50,17 +58,14 @@ func NewMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 /* Archive map */
 func ArchiveMap(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
-	version := strings.Split(fact.FactorioVersion, ".")
-	vlen := len(version)
-
-	if vlen < 3 {
+	shortversion, ok := shortFactorioVersion(fact.FactorioVersion)
+	if !ok {
 		buf := "Unable to determine Factorio version."
 		disc.InteractionEphemeralResponse(i, "Error:", buf)
+		return
 	}
 
 	if fact.GameMapPath != "" && fact.FactorioVersion != constants.Unknown {
-		shortversion := strings.Join(version[0:2], ".")
-
 		t := time.Now()
 		date := t.Format("2006-01-02")
 
@@ -137,13 +142,15 @@ func StartFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		buf := fmt.Sprintf("Will not start Factorio. Current time allowed is: %v - %v GMT.",
 			cfg.Local.Options.PlayStartHour, cfg.Local.Options.PlayEndHour)
 		disc.InteractionEphemeralResponseColor(i, "Status:", buf, glob.COLOR_RED)
+		return
 	} else if fact.FactorioBooted || fact.FactIsRunning {
 		buf := "Restarting Factorio..."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
-		fact.QuitFactorio("Server rebooting...")
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionRestartFactorio, Reason: "Server rebooting..."})
 	} else {
 		buf := "Starting Factorio..."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStart, Reason: "Starting Factorio..."})
 	}
 
 	fact.SetAutolaunch(true, false)
@@ -159,7 +166,7 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		buf := "Stopping Factorio."
 		disc.InteractionEphemeralResponse(i, "Status:", buf)
-		fact.QuitFactorio("Server quitting...")
+		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Server quitting..."})
 	} else {
 		buf := "Factorio isn't running, disabling auto-reboot."
 		disc.InteractionEphemeralResponseColor(i, "Warning:", buf, glob.COLOR_RED)
@@ -170,7 +177,7 @@ func StopFact(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 func UpdateMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	disc.InteractionEphemeralResponse(i, "Status:", "Checking for mod updates.")
 	glob.UpdatersLock.Lock()
-	modupdate.CheckMods(true, true)
+	modupdate.CheckModsManual(true)
 	glob.UpdatersLock.Unlock()
 
 }

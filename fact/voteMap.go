@@ -189,7 +189,6 @@ func CheckVote(i *discordgo.InteractionCreate, arg string) {
 	WriteVotes()
 
 	LogGameCMS(true, cfg.Local.Channel.ChatChannel, "VOTE MAP: "+chosenMap)
-	FactorioBootedAt = time.Time{}
 	DoChangeMap(chosenMap)
 }
 

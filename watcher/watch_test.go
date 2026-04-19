@@ -1,8 +1,10 @@
 package watcher
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 )
@@ -15,9 +17,15 @@ func TestWatchCreationEvent(t *testing.T) {
 	// Speed up retry loop on stat failures.
 	ErrSleepDuration = 10 * time.Millisecond
 
-	running := true
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	done := make(chan struct{})
-	go Watch(path, 5*time.Millisecond, &running, func() { close(done) })
+	exited := make(chan struct{})
+	var once sync.Once
+	go func() {
+		defer close(exited)
+		Watch(path, 5*time.Millisecond, ctx, func() { once.Do(func() { close(done) }) })
+	}()
 
 	// Give watcher time to start and attempt the first stat.
 	time.Sleep(20 * time.Millisecond)
@@ -38,7 +46,12 @@ func TestWatchCreationEvent(t *testing.T) {
 	case <-time.After(1 * time.Second):
 		t.Fatal("callback not triggered on creation")
 	}
-	running = false
+	cancel()
+	select {
+	case <-exited:
+	case <-time.After(time.Second):
+		t.Fatal("watcher did not exit after cancel")
+	}
 }
 
 // Test callback triggers when a watched file is modified.
@@ -52,9 +65,15 @@ func TestWatchModificationEvent(t *testing.T) {
 
 	ErrSleepDuration = 10 * time.Millisecond
 
-	running := true
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	done := make(chan struct{})
-	go Watch(path, 5*time.Millisecond, &running, func() { close(done) })
+	exited := make(chan struct{})
+	var once sync.Once
+	go func() {
+		defer close(exited)
+		Watch(path, 5*time.Millisecond, ctx, func() { once.Do(func() { close(done) }) })
+	}()
 
 	// Allow watcher to record initial state.
 	time.Sleep(20 * time.Millisecond)
@@ -69,5 +88,10 @@ func TestWatchModificationEvent(t *testing.T) {
 	case <-time.After(1 * time.Second):
 		t.Fatal("callback not triggered on modification")
 	}
-	running = false
+	cancel()
+	select {
+	case <-exited:
+	case <-time.After(time.Second):
+		t.Fatal("watcher did not exit after cancel")
+	}
 }

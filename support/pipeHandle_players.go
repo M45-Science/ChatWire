@@ -24,7 +24,7 @@ func handleOnlinePlayers(input *handleData) bool {
 	if strings.HasPrefix(input.line, "Online players") {
 
 		if input.wordListLen > 2 {
-			prevCount := fact.NumPlayers
+			prevCount := fact.NumPlayersCurrent()
 			poc := strings.Join(input.wordList[2:], " ")
 			poc = strings.ReplaceAll(poc, "(", "")
 			poc = strings.ReplaceAll(poc, ")", "")
@@ -32,7 +32,7 @@ func handleOnlinePlayers(input *handleData) bool {
 			poc = strings.ReplaceAll(poc, " ", "")
 
 			nump, _ := strconv.Atoi(poc)
-			fact.NumPlayers = (nump)
+			fact.SetNumPlayers(nump)
 
 			fact.UpdateChannelName()
 			// If the last player logs out, update immediately so the channel name
@@ -135,9 +135,7 @@ func handlePlayerLeave(input *handleData) bool {
 			// poll from running and leave the channel name stuck with a stale count.
 			fact.WriteFact(glob.OnlineCommand)
 
-			go func(factname string) {
-				fact.UpdateSeen(factname)
-			}(pname)
+			fact.UpdateSeen(pname)
 		}
 		return true
 	}
@@ -198,7 +196,7 @@ func handleOnlineMsg(input *handleData) bool {
 		newPlayerList := []glob.OnlinePlayerData{}
 		count := 0
 
-		prevCount := fact.NumPlayers
+		prevCount := fact.NumPlayersCurrent()
 
 		//cwlog.DoLogCW(input.line)
 		line := strings.TrimPrefix(input.line, tag)
@@ -223,7 +221,7 @@ func handleOnlineMsg(input *handleData) bool {
 
 					if pname != "" {
 						/* Mark as seen, async */
-						go fact.UpdateSeen(pname)
+						fact.UpdateSeen(pname)
 
 						/* Check if user is banned */
 						banlist.CheckBanList(pname, false)
@@ -242,12 +240,12 @@ func handleOnlineMsg(input *handleData) bool {
 				}
 			}
 			if count > 0 {
-				fact.NumPlayers = (count)
+				fact.SetNumPlayers(count)
 				fact.OnlinePlayersLock.Lock()
 				glob.OnlinePlayers = newPlayerList
 
 				fact.OnlinePlayersLock.Unlock()
-				if fact.NumPlayers != prevCount {
+				if fact.NumPlayersCurrent() != prevCount {
 					fact.UpdateChannelName()
 				}
 				return true
@@ -255,7 +253,7 @@ func handleOnlineMsg(input *handleData) bool {
 		}
 
 		/* Otherwise clear list */
-		fact.NumPlayers = (0)
+		fact.SetNumPlayers(0)
 		fact.OnlinePlayersLock.Lock()
 		glob.OnlinePlayers = []glob.OnlinePlayerData{}
 		fact.OnlinePlayersLock.Unlock()

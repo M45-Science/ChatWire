@@ -62,8 +62,8 @@ func runHandles(handles []funcList, input *handleData) {
 func HandleChat() {
 
 	/* Don't log if the game isn't set to run */
-	for glob.ServerRunning {
-		lines := fact.GameLineCh
+	for glob.ServerRunning() {
+		lines := fact.GameLineChCurrent()
 		if lines == nil {
 			time.Sleep(100 * time.Millisecond)
 			continue
@@ -85,7 +85,7 @@ func HandleChat() {
 
 		/* We have input, server is alive */
 		//fact.SetFactRunning(true, false)
-		glob.NoResponseCount = 0
+		glob.ResetNoResponseCount()
 
 		/* Decrement every time we see activity, if we see time not progressing, add two */
 		if fact.PausedTicks > 0 {

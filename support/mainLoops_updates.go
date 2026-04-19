@@ -24,7 +24,7 @@ func startFactorioUpdateLoop() {
 			ticker := time.NewTicker(time.Minute)
 			defer ticker.Stop()
 
-			for glob.ServerRunning {
+			for glob.ServerRunning() {
 				<-ticker.C
 
 				if !cfg.Local.Options.AutoUpdate {
@@ -39,7 +39,7 @@ func startFactorioUpdateLoop() {
 			}
 		} else {
 
-			for glob.ServerRunning {
+			for glob.ServerRunning() {
 				time.Sleep(time.Minute * 30)
 				if cfg.Local.Options.AutoUpdate {
 					checkFactUpdate()
