@@ -29,12 +29,13 @@ func TestFormatBusyMessageIncludesCommandMetadata(t *testing.T) {
 	startedAt := time.Now().Add(-(time.Hour + 2*time.Minute + 3*time.Second))
 	msg := formatBusyMessage(activeCommandState{
 		Name:      "sync-mods",
+		Args:      "force:true",
 		User:      "alice",
 		StartedAt: startedAt,
 	})
 
 	for _, part := range []string{
-		`"sync-mods"`,
+		`"sync-mods force:true"`,
 		"alice",
 		"1 hour 2 minutes 3 seconds",
 	} {
@@ -93,5 +94,25 @@ func TestIsCommandLockExemptRejectsOtherChatwireActions(t *testing.T) {
 
 	if isCommandLockExempt(i) {
 		t.Fatal("expected non-force-reboot /chatwire actions to remain locked")
+	}
+}
+
+func TestInteractionCommandArgsFormatsOptions(t *testing.T) {
+	i := &discordgo.InteractionCreate{
+		Interaction: &discordgo.Interaction{
+			Type: discordgo.InteractionApplicationCommand,
+			Data: discordgo.ApplicationCommandInteractionData{
+				Name: "editmods",
+				Options: []*discordgo.ApplicationCommandInteractionDataOption{
+					{Name: "disable-mod", Type: discordgo.ApplicationCommandOptionString, Value: "simhelper"},
+				},
+			},
+		},
+	}
+
+	got := interactionCommandArgs(i)
+	want := "disable-mod:simhelper"
+	if got != want {
+		t.Fatalf("expected %q, got %q", want, got)
 	}
 }

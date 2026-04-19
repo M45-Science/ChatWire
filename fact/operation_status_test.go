@@ -240,7 +240,7 @@ func TestAnnouncePendingOperationUsesLatestQueuedDescription(t *testing.T) {
 	resetOperationStatusTestState()
 
 	token := BeginOperation("Starting Factorio", StatusStartingFactorio())
-	UpdateOperation(token, "Starting Factorio", StatusLoadingMods(), 0)
+	UpdateOperation(token, "Starting Factorio", StatusLoadingMods(""), 0)
 
 	operationStatusLock.Lock()
 	operationStatus.startedAt = time.Now().Add(-operationAnnounceDelay - time.Millisecond)
@@ -253,7 +253,7 @@ func TestAnnouncePendingOperationUsesLatestQueuedDescription(t *testing.T) {
 	if !operationStatus.announced {
 		t.Fatal("expected pending operation to be announced")
 	}
-	if operationStatus.description != StatusLoadingMods() {
+	if operationStatus.description != StatusLoadingMods("") {
 		t.Fatalf("expected latest queued description to be announced, got %q", operationStatus.description)
 	}
 }

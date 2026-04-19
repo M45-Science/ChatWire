@@ -52,11 +52,17 @@ func StatusResettingMap() string {
 	return "Resetting map."
 }
 
-func StatusLoadingMods() string {
+func StatusLoadingMods(detail string) string {
+	if detail != "" {
+		return fmt.Sprintf("Factorio is loading mod %s.", detail)
+	}
 	return "Factorio is loading mods."
 }
 
-func StatusLoadingModsStill() string {
+func StatusLoadingModsStill(detail string) string {
+	if detail != "" {
+		return fmt.Sprintf("Factorio is continuing to load mod %s.", detail)
+	}
 	return "Factorio is continuing to load mods."
 }
 

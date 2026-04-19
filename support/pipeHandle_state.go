@@ -1,6 +1,7 @@
 package support
 
 import (
+	"regexp"
 	"strings"
 	"time"
 
@@ -46,7 +47,7 @@ func handleFactReady(input *handleData) bool {
 	 * READY MESSAGE
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Info RemoteCommandProcessor") && strings.Contains(input.noTimecode, "Starting RCON interface") {
-		fact.NotifyFactorioProgress("rcon-ready")
+		fact.NotifyFactorioProgress("rcon-ready", "")
 		fact.WriteAdminlist()
 
 		// A Factorio boot implies no players online yet; clear any stale count so the
@@ -72,13 +73,44 @@ func handleFactVersion(input *handleData) bool {
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(input.noTimecode, "Loading mod base") {
-		fact.NotifyFactorioProgress("mod-load")
+		fact.NotifyFactorioProgress("mod-load", modLoadStatusDetail(input.noTimecode))
 		//cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
 			fact.FactorioVersion = input.noTimecodeList[3]
 		}
 	} else if strings.HasPrefix(input.noTimecode, "Loading mod ") {
-		fact.NotifyFactorioProgress("mod-load")
+		fact.NotifyFactorioProgress("mod-load", modLoadStatusDetail(input.noTimecode))
 	}
 	return false
+}
+
+var modLoadCountPattern = regexp.MustCompile(`\((\d+/\d+)\)`)
+
+func modLoadStatusDetail(line string) string {
+	line = strings.TrimSpace(line)
+	if !strings.HasPrefix(line, "Loading mod ") {
+		return ""
+	}
+
+	modInfo := strings.TrimSpace(strings.TrimPrefix(line, "Loading mod "))
+	if modInfo == "" {
+		return ""
+	}
+
+	count := ""
+	if match := modLoadCountPattern.FindStringSubmatch(modInfo); len(match) > 1 {
+		count = match[1]
+		modInfo = strings.Replace(modInfo, match[0], "", 1)
+	}
+
+	fields := strings.Fields(modInfo)
+	if len(fields) == 0 {
+		return ""
+	}
+
+	name := fields[0]
+	if count != "" {
+		return count + " " + name
+	}
+	return name
 }

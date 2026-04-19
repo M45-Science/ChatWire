@@ -75,6 +75,7 @@ type processExitEvent struct {
 type lifecycleProgressEvent struct {
 	generation uint64
 	kind       string
+	detail     string
 	at         time.Time
 }
 
@@ -310,7 +311,7 @@ func NotifyFactorioProcessExit(generation uint64, err error) {
 	lm.signal()
 }
 
-func NotifyFactorioProgress(kind string) {
+func NotifyFactorioProgress(kind, detail string) {
 	lifecycleMu.Lock()
 	lm := lifecycle
 	lifecycleMu.Unlock()
@@ -320,6 +321,7 @@ func NotifyFactorioProgress(kind string) {
 	evt := lifecycleProgressEvent{
 		generation: lm.getCurrentGeneration(),
 		kind:       kind,
+		detail:     detail,
 		at:         time.Now(),
 	}
 	select {
@@ -925,7 +927,7 @@ func (lm *lifecycleManager) handleProgressEvent(evt lifecycleProgressEvent) {
 
 	switch evt.kind {
 	case "mod-load":
-		lm.updateOperationProgressDelayedWithReminder(StatusLoadingMods(), StatusLoadingModsStill(), lifecycleOptionalProgressDelay)
+		lm.updateOperationProgressDelayedWithReminder(StatusLoadingMods(evt.detail), StatusLoadingModsStill(evt.detail), lifecycleOptionalProgressDelay)
 	case "map-load":
 		if opKind == ActionChangeMap {
 			lm.updateOperationProgressDelayedWithReminder(StatusLoadingMap(saveName), StatusLoadingMapStill(saveName), lifecycleOptionalProgressDelay)

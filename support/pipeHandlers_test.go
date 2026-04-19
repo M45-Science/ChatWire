@@ -55,6 +55,14 @@ func TestHandleMapLoadSetsGameMapState(t *testing.T) {
 	}
 }
 
+func TestModLoadStatusDetailIncludesCountAndName(t *testing.T) {
+	got := modLoadStatusDetail("Loading mod someModName 1.2.3 (4/24)")
+	want := "4/24 someModName"
+	if got != want {
+		t.Fatalf("expected %q, got %q", want, got)
+	}
+}
+
 func TestHandleSaveMsgUpdatesLastAutosave(t *testing.T) {
 	resetSupportTestState(t)
 

@@ -29,6 +29,20 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	// Reply early for simple enable/disable requests, then let the normal toggle
+	// path complete without trying to send a second interaction response.
+	if len(optionsList) == 1 {
+		option := optionsList[0]
+		switch strings.ToLower(option.Name) {
+		case "enable-mod":
+			handleToggleImmediate(i, option.StringValue(), true)
+			return
+		case "disable-mod":
+			handleToggleImmediate(i, option.StringValue(), false)
+			return
+		}
+	}
+
 	for _, option := range optionsList {
 		oName := strings.ToLower(option.Name)
 
@@ -68,6 +82,62 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
 	}
+}
+
+func handleToggleImmediate(i *discordgo.InteractionCreate, name string, value bool) {
+	msg, ok := previewToggleResponse(name, value)
+	if !ok {
+		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", msg, glob.COLOR_RED)
+		return
+	}
+
+	disc.InteractionEphemeralResponseColor(i, "Edit-Mods", msg, glob.COLOR_CYAN)
+	result := toggleMod(i, name, value)
+	if result == "" {
+		return
+	}
+	cwlog.DoLogCW("EditMods %s: %s", enableStr(value, false), result)
+}
+
+func previewToggleResponse(name string, value bool) (string, bool) {
+	if fact.FactorioBooted || fact.FactIsRunning {
+		return "Factorio is currently running. You must stop Factorio first.", false
+	}
+	if name == "" {
+		return "You must specify a mod(s) to " + enableStr(value, false) + ".", false
+	}
+
+	modList, _ := modupdate.GetModList()
+	input := strings.ReplaceAll(name, " ", "")
+	parts := strings.Split(input, ",")
+
+	responses := []string{}
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+
+		found := false
+		for _, mod := range modList.Mods {
+			if mod.Name == "base" {
+				continue
+			}
+			if strings.EqualFold(mod.Name, part) {
+				responses = append(responses, "The mod '"+mod.Name+"' is now "+enableStr(value, true)+".")
+				found = true
+				break
+			}
+		}
+		if !found {
+			return "There is no mod by the name: " + part, false
+		}
+	}
+
+	if len(responses) == 0 {
+		return "You must specify a mod(s) to " + enableStr(value, false) + ".", false
+	}
+
+	return strings.Join(responses, "\n"), true
 }
 
 func clearAllMods() string {

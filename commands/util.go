@@ -24,6 +24,7 @@ var activeCommandMu sync.RWMutex
 
 type activeCommandState struct {
 	Name      string
+	Args      string
 	User      string
 	StartedAt time.Time
 }
@@ -42,6 +43,7 @@ func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	setActiveCommand(activeCommandState{
 		Name:      interactionCommandName(i),
+		Args:      interactionCommandArgs(i),
 		User:      interactionUserName(i),
 		StartedAt: time.Now(),
 	})
@@ -191,6 +193,9 @@ func formatBusyMessage(state activeCommandState) string {
 	if name == "" {
 		name = "unknown command"
 	}
+	if state.Args != "" {
+		name = name + " " + state.Args
+	}
 
 	user := state.User
 	if user == "" {
@@ -231,6 +236,46 @@ func interactionCommandName(i *discordgo.InteractionCreate) string {
 	}
 
 	return ""
+}
+
+func interactionCommandArgs(i *discordgo.InteractionCreate) string {
+	if i == nil || i.Type != discordgo.InteractionApplicationCommand {
+		return ""
+	}
+
+	return formatInteractionOptions(i.ApplicationCommandData().Options)
+}
+
+func formatInteractionOptions(options []*discordgo.ApplicationCommandInteractionDataOption) string {
+	parts := []string{}
+	for _, option := range options {
+		if option == nil {
+			continue
+		}
+
+		switch option.Type {
+		case discordgo.ApplicationCommandOptionSubCommand, discordgo.ApplicationCommandOptionSubCommandGroup:
+			name := option.Name
+			if nested := formatInteractionOptions(option.Options); nested != "" {
+				name += " " + nested
+			}
+			if name != "" {
+				parts = append(parts, name)
+			}
+		default:
+			value := strings.TrimSpace(option.StringValue())
+			if value == "" {
+				if option.Value != nil {
+					value = strings.TrimSpace(fmt.Sprint(option.Value))
+				} else {
+					value = "true"
+				}
+			}
+			parts = append(parts, fmt.Sprintf("%s:%s", option.Name, value))
+		}
+	}
+
+	return strings.Join(parts, " ")
 }
 
 func interactionUserName(i *discordgo.InteractionCreate) string {
