@@ -18,7 +18,7 @@ import (
 const httpDownloadTimeout = time.Minute * 15
 const httpGetTimeout = time.Second * 30
 const httpStatusBodyLimit = 256
-const httpMaxRetries = 2
+const httpMaxRetries = 5
 
 var HTTPLock sync.Mutex
 
@@ -150,10 +150,7 @@ func retryAfterDelay(res *http.Response, attempt int) time.Duration {
 		}
 	}
 
-	wait := time.Second * time.Duration(attempt+1)
-	if wait < time.Second {
-		return time.Second
-	}
+	wait := 2 * time.Second << attempt
 	return wait
 }
 
