@@ -282,13 +282,16 @@ func CheckModUpdates(dryRun bool, emitProgress bool) (bool, error) {
 	modPortalData := []modPortalFullData{}
 	checkableMods := 0
 	for _, item := range installedMods {
+		if !item.Enabled || IsBaseMod(item.Name) {
+			continue
+		}
 		if !IsBaseMod(item.Name) {
 			checkableMods++
 		}
 	}
 	checkedMods := 0
 	for _, item := range installedMods {
-		if IsBaseMod(item.Name) {
+		if !item.Enabled || IsBaseMod(item.Name) {
 			continue
 		}
 		checkedMods++
