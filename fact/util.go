@@ -13,7 +13,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -62,9 +61,6 @@ var (
 	banLock         sync.Mutex
 	AutoLaunchLock  sync.Mutex
 	FactRunningLock sync.Mutex
-
-	cmsDropCount           uint64
-	cmsLastDropLogUnixNano int64
 )
 
 func GetFactUPS() (float64, float64, float64) {
@@ -1357,37 +1353,7 @@ func GetFactorioBinary() string {
 
 /* Write a Discord message to the buffer */
 func CMS(channel string, text string) {
-
-	text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
-	/* Split at newlines, so we can batch neatly */
-	lines := strings.Split(text, "\n")
-
-	for _, line := range lines {
-		item := disc.CMSBuf{Channel: channel, Text: line}
-
-		select {
-		case disc.CMSChan <- item:
-		default:
-			// Buffer is full; drop the oldest message to make room, otherwise drop this one.
-			select {
-			case <-disc.CMSChan:
-			default:
-			}
-			select {
-			case disc.CMSChan <- item:
-			default:
-				atomic.AddUint64(&cmsDropCount, 1)
-				now := time.Now().UnixNano()
-				last := atomic.LoadInt64(&cmsLastDropLogUnixNano)
-				if now-last > int64(10*time.Second) && atomic.CompareAndSwapInt64(&cmsLastDropLogUnixNano, last, now) {
-					dropped := atomic.SwapUint64(&cmsDropCount, 0)
-					if dropped > 0 {
-						cwlog.DoLogCW("Discord CMS buffer full; dropped %d messages (Discord down or rate-limited).", dropped)
-					}
-				}
-			}
-		}
-	}
+	disc.QueueDiscordMessage(channel, text)
 }
 
 /* Log AND send this message to Discord */

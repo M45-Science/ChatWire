@@ -5,12 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
+	"ChatWire/sclean"
+)
+
+var (
+	cmsDropCount           uint64
+	cmsLastDropLogUnixNano int64
 )
 
 // CheckAdmin returns true if the interaction author has the "admin" role.
@@ -151,12 +160,49 @@ func formatStatusMessage(title, description string) string {
 	return strings.TrimSpace(title)
 }
 
+// QueueDiscordMessage appends plain text to the shared Discord send buffer.
+// Messages remain queued until the CMS loop observes an active Discord session.
+func QueueDiscordMessage(ch string, text string) {
+	if ch == "" || text == "" {
+		return
+	}
+
+	text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
+	for _, line := range strings.Split(text, "\n") {
+		item := CMSBuf{Channel: ch, Text: line}
+
+		select {
+		case CMSChan <- item:
+		default:
+			// Buffer is full; drop the oldest message to make room, otherwise drop this one.
+			select {
+			case <-CMSChan:
+			default:
+			}
+			select {
+			case CMSChan <- item:
+			default:
+				atomic.AddUint64(&cmsDropCount, 1)
+				now := time.Now().UnixNano()
+				last := atomic.LoadInt64(&cmsLastDropLogUnixNano)
+				if now-last > int64(10*time.Second) && atomic.CompareAndSwapInt64(&cmsLastDropLogUnixNano, last, now) {
+					dropped := atomic.SwapUint64(&cmsDropCount, 0)
+					if dropped > 0 {
+						cwlog.DoLogCW("Discord CMS buffer full; dropped %d messages (Discord down or rate-limited).", dropped)
+					}
+				}
+			}
+		}
+	}
+}
+
 // SmartEditDiscordEmbed is kept for compatibility with existing status call sites.
-// Status updates are now always sent as plain text messages with no embeds and no edits.
+// Status updates are now always queued as plain text messages with no embeds and no edits.
 func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description string, color int) *discordgo.Message {
 	_ = msg
 	_ = color
-	return SmartWriteDiscord(ch, formatStatusMessage(title, description))
+	QueueDiscordMessage(ch, formatStatusMessage(title, description))
+	return nil
 }
 
 // SmartWriteDiscord sends a plain text message to a channel and logs errors.

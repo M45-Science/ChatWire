@@ -8,6 +8,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func drainCMSChan() {
+	for {
+		select {
+		case <-CMSChan:
+		default:
+			return
+		}
+	}
+}
+
 func TestRoleChecksMatchConfiguredRoleCache(t *testing.T) {
 	cfg.Global.Discord.Roles.RoleCache.Admin = "admin-role"
 	cfg.Global.Discord.Roles.RoleCache.Moderator = "mod-role"
@@ -79,5 +89,28 @@ func TestRoleChecksFailWithoutMatchingRole(t *testing.T) {
 	}
 	if CheckRegular(i) {
 		t.Fatal("expected regular role check to fail")
+	}
+}
+
+func TestSmartEditDiscordEmbedQueuesStatusTextWhenDiscordOffline(t *testing.T) {
+	drainCMSChan()
+	t.Cleanup(drainCMSChan)
+
+	DS = nil
+
+	if msg := SmartEditDiscordEmbed("chan-1", nil, "Ready", "Factorio is online.", 0); msg != nil {
+		t.Fatal("expected queued status send to return nil")
+	}
+
+	select {
+	case queued := <-CMSChan:
+		if queued.Channel != "chan-1" {
+			t.Fatalf("expected queued channel chan-1, got %q", queued.Channel)
+		}
+		if queued.Text != "Factorio is online." {
+			t.Fatalf("expected queued text %q, got %q", "Factorio is online.", queued.Text)
+		}
+	default:
+		t.Fatal("expected status text to be queued while Discord is offline")
 	}
 }
