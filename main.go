@@ -61,6 +61,9 @@ func main() {
 	}
 	initMaps()
 	readConfigs()
+	if !*glob.NoDiscord {
+		fact.CMS(cfg.Local.Channel.ChatChannel, fact.StatusChatWireOnline())
+	}
 	modupdate.ReadModHistory()
 
 	if *cleanDB || *cleanBans {
@@ -274,18 +277,8 @@ func botReady(s *discordgo.Session, r *discordgo.Ready) {
 }
 
 func finishDiscordReady() {
-	firstConnect := !support.BotIsReady
 	discordConnectAttempts = 0
 	support.BotIsReady = true
-	emitDiscordLifecycleSnapshot(firstConnect)
-}
-
-func emitDiscordLifecycleSnapshot(firstConnect bool) {
-	if !firstConnect {
-		return
-	}
-
-	fact.CMS(cfg.Local.Channel.ChatChannel, fact.StatusChatWireOnline())
 	glob.SetBootMessage(nil)
 }
 
