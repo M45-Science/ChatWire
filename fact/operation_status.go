@@ -29,6 +29,7 @@ type operationStatusState struct {
 	lastProgressKey      string
 	lastProgressUpdateAt time.Time
 	announced            bool
+	suppressAnnounce     bool
 	pendingDelayID       uint64
 	optionalMessages     []operationMessageRef
 }
@@ -72,6 +73,19 @@ func BeginOperation(title, description string) string {
 	return token
 }
 
+func SuppressPendingOperationAnnouncement(token string) {
+	if token == "" {
+		return
+	}
+
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if token != operationStatus.token {
+		return
+	}
+	operationStatus.suppressAnnounce = true
+}
+
 func UpdateOperation(token, title, description string, color int) {
 	updateOperation(token, title, description, color, false, false)
 }
@@ -82,7 +96,7 @@ func AnnouncePendingOperation(token string, color int) {
 	}
 
 	operationStatusLock.Lock()
-	if token != operationStatus.token || operationStatus.announced {
+	if token != operationStatus.token || operationStatus.announced || operationStatus.suppressAnnounce {
 		operationStatusLock.Unlock()
 		return
 	}

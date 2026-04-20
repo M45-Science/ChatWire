@@ -257,3 +257,22 @@ func TestAnnouncePendingOperationUsesLatestQueuedDescription(t *testing.T) {
 		t.Fatalf("expected latest queued description to be announced, got %q", operationStatus.description)
 	}
 }
+
+func TestSuppressPendingOperationAnnouncementBlocksInitialAnnouncement(t *testing.T) {
+	resetOperationStatusTestState()
+
+	token := BeginOperation("Mod Updates", "Checking for mod updates.")
+	SuppressPendingOperationAnnouncement(token)
+
+	operationStatusLock.Lock()
+	operationStatus.startedAt = time.Now().Add(-operationAnnounceDelay - time.Millisecond)
+	operationStatusLock.Unlock()
+
+	AnnouncePendingOperation(token, 0)
+
+	operationStatusLock.Lock()
+	defer operationStatusLock.Unlock()
+	if operationStatus.announced {
+		t.Fatal("expected suppressed pending operation to remain unannounced")
+	}
+}

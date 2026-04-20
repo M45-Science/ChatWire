@@ -170,7 +170,7 @@ func runModUpdateCheckCase() error {
 	glob.UpdatersLock.Lock()
 	defer glob.UpdatersLock.Unlock()
 
-	updated, err := modupdate.CheckModUpdates(true, false, false)
+	updated, err := modupdate.CheckModUpdates(true, false, false, false)
 	if err != nil && err.Error() != "no mod updates available" && err.Error() != "the game has no installed mods to update" {
 		return fmt.Errorf("mod-update-check failed: %v", err)
 	}

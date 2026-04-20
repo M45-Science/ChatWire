@@ -36,7 +36,7 @@ func checkMods(force bool, reportNone bool, emitProgress bool) {
 		return
 	}
 
-	updated, err := CheckModUpdates(false, emitProgress, reportNone)
+	updated, err := CheckModUpdates(false, emitProgress, !reportNone, !reportNone)
 	if reportNone || updated {
 		if err != nil {
 			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Warning:", err.Error(), glob.COLOR_CYAN))
@@ -244,10 +244,10 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 	return downloadMods, nil
 }
 
-func CheckModUpdates(dryRun bool, emitProgress bool, reportStatus bool) (bool, error) {
-	opToken := ""
-	if reportStatus {
-		opToken = fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+func CheckModUpdates(dryRun bool, emitProgress bool, suppressChecking bool, suppressNoUpdates bool) (bool, error) {
+	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+	if suppressChecking {
+		fact.SuppressPendingOperationAnnouncement(opToken)
 	}
 	progress := modUpdateProgress{}
 	if emitProgress {
@@ -400,7 +400,11 @@ func CheckModUpdates(dryRun bool, emitProgress bool, reportStatus bool) (bool, e
 	}
 
 	glob.SetBootMessage(nil)
-	fact.CompleteOperation(opToken, "Mod Updates", "No mod updates available.", glob.COLOR_GREEN)
+	if suppressNoUpdates {
+		fact.CancelOperation(opToken)
+	} else {
+		fact.CompleteOperation(opToken, "Mod Updates", "No mod updates available.", glob.COLOR_GREEN)
+	}
 	return false, errors.New("no mod updates available")
 }
 
