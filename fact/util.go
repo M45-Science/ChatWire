@@ -231,16 +231,7 @@ func SetFactRunning(run, report bool) {
 			FactorioBootedAt = time.Time{}
 			clearOnlinePlayers()
 		}
-		if report {
-			if run {
-				readyMsg := waitForFactorioReadyStatus(factorioReadyVersionTimeout)
-				cwlog.DoLogGame(readyMsg)
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", readyMsg, glob.COLOR_GREEN))
-			} else {
-				cwlog.DoLogCW("Factorio has closed.")
-				glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", StatusFactorioOffline(), glob.COLOR_RED))
-			}
-		}
+		_ = report
 		UpdateChannelName()
 		DoUpdateChannelNameForce()
 		return

@@ -286,9 +286,6 @@ func emitDiscordLifecycleSnapshot(firstConnect bool) {
 	}
 
 	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", fact.StatusChatWireOnline(), glob.COLOR_GREEN))
-	if (fact.FactIsRunning || fact.FactorioBooted) && fact.FactorioVersion != "" && fact.FactorioVersion != constants.Unknown {
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", fact.StatusFactorioOnline(fact.FactorioVersion), glob.COLOR_GREEN))
-	}
 }
 
 func checkLockFile() {

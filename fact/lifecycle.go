@@ -1069,6 +1069,10 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 		lm.mu.Unlock()
 		return
 	}
+	if lm.phase == LifecycleStopped {
+		lm.mu.Unlock()
+		return
+	}
 
 	wasStarting := lm.phase == LifecycleStarting
 	startedAt := lm.startedAt
