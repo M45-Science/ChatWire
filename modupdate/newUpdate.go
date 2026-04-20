@@ -36,7 +36,7 @@ func checkMods(force bool, reportNone bool, emitProgress bool) {
 		return
 	}
 
-	updated, err := CheckModUpdates(false, emitProgress)
+	updated, err := CheckModUpdates(false, emitProgress, reportNone)
 	if reportNone || updated {
 		if err != nil {
 			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Warning:", err.Error(), glob.COLOR_CYAN))
@@ -244,8 +244,11 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 	return downloadMods, nil
 }
 
-func CheckModUpdates(dryRun bool, emitProgress bool) (bool, error) {
-	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+func CheckModUpdates(dryRun bool, emitProgress bool, reportStatus bool) (bool, error) {
+	opToken := ""
+	if reportStatus {
+		opToken = fact.BeginOperation("Mod Updates", "Checking for mod updates.")
+	}
 	progress := modUpdateProgress{}
 	if emitProgress {
 		progress = newModUpdateProgress(opToken)
