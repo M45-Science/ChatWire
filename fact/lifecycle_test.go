@@ -5,12 +5,14 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -112,6 +114,16 @@ func waitForCondition(t *testing.T, timeout time.Duration, fn func() bool) {
 		time.Sleep(time.Millisecond)
 	}
 	t.Fatal("condition not met before timeout")
+}
+
+func drainLifecycleCMS() {
+	for {
+		select {
+		case <-disc.CMSChan:
+		default:
+			return
+		}
+	}
 }
 
 func TestLifecycleRestartFactorioStartsExactlyOnce(t *testing.T) {
@@ -820,6 +832,64 @@ func TestLifecycleReadyThenExitEndsStopped(t *testing.T) {
 	state := lm.GetState()
 	if state.Phase != LifecycleStopped || state.Booted {
 		t.Fatalf("expected stopped after ready-then-exit, got phase=%q booted=%t", state.Phase, state.Booted)
+	}
+}
+
+func TestLifecycleStartupFailureDoesNotEmitOfflineWithoutRunningState(t *testing.T) {
+	resetLifecycleTestState(t)
+	drainLifecycleCMS()
+	t.Cleanup(drainLifecycleCMS)
+
+	cfg.Local.Channel.ChatChannel = "chan-1"
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStarting
+	lm.currentGeneration = 8
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+
+	lm.handleExitEvent(processExitEvent{generation: 8, err: errors.New("startup failed")})
+
+	select {
+	case msg := <-disc.CMSChan:
+		t.Fatalf("did not expect offline message before running state, got %+v", msg)
+	default:
+	}
+}
+
+func TestLifecycleMapChangeCompletionDoesNotDuplicateOnlineStateText(t *testing.T) {
+	resetLifecycleTestState(t)
+	drainLifecycleCMS()
+	t.Cleanup(drainLifecycleCMS)
+
+	cfg.Local.Channel.ChatChannel = "chan-1"
+	FactorioVersion = "2.0.76"
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStarting
+	lm.currentGeneration = 9
+	lm.startedAt = time.Now()
+	lm.operationToken = "op-map"
+	lm.operationKind = ActionChangeMap
+	lm.operationSaveName = "candidate.zip"
+	lm.syncCompatibilityLocked()
+
+	lm.handleReadyEvent(9)
+
+	var msgs []string
+	for {
+		select {
+		case msg := <-disc.CMSChan:
+			msgs = append(msgs, msg.Text)
+		default:
+			if len(msgs) != 1 {
+				t.Fatalf("expected a single online state-change message, got %v", msgs)
+			}
+			if !strings.Contains(msgs[0], "Factorio") || !strings.Contains(msgs[0], "online") {
+				t.Fatalf("expected message to be the online state change, got %q", msgs[0])
+			}
+			return
+		}
 	}
 }
 

@@ -702,11 +702,6 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 
 	if err != nil {
 		lm.finishOperationError(err)
-	} else {
-		switch req.Kind {
-		case ActionStop:
-			lm.finishOperationSuccess(StatusFactorioOffline(), glob.COLOR_RED)
-		}
 	}
 
 	if req.done != nil {
@@ -1026,13 +1021,13 @@ func (lm *lifecycleManager) handleReadyEvent(generation uint64) {
 	case ActionStart, ActionRestartFactorio:
 		CompleteOperation(token, "", "", glob.COLOR_GREEN)
 	case ActionChangeMap:
-		desc := "Map change complete. Factorio is online."
+		desc := "Map change complete."
 		if saveName != "" {
-			desc = fmt.Sprintf("Map change to %s complete. Factorio is online.", saveName)
+			desc = fmt.Sprintf("Map change to %s complete.", saveName)
 		}
 		CompleteOperation(token, lifecycleOperationTitle(kind), desc, glob.COLOR_GREEN)
 	case ActionMapReset:
-		CompleteOperation(token, lifecycleOperationTitle(kind), "Map reset complete. Factorio is online.", glob.COLOR_GREEN)
+		CompleteOperation(token, lifecycleOperationTitle(kind), "Map reset complete.", glob.COLOR_GREEN)
 	}
 }
 
@@ -1076,6 +1071,7 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	}
 
 	wasStarting := lm.phase == LifecycleStarting
+	wasRunning := lm.phase == LifecycleRunning || lm.booted
 	startedAt := lm.startedAt
 	stoppedAfter := time.Since(lm.phaseSince).Round(time.Millisecond)
 	opToken := lm.operationToken
@@ -1109,7 +1105,7 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 
 	UpdateChannelName()
 	DoUpdateChannelNameForce()
-	if report && shouldReportOfflineStatus(opKind, exitErr) {
+	if report && wasRunning && shouldReportOfflineStatus(opKind, exitErr) {
 		cwlog.DoLogCW("Factorio has closed.")
 		CMS(cfg.Local.Channel.ChatChannel, StatusFactorioOffline())
 		glob.SetBootMessage(nil)
