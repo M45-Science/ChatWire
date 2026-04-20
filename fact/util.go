@@ -1268,7 +1268,8 @@ func MakeSteamURL() (string, bool) {
 /* Program shutdown */
 func DoExit(delay bool) {
 
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", StatusChatWireShuttingDown(), glob.COLOR_RED))
+	CMS(cfg.Local.Channel.ChatChannel, StatusChatWireShuttingDown())
+	glob.SetBootMessage(nil)
 
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {

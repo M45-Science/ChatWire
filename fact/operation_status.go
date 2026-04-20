@@ -111,7 +111,8 @@ func AnnouncePendingOperation(token string, color int) {
 
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
-		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+		CMS(cfg.Local.Channel.ChatChannel, description)
+		glob.ResetUpdateMessage()
 	}
 }
 
@@ -225,7 +226,8 @@ func updateOperation(token, title, description string, color int, throttled bool
 	deleteOperationMessages(optionalMessages)
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
-		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+		CMS(cfg.Local.Channel.ChatChannel, description)
+		glob.ResetUpdateMessage()
 	}
 }
 
@@ -252,11 +254,8 @@ func emitScheduledOperationProgress(token, title, description string, color int,
 
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
-		msg := disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color)
-		glob.SetUpdateMessage(msg)
-		if ref, ok := trackOptionalOperationMessage(msg); ok {
-			scheduleOptionalOperationCleanup(ref)
-		}
+		CMS(cfg.Local.Channel.ChatChannel, description)
+		glob.ResetUpdateMessage()
 	}
 	return true
 }
@@ -354,7 +353,8 @@ func finalizeOperation(token, title, description string, color int) {
 
 	cwlog.DoLogCW("%s: %s", title, description)
 	if cfg.Local.Channel.ChatChannel != "" {
-		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), title, description, color))
+		CMS(cfg.Local.Channel.ChatChannel, description)
+		glob.ResetUpdateMessage()
 	}
 }
 

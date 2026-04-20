@@ -285,7 +285,8 @@ func emitDiscordLifecycleSnapshot(firstConnect bool) {
 		return
 	}
 
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Status", fact.StatusChatWireOnline(), glob.COLOR_GREEN))
+	fact.CMS(cfg.Local.Channel.ChatChannel, fact.StatusChatWireOnline())
+	glob.SetBootMessage(nil)
 }
 
 func checkLockFile() {

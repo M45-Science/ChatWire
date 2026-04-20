@@ -1,6 +1,7 @@
 package disc
 
 import (
+	"errors"
 	"testing"
 
 	"ChatWire/cfg"
@@ -92,15 +93,11 @@ func TestRoleChecksFailWithoutMatchingRole(t *testing.T) {
 	}
 }
 
-func TestSmartEditDiscordEmbedQueuesStatusTextWhenDiscordOffline(t *testing.T) {
+func TestQueueDiscordMessageQueuesStatusText(t *testing.T) {
 	drainCMSChan()
 	t.Cleanup(drainCMSChan)
 
-	DS = nil
-
-	if msg := SmartEditDiscordEmbed("chan-1", nil, "Ready", "Factorio is online.", 0); msg != nil {
-		t.Fatal("expected queued status send to return nil")
-	}
+	QueueDiscordMessage("chan-1", "Factorio is online.")
 
 	select {
 	case queued := <-CMSChan:
@@ -111,6 +108,79 @@ func TestSmartEditDiscordEmbedQueuesStatusTextWhenDiscordOffline(t *testing.T) {
 			t.Fatalf("expected queued text %q, got %q", "Factorio is online.", queued.Text)
 		}
 	default:
-		t.Fatal("expected status text to be queued while Discord is offline")
+		t.Fatal("expected status text to be queued")
+	}
+}
+
+func TestSmartWriteDiscordQueuesWhenDiscordOffline(t *testing.T) {
+	drainCMSChan()
+	t.Cleanup(drainCMSChan)
+
+	DS = nil
+
+	if msg := SmartWriteDiscord("chan-1", "boot message"); msg != nil {
+		t.Fatal("expected no direct Discord message while offline")
+	}
+
+	select {
+	case queued := <-CMSChan:
+		if queued.Channel != "chan-1" || queued.Text != "boot message" {
+			t.Fatalf("unexpected queued message: %+v", queued)
+		}
+	default:
+		t.Fatal("expected offline send to be queued")
+	}
+}
+
+func TestSmartWriteDiscordRequeuesRetryableSendError(t *testing.T) {
+	drainCMSChan()
+	t.Cleanup(drainCMSChan)
+
+	DS = &discordgo.Session{}
+	oldSender := discordTextSender
+	discordTextSender = func(ch string, text string) (*discordgo.Message, error) {
+		return nil, errors.New("websocket is not open")
+	}
+	t.Cleanup(func() {
+		discordTextSender = oldSender
+		DS = nil
+	})
+
+	if msg := SmartWriteDiscord("chan-1", "retry me"); msg != nil {
+		t.Fatal("expected no direct Discord message on retryable error")
+	}
+
+	select {
+	case queued := <-CMSChan:
+		if queued.Channel != "chan-1" || queued.Text != "retry me" {
+			t.Fatalf("unexpected queued message: %+v", queued)
+		}
+	default:
+		t.Fatal("expected retryable send error to requeue message")
+	}
+}
+
+func TestSmartWriteDiscordDoesNotRequeueNonRetryableError(t *testing.T) {
+	drainCMSChan()
+	t.Cleanup(drainCMSChan)
+
+	DS = &discordgo.Session{}
+	oldSender := discordTextSender
+	discordTextSender = func(ch string, text string) (*discordgo.Message, error) {
+		return nil, errors.New("missing access")
+	}
+	t.Cleanup(func() {
+		discordTextSender = oldSender
+		DS = nil
+	})
+
+	if msg := SmartWriteDiscord("chan-1", "do not retry"); msg != nil {
+		t.Fatal("expected no direct Discord message on failed send")
+	}
+
+	select {
+	case queued := <-CMSChan:
+		t.Fatalf("did not expect non-retryable error to requeue, got %+v", queued)
+	default:
 	}
 }

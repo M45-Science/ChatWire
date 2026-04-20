@@ -1015,7 +1015,8 @@ func (lm *lifecycleManager) handleReadyEvent(generation uint64) {
 
 	readyMsg := waitForFactorioReadyStatus(factorioReadyVersionTimeout)
 	cwlog.DoLogGame(readyMsg)
-	glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Ready", readyMsg, glob.COLOR_GREEN))
+	CMS(cfg.Local.Channel.ChatChannel, readyMsg)
+	glob.SetBootMessage(nil)
 	UpdateChannelName()
 	DoUpdateChannelNameForce()
 	glob.CrashLoopCount = 0
@@ -1110,7 +1111,8 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	DoUpdateChannelNameForce()
 	if report && shouldReportOfflineStatus(opKind, exitErr) {
 		cwlog.DoLogCW("Factorio has closed.")
-		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "Offline", StatusFactorioOffline(), glob.COLOR_RED))
+		CMS(cfg.Local.Channel.ChatChannel, StatusFactorioOffline())
+		glob.SetBootMessage(nil)
 	}
 
 	if wasStarting {

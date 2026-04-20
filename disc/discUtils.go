@@ -20,6 +20,12 @@ import (
 var (
 	cmsDropCount           uint64
 	cmsLastDropLogUnixNano int64
+	discordTextSender      = func(ch string, text string) (*discordgo.Message, error) {
+		if DS == nil {
+			return nil, errors.New("discord session not connected")
+		}
+		return DS.ChannelMessageSend(ch, text)
+	}
 )
 
 // CheckAdmin returns true if the interaction author has the "admin" role.
@@ -160,6 +166,35 @@ func formatStatusMessage(title, description string) string {
 	return strings.TrimSpace(title)
 }
 
+func isRetryableDiscordSendError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errText := strings.ToLower(err.Error())
+	retryHints := []string{
+		"discord session not connected",
+		"websocket is not open",
+		"connection reset",
+		"broken pipe",
+		"closed network connection",
+		"unexpected eof",
+		"eof",
+		"timeout",
+		"temporarily unavailable",
+		"service unavailable",
+		"transport is closing",
+	}
+
+	for _, hint := range retryHints {
+		if strings.Contains(errText, hint) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // QueueDiscordMessage appends plain text to the shared Discord send buffer.
 // Messages remain queued until the CMS loop observes an active Discord session.
 func QueueDiscordMessage(ch string, text string) {
@@ -196,12 +231,29 @@ func QueueDiscordMessage(ch string, text string) {
 	}
 }
 
-// SmartEditDiscordEmbed is kept for compatibility with existing status call sites.
-// Status updates are now always queued as plain text messages with no embeds and no edits.
+// SmartEditDiscordEmbed edits an existing embed if possible, falling back to sending a new one.
 func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description string, color int) *discordgo.Message {
-	_ = msg
-	_ = color
-	QueueDiscordMessage(ch, formatStatusMessage(title, description))
+	if ch == "" {
+		return nil
+	}
+
+	if DS != nil {
+		if msg != nil && msg.ID != "" && len(msg.Embeds) > 0 {
+			embed := msg.Embeds[0]
+			embed.Title = title
+			embed.Description = embed.Description + "\n" + description
+			embed.Color = color
+
+			msg, err := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
+			if err != nil {
+				msg = SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
+			}
+			return msg
+		}
+
+		return SmartWriteDiscordEmbed(ch, &discordgo.MessageEmbed{Title: title, Description: description, Color: color})
+	}
+
 	return nil
 }
 
@@ -212,15 +264,19 @@ func SmartWriteDiscord(ch string, text string) *discordgo.Message {
 		return nil
 	}
 
-	if DS != nil {
-		msg, err := DS.ChannelMessageSend(ch, text)
-
-		if err != nil {
-			cwlog.DoLogCW("SmartWriteDiscord: ERROR: %v", err)
-		}
-		return msg
+	if DS == nil {
+		QueueDiscordMessage(ch, text)
+		return nil
 	}
-	return nil
+
+	msg, err := discordTextSender(ch, text)
+	if err != nil {
+		cwlog.DoLogCW("SmartWriteDiscord: ERROR: %v", err)
+		if isRetryableDiscordSendError(err) {
+			QueueDiscordMessage(ch, text)
+		}
+	}
+	return msg
 }
 
 // SmartRoleAdd assigns a role to a guild member, ignoring unknown member errors.
