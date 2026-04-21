@@ -93,5 +93,5 @@ func StatusBringingServerOnline() string {
 }
 
 func StatusBringingServerOnlineStill() string {
-	return "Factorio is still bringing the server online."
+	return StatusBringingServerOnline()
 }

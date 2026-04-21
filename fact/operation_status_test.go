@@ -75,39 +75,6 @@ func TestNewDelayedProgressReplacesOlderPendingReminder(t *testing.T) {
 	}
 }
 
-func TestDelayedReminderUsesRepeatWordingAfterFirstEmission(t *testing.T) {
-	resetOperationStatusTestState()
-
-	token := BeginOperation("Starting Factorio.", "Starting Factorio.")
-	UpdateOperationProgressDelayedWithReminder(token, "Starting Factorio.", "Factorio is loading mods.", "Factorio is continuing to load mods.", 0, time.Hour)
-
-	operationStatusLock.Lock()
-	delayID := operationStatus.pendingDelayID
-	operationStatusLock.Unlock()
-
-	if !emitScheduledOperationProgress(token, "Starting Factorio.", "Factorio is loading mods.", 0, delayID) {
-		t.Fatal("expected first delayed reminder to be accepted")
-	}
-
-	operationStatusLock.Lock()
-	if operationStatus.description != "Factorio is loading mods." {
-		operationStatusLock.Unlock()
-		t.Fatalf("expected first emission to use initial wording, got %q", operationStatus.description)
-	}
-	operationStatus.lastProgressUpdateAt = time.Now().Add(-operationProgressThrottle - time.Millisecond)
-	operationStatusLock.Unlock()
-
-	if !emitScheduledOperationProgress(token, "Starting Factorio.", "Factorio is continuing to load mods.", 0, delayID) {
-		t.Fatal("expected repeat delayed reminder to be accepted")
-	}
-
-	operationStatusLock.Lock()
-	defer operationStatusLock.Unlock()
-	if operationStatus.description != "Factorio is continuing to load mods." {
-		t.Fatalf("expected repeat emission to use reminder wording, got %q", operationStatus.description)
-	}
-}
-
 func TestFinalizeOperationRejectsOlderPendingReminders(t *testing.T) {
 	resetOperationStatusTestState()
 

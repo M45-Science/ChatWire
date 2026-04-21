@@ -17,7 +17,6 @@ import (
 const (
 	operationAnnounceDelay    = 3 * time.Second
 	operationProgressThrottle = 10 * time.Second
-	operationReminderInterval = 10 * time.Second
 	operationOptionalTTL      = 60 * time.Second
 )
 
@@ -131,12 +130,8 @@ func UpdateOperationProgressDelayed(token, title, description string, color int,
 func UpdateOperationProgressDelayedWithReminder(token, title, description, reminderDescription string, color int, delay time.Duration) {
 	title = strings.TrimSpace(title)
 	description = strings.TrimSpace(description)
-	reminderDescription = strings.TrimSpace(reminderDescription)
 	if token == "" || title == "" || description == "" {
 		return
-	}
-	if reminderDescription == "" {
-		reminderDescription = description
 	}
 	if delay <= 0 {
 		UpdateOperationProgress(token, title, description, color)
@@ -153,18 +148,10 @@ func UpdateOperationProgressDelayedWithReminder(token, title, description, remin
 	delayID := operationStatus.pendingDelayID
 	operationStatusLock.Unlock()
 
-	go func(tok, ttl, firstDesc, repeatDesc string, firstWait time.Duration, id uint64) {
-		wait := firstWait
-		desc := firstDesc
-		for {
-			time.Sleep(wait)
-			if !emitScheduledOperationProgress(tok, ttl, desc, color, id) {
-				return
-			}
-			desc = repeatDesc
-			wait = operationReminderInterval
-		}
-	}(token, title, description, reminderDescription, firstWait, delayID)
+	go func(tok, ttl, firstDesc string, firstWait time.Duration, id uint64) {
+		time.Sleep(firstWait)
+		_ = emitScheduledOperationProgress(tok, ttl, firstDesc, color, id)
+	}(token, title, description, firstWait, delayID)
 }
 
 func nextOptionalProgressDelay(startedAt time.Time, announced bool, delay time.Duration) time.Duration {
