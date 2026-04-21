@@ -263,6 +263,6 @@ func LaunchFactorio(generation uint64) error {
 
 func isCriticalFactorioLine(line string) bool {
 	// These are used to transition ChatWire state; dropping them can leave the server stuck in "booting".
-	return strings.Contains(line, "Info RemoteCommandProcessor") && strings.Contains(line, "Starting RCON interface") ||
+	return isFactorioReadyLine(line) ||
 		strings.Contains(line, "Goodbye")
 }

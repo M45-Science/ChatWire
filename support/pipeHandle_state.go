@@ -12,6 +12,11 @@ import (
 	"ChatWire/modupdate"
 )
 
+func isFactorioReadyLine(line string) bool {
+	line = strings.TrimSpace(line)
+	return line != "" && strings.Contains(line, "Starting RCON interface")
+}
+
 func handleSVersion(input *handleData) bool {
 	/******************
 	 * SVERSION
@@ -46,7 +51,7 @@ func handleFactReady(input *handleData) bool {
 	/*****************
 	 * READY MESSAGE
 	 ******************/
-	if strings.HasPrefix(input.noTimecode, "Info RemoteCommandProcessor") && strings.Contains(input.noTimecode, "Starting RCON interface") {
+	if isFactorioReadyLine(input.noTimecode) {
 		fact.NotifyFactorioProgress("rcon-ready", "")
 		fact.WriteAdminlist()
 

@@ -150,3 +150,41 @@ func TestHandleIncomingAnnounceDeduplicatesRecentConnector(t *testing.T) {
 		t.Fatal("expected last connect time to be refreshed")
 	}
 }
+
+func TestIsFactorioReadyLineMatchesLessStrictRconStartup(t *testing.T) {
+	cases := []string{
+		"Info RemoteCommandProcessor.cpp:123: Starting RCON interface at IP ADDR:({127.0.0.1:27015})",
+		"Starting RCON interface at IP ADDR:({127.0.0.1:27015})",
+		"0.552 2026-04-21 13:05:00 Starting RCON interface at IP ADDR:({0.0.0.0:27015})",
+	}
+
+	for _, tc := range cases {
+		if !isFactorioReadyLine(tc) {
+			t.Fatalf("expected ready line to match: %q", tc)
+		}
+	}
+
+	if isFactorioReadyLine("Info AppManagerStates.cpp:2111: Saving finished") {
+		t.Fatal("did not expect unrelated line to match")
+	}
+}
+
+func TestHandleFactReadyMatchesWithoutLegacyPrefix(t *testing.T) {
+	resetSupportTestState(t)
+
+	w := &testWriteCloser{}
+	fact.PipeLock.Lock()
+	fact.Pipe = w
+	fact.PipeLock.Unlock()
+
+	input := preProcessFactorioOutput("0 Starting RCON interface at IP ADDR:({127.0.0.1:27015})")
+	handleFactReady(input)
+
+	got := w.String()
+	if !strings.Contains(got, "/sversion\n") {
+		t.Fatalf("expected ready handling to request version, got %q", got)
+	}
+	if !strings.Contains(got, "/online\n") {
+		t.Fatalf("expected ready handling to request player list, got %q", got)
+	}
+}
