@@ -116,3 +116,40 @@ func TestInteractionCommandArgsFormatsOptions(t *testing.T) {
 		t.Fatalf("expected %q, got %q", want, got)
 	}
 }
+
+func TestInteractionCommandArgsFormatsNonStringOptions(t *testing.T) {
+	i := &discordgo.InteractionCreate{
+		Interaction: &discordgo.Interaction{
+			Type: discordgo.InteractionApplicationCommand,
+			Data: discordgo.ApplicationCommandInteractionData{
+				Name: "config-server",
+				Options: []*discordgo.ApplicationCommandInteractionDataOption{
+					{Name: "port", Type: discordgo.ApplicationCommandOptionInteger, Value: float64(10000)},
+					{Name: "enabled", Type: discordgo.ApplicationCommandOptionBoolean, Value: true},
+				},
+			},
+		},
+	}
+
+	got := interactionCommandArgs(i)
+	want := "port:10000 enabled:true"
+	if got != want {
+		t.Fatalf("expected %q, got %q", want, got)
+	}
+}
+
+func TestSlashCommandDoesNotPanicFormattingIntegerOptions(t *testing.T) {
+	i := &discordgo.InteractionCreate{
+		Interaction: &discordgo.Interaction{
+			Type: discordgo.InteractionApplicationCommand,
+			Data: discordgo.ApplicationCommandInteractionData{
+				Name: "config-server",
+				Options: []*discordgo.ApplicationCommandInteractionDataOption{
+					{Name: "port", Type: discordgo.ApplicationCommandOptionInteger, Value: float64(10000)},
+				},
+			},
+		},
+	}
+
+	SlashCommand(nil, i)
+}

@@ -11,6 +11,7 @@ import (
 	"ChatWire/support"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -30,6 +31,12 @@ type activeCommandState struct {
 }
 
 func SlashCommand(unused *discordgo.Session, i *discordgo.InteractionCreate) {
+	defer func() {
+		if r := recover(); r != nil {
+			cwlog.DoLogCW("SlashCommand panic recovered: %v\n%s", r, debug.Stack())
+		}
+	}()
+
 	if !commandLock.TryLock() {
 		if isCommandLockExempt(i) {
 			runSlashCommand(i)
@@ -263,19 +270,26 @@ func formatInteractionOptions(options []*discordgo.ApplicationCommandInteraction
 				parts = append(parts, name)
 			}
 		default:
-			value := strings.TrimSpace(option.StringValue())
-			if value == "" {
-				if option.Value != nil {
-					value = strings.TrimSpace(fmt.Sprint(option.Value))
-				} else {
-					value = "true"
-				}
-			}
+			value := interactionOptionValueString(option)
 			parts = append(parts, fmt.Sprintf("%s:%s", option.Name, value))
 		}
 	}
 
 	return strings.Join(parts, " ")
+}
+
+func interactionOptionValueString(option *discordgo.ApplicationCommandInteractionDataOption) string {
+	if option == nil {
+		return ""
+	}
+	if option.Value == nil {
+		return "true"
+	}
+	value := strings.TrimSpace(fmt.Sprint(option.Value))
+	if value == "" {
+		return "true"
+	}
+	return value
 }
 
 func interactionUserName(i *discordgo.InteractionCreate) string {
