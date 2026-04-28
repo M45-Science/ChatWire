@@ -26,8 +26,8 @@ ExecStart=$workdir/start.sh
 
 KillSignal=SIGTERM
 TimeoutStopSec=300s
-KillMode=process
-SendSIGKILL=no
+KillMode=mixed
+SendSIGKILL=yes
 
 Restart=always
 RestartSec=1

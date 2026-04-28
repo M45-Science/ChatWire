@@ -124,27 +124,10 @@ func ReadBanFile(firstboot bool) {
 		return
 	}
 
-	/* This area deals with 'array of strings' format */
-	var names []string
-
-	err = json.Unmarshal(data, &names)
-
+	newBans, err := parseBanFileData(data)
 	if err != nil {
-		cwlog.DoLogCW("ReadBanFile: legacy format parse error: %v", err)
-		//Ignore error
-	}
-
-	var newBans []banDataType
-	for _, name := range names {
-		if name != "" {
-			newBans = append(newBans, banDataType{UserName: strings.ToLower(name)})
-		}
-	}
-
-	/* Standard format bans */
-	err = json.Unmarshal(data, &newBans)
-	if err != nil {
-		cwlog.DoLogCW(err.Error())
+		cwlog.DoLogCW("ReadBanFile: %v", err)
+		return
 	}
 
 	//Empty, just return
@@ -229,5 +212,25 @@ func ReadBanFile(firstboot bool) {
 	}
 	if strings.EqualFold(cfg.Global.PrimaryServer, cfg.Local.Callsign) && revBuf != "" {
 		fact.CMS(cfg.Global.Discord.ReportChannel, "[FCL] "+sclean.TruncateStringEllipsis(sclean.UnicodeCleanup(revBuf), 1000))
+	}
+}
+
+func parseBanFileData(data []byte) ([]banDataType, error) {
+	var newBans []banDataType
+	if err := json.Unmarshal(data, &newBans); err == nil {
+		return newBans, nil
+	} else {
+		newBans = nil
+		var names []string
+		if legacyErr := json.Unmarshal(data, &names); legacyErr != nil {
+			return nil, fmt.Errorf("standard format parse error: %v; legacy format parse error: %v", err, legacyErr)
+		}
+
+		for _, name := range names {
+			if name != "" {
+				newBans = append(newBans, banDataType{UserName: strings.ToLower(name)})
+			}
+		}
+		return newBans, nil
 	}
 }

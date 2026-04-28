@@ -123,12 +123,13 @@ func main() {
 		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: "Runtime self-test cleanup."})
 		fact.WaitFactQuit(false)
 		fact.StopLifecycleManager()
-		fact.DoExit(false)
 		if err != nil {
 			cwlog.DoLogCW("Runtime self-test failed: %v", err)
+			_ = os.Remove("cw.lock")
 			os.Exit(1)
 		}
 		cwlog.DoLogCW("Runtime self-test completed successfully.")
+		_ = os.Remove("cw.lock")
 		return
 	}
 

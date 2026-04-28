@@ -106,6 +106,63 @@ func TestHandlePlayerLeaveWritesOnlineCommand(t *testing.T) {
 	}
 }
 
+func TestHandleBanStoresReason(t *testing.T) {
+	resetSupportTestState(t)
+
+	w := &testWriteCloser{}
+	fact.PipeLock.Lock()
+	fact.Pipe = w
+	fact.PipeLock.Unlock()
+
+	input := preProcessFactorioOutput("0 0 [BAN] Alice was banned by server Reason: griefing")
+	if !handleBan(input) {
+		t.Fatal("expected ban line to be handled")
+	}
+
+	glob.PlayerListLock.RLock()
+	player := glob.PlayerList["alice"]
+	glob.PlayerListLock.RUnlock()
+	if player == nil {
+		t.Fatal("expected player to be added")
+	}
+	if player.Level != -1 {
+		t.Fatalf("expected player to be banned, got level %d", player.Level)
+	}
+	if player.BanReason != "griefing" {
+		t.Fatalf("expected ban reason to be stored, got %q", player.BanReason)
+	}
+	if got := w.String(); got != "/online\n" {
+		t.Fatalf("expected online refresh command, got %q", got)
+	}
+}
+
+func TestHandleBanWithoutReasonColonDoesNotPanic(t *testing.T) {
+	resetSupportTestState(t)
+
+	w := &testWriteCloser{}
+	fact.PipeLock.Lock()
+	fact.Pipe = w
+	fact.PipeLock.Unlock()
+
+	input := preProcessFactorioOutput("0 0 [BAN] Bob was banned by server Reason omitted")
+	if !handleBan(input) {
+		t.Fatal("expected ban line to be handled")
+	}
+
+	glob.PlayerListLock.RLock()
+	player := glob.PlayerList["bob"]
+	glob.PlayerListLock.RUnlock()
+	if player == nil {
+		t.Fatal("expected player to be added")
+	}
+	if player.Level != -1 {
+		t.Fatalf("expected player to be banned, got level %d", player.Level)
+	}
+	if player.BanReason != "" {
+		t.Fatalf("expected no ban reason to be stored, got %q", player.BanReason)
+	}
+}
+
 func TestHandleIncomingAnnouncePausesForConnect(t *testing.T) {
 	resetSupportTestState(t)
 

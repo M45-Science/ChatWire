@@ -299,6 +299,7 @@ func DeregisterCommands() {
 		}
 		fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, "Deregister commands complete.")
 		time.Sleep(time.Second * 5)
+		fact.StopFactorioForChatWireExit("Discord commands deregistered.")
 		os.Exit(0)
 	}
 }

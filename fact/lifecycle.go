@@ -134,20 +134,9 @@ var (
 	lifecycleStartupIdleTimeout   = constants.FactorioStartupIdleTimeout
 	lifecycleStartupHardTimeout   = constants.FactorioStartupHardTimeout
 	lifecycleSendQuit             = func() { WriteFact("/quit") }
-	lifecycleInterruptProcess     = func() {
-		if glob.FactorioCancel != nil {
-			glob.FactorioCancel()
-		}
-		if glob.FactorioCmd != nil && glob.FactorioCmd.Process != nil {
-			_ = glob.FactorioCmd.Process.Signal(os.Interrupt)
-		}
-	}
-	lifecycleKillProcess = func() {
-		if glob.FactorioCmd != nil && glob.FactorioCmd.Process != nil {
-			_ = glob.FactorioCmd.Process.Kill()
-		}
-	}
-	lifecycleProcessAlive = func() bool {
+	lifecycleInterruptProcess     = interruptFactorioProcess
+	lifecycleKillProcess          = killFactorioProcess
+	lifecycleProcessAlive         = func() bool {
 		return isCurrentFactorioProcessAlive()
 	}
 )
@@ -650,7 +639,11 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	started := time.Now()
 	var err error
 
-	lm.beginOperation(req)
+	operationStarted := false
+	if !lm.requestNoop(req) {
+		lm.beginOperation(req)
+		operationStarted = true
+	}
 
 	switch req.Kind {
 	case ActionStart:
@@ -700,12 +693,26 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	lm.syncCompatibilityLocked()
 	lm.mu.Unlock()
 
-	if err != nil {
+	if err != nil && operationStarted {
 		lm.finishOperationError(err)
 	}
 
 	if req.done != nil {
 		req.done <- err
+	}
+}
+
+func (lm *lifecycleManager) requestNoop(req lifecycleRequest) bool {
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	switch req.Kind {
+	case ActionStart:
+		return lm.phase == LifecycleRunning || lm.phase == LifecycleStarting
+	case ActionStop:
+		return lm.phase == LifecycleStopped
+	default:
+		return false
 	}
 }
 
@@ -1215,6 +1222,37 @@ func hasFactorioPipe() bool {
 	PipeLock.Lock()
 	defer PipeLock.Unlock()
 	return Pipe != nil
+}
+
+func interruptFactorioProcess() {
+	_ = signalFactorioProcess(syscall.SIGINT)
+}
+
+func killFactorioProcess() {
+	_ = signalFactorioProcess(syscall.SIGKILL)
+	if glob.FactorioCancel != nil {
+		glob.FactorioCancel()
+	}
+}
+
+func signalFactorioProcess(sig syscall.Signal) error {
+	cmd := glob.FactorioCmd
+	if cmd == nil || cmd.Process == nil {
+		return nil
+	}
+
+	pid := cmd.Process.Pid
+	if pid <= 0 {
+		return cmd.Process.Signal(sig)
+	}
+
+	if err := syscall.Kill(-pid, sig); err == nil {
+		return nil
+	} else if !errors.Is(err, syscall.ESRCH) {
+		cwlog.DoLogCW("lifecycle: failed to signal Factorio process group pid=%d signal=%s: %v", pid, sig, err)
+	}
+
+	return cmd.Process.Signal(sig)
 }
 
 func isCurrentFactorioProcessAlive() bool {

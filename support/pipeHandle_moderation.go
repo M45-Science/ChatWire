@@ -118,11 +118,8 @@ func handleBan(input *handleData) bool {
 			fact.SetLastBan(trustname)
 
 			if strings.Contains(input.noDatestamp, "was banned by") {
-
-				if strings.Contains(input.noDatestamp, "Reason") {
-
-					reasonList := strings.Split(input.noDatestamp, "Reason: ")
-					fact.PlayerSetBanReason(trustname, reasonList[1], false)
+				if reason, ok := banReasonFromLine(input.noDatestamp); ok {
+					fact.PlayerSetBanReason(trustname, reason, false)
 				} else {
 					fact.PlayerLevelSet(trustname, -1, false)
 				}
@@ -134,6 +131,13 @@ func handleBan(input *handleData) bool {
 		return true
 	}
 	return false
+}
+
+func banReasonFromLine(line string) (string, bool) {
+	if _, reason, ok := strings.Cut(line, "Reason:"); ok {
+		return strings.TrimSpace(reason), true
+	}
+	return "", false
 }
 
 func handleUnBan(input *handleData) bool {

@@ -14,3 +14,4 @@ factorio.tar
 .vscode
 cw-local-config.json
 .cw-channel-update
+support/modUpdateHistory.dat

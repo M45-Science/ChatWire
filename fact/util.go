@@ -1255,6 +1255,57 @@ func WaitFactQuit(waiting bool) {
 	}
 }
 
+func StopFactorioForChatWireExit(reason string) {
+	if reason == "" {
+		reason = "ChatWire exiting."
+	}
+
+	SetAutolaunch(false, false)
+	if state := GetLifecycleState(); state.Phase != LifecycleStopped {
+		err := submitLifecycleRequestAndWait(Request{
+			Kind:      ActionStop,
+			Reason:    reason,
+			RequestID: fmt.Sprintf("chatwire-exit-%d", reqCounter.Add(1)),
+		})
+		if err != nil {
+			cwlog.DoLogCW("ChatWire exit: Factorio stop request failed: %v", err)
+		}
+	}
+
+	forceFactorioProcessExitForChatWire()
+}
+
+func forceFactorioProcessExitForChatWire() {
+	if !isCurrentFactorioProcessAlive() {
+		return
+	}
+
+	cwlog.DoLogCW("ChatWire exit: Factorio still appears to be running; sending interrupt.")
+	interruptFactorioProcess()
+	if waitForCurrentFactorioProcessExit(lifecycleStopInterruptTimeout) {
+		return
+	}
+
+	cwlog.DoLogCW("ChatWire exit: Factorio still appears to be running; sending kill.")
+	killFactorioProcess()
+	if !waitForCurrentFactorioProcessExit(lifecycleStopKillTimeout) {
+		cwlog.DoLogCW("ChatWire exit: Factorio process still appears alive after kill.")
+	}
+}
+
+func waitForCurrentFactorioProcessExit(timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for {
+		if !isCurrentFactorioProcessAlive() {
+			return true
+		}
+		if time.Now().After(deadline) {
+			return false
+		}
+		time.Sleep(lifecycleStopPollInterval)
+	}
+}
+
 /* Auto generates a steam connect URL */
 func MakeSteamURL() (string, bool) {
 	if cfg.Global.Paths.URLs.Domain != "localhost" && cfg.Global.Paths.URLs.Domain != "" {
@@ -1270,6 +1321,7 @@ func DoExit(delay bool) {
 
 	CMS(cfg.Local.Channel.ChatChannel, StatusChatWireShuttingDown())
 	glob.SetBootMessage(nil)
+	StopFactorioForChatWireExit("ChatWire exiting.")
 
 	//Wait a few seconds for CMS to finish
 	for i := 0; i < 300; i++ {

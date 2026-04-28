@@ -64,19 +64,8 @@ func resetLifecycleTestState(t *testing.T) {
 	lifecycleStartupIdleTimeout = constants.FactorioStartupIdleTimeout
 	lifecycleStartupHardTimeout = constants.FactorioStartupHardTimeout
 	lifecycleSendQuit = func() { WriteFact("/quit") }
-	lifecycleInterruptProcess = func() {
-		if glob.FactorioCancel != nil {
-			glob.FactorioCancel()
-		}
-		if glob.FactorioCmd != nil && glob.FactorioCmd.Process != nil {
-			_ = glob.FactorioCmd.Process.Signal(os.Interrupt)
-		}
-	}
-	lifecycleKillProcess = func() {
-		if glob.FactorioCmd != nil && glob.FactorioCmd.Process != nil {
-			_ = glob.FactorioCmd.Process.Kill()
-		}
-	}
+	lifecycleInterruptProcess = interruptFactorioProcess
+	lifecycleKillProcess = killFactorioProcess
 	lifecycleProcessAlive = func() bool {
 		return isCurrentFactorioProcessAlive()
 	}
@@ -149,6 +138,44 @@ func TestLifecycleRestartFactorioStartsExactlyOnce(t *testing.T) {
 	}
 	if state := lm.GetState(); state.Phase != LifecycleStarting {
 		t.Fatalf("expected phase %q, got %q", LifecycleStarting, state.Phase)
+	}
+}
+
+func TestLifecycleStartNoopDoesNotBeginOperation(t *testing.T) {
+	resetLifecycleTestState(t)
+	resetOperationStatusTestState()
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleRunning
+	lm.booted = true
+	lm.currentGeneration = 1
+	lm.syncCompatibilityLocked()
+
+	lm.execute(lifecycleRequest{Request: Request{Kind: ActionStart, Reason: "already running"}})
+
+	operationStatusLock.Lock()
+	token := operationStatus.token
+	operationStatusLock.Unlock()
+	if token != "" {
+		t.Fatalf("expected no operation token for no-op start, got %q", token)
+	}
+}
+
+func TestLifecycleStopNoopDoesNotBeginOperation(t *testing.T) {
+	resetLifecycleTestState(t)
+	resetOperationStatusTestState()
+
+	lm := newTestLifecycleManager(LifecycleHooks{})
+	lm.phase = LifecycleStopped
+	lm.syncCompatibilityLocked()
+
+	lm.execute(lifecycleRequest{Request: Request{Kind: ActionStop, Reason: "already stopped"}})
+
+	operationStatusLock.Lock()
+	token := operationStatus.token
+	operationStatusLock.Unlock()
+	if token != "" {
+		t.Fatalf("expected no operation token for no-op stop, got %q", token)
 	}
 }
 
@@ -688,6 +715,39 @@ func TestLifecycleRestartChatWireExitsOnlyAfterStop(t *testing.T) {
 
 	if exitCalls != 1 {
 		t.Fatalf("expected one chatwire exit call, got %d", exitCalls)
+	}
+}
+
+func TestStopFactorioForChatWireExitRequestsStop(t *testing.T) {
+	resetLifecycleTestState(t)
+
+	lifecycleStopGraceTimeout = time.Millisecond
+	lifecycleStopInterruptTimeout = time.Millisecond
+	lifecycleStopKillTimeout = time.Millisecond
+	lifecycleStopPollInterval = time.Millisecond
+	lifecycleProcessAlive = func() bool { return false }
+
+	StartLifecycleManager(LifecycleHooks{})
+	defer StopLifecycleManager()
+
+	lifecycleMu.Lock()
+	lm := lifecycle
+	lifecycleMu.Unlock()
+	if lm == nil {
+		t.Fatal("expected lifecycle manager to be running")
+	}
+
+	lm.mu.Lock()
+	lm.phase = LifecycleRunning
+	lm.currentGeneration = 1
+	lm.startedAt = time.Now()
+	lm.syncCompatibilityLocked()
+	lm.mu.Unlock()
+
+	StopFactorioForChatWireExit("chatwire exit")
+
+	if state := GetLifecycleState(); state.Phase != LifecycleStopped {
+		t.Fatalf("expected stopped phase, got %q", state.Phase)
 	}
 }
 

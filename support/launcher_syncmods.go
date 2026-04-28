@@ -96,7 +96,7 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 			line = strings.TrimSpace(line)
 			now := time.Now()
 
-			parts := strings.Split(line, " ")
+			parts := strings.Fields(line)
 			numParts := len(parts)
 			if numParts > 1 && parts[1] == "Goodbye" {
 				lastProgress = now
@@ -112,12 +112,11 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 					cwlog.DoLogCW(msg)
 				}
 			}
-			if numParts > 3 && parts[3] == "Downloading" {
+			if syncModDownloadLine(parts) {
 				lastProgress = now
-				urlParts := strings.Split(parts[4], "/")
-				if len(urlParts) > 1 && urlParts[1] == "download" {
-					msg := "Downloading: " + urlParts[2]
-					fact.UpdateOperationProgress(opToken, "Mod Sync", "Downloading mod data: "+urlParts[2], glob.COLOR_CYAN)
+				if modName, ok := syncModDownloadName(parts); ok {
+					msg := "Downloading: " + modName
+					fact.UpdateOperationProgress(opToken, "Mod Sync", "Downloading mod data: "+modName, glob.COLOR_CYAN)
 					glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Mod Sync",
 						msg, glob.COLOR_CYAN))
 					cwlog.DoLogCW(msg)
@@ -154,4 +153,21 @@ func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
 
 	fact.CompleteOperation(opToken, "Mod Sync", "Mod sync complete.", glob.COLOR_GREEN)
 	return true
+}
+
+func syncModDownloadLine(parts []string) bool {
+	return len(parts) > 3 && parts[3] == "Downloading"
+}
+
+func syncModDownloadName(parts []string) (string, bool) {
+	if !syncModDownloadLine(parts) || len(parts) <= 4 {
+		return "", false
+	}
+	urlParts := strings.Split(parts[4], "/")
+	for i, part := range urlParts {
+		if part == "download" && i+1 < len(urlParts) && urlParts[i+1] != "" {
+			return urlParts[i+1], true
+		}
+	}
+	return "", false
 }
