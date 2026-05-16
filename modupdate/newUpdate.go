@@ -2,6 +2,7 @@ package modupdate
 
 import (
 	"ChatWire/cfg"
+	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
 	"ChatWire/fact"
@@ -21,6 +22,8 @@ const (
 	modUpdateTitle            = "Found Mod Updates"
 	modUpdateProgressInterval = time.Minute
 )
+
+var downloadModInfo = DownloadModInfo
 
 func CheckModsManual(force bool) {
 	checkMods(force, true, true)
@@ -96,6 +99,27 @@ func dependencySatisfied(depInfo depRequires, installedVersion string, planned [
 	return checkVersion(depInfo.equality, depInfo.version, version)
 }
 
+func releaseMatchesFactorioVersion(rel modRelease) bool {
+	modVersion := strings.TrimSpace(rel.InfoJSON.FactorioVersion)
+	gameVersion := strings.TrimSpace(fact.FactorioVersion)
+	if modVersion == "" || gameVersion == "" || strings.EqualFold(gameVersion, constants.Unknown) {
+		return true
+	}
+
+	modParts, err := versionToInt(modVersion)
+	if err != nil {
+		cwlog.DoLogCW("resolveDeps: invalid factorio_version for release %s: %v", rel.Version, err)
+		return false
+	}
+	gameParts, err := versionToInt(gameVersion)
+	if err != nil {
+		cwlog.DoLogCW("resolveDeps: invalid Factorio version %s: %v", gameVersion, err)
+		return true
+	}
+
+	return modParts.parts[0] == gameParts.parts[0] && modParts.parts[1] == gameParts.parts[1]
+}
+
 func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string, progress *modUpdateProgress) ([]downloadData, error) {
 
 	if depth > 10 {
@@ -124,6 +148,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 		if item.installed.Version != "" {
 			candidate.Version = item.installed.Version
 		}
+		var candidateDeps []downloadData
 
 		//Check all releases
 		for _, rel := range item.Releases {
@@ -150,7 +175,12 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 				}
 				//If release is newer check deps
 				if releaseNewer {
+					if !releaseMatchesFactorioVersion(rel) {
+						continue
+					}
+
 					depsMet := true
+					var releaseDeps []downloadData
 
 					for _, dep := range rel.InfoJSON.Dependencies {
 						depInfo := parseDep(dep)
@@ -193,7 +223,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 							}
 							//We do not have the dep, download info
 							if !haveDepInfo {
-								depPortalInfo, err = DownloadModInfo(depInfo.name)
+								depPortalInfo, err = downloadModInfo(depInfo.name)
 								if err != nil {
 									cwlog.DoLogCW("resolveDeps: dep: DownloadModInfo: %v", err)
 									return []downloadData{}, err
@@ -216,8 +246,12 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 							}
 							//Download dep and all of dep's deps.
 							if len(dl) > 0 {
-								for _, item := range dl {
-									downloadMods = addDownload(item, downloadMods)
+								for _, depDownload := range dl {
+									if depDownload.RequiredByName == "" {
+										depDownload.RequiredByName = item.Name
+										depDownload.RequiredByVersion = rel.Version
+									}
+									releaseDeps = addDownload(depDownload, releaseDeps)
 								}
 							}
 						}
@@ -225,6 +259,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 					//If deps were met, we can update the candidate
 					if depsMet {
 						candidate = rel
+						candidateDeps = releaseDeps
 					}
 				}
 			}
@@ -232,6 +267,9 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 
 		//Add candidate to the download list
 		if candidate.Version != "0.0.0" && item.installed.Version != candidate.Version {
+			for _, dep := range candidateDeps {
+				downloadMods = addDownload(dep, downloadMods)
+			}
 			downloadMods = addDownload(downloadData{Title: item.Title, Name: item.Name, Filename: candidate.FileName,
 				OldFilename: item.installed.Filename, Data: candidate, Version: candidate.Version,
 				OldVersion: item.installed.Version, wasDep: wasDep,

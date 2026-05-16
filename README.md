@@ -41,6 +41,7 @@ Common generated files and directories:
 - `cw.lock`
 - `../playerdb.json`
 - `../map-gen-json/`
+- `./map-gen-json/` for per-server `/map-exchange` custom settings
 - `./log/`
 - `./audit-log/`
 - `../www/public_html/archive/`

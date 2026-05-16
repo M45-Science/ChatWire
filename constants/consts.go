@@ -5,7 +5,7 @@ import "time"
 const (
 	ProgName           = "ChatWire"
 	Version            = "2706-04.27.2026-1905a" // build-mm.dd.yyyy-hhmmsuffix
-	CWEpoch            = 1653239822390688174 //Never change this
+	CWEpoch            = 1653239822390688174     //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
 	Unknown            = "Unknown"
@@ -15,29 +15,31 @@ const (
 	PassExpireSec      = 5 * 60
 
 	/* ChatWire files */
-	CWGlobalConfig      = "../cw-global-config.json"
-	CWLocalConfig       = "cw-local-config.json"
-	WhitelistName       = "server-whitelist.json"
-	AdminlistName       = "server-adminlist.json"
-	ServSettingsName    = "server-settings.json"
-	ModSettingsName     = "mod-settings.dat"
-	ModListName         = "mod-list.json"
-	ModVersionsName     = "mod-versions.json"
-	ModsQueueFolder     = "mods-queue"
-	ModsFolder          = "mods"
-	OldModsDir          = "old"
-	RoleListFile        = "../RoleList.dat"
-	VoteFile            = "votes.dat"
-	ArchiveFolderSuffix = " maps"
-	TempSaveName        = "softmod.tmp"
-	BootUpdateDelayMin  = 2
-	SusWarningInterval  = 2
-	CrashReportInterval = 300
-	MaxSaveBackups      = 10
-	ModPackLifeMins     = 180
-	ModPackCooldownMin  = 5
-	MaxModPacks         = 4
-	ErrMsgDelay         = time.Second * 3
+	CWGlobalConfig          = "../cw-global-config.json"
+	CWLocalConfig           = "cw-local-config.json"
+	WhitelistName           = "server-whitelist.json"
+	AdminlistName           = "server-adminlist.json"
+	ServSettingsName        = "server-settings.json"
+	ModSettingsName         = "mod-settings.dat"
+	ModListName             = "mod-list.json"
+	ModVersionsName         = "mod-versions.json"
+	DefaultMapGeneratorsDir = "map-gen-json"
+	CustomMapGeneratorName  = "custom"
+	ModsQueueFolder         = "mods-queue"
+	ModsFolder              = "mods"
+	OldModsDir              = "old"
+	RoleListFile            = "../RoleList.dat"
+	VoteFile                = "votes.dat"
+	ArchiveFolderSuffix     = " maps"
+	TempSaveName            = "softmod.tmp"
+	BootUpdateDelayMin      = 2
+	SusWarningInterval      = 2
+	CrashReportInterval     = 300
+	MaxSaveBackups          = 10
+	ModPackLifeMins         = 180
+	ModPackCooldownMin      = 5
+	MaxModPacks             = 4
+	ErrMsgDelay             = time.Second * 3
 	// Default offset added to Factorio server port for RCON
 	RconPortOffset = 10000
 
