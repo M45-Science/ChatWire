@@ -32,10 +32,11 @@ type ModHistoryItem struct {
 }
 
 type downloadData struct {
-	Name, Title           string
-	Filename, OldFilename string
-	Data                  modRelease
-	Complete              bool
+	Name, Title                       string
+	Filename, OldFilename             string
+	RequiredByName, RequiredByVersion string
+	Data                              modRelease
+	Complete                          bool
 
 	Version, OldVersion string
 

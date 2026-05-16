@@ -197,13 +197,11 @@ func WriteCustomMapExchangeFiles(exchangeString string) (string, string, error) 
 		return "", "", err
 	}
 
-	dir := filepath.Join(cfg.Global.Paths.Folders.ServersRoot, cfg.Global.Paths.Folders.MapGenerators)
+	genPath, setPath := cfg.GetMapGeneratorFiles(constants.CustomMapGeneratorName)
+	dir := filepath.Dir(genPath)
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		return "", "", fmt.Errorf("unable to create map generator directory: %w", err)
 	}
-
-	genPath := filepath.Join(dir, constants.CustomMapGeneratorName+"-gen.json")
-	setPath := filepath.Join(dir, constants.CustomMapGeneratorName+"-set.json")
 
 	if err := util.WriteJSONAtomic(genPath, data.MapGenSettings, 0644); err != nil {
 		return "", "", fmt.Errorf("unable to write custom map-gen settings: %w", err)

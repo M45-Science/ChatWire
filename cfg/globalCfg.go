@@ -44,10 +44,18 @@ func setGlobalDefaults() {
 	if Global.Paths.DataFiles.DBFile == "" {
 		Global.Paths.DataFiles.DBFile = "playerdb.json"
 	}
+	if Global.Paths.Folders.ServersRoot == "" {
+		ex, err := os.Executable()
+		if err == nil {
+			exPath := filepath.Dir(ex)
+			p := filepath.Clean(filepath.Join(exPath, ".."))
+			Global.Paths.Folders.ServersRoot = p + "/"
+		}
+	}
 	if Global.Paths.Folders.MapGenerators == "" {
-		Global.Paths.Folders.MapGenerators = "map-gen-json"
+		Global.Paths.Folders.MapGenerators = constants.DefaultMapGeneratorsDir
 
-		err := os.MkdirAll(Global.Paths.Folders.ServersRoot+"/"+Global.Paths.Folders.MapGenerators, os.ModePerm)
+		err := os.MkdirAll(filepath.Join(Global.Paths.Folders.ServersRoot, Global.Paths.Folders.MapGenerators), os.ModePerm)
 		if err != nil {
 			cwlog.DoLogCW("Could not create map-gen-json directory.")
 		}
@@ -62,15 +70,6 @@ func setGlobalDefaults() {
 	if Global.GroupName == "" {
 		Global.GroupName = glob.RandomBase64String(3)
 		cwlog.DoLogCW("No group name specified. Random one generated.")
-	}
-
-	if Global.Paths.Folders.ServersRoot == "" {
-		ex, err := os.Executable()
-		if err == nil {
-			exPath := filepath.Dir(ex)
-			p := filepath.Clean(filepath.Join(exPath, ".."))
-			Global.Paths.Folders.ServersRoot = p + "/"
-		}
 	}
 
 	if Global.Paths.ChatWirePrefix == "" {

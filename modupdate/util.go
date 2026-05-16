@@ -413,7 +413,11 @@ func downloadMods(downloadList []downloadData) string {
 
 		buf := ""
 		if dl.wasDep {
-			buf = fmt.Sprintf("Downloading dependency: %v", longBuf)
+			if dl.RequiredByName != "" {
+				buf = fmt.Sprintf("Downloading dependency for %s-%s: %v", dl.RequiredByName, dl.RequiredByVersion, longBuf)
+			} else {
+				buf = fmt.Sprintf("Downloading dependency: %v", longBuf)
+			}
 		} else {
 			buf = fmt.Sprintf("Downloading: %v", longBuf)
 		}
@@ -509,6 +513,9 @@ func downloadMods(downloadList []downloadData) string {
 		noteMsg := InstalledNote
 		if dl.OldFilename != "" {
 			noteMsg = UpdatedNote
+		}
+		if dl.wasDep && dl.RequiredByName != "" {
+			noteMsg = fmt.Sprintf("%s dependency for %s-%s", noteMsg, dl.RequiredByName, dl.RequiredByVersion)
 		}
 		newUpdate := ModHistoryItem{
 			Name: dl.Name, Notes: noteMsg, Date: time.Now(),

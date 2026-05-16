@@ -40,8 +40,8 @@ func getMapTypeNum(mapt string) int {
 func Map_reset(doReport bool) error {
 	SetAutolaunch(false, false)
 	return submitLifecycleRequestAndWait(Request{
-		Kind:     ActionMapReset,
-		Reason:   "Server rebooting for map reset!",
+		Kind:      ActionMapReset,
+		Reason:    "Server rebooting for map reset!",
 		RequestID: fmt.Sprintf("map-reset-%d", time.Now().UnixNano()),
 	})
 }
@@ -207,11 +207,13 @@ func GenNewMap() (string, error) {
 
 	/* Append map gen if set */
 	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
+		genSettingsPath, mapSettingsPath := cfg.GetMapGeneratorFiles(cfg.Local.Settings.MapGenerator)
+
 		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-gen.json")
+		factargs = append(factargs, genSettingsPath)
 
 		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, cfg.Global.Paths.Folders.ServersRoot+cfg.Global.Paths.Folders.MapGenerators+"/"+cfg.Local.Settings.MapGenerator+"-set.json")
+		factargs = append(factargs, mapSettingsPath)
 	} else {
 		factargs = append(factargs, "--preset")
 		factargs = append(factargs, MapPreset)

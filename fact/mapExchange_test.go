@@ -51,13 +51,24 @@ func TestParseMapExchangeJSON(t *testing.T) {
 func TestWriteCustomMapExchangeFiles(t *testing.T) {
 	oldRoot := cfg.Global.Paths.Folders.ServersRoot
 	oldMapGenerators := cfg.Global.Paths.Folders.MapGenerators
+	oldWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed reading working directory: %v", err)
+	}
 	t.Cleanup(func() {
 		cfg.Global.Paths.Folders.ServersRoot = oldRoot
 		cfg.Global.Paths.Folders.MapGenerators = oldMapGenerators
+		if err := os.Chdir(oldWD); err != nil {
+			t.Fatalf("failed restoring working directory: %v", err)
+		}
 	})
 
 	tmp := t.TempDir()
-	cfg.Global.Paths.Folders.ServersRoot = tmp + string(os.PathSeparator)
+	sharedRoot := t.TempDir()
+	if err := os.Chdir(tmp); err != nil {
+		t.Fatalf("failed changing working directory: %v", err)
+	}
+	cfg.Global.Paths.Folders.ServersRoot = sharedRoot + string(os.PathSeparator)
 	cfg.Global.Paths.Folders.MapGenerators = "map-gen-json"
 
 	genPath, setPath, err := WriteCustomMapExchangeFiles(sampleMapExchangeString)
@@ -86,5 +97,10 @@ func TestWriteCustomMapExchangeFiles(t *testing.T) {
 		if len(parsed) == 0 {
 			t.Fatalf("expected JSON payload in %s", path)
 		}
+	}
+
+	sharedGen := filepath.Join(sharedRoot, "map-gen-json", constants.CustomMapGeneratorName+"-gen.json")
+	if _, err := os.Stat(sharedGen); !os.IsNotExist(err) {
+		t.Fatalf("custom map exchange file should not be written to shared generator folder: %s", sharedGen)
 	}
 }

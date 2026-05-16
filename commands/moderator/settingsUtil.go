@@ -11,17 +11,15 @@ import (
 
 /* Get list of map generation presets, because an invalid one will make map generation fail */
 func getMapGenNames() []string {
-	path := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.Folders.MapGenerators
+	output := []string{"none", constants.CustomMapGeneratorName}
+
+	path := cfg.GetSharedMapGeneratorFolder()
 	files, err := os.ReadDir(path)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
-		return nil
+		return output
 	}
 
-	var output []string
-
-	output = append(output, "none")
-	output = append(output, constants.CustomMapGeneratorName)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), "-gen.json") {
 			name := strings.TrimSuffix(f.Name(), "-gen.json")

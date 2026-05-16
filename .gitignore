@@ -15,3 +15,4 @@ factorio.tar
 cw-local-config.json
 .cw-channel-update
 support/modUpdateHistory.dat
+map-gen-json/
