@@ -21,9 +21,13 @@ func getMapGenNames() []string {
 	var output []string
 
 	output = append(output, "none")
+	output = append(output, constants.CustomMapGeneratorName)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), "-gen.json") {
-			output = append(output, strings.TrimSuffix(f.Name(), "-gen.json"))
+			name := strings.TrimSuffix(f.Name(), "-gen.json")
+			if !strings.EqualFold(name, constants.CustomMapGeneratorName) {
+				output = append(output, name)
+			}
 		}
 	}
 	return output

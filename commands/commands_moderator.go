@@ -296,6 +296,20 @@ func moderatorCommands() []glob.CommandData {
 		},
 			Function: moderator.MapReset, ModeratorOnly: true},
 		{AppCmd: glob.AppCmdData{
+			Name:        "map-exchange",
+			Description: "Generate a custom map from a Factorio map exchange string.",
+			Type:        discordgo.ChatApplicationCommand,
+			Options: []glob.OptionData{
+				{
+					Name:        "exchange-string",
+					Description: "Paste the Factorio map exchange string.",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    true,
+				},
+			},
+		},
+			Function: moderator.MapExchange, ModeratorOnly: true},
+		{AppCmd: glob.AppCmdData{
 			Name:        "config-server",
 			Description: "Server settings and options, such as the name.",
 			Type:        discordgo.ChatApplicationCommand,
