@@ -53,7 +53,7 @@ func startFactorioUpdateLoop() {
 
 func checkFactUpdate() {
 	glob.ResetUpdateMessage()
-	_, msg, err, upToDate := factUpdater.DoQuickLatest(false)
+	_, msg, err, upToDate := factUpdater.DoQuickLatestSilent(false)
 	if msg != "" {
 		if !err && !upToDate {
 			glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Updated", msg, glob.COLOR_CYAN))
@@ -63,7 +63,6 @@ func checkFactUpdate() {
 				Name: "Factorio Updated", Notes: "To version: " + fact.NewVersion, Date: time.Now()}
 			modupdate.AddModHistory(newHist)
 		} else if err && !upToDate {
-			//glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel , glob.GetUpdateMessage(), "ERROR", msg, glob.COLOR_RED)
 			cwlog.DoLogCW(msg)
 		}
 	}

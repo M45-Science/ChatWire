@@ -73,16 +73,18 @@ func startCMSBuffer() {
 					buf := ""
 
 					for _, line := range factmsg {
-						oldlen := len(buf) + 1
-						addlen := len(line)
-						if oldlen+addlen >= constants.MaxDiscordMsgLen {
+						next := appendCMSBufferLine(buf, line)
+						if next == buf {
+							continue
+						}
+						if buf != "" && len(next) >= constants.MaxDiscordMsgLen {
 							<-tokens
 							disc.SmartWriteDiscord(cfg.Local.Channel.ChatChannel, buf)
 							glob.SetBootMessage(nil)
 							glob.ResetUpdateMessage()
-							buf = line
+							buf = appendCMSBufferLine("", line)
 						} else {
-							buf = buf + "\n" + line
+							buf = next
 						}
 					}
 					if buf != "" {
@@ -95,14 +97,16 @@ func startCMSBuffer() {
 					/* Moderation */
 					buf = ""
 					for _, line := range moder {
-						oldlen := len(buf) + 1
-						addlen := len(line)
-						if oldlen+addlen >= constants.MaxDiscordMsgLen {
+						next := appendCMSBufferLine(buf, line)
+						if next == buf {
+							continue
+						}
+						if buf != "" && len(next) >= constants.MaxDiscordMsgLen {
 							<-tokens
 							disc.SmartWriteDiscord(cfg.Global.Discord.ReportChannel, buf)
-							buf = line
+							buf = appendCMSBufferLine("", line)
 						} else {
-							buf = buf + "\n" + line
+							buf = next
 						}
 					}
 					if buf != "" {
@@ -119,4 +123,15 @@ func startCMSBuffer() {
 			}
 		}
 	}()
+}
+
+func appendCMSBufferLine(buf, line string) string {
+	line = strings.TrimRight(line, "\r")
+	if strings.TrimSpace(line) == "" {
+		return buf
+	}
+	if buf == "" {
+		return line
+	}
+	return buf + "\n" + line
 }

@@ -20,7 +20,7 @@ const (
 	sha256URL       = "https://www.factorio.com/download/sha256sums/"
 )
 
-func fullPackage(info *InfoData) error {
+func fullPackage(info *InfoData, reportDiscord bool) error {
 	var filename string
 	var err error
 
@@ -31,7 +31,9 @@ func fullPackage(info *InfoData) error {
 	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.Build, info.Distro)
 	var data []byte
 
-	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Updating Factorio", "Downloading...", glob.COLOR_CYAN))
+	if reportDiscord {
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Updating Factorio", "Downloading...", glob.COLOR_CYAN))
+	}
 	cwlog.DoLogCW("Downloading: %v", url)
 
 	data, filename, err = HttpGet(false, url, false)
@@ -72,7 +74,9 @@ func fullPackage(info *InfoData) error {
 	defer func() {
 		fact.SetUpdateInProgress(false)
 	}()
-	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Downloading Factorio", "Download verified!", glob.COLOR_CYAN))
+	if reportDiscord {
+		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Downloading Factorio", "Download verified!", glob.COLOR_CYAN))
+	}
 	fact.WaitFactQuit(true)
 
 	err = os.RemoveAll(factPath + "/factorio/bin")

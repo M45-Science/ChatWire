@@ -112,6 +112,41 @@ func TestQueueDiscordMessageQueuesStatusText(t *testing.T) {
 	}
 }
 
+func TestQueueDiscordMessageDropsBlankLines(t *testing.T) {
+	drainCMSChan()
+	t.Cleanup(drainCMSChan)
+
+	QueueDiscordMessage("chan-1", "\n\nFactorio is online.\n \n")
+
+	select {
+	case queued := <-CMSChan:
+		if queued.Channel != "chan-1" || queued.Text != "Factorio is online." {
+			t.Fatalf("unexpected queued message: %+v", queued)
+		}
+	default:
+		t.Fatal("expected non-blank status text to be queued")
+	}
+
+	select {
+	case queued := <-CMSChan:
+		t.Fatalf("did not expect blank line to be queued: %+v", queued)
+	default:
+	}
+}
+
+func TestAppendDiscordDescriptionDoesNotCreateBlankLines(t *testing.T) {
+	got := appendDiscordDescription("\nChecking for Factorio updates.\n\n", "\n\nChecking latest Factorio release failed.\n")
+	want := "Checking for Factorio updates.\nChecking latest Factorio release failed."
+	if got != want {
+		t.Fatalf("description mismatch:\ngot:  %q\nwant: %q", got, want)
+	}
+
+	got = appendDiscordDescription("Checking for Factorio updates.", " \n ")
+	if got != "Checking for Factorio updates." {
+		t.Fatalf("expected blank append to be ignored, got %q", got)
+	}
+}
+
 func TestSmartWriteDiscordQueuesWhenDiscordOffline(t *testing.T) {
 	drainCMSChan()
 	t.Cleanup(drainCMSChan)

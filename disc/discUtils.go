@@ -204,6 +204,10 @@ func QueueDiscordMessage(ch string, text string) {
 
 	text = sclean.TruncateStringEllipsis(text, constants.MaxDiscordMsgLen)
 	for _, line := range strings.Split(text, "\n") {
+		line = strings.TrimRight(line, "\r")
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
 		item := CMSBuf{Channel: ch, Text: line}
 
 		select {
@@ -236,12 +240,13 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 	if ch == "" {
 		return nil
 	}
+	description = compactDiscordDescription(description)
 
 	if DS != nil {
 		if msg != nil && msg.ID != "" && len(msg.Embeds) > 0 {
 			embed := msg.Embeds[0]
 			embed.Title = title
-			embed.Description = embed.Description + "\n" + description
+			embed.Description = appendDiscordDescription(embed.Description, description)
 			embed.Color = color
 
 			msg, err := DS.ChannelMessageEditEmbed(msg.ChannelID, msg.ID, embed)
@@ -255,6 +260,30 @@ func SmartEditDiscordEmbed(ch string, msg *discordgo.Message, title, description
 	}
 
 	return nil
+}
+
+func appendDiscordDescription(existing, next string) string {
+	existing = compactDiscordDescription(existing)
+	next = compactDiscordDescription(next)
+	if existing == "" {
+		return next
+	}
+	if next == "" {
+		return existing
+	}
+	return existing + "\n" + next
+}
+
+func compactDiscordDescription(input string) string {
+	lines := strings.Split(input, "\n")
+	out := make([]string, 0, len(lines))
+	for _, line := range lines {
+		line = strings.TrimRight(line, "\r")
+		if strings.TrimSpace(line) != "" {
+			out = append(out, line)
+		}
+	}
+	return strings.Join(out, "\n")
 }
 
 // SmartWriteDiscord sends a plain text message to a channel and logs errors.
