@@ -1308,12 +1308,14 @@ func waitForCurrentFactorioProcessExit(timeout time.Duration) bool {
 
 /* Auto generates a steam connect URL */
 func MakeSteamURL() (string, bool) {
-	if cfg.Global.Paths.URLs.Domain != "localhost" && cfg.Global.Paths.URLs.Domain != "" {
-		buf := fmt.Sprintf("https://go-game.net/gosteam/427520.--mp-connect%%20%v:%v", cfg.Global.Paths.URLs.Domain, cfg.Local.Port)
+	if cfg.Global.Paths.URLs.EnableSteamURL &&
+		cfg.Global.Paths.URLs.Domain != "localhost" &&
+		cfg.Global.Paths.URLs.Domain != "" &&
+		cfg.Global.Paths.URLs.SteamURLDomain != "" {
+		buf := fmt.Sprintf("https://%v/gosteam/427520.--mp-connect%%20%v:%v", cfg.Global.Paths.URLs.SteamURLDomain, cfg.Global.Paths.URLs.Domain, cfg.Local.Port)
 		return buf, true
-	} else {
-		return "(not configured)", false
 	}
+	return "", false
 }
 
 /* Program shutdown */

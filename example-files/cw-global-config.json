@@ -50,7 +50,9 @@
 			"LogPath": "/logs/",
 			"LogsPathWeb": "/new-logs/",
 			"ArchivePath": "/archive/",
-			"ModPackPath": "/modpack/"
+			"ModPackPath": "/modpack/",
+			"EnableSteamURL": false,
+			"SteamURLDomain": ""
 		},
 		"DataFiles": {
 			"DBFile": "playerdb.json",

@@ -84,12 +84,14 @@ type binaryPaths struct {
 }
 
 type urlPaths struct {
-	Domain      string `form:"RO" web:"Domain Name"`
-	PathPrefix  string `form:"RO"`
-	LogPath     string `form:"RO"`
-	LogsPathWeb string `form:"RO"`
-	ArchivePath string `form:"RO"`
-	ModPackPath string `form:"RO"`
+	Domain         string `form:"RO" web:"Domain Name"`
+	PathPrefix     string `form:"RO"`
+	LogPath        string `form:"RO"`
+	LogsPathWeb    string `form:"RO"`
+	ArchivePath    string `form:"RO"`
+	ModPackPath    string `form:"RO"`
+	EnableSteamURL bool   `form:"RO" web:"Enable Steam URL"`
+	SteamURLDomain string `form:"RO" web:"Steam URL Domain"`
 }
 
 type dataFiles struct {
@@ -178,8 +180,8 @@ type localOptions struct {
 
 	ResetPingRole string `form:"-"`
 
-	PlayerPollIntervalSec   int `web:"Player Poll Interval Sec"`
-	RoleRefreshIntervalSec  int `web:"Role Refresh Interval Sec"`
+	PlayerPollIntervalSec    int `web:"Player Poll Interval Sec"`
+	RoleRefreshIntervalSec   int `web:"Role Refresh Interval Sec"`
 	MapResetCheckIntervalSec int `web:"Map Reset Check Interval Sec"`
 
 	MembersOnly     bool `web:"-"`
