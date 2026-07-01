@@ -2,6 +2,7 @@ package moderator
 
 import (
 	"os"
+	"sort"
 	"strings"
 
 	"ChatWire/cfg"
@@ -9,9 +10,12 @@ import (
 	"ChatWire/cwlog"
 )
 
-/* Get list of map generation presets, because an invalid one will make map generation fail */
+/* Get list of map generators, because an invalid one will make map generation fail */
 func getMapGenNames() []string {
-	output := []string{"none", constants.CustomMapGeneratorName}
+	output := []string{"none"}
+	if mapGeneratorFilesExist(constants.CustomMapGeneratorName) {
+		output = append(output, constants.CustomMapGeneratorName)
+	}
 
 	path := cfg.GetSharedMapGeneratorFolder()
 	files, err := os.ReadDir(path)
@@ -20,15 +24,35 @@ func getMapGenNames() []string {
 		return output
 	}
 
+	startSort := len(output)
+	found := map[string]bool{}
 	for _, f := range files {
-		if strings.HasSuffix(f.Name(), "-gen.json") {
-			name := strings.TrimSuffix(f.Name(), "-gen.json")
-			if !strings.EqualFold(name, constants.CustomMapGeneratorName) {
-				output = append(output, name)
-			}
+		name := ""
+		if f.IsDir() {
+			name = f.Name()
+		} else if strings.HasSuffix(f.Name(), "-gen.json") {
+			name = strings.TrimSuffix(f.Name(), "-gen.json")
+		}
+
+		key := strings.ToLower(name)
+		if name != "" && !strings.EqualFold(name, constants.CustomMapGeneratorName) && !found[key] && mapGeneratorFilesExist(name) {
+			output = append(output, name)
+			found[key] = true
 		}
 	}
+	sort.Strings(output[startSort:])
 	return output
+}
+
+func mapGeneratorFilesExist(name string) bool {
+	genPath, setPath := cfg.GetMapGeneratorFiles(name)
+	if _, err := os.Stat(genPath); err != nil {
+		return false
+	}
+	if _, err := os.Stat(setPath); err != nil {
+		return false
+	}
+	return true
 }
 
 /* See if this map gen exists */

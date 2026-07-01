@@ -23,6 +23,8 @@ const (
 	ModSettingsName         = "mod-settings.dat"
 	ModListName             = "mod-list.json"
 	ModVersionsName         = "mod-versions.json"
+	MapGenSettingsName      = "map-gen-settings.json"
+	MapSettingsName         = "map-settings.json"
 	DefaultMapGeneratorsDir = "map-gen-json"
 	CustomMapGeneratorName  = "custom"
 	ModsQueueFolder         = "mods-queue"

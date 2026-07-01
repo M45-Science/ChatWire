@@ -69,5 +69,19 @@ func GetMapGeneratorFolder(name string) string {
 // GetMapGeneratorFiles returns Factorio's map-gen and map-settings JSON paths for a generator.
 func GetMapGeneratorFiles(name string) (string, string) {
 	dir := GetMapGeneratorFolder(name)
+
+	folderGenPath := filepath.Join(dir, name, constants.MapGenSettingsName)
+	folderSetPath := filepath.Join(dir, name, constants.MapSettingsName)
+	if fileExists(folderGenPath) && fileExists(folderSetPath) {
+		return folderGenPath, folderSetPath
+	}
+
 	return filepath.Join(dir, name+"-gen.json"), filepath.Join(dir, name+"-set.json")
+}
+
+func fileExists(path string) bool {
+	if _, err := os.Stat(path); err != nil {
+		return false
+	}
+	return true
 }

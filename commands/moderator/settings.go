@@ -185,20 +185,6 @@ var SettingList = []SettingListData{
 		SData: &cfg.Local.Settings.MapPreset,
 	},
 	{
-		Name:      "map-generator",
-		ShortDesc: "Map Generator",
-		Desc:      "Map generator to use, SELECT 'NONE' FOR MODS THAT REMOVE VANILLA RESOURCES.",
-		Type:      TYPE_STRING,
-
-		MinStrLen: 1,
-		MaxStrLen: 64,
-
-		CheckString: checkMapGen,
-		ListString:  getMapGenNames,
-
-		SData: &cfg.Local.Settings.MapGenerator,
-	},
-	{
 		Name:      "auto-start-factorio",
 		ShortDesc: "Auto-Start",
 		Desc:      "Auto-start and auto-restart Factorio.",

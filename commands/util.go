@@ -88,6 +88,11 @@ func runSlashCommand(i *discordgo.InteractionCreate) {
 
 					break
 				}
+			} else if strings.EqualFold(data.CustomID, "MapGenerator") {
+				if disc.CheckModerator(i) || disc.CheckAdmin(i) {
+					moderator.HandleMapGeneratorSelect(i)
+					break
+				}
 			} else if strings.EqualFold(data.CustomID, "VoteMap") {
 				if disc.CheckVeteran(i) || disc.CheckRegular(i) || disc.CheckModerator(i) || disc.CheckAdmin(i) {
 
