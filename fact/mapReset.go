@@ -25,9 +25,6 @@ import (
 func getMapTypeNum(mapt string) int {
 	i := 0
 
-	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
-		return 0
-	}
 	for i = 0; i < len(constants.MapTypes); i = i + 1 {
 		if strings.EqualFold(constants.MapTypes[i], mapt) {
 			return i
@@ -143,6 +140,85 @@ func mapResetAfterStop(doReport bool) error {
 	return nil
 }
 
+type mapCreateSettings struct {
+	preset             string
+	generator          string
+	mapGenSettingsPath string
+	mapSettingsPath    string
+}
+
+func (s mapCreateSettings) usesGenerator() bool {
+	return s.generator != "" && s.mapGenSettingsPath != "" && s.mapSettingsPath != ""
+}
+
+func resolveMapCreateSettings(mapGenerator string, mapPreset string) mapCreateSettings {
+	settings := mapCreateSettings{}
+
+	if preset, ok := normalizeMapPreset(mapPreset); ok {
+		settings.preset = preset
+	} else if strings.TrimSpace(mapPreset) != "" {
+		cwlog.DoLogCW("GenNewMap: invalid map preset %q, using Factorio default map creation.", mapPreset)
+	}
+
+	generator := strings.TrimSpace(mapGenerator)
+	if generator == "" || strings.EqualFold(generator, "none") {
+		return settings
+	}
+
+	genSettingsPath, mapSettingsPath := cfg.GetMapGeneratorFiles(generator)
+	if !pathExists(genSettingsPath) || !pathExists(mapSettingsPath) {
+		cwlog.DoLogCW("GenNewMap: map generator %q is unavailable; generating without map generator. map-gen-settings=%q map-settings=%q", generator, genSettingsPath, mapSettingsPath)
+		return settings
+	}
+
+	settings.generator = generator
+	settings.mapGenSettingsPath = genSettingsPath
+	settings.mapSettingsPath = mapSettingsPath
+	return settings
+}
+
+func normalizeMapPreset(mapPreset string) (string, bool) {
+	mapPreset = strings.TrimSpace(mapPreset)
+	if mapPreset == "" {
+		return "", false
+	}
+
+	for _, preset := range constants.MapTypes {
+		if strings.EqualFold(preset, mapPreset) {
+			return preset, true
+		}
+	}
+	return "", false
+}
+
+func pathExists(path string) bool {
+	if _, err := os.Stat(path); err != nil {
+		return false
+	}
+	return true
+}
+
+func buildNewMapArgs(filename string, haveSeed bool, seed int, settings mapCreateSettings) []string {
+	factargs := []string{"--create", filename}
+
+	if haveSeed {
+		factargs = append(factargs, "--map-gen-seed", fmt.Sprintf("%v", seed))
+	}
+
+	if settings.usesGenerator() {
+		factargs = append(factargs, "--map-gen-settings")
+		factargs = append(factargs, settings.mapGenSettingsPath)
+
+		factargs = append(factargs, "--map-settings")
+		factargs = append(factargs, settings.mapSettingsPath)
+	} else if settings.preset != "" {
+		factargs = append(factargs, "--preset")
+		factargs = append(factargs, settings.preset)
+	}
+
+	return factargs
+}
+
 func GenNewMap() (string, error) {
 	SetResetDate()
 
@@ -182,42 +258,25 @@ func GenNewMap() (string, error) {
 		LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
 	}
 
-	MapPreset := cfg.Local.Settings.MapPreset
-
-	if strings.EqualFold(MapPreset, "error") {
-		err := fmt.Errorf("invalid map preset")
-		cwlog.DoLogCW(err.Error())
-		return "", err
+	createSettings := resolveMapCreateSettings(cfg.Local.Settings.MapGenerator, cfg.Local.Settings.MapPreset)
+	mapTypeNum := 0
+	if !createSettings.usesGenerator() && createSettings.preset != "" {
+		mapTypeNum = getMapTypeNum(createSettings.preset)
+		if mapTypeNum < 0 {
+			mapTypeNum = 0
+		}
 	}
 
 	/* Generate code to make filename */
 	buf := new(bytes.Buffer)
 
 	_ = binary.Write(buf, binary.BigEndian, uint64(ourseed))
-	ourcode := fmt.Sprintf("%02d%v", getMapTypeNum(MapPreset), base64.RawURLEncoding.EncodeToString(buf.Bytes()))
+	ourcode := fmt.Sprintf("%02d%v", mapTypeNum, base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	sName := "gen-" + ourcode + ".zip"
 
 	filename := cfg.GetSavesFolder() +
 		"/" + sName
-	factargs := []string{"--create", filename}
-
-	if haveSeed { //If we have a custom seed, use it, otherwise let factorio randomize
-		factargs = append(factargs, "--map-gen-seed", fmt.Sprintf("%v", ourseed))
-	}
-
-	/* Append map gen if set */
-	if cfg.Local.Settings.MapGenerator != "" && !strings.EqualFold(cfg.Local.Settings.MapGenerator, "none") {
-		genSettingsPath, mapSettingsPath := cfg.GetMapGeneratorFiles(cfg.Local.Settings.MapGenerator)
-
-		factargs = append(factargs, "--map-gen-settings")
-		factargs = append(factargs, genSettingsPath)
-
-		factargs = append(factargs, "--map-settings")
-		factargs = append(factargs, mapSettingsPath)
-	} else {
-		factargs = append(factargs, "--preset")
-		factargs = append(factargs, MapPreset)
-	}
+	factargs := buildNewMapArgs(filename, haveSeed, ourseed, createSettings)
 
 	if cfg.Local.Settings.Scenario != "" || strings.EqualFold(cfg.Local.Settings.Scenario, "none") {
 		cfg.Local.Settings.NewMap = true

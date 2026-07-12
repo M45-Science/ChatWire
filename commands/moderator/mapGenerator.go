@@ -25,7 +25,7 @@ func MapGenerator(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 	embed := []*discordgo.MessageEmbed{{
 		Title:       "Map generator",
-		Description: "Map generator to use, SELECT 'NONE' FOR MODS THAT REMOVE VANILLA RESOURCES.",
+		Description: "Map generator to use, selecting 'NONE' will use the map-preset setting instead. SELECT 'NONE' FOR MODS THAT REMOVE VANILLA RESOURCES.",
 		Color:       glob.COLOR_WHITE,
 	}}
 	components := []discordgo.MessageComponent{
@@ -74,7 +74,7 @@ func buildMapGeneratorOptions() []discordgo.SelectMenuOption {
 
 		description := "Use a map generator from the configured folder."
 		if strings.EqualFold(name, "none") {
-			description = "Use the built-in Factorio map preset instead."
+			description = "Use the map preset setting instead."
 		} else if strings.EqualFold(name, constants.CustomMapGeneratorName) {
 			description = "Use the last custom map exchange settings."
 		}
