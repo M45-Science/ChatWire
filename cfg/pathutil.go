@@ -1,11 +1,13 @@
 package cfg
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"ChatWire/constants"
+	"ChatWire/util"
 )
 
 // GetFactorioFolder returns the path to the Factorio installation for the current server.
@@ -56,6 +58,78 @@ func GetLocalMapGeneratorFolder() string {
 		return absPath
 	}
 	return localPath
+}
+
+// GetMapGeneratorCacheFolder returns the local per-server cache folder for a shared generator.
+func GetMapGeneratorCacheFolder(name string) string {
+	safeName := cacheableMapGeneratorName(name)
+	if safeName == "" {
+		return ""
+	}
+	return filepath.Join(GetLocalMapGeneratorFolder(), constants.MapGeneratorCacheDir, safeName)
+}
+
+// GetCachedMapGeneratorFiles returns local fallback JSON paths for a shared generator.
+func GetCachedMapGeneratorFiles(name string) (string, string) {
+	dir := GetMapGeneratorCacheFolder(name)
+	if dir == "" {
+		return "", ""
+	}
+	return filepath.Join(dir, constants.MapGenSettingsName), filepath.Join(dir, constants.MapSettingsName)
+}
+
+// CacheMapGenerator stores a local fallback copy of a complete shared generator.
+func CacheMapGenerator(name string) (string, string, error) {
+	name = strings.TrimSpace(name)
+	if name == "" || strings.EqualFold(name, "none") || strings.EqualFold(name, constants.CustomMapGeneratorName) {
+		return "", "", nil
+	}
+
+	if cacheableMapGeneratorName(name) == "" {
+		return "", "", fmt.Errorf("map generator %q cannot be cached", name)
+	}
+
+	genSrc, setSrc := GetMapGeneratorFiles(name)
+	if !fileExists(genSrc) || !fileExists(setSrc) {
+		return "", "", fmt.Errorf("map generator %q is unavailable", name)
+	}
+
+	genDst, setDst := GetCachedMapGeneratorFiles(name)
+	if genDst == "" || setDst == "" {
+		return "", "", fmt.Errorf("map generator %q cannot be cached", name)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(genDst), os.ModePerm); err != nil {
+		return "", "", err
+	}
+	if err := copyMapGeneratorFile(genSrc, genDst); err != nil {
+		return "", "", err
+	}
+	if err := copyMapGeneratorFile(setSrc, setDst); err != nil {
+		return "", "", err
+	}
+	return genDst, setDst, nil
+}
+
+func cacheableMapGeneratorName(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" || strings.ContainsAny(name, `\\/`) {
+		return ""
+	}
+
+	clean := filepath.Clean(name)
+	if clean == "." || clean == ".." || clean != filepath.Base(clean) {
+		return ""
+	}
+	return clean
+}
+
+func copyMapGeneratorFile(src string, dst string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return util.WriteBytesAtomic(dst, data, 0644)
 }
 
 // GetMapGeneratorFolder returns the folder where a generator's JSON files live.

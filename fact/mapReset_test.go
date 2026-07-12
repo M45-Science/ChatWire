@@ -4,10 +4,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"ChatWire/cfg"
 	"ChatWire/constants"
+	"ChatWire/disc"
 )
 
 func TestBuildNewMapArgsNoGeneratorDefaultUsesPlainCreate(t *testing.T) {
@@ -116,6 +118,99 @@ func TestResolveMapCreateSettingsCustomGeneratorUsesLocalFiles(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected args: got %#v want %#v", got, want)
+	}
+}
+
+func TestResolveMapCreateSettingsMissingGeneratorUsesCachedCopy(t *testing.T) {
+	restoreMapGeneratorTestConfig(t)
+
+	tmp := t.TempDir()
+	if err := os.Chdir(tmp); err != nil {
+		t.Fatalf("failed changing working directory: %v", err)
+	}
+	cfg.Global.Paths.Folders.MapGenerators = constants.DefaultMapGeneratorsDir
+
+	genPath, setPath := cfg.GetCachedMapGeneratorFiles("spiral")
+	if err := os.MkdirAll(filepath.Dir(genPath), 0755); err != nil {
+		t.Fatalf("failed creating cached generator directory: %v", err)
+	}
+	if err := os.WriteFile(genPath, []byte("{}"), 0644); err != nil {
+		t.Fatalf("failed writing cached map-gen settings: %v", err)
+	}
+	if err := os.WriteFile(setPath, []byte("{}"), 0644); err != nil {
+		t.Fatalf("failed writing cached map settings: %v", err)
+	}
+
+	settings := resolveMapCreateSettings("spiral", "rich-resources")
+	if !settings.usesGenerator() {
+		t.Fatalf("expected cached generator to be used, got %#v", settings)
+	}
+	if !settings.usingCachedGenerator {
+		t.Fatalf("expected usingCachedGenerator to be true, got %#v", settings)
+	}
+	if settings.mapGenSettingsPath != genPath {
+		t.Fatalf("unexpected cached map-gen path: %q", settings.mapGenSettingsPath)
+	}
+	if settings.mapSettingsPath != setPath {
+		t.Fatalf("unexpected cached map-settings path: %q", settings.mapSettingsPath)
+	}
+	if !strings.Contains(settings.fallbackNotice, "**MAP GENERATOR FALLBACK:**") {
+		t.Fatalf("fallback notice is not clearly bold: %q", settings.fallbackNotice)
+	}
+}
+
+func TestResolveMapCreateSettingsMissingGeneratorReportsPresetFallback(t *testing.T) {
+	restoreMapGeneratorTestConfig(t)
+
+	tmp := t.TempDir()
+	if err := os.Chdir(tmp); err != nil {
+		t.Fatalf("failed changing working directory: %v", err)
+	}
+	cfg.Global.Paths.Folders.MapGenerators = constants.DefaultMapGeneratorsDir
+
+	settings := resolveMapCreateSettings("spiral", "rich-resources")
+	if settings.usesGenerator() {
+		t.Fatalf("expected missing generator without cache to fall back, got %#v", settings)
+	}
+	if !strings.Contains(settings.fallbackNotice, "no local cached copy") {
+		t.Fatalf("fallback notice does not mention missing cache: %q", settings.fallbackNotice)
+	}
+	if !strings.Contains(settings.fallbackNotice, `"rich-resources"`) {
+		t.Fatalf("fallback notice does not mention preset: %q", settings.fallbackNotice)
+	}
+}
+
+func TestAnnounceMapGeneratorFallbackQueuesBoldDiscordNotice(t *testing.T) {
+	drainMapResetCMS()
+	t.Cleanup(drainMapResetCMS)
+
+	oldChannel := cfg.Local.Channel.ChatChannel
+	t.Cleanup(func() { cfg.Local.Channel.ChatChannel = oldChannel })
+	cfg.Local.Channel.ChatChannel = "chan-1"
+
+	notice := "**MAP GENERATOR FALLBACK:** Configured generator missing."
+	announceMapGeneratorFallback(notice)
+
+	select {
+	case queued := <-disc.CMSChan:
+		if queued.Channel != "chan-1" {
+			t.Fatalf("unexpected queued channel: %q", queued.Channel)
+		}
+		if queued.Text != notice {
+			t.Fatalf("unexpected queued notice: %q", queued.Text)
+		}
+	default:
+		t.Fatal("expected fallback notice to be queued")
+	}
+}
+
+func drainMapResetCMS() {
+	for {
+		select {
+		case <-disc.CMSChan:
+		default:
+			return
+		}
 	}
 }
 

@@ -117,10 +117,24 @@ func HandleMapGeneratorSelect(i *discordgo.InteractionCreate) {
 }
 
 func applyMapGeneratorSelection(selection string) (string, error) {
+	selection = strings.TrimSpace(selection)
 	if !checkMapGen(selection) {
 		return "", fmt.Errorf("map generator `%s` is no longer available", selection)
 	}
 
+	if shouldCacheMapGeneratorSelection(selection) {
+		if _, _, err := cfg.CacheMapGenerator(selection); err != nil {
+			return "", fmt.Errorf("map generator `%s` is available, but local fallback cache could not be updated: %w", selection, err)
+		}
+	}
+
 	cfg.Local.Settings.MapGenerator = selection
 	return selection, nil
+}
+
+func shouldCacheMapGeneratorSelection(selection string) bool {
+	selection = strings.TrimSpace(selection)
+	return selection != "" &&
+		!strings.EqualFold(selection, "none") &&
+		!strings.EqualFold(selection, constants.CustomMapGeneratorName)
 }

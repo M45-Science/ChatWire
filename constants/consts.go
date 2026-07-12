@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2709-07.01.2026-0443a" // build-mm.dd.yyyy-hhmmsuffix
+	Version            = "2710-07.12.2026-0000a" // build-mm.dd.yyyy-hhmmsuffix
 	CWEpoch            = 1653239822390688174     //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -26,6 +26,7 @@ const (
 	MapGenSettingsName      = "map-gen-settings.json"
 	MapSettingsName         = "map-settings.json"
 	DefaultMapGeneratorsDir = "map-gen-json"
+	MapGeneratorCacheDir    = "cache"
 	CustomMapGeneratorName  = "custom"
 	ModsQueueFolder         = "mods-queue"
 	ModsFolder              = "mods"

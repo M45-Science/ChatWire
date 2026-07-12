@@ -141,14 +141,25 @@ func mapResetAfterStop(doReport bool) error {
 }
 
 type mapCreateSettings struct {
-	preset             string
-	generator          string
-	mapGenSettingsPath string
-	mapSettingsPath    string
+	preset               string
+	generator            string
+	mapGenSettingsPath   string
+	mapSettingsPath      string
+	usingCachedGenerator bool
+	fallbackNotice       string
 }
 
 func (s mapCreateSettings) usesGenerator() bool {
 	return s.generator != "" && s.mapGenSettingsPath != "" && s.mapSettingsPath != ""
+}
+
+func (s mapCreateSettings) withoutGenerator() mapCreateSettings {
+	s.generator = ""
+	s.mapGenSettingsPath = ""
+	s.mapSettingsPath = ""
+	s.usingCachedGenerator = false
+	s.fallbackNotice = ""
+	return s
 }
 
 func resolveMapCreateSettings(mapGenerator string, mapPreset string) mapCreateSettings {
@@ -166,15 +177,47 @@ func resolveMapCreateSettings(mapGenerator string, mapPreset string) mapCreateSe
 	}
 
 	genSettingsPath, mapSettingsPath := cfg.GetMapGeneratorFiles(generator)
-	if !pathExists(genSettingsPath) || !pathExists(mapSettingsPath) {
-		cwlog.DoLogCW("GenNewMap: map generator %q is unavailable; generating without map generator. map-gen-settings=%q map-settings=%q", generator, genSettingsPath, mapSettingsPath)
+	if pathExists(genSettingsPath) && pathExists(mapSettingsPath) {
+		settings.generator = generator
+		settings.mapGenSettingsPath = genSettingsPath
+		settings.mapSettingsPath = mapSettingsPath
+		cacheMapGeneratorBestEffort(generator)
 		return settings
 	}
 
-	settings.generator = generator
-	settings.mapGenSettingsPath = genSettingsPath
-	settings.mapSettingsPath = mapSettingsPath
+	cacheGenSettingsPath, cacheMapSettingsPath := cfg.GetCachedMapGeneratorFiles(generator)
+	if pathExists(cacheGenSettingsPath) && pathExists(cacheMapSettingsPath) {
+		cwlog.DoLogCW("GenNewMap: map generator %q is unavailable; using local cache. map-gen-settings=%q map-settings=%q", generator, cacheGenSettingsPath, cacheMapSettingsPath)
+		settings.generator = generator
+		settings.mapGenSettingsPath = cacheGenSettingsPath
+		settings.mapSettingsPath = cacheMapSettingsPath
+		settings.usingCachedGenerator = true
+		settings.fallbackNotice = fmt.Sprintf("**MAP GENERATOR FALLBACK:** Configured generator %q is unavailable. Using the local cached copy.", generator)
+		return settings
+	}
+
+	cwlog.DoLogCW("GenNewMap: map generator %q is unavailable; generating without map generator. map-gen-settings=%q map-settings=%q cached-map-gen-settings=%q cached-map-settings=%q", generator, genSettingsPath, mapSettingsPath, cacheGenSettingsPath, cacheMapSettingsPath)
+	settings.fallbackNotice = fmt.Sprintf("**MAP GENERATOR FALLBACK:** Configured generator %q is unavailable and no local cached copy is available. %s", generator, describeMapGeneratorFallbackTarget(settings.preset))
 	return settings
+}
+
+func cacheMapGeneratorBestEffort(generator string) {
+	if _, _, err := cfg.CacheMapGenerator(generator); err != nil {
+		cwlog.DoLogCW("GenNewMap: unable to update local map generator cache for %q: %v", generator, err)
+	}
+}
+
+func describeMapGeneratorFallbackTarget(preset string) string {
+	if preset != "" {
+		return fmt.Sprintf("Using map preset %q.", preset)
+	}
+	return "Using Factorio default map creation."
+}
+
+func announceMapGeneratorFallback(notice string) {
+	if notice != "" {
+		LogCMS(cfg.Local.Channel.ChatChannel, notice)
+	}
 }
 
 func normalizeMapPreset(mapPreset string) (string, bool) {
@@ -217,6 +260,20 @@ func buildNewMapArgs(filename string, haveSeed bool, seed int, settings mapCreat
 	}
 
 	return factargs
+}
+
+func runMapCreateCommand(factargs []string) error {
+	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", GetFactorioBinary(), strings.Join(factargs, " "))
+	cwlog.DoLogCW(lbuf)
+
+	cmd := exec.Command(GetFactorioBinary(), factargs...)
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		mapErr := fmt.Errorf("an error occurred attempting to generate the map: %w", err)
+		cwlog.DoLogCW(mapErr.Error())
+		return mapErr
+	}
+	return nil
 }
 
 func GenNewMap() (string, error) {
@@ -277,21 +334,30 @@ func GenNewMap() (string, error) {
 	filename := cfg.GetSavesFolder() +
 		"/" + sName
 	factargs := buildNewMapArgs(filename, haveSeed, ourseed, createSettings)
+	announceMapGeneratorFallback(createSettings.fallbackNotice)
 
 	if cfg.Local.Settings.Scenario != "" || strings.EqualFold(cfg.Local.Settings.Scenario, "none") {
 		cfg.Local.Settings.NewMap = true
 	}
 
-	lbuf := fmt.Sprintf("EXEC: %v ARGS: %v", GetFactorioBinary(), strings.Join(factargs, " "))
-	cwlog.DoLogCW(lbuf)
+	if err := runMapCreateCommand(factargs); err != nil {
+		if !createSettings.usingCachedGenerator {
+			return "", err
+		}
 
-	cmd := exec.Command(GetFactorioBinary(), factargs...)
-	_, aerr := cmd.CombinedOutput()
+		cwlog.DoLogCW("GenNewMap: cached map generator %q failed: %v", createSettings.generator, err)
+		fallbackSettings := createSettings.withoutGenerator()
+		msg := fmt.Sprintf("**MAP GENERATOR FALLBACK:** Cached generator %q failed while generating the map. Retrying with %s", createSettings.generator, describeMapGeneratorFallbackTarget(fallbackSettings.preset))
+		LogCMS(cfg.Local.Channel.ChatChannel, msg)
 
-	if aerr != nil {
-		err := fmt.Errorf("an error occurred attempting to generate the map: %w", aerr)
-		cwlog.DoLogCW(err.Error())
-		return "", err
+		if removeErr := os.Remove(filename); removeErr != nil && !os.IsNotExist(removeErr) {
+			cwlog.DoLogCW("GenNewMap: failed to remove partial generated map %q before fallback retry: %v", filename, removeErr)
+		}
+
+		fallbackArgs := buildNewMapArgs(filename, haveSeed, ourseed, fallbackSettings)
+		if fallbackErr := runMapCreateCommand(fallbackArgs); fallbackErr != nil {
+			return "", fmt.Errorf("%w; fallback after cached map generator also failed: %v", err, fallbackErr)
+		}
 	}
 
 	return sName, nil
