@@ -103,6 +103,7 @@ func ParseMapExchangeString(input string) (*MapExchangeData, error) {
 	p := newMapExchangeParser(raw)
 	version := p.readVersion()
 	atLeastV2 := versionAtLeast(version, 2, 0, 0, 0)
+	atLeastV21 := versionAtLeast(version, 2, 1, 0, 0)
 
 	data := &MapExchangeData{
 		Version:        version,
@@ -111,7 +112,7 @@ func ParseMapExchangeString(input string) (*MapExchangeData, error) {
 	}
 	_ = p.readUint8() // Unknown exchange-format byte.
 	data.MapGenSettings = p.readMapGenSettings(atLeastV2)
-	data.MapSettings = p.readMapSettings(atLeastV2)
+	data.MapSettings = p.readMapSettings(atLeastV2, atLeastV21)
 	data.Checksum = p.readUint32()
 
 	if p.err != nil {
@@ -567,22 +568,29 @@ func (p *mapExchangeParser) readEnemyEvolution() interface{} {
 	}
 }
 
-func (p *mapExchangeParser) readEnemyExpansion() interface{} {
-	return map[string]interface{}{
-		"enabled":                             p.readOptional(func() interface{} { return p.readBool() }),
-		"max_expansion_distance":              p.readOptional(func() interface{} { return p.readUint32() }),
-		"friendly_base_influence_radius":      p.readOptional(func() interface{} { return p.readUint32() }),
-		"enemy_building_influence_radius":     p.readOptional(func() interface{} { return p.readUint32() }),
-		"building_coefficient":                p.readOptional(func() interface{} { return p.readDouble() }),
-		"other_base_coefficient":              p.readOptional(func() interface{} { return p.readDouble() }),
-		"neighbouring_chunk_coefficient":      p.readOptional(func() interface{} { return p.readDouble() }),
-		"neighbouring_base_chunk_coefficient": p.readOptional(func() interface{} { return p.readDouble() }),
-		"max_colliding_tiles_coefficient":     p.readOptional(func() interface{} { return p.readDouble() }),
-		"settler_group_min_size":              p.readOptional(func() interface{} { return p.readUint32() }),
-		"settler_group_max_size":              p.readOptional(func() interface{} { return p.readUint32() }),
-		"min_expansion_cooldown":              p.readOptional(func() interface{} { return p.readUint32() }),
-		"max_expansion_cooldown":              p.readOptional(func() interface{} { return p.readUint32() }),
+func (p *mapExchangeParser) readEnemyExpansion(atLeastV21 bool) interface{} {
+	settings := map[string]interface{}{
+		"enabled":                p.readOptional(func() interface{} { return p.readBool() }),
+		"max_expansion_distance": p.readOptional(func() interface{} { return p.readUint32() }),
 	}
+	if atLeastV21 {
+		settings["min_expansion_distance"] = p.readOptional(func() interface{} { return p.readUint32() })
+	}
+	settings["friendly_base_influence_radius"] = p.readOptional(func() interface{} { return p.readUint32() })
+	settings["enemy_building_influence_radius"] = p.readOptional(func() interface{} { return p.readUint32() })
+	settings["building_coefficient"] = p.readOptional(func() interface{} { return p.readDouble() })
+	settings["other_base_coefficient"] = p.readOptional(func() interface{} { return p.readDouble() })
+	settings["neighbouring_chunk_coefficient"] = p.readOptional(func() interface{} { return p.readDouble() })
+	settings["neighbouring_base_chunk_coefficient"] = p.readOptional(func() interface{} { return p.readDouble() })
+	settings["max_colliding_tiles_coefficient"] = p.readOptional(func() interface{} { return p.readDouble() })
+	settings["settler_group_min_size"] = p.readOptional(func() interface{} { return p.readUint32() })
+	settings["settler_group_max_size"] = p.readOptional(func() interface{} { return p.readUint32() })
+	if atLeastV21 {
+		settings["evolution_group_size_factor"] = p.readOptional(func() interface{} { return p.readDouble() })
+	}
+	settings["min_expansion_cooldown"] = p.readOptional(func() interface{} { return p.readUint32() })
+	settings["max_expansion_cooldown"] = p.readOptional(func() interface{} { return p.readUint32() })
+	return settings
 }
 
 func (p *mapExchangeParser) readUnitGroup() interface{} {
@@ -680,17 +688,19 @@ func (p *mapExchangeParser) readAsteroidsSettings() interface{} {
 	}
 }
 
-func (p *mapExchangeParser) readMapSettings(atLeastV2 bool) map[string]interface{} {
+func (p *mapExchangeParser) readMapSettings(atLeastV2, atLeastV21 bool) map[string]interface{} {
 	settings := map[string]interface{}{
-		"pollution":                 p.readPollution(),
-		"steering":                  p.readSteering(),
-		"enemy_evolution":           p.readEnemyEvolution(),
-		"enemy_expansion":           p.readEnemyExpansion(),
-		"unit_group":                p.readUnitGroup(),
-		"path_finder":               p.readPathFinder(),
-		"max_failed_behavior_count": p.readUint32(),
-		"difficulty_settings":       p.readDifficultySettings(atLeastV2),
+		"pollution": p.readPollution(),
 	}
+	if !atLeastV21 {
+		settings["steering"] = p.readSteering()
+	}
+	settings["enemy_evolution"] = p.readEnemyEvolution()
+	settings["enemy_expansion"] = p.readEnemyExpansion(atLeastV21)
+	settings["unit_group"] = p.readUnitGroup()
+	settings["path_finder"] = p.readPathFinder()
+	settings["max_failed_behavior_count"] = p.readUint32()
+	settings["difficulty_settings"] = p.readDifficultySettings(atLeastV2)
 	if atLeastV2 {
 		settings["asteroids"] = p.readAsteroidsSettings()
 	}
