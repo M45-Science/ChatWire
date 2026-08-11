@@ -12,12 +12,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
-	baseDownloadURL = "https://www.factorio.com/get-download/"
-	releaseURL      = "https://factorio.com/api/latest-releases"
-	sha256URL       = "https://www.factorio.com/download/sha256sums/"
+	baseDownloadURL           = "https://www.factorio.com/get-download/"
+	releaseURL                = "https://factorio.com/api/latest-releases"
+	sha256URL                 = "https://www.factorio.com/download/sha256sums/"
+	factorioInstallSettleTime = 15 * time.Second
 )
 
 func fullPackage(info *InfoData, reportDiscord bool) error {
@@ -107,6 +109,8 @@ func fullPackage(info *InfoData, reportDiscord bool) error {
 
 	fact.FactorioVersion = info.VersInt.IntToString()
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
+	cwlog.DoLogCW("Waiting %v before allowing Factorio to restart.", factorioInstallSettleTime)
+	time.Sleep(factorioInstallSettleTime)
 
 	return nil
 }
