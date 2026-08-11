@@ -112,7 +112,8 @@ func IsBaseMod(dep string) bool {
 	if dep == "base" ||
 		dep == "elevated-rails" ||
 		dep == "quality" ||
-		dep == "space-age" {
+		dep == "space-age" ||
+		dep == "recycler" {
 		return true
 	}
 	return false
