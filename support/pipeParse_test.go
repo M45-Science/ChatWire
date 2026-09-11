@@ -10,11 +10,11 @@ import (
 
 func TestHandleChatSwitchesChannels(t *testing.T) {
 	origRunning := glob.ServerRunning()
-	origCh := fact.GameLineChCurrent()
+	origCh, origGeneration := fact.GameOutputCurrent()
 	origNoResponse := glob.GetNoResponseCount()
 	defer func() {
 		glob.SetServerRunning(origRunning)
-		fact.SetGameLineCh(origCh)
+		fact.SetGameLineCh(origCh, origGeneration)
 		glob.SetNoResponseCount(origNoResponse)
 	}()
 
@@ -22,7 +22,7 @@ func TestHandleChatSwitchesChannels(t *testing.T) {
 	glob.SetNoResponseCount(123)
 
 	ch1 := make(chan string)
-	fact.SetGameLineCh(ch1)
+	fact.SetGameLineCh(ch1, 0)
 
 	done := make(chan struct{})
 	go func() {
@@ -34,7 +34,7 @@ func TestHandleChatSwitchesChannels(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	ch2 := make(chan string, 1)
-	fact.SetGameLineCh(ch2)
+	fact.SetGameLineCh(ch2, 0)
 	ch2 <- "foo"
 
 	deadline := time.Now().Add(2 * time.Second)

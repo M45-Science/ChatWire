@@ -38,6 +38,7 @@ func newTestLifecycleManager(hooks LifecycleHooks) *lifecycleManager {
 func resetLifecycleTestState(t *testing.T) {
 	t.Helper()
 	StopLifecycleManager()
+	SetFactorioPipe(nil, 0)
 	glob.SetServerRunning(false)
 	glob.FactorioCmd = nil
 	glob.FactorioCancel = nil
@@ -84,7 +85,7 @@ func writeTestSave(t *testing.T, path string) {
 	if err != nil {
 		t.Fatalf("zip create: %v", err)
 	}
-	data := make([]byte, 4096)
+	data := make([]byte, constants.LevelDatMinSize+1024)
 	if _, err := w.Write(data); err != nil {
 		t.Fatalf("zip write: %v", err)
 	}
@@ -120,7 +121,7 @@ func TestLifecycleRestartFactorioStartsExactlyOnce(t *testing.T) {
 
 	launches := 0
 	lm := newTestLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			launches++
 			return nil
 		},
@@ -199,7 +200,7 @@ func TestLifecycleChangeMapCopiesSaveBeforeLaunch(t *testing.T) {
 
 	launches := 0
 	lm := newTestLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			launches++
 			newSave := filepath.Join(savesDir, cfg.Local.Name+"_new.zip")
 			if _, err := os.Stat(newSave); err != nil {
@@ -558,7 +559,7 @@ func TestLifecycleHigherPriorityRequestWinsOverQueuedLowerPriority(t *testing.T)
 	resetLifecycleTestState(t)
 
 	lm := newTestLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error { return nil },
+		LaunchFactorio: func(generation uint64, saveName string) error { return nil },
 		ExitChatWire:   func(delay bool) {},
 	})
 	lm.phase = LifecycleRunning
@@ -756,7 +757,7 @@ func TestLifecycleRunAutoStartsWithinHours(t *testing.T) {
 
 	launchCh := make(chan struct{}, 1)
 	StartLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			select {
 			case launchCh <- struct{}{}:
 			default:
@@ -787,7 +788,7 @@ func TestLifecycleRunDoesNotAutoStartOutsideHours(t *testing.T) {
 
 	launches := 0
 	StartLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			launches++
 			return nil
 		},
@@ -811,7 +812,7 @@ func TestLifecycleRunDoesNotAutoStartDuringUpdate(t *testing.T) {
 	launches := 0
 	SetUpdateInProgress(true)
 	StartLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			launches++
 			return nil
 		},
@@ -835,7 +836,7 @@ func TestLifecycleRunDoesNotAutoStartDuringModOperation(t *testing.T) {
 	launches := 0
 	SetModOperationInProgress(true)
 	StartLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			launches++
 			return nil
 		},
@@ -1006,12 +1007,12 @@ func TestDoChangeMapAfterStopMissingSourceReturnsError(t *testing.T) {
 	}
 
 	err := doChangeMapAfterStop("missing")
-	if err == nil || err.Error() != "an error occurred when attempting to open the selected save" {
+	if err == nil || !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
-func TestDoChangeMapAfterStopReplacementRemoveFailureReturnsError(t *testing.T) {
+func TestDoChangeMapAfterStopReplacementFailurePreservesSource(t *testing.T) {
 	resetLifecycleTestState(t)
 
 	root := t.TempDir()
@@ -1036,9 +1037,13 @@ func TestDoChangeMapAfterStopReplacementRemoveFailureReturnsError(t *testing.T) 
 		t.Fatalf("write keep file: %v", err)
 	}
 
-	err := doChangeMapAfterStop("candidate")
-	if err == nil || err.Error() != "an error occurred when attempting to remove the existing replacement save" {
+	source := filepath.Join(savesDir, "candidate.zip")
+	err := doChangeMapAfterStop(source)
+	if err == nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, err := os.Stat(source); err != nil {
+		t.Fatalf("source was lost after failed replacement: %v", err)
 	}
 }
 
@@ -1060,7 +1065,7 @@ func TestLifecycleChangeMapLaunchFailureLeavesStopped(t *testing.T) {
 	writeTestSave(t, filepath.Join(savesDir, "candidate.zip"))
 
 	lm := newTestLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			return errors.New("launch failed")
 		},
 	})
@@ -1094,13 +1099,13 @@ func TestLifecycleExecuteStartFailsDuringUpdate(t *testing.T) {
 
 	SetUpdateInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			t.Fatal("launch should not be called while update is in progress")
 			return nil
 		},
 	})
 
-	err := lm.executeStart("update guarded start")
+	err := lm.executeStart("update guarded start", "")
 	if err == nil || err.Error() != "factorio update or mod operation is in progress" {
 		t.Fatalf("expected update guard error, got %v", err)
 	}
@@ -1111,13 +1116,13 @@ func TestLifecycleExecuteStartFailsDuringModOperation(t *testing.T) {
 
 	SetModOperationInProgress(true)
 	lm := newTestLifecycleManager(LifecycleHooks{
-		LaunchFactorio: func(generation uint64) error {
+		LaunchFactorio: func(generation uint64, saveName string) error {
 			t.Fatal("launch should not be called while mod operation is in progress")
 			return nil
 		},
 	})
 
-	err := lm.executeStart("mod guarded start")
+	err := lm.executeStart("mod guarded start", "")
 	if err == nil || err.Error() != "factorio update or mod operation is in progress" {
 		t.Fatalf("expected mod-operation guard error, got %v", err)
 	}

@@ -45,6 +45,7 @@ var softModHandles = []funcList{
 }
 
 type handleData struct {
+	generation                                                                        uint64
 	line, lowerLine, noTimecode, noDatestamp                                          string
 	wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords            []string
 	trimmedWordsLen, noDatestampListLen, lowerListLen, noTimecodeListLen, wordListLen int
@@ -63,7 +64,7 @@ func HandleChat() {
 
 	/* Don't log if the game isn't set to run */
 	for glob.ServerRunning() {
-		lines := fact.GameLineChCurrent()
+		lines, generation := fact.GameOutputCurrent()
 		if lines == nil {
 			time.Sleep(100 * time.Millisecond)
 			continue
@@ -79,6 +80,9 @@ func HandleChat() {
 				continue
 			}
 		case <-time.After(250 * time.Millisecond):
+			continue
+		}
+		if generation != 0 && !fact.IsCurrentFactorioGeneration(generation) {
 			continue
 		}
 		rawLine := sclean.UnicodeCleanup(readLine)
@@ -98,6 +102,7 @@ func HandleChat() {
 		}
 
 		input := preProcessFactorioOutput(rawLine)
+		input.generation = generation
 
 		/*********************************
 		 * FILTERED AREA
@@ -172,7 +177,7 @@ func preProcessFactorioOutput(line string) *handleData {
 	lowerWordListLen := len(lowerWordList)
 
 	return &handleData{
-		line, lowerLine, noTimecode, noDatestamp,
+		0, line, lowerLine, noTimecode, noDatestamp,
 		wordList, lowerWordList, noTimecodeList, noDatestampList, trimmedWords,
 		trimmedWordsLen, noDatestampListLen, lowerWordListLen, noTimecodeListLen, wordListLen,
 	}

@@ -17,6 +17,9 @@ var (
 	unitsOnce      sync.Once
 	cachedUnits    durafmt.Units
 	cachedUnitsErr error
+	resetCheckMu   sync.Mutex
+	resetRetryAt   time.Time
+	resetRetryFor  time.Time
 )
 
 func loadResetUnits() (durafmt.Units, error) {
@@ -30,6 +33,8 @@ func loadResetUnits() (durafmt.Units, error) {
 const maxResetWindow = time.Hour * 3
 
 func CheckMapReset() {
+	resetCheckMu.Lock()
+	defer resetCheckMu.Unlock()
 	if !HasResetTime() {
 		return
 	}
@@ -51,15 +56,14 @@ func CheckMapReset() {
 	}
 
 	if until < 0 {
-
-		if HasResetInterval() {
-			AdvanceReset()
-		} else {
-			cfg.Local.Options.NextReset = time.Time{}
-		}
-
 		//Reset was some time ago, skip
 		if until < -maxResetWindow {
+			if HasResetInterval() {
+				AdvanceReset()
+			} else {
+				cfg.Local.Options.NextReset = time.Time{}
+				cfg.WriteLCfg()
+			}
 			units, err := loadResetUnits()
 			if err != nil {
 				cwlog.DoLogCW(fmt.Sprintf("failed to load reset duration units: %v", err))
@@ -68,8 +72,20 @@ func CheckMapReset() {
 				LogCMS(cfg.Local.Channel.ChatChannel, "❇️ Scheduled map reset was over "+durafmt.Parse(maxResetWindow).Format(units)+" ago. Skipping.")
 			}
 		} else {
+			due := cfg.Local.Options.NextReset
+			if due.Equal(resetRetryFor) && time.Now().Before(resetRetryAt) {
+				return
+			}
 			if err := Map_reset(false); err != nil {
 				cwlog.DoLogCW(fmt.Sprintf("Scheduled map reset failed: %v", err))
+				resetRetryFor = due
+				resetRetryAt = time.Now().Add(time.Minute)
+			} else {
+				resetRetryFor, resetRetryAt = time.Time{}, time.Time{}
+				if !HasResetInterval() && cfg.Local.Options.NextReset.Equal(due) {
+					cfg.Local.Options.NextReset = time.Time{}
+					cfg.WriteLCfg()
+				}
 			}
 		}
 	}

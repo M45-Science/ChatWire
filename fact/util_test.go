@@ -54,13 +54,9 @@ func TestWriteFactBrokenPipeQueuesHealthEvent(t *testing.T) {
 	lifecycle = lm
 	lifecycleMu.Unlock()
 
-	PipeLock.Lock()
-	Pipe = failingWriteCloser{err: errors.New("write |1: broken pipe")}
-	PipeLock.Unlock()
+	SetFactorioPipe(failingWriteCloser{err: errors.New("write |1: broken pipe")}, 21)
 	defer func() {
-		PipeLock.Lock()
-		Pipe = nil
-		PipeLock.Unlock()
+		SetFactorioPipe(nil, 0)
 	}()
 
 	WriteFact("/time")

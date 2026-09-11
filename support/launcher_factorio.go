@@ -19,7 +19,7 @@ import (
 )
 
 /* Create config files, launch factorio */
-func LaunchFactorio(generation uint64) error {
+func LaunchFactorio(generation uint64, saveName string) error {
 	fact.SetLastBan("")
 
 	waitForDiscord()
@@ -48,8 +48,8 @@ func LaunchFactorio(generation uint64) error {
 		return fmt.Errorf("factorio is not installed at %s", checkFactPath)
 	}
 
-	/* Find, test and load newest save game available */
-	found, fileName, folderName := GetSaveGame(true)
+	/* Honor a requested map, otherwise load the newest valid save. */
+	found, fileName, folderName := selectLaunchSave(saveName)
 	if !found {
 		glob.SetBootMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetBootMessage(), "ERROR", "Unable to access save-games.", glob.COLOR_RED))
 		fact.SetAutolaunch(false, true)
@@ -94,7 +94,7 @@ func LaunchFactorio(generation uint64) error {
 		constants.ServSettingsName
 
 	if cfg.Local.Settings.NewMap && cfg.Local.Settings.Scenario != "none" && cfg.Local.Settings.Scenario != "" {
-		cfg.Local.Settings.NewMap = false
+		// Keep the pending scenario until readiness, including failed launches.
 		tempargs = append(tempargs, "--start-server-load-scenario")
 		tempargs = append(tempargs, cfg.Local.Settings.Scenario)
 	} else {
@@ -213,13 +213,11 @@ func LaunchFactorio(generation uint64) error {
 
 	/* Save pipe */
 	if tpipe != nil {
-		fact.PipeLock.Lock()
-		fact.Pipe = tpipe
-		fact.PipeLock.Unlock()
+		fact.SetFactorioPipe(tpipe, generation)
 	}
 
 	lines := make(chan string, constants.FactorioStdoutChannelCapacity)
-	fact.SetGameLineCh(lines)
+	fact.SetGameLineCh(lines, generation)
 	go func(r io.ReadCloser, lines chan<- string) {
 		defer r.Close()
 		defer close(lines)
@@ -237,6 +235,10 @@ func LaunchFactorio(generation uint64) error {
 				dropped++
 				if isCriticalFactorioLine(line) {
 					input := preProcessFactorioOutput(line)
+					input.generation = generation
+					if !fact.IsCurrentFactorioGeneration(generation) {
+						continue
+					}
 					runHandles(noChatHandles, input)
 				}
 				if lastDropLog.IsZero() || time.Since(lastDropLog) > time.Second*10 {
@@ -247,11 +249,11 @@ func LaunchFactorio(generation uint64) error {
 		}
 		if err := scanner.Err(); err != nil {
 			cwlog.DoLogCW("Factorio stdout scan error: %v", err)
-			fact.NotifyFactorioHealth("stdout-scan-error", err)
+			fact.NotifyFactorioHealth(generation, "stdout-scan-error", err)
 			return
 		}
 		cwlog.DoLogCW("Factorio stdout stream closed.")
-		fact.NotifyFactorioHealth("stdout-closed", nil)
+		fact.NotifyFactorioHealth(generation, "stdout-closed", nil)
 	}(stdout, lines)
 	go func() {
 		err := cmd.Wait()

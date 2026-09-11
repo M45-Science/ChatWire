@@ -79,7 +79,11 @@ func fullPackage(info *InfoData, reportDiscord bool) error {
 	if reportDiscord {
 		glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), "Downloading Factorio", "Download verified!", glob.COLOR_CYAN))
 	}
-	fact.WaitFactQuit(true)
+	if err := fact.WaitFactQuit(true); err != nil {
+		return fmt.Errorf("aborting Factorio installation: %w", err)
+	}
+	glob.FactorioLock.Lock()
+	defer glob.FactorioLock.Unlock()
 
 	err = os.RemoveAll(factPath + "/factorio/bin")
 	if err != nil {

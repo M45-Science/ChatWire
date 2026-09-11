@@ -41,7 +41,7 @@ func handleFactGoodbye(input *handleData) bool {
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Goodbye") {
 		fact.SetLastBan("")
-		fact.NotifyFactorioGoodbye()
+		fact.NotifyFactorioGoodbye(input.generation)
 		return true
 	}
 	return false
@@ -52,7 +52,7 @@ func handleFactReady(input *handleData) bool {
 	 * READY MESSAGE
 	 ******************/
 	if isFactorioReadyLine(input.noTimecode) {
-		fact.NotifyFactorioProgress("rcon-ready", "")
+		fact.NotifyFactorioProgress(input.generation, "rcon-ready", "")
 		fact.WriteAdminlist()
 
 		// A Factorio boot implies no players online yet; clear any stale count so the
@@ -62,7 +62,7 @@ func handleFactReady(input *handleData) bool {
 		glob.OnlinePlayers = []glob.OnlinePlayerData{}
 		fact.OnlinePlayersLock.Unlock()
 
-		fact.NotifyFactorioReady()
+		fact.NotifyFactorioReady(input.generation)
 
 		newHist := modupdate.ModHistoryItem{Name: modupdate.BootName, Date: time.Now(), InfoItem: true}
 		modupdate.AddModHistory(newHist)
@@ -78,13 +78,13 @@ func handleFactVersion(input *handleData) bool {
 	 * GET FACTORIO VERSION
 	 ***********************/
 	if strings.HasPrefix(input.noTimecode, "Loading mod base") {
-		fact.NotifyFactorioProgress("mod-load", modLoadStatusDetail(input.noTimecode))
+		fact.NotifyFactorioProgress(input.generation, "mod-load", modLoadStatusDetail(input.noTimecode))
 		//cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
 			fact.FactorioVersion = input.noTimecodeList[3]
 		}
 	} else if strings.HasPrefix(input.noTimecode, "Loading mod ") {
-		fact.NotifyFactorioProgress("mod-load", modLoadStatusDetail(input.noTimecode))
+		fact.NotifyFactorioProgress(input.generation, "mod-load", modLoadStatusDetail(input.noTimecode))
 	}
 	return false
 }

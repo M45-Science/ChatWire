@@ -35,7 +35,6 @@ func getMapTypeNum(mapt string) int {
 
 /* Generate map */
 func Map_reset(doReport bool) error {
-	SetAutolaunch(false, false)
 	return submitLifecycleRequestAndWait(Request{
 		Kind:      ActionMapReset,
 		Reason:    "Server rebooting for map reset!",
@@ -43,16 +42,17 @@ func Map_reset(doReport bool) error {
 	})
 }
 
-func mapResetAfterStop(doReport bool) error {
+func mapResetAfterStop(doReport bool) (string, error) {
 	/* Only proceed if we were running a map, and we know our Factorio version. */
 	if GameMapPath != "" && FactorioVersion != constants.Unknown {
 		quickArchive()
 	}
 
-	if _, err := GenNewMap(); err != nil {
+	saveName, err := GenNewMap()
+	if err != nil {
 		msg := fmt.Sprintf("Map reset failed: %v", err)
 		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		return err
+		return "", err
 	}
 
 	/* If available, use per-server ping setting... otherwise use global */
@@ -64,80 +64,10 @@ func mapResetAfterStop(doReport bool) error {
 	}
 	LogGameCMS(false, cfg.Global.Discord.AnnounceChannel, pingstr+" Map "+cfg.Local.Callsign+"-"+cfg.Local.Name+" auto-reset.")
 
-	/* Mods queue folder */
-	qPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsQueueFolder + "/"
-
-	modPath := cfg.Global.Paths.Folders.ServersRoot +
-		cfg.Global.Paths.ChatWirePrefix +
-		cfg.Local.Callsign + "/" +
-		cfg.Global.Paths.Folders.FactorioDir + "/" +
-		constants.ModsFolder + "/"
-
-	_, err := os.Stat(qPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			if err := os.MkdirAll(qPath, os.ModePerm); err != nil {
-				cwlog.DoLogCW(err.Error())
-			}
-		} else {
-			cwlog.DoLogCW(err.Error())
-		}
-	} else {
-		files, err := os.ReadDir(qPath)
-		if err != nil {
-			cwlog.DoLogCW(err.Error())
-		}
-		for _, f := range files {
-			if strings.EqualFold(f.Name(), constants.ModSettingsName) {
-				err := os.Rename(qPath+f.Name(), modPath+f.Name())
-				if err != nil {
-					cwlog.DoLogCW(err.Error())
-				} else {
-					buf := "Installed new mod-settings.dat"
-					LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
-				}
-			}
-
-			if strings.HasSuffix(f.Name(), ".zip") {
-				if strings.HasPrefix(f.Name(), "deleteme-") {
-					delModName := f.Name()
-					err = os.Remove(qPath + delModName)
-					if err != nil {
-						modName := strings.TrimPrefix(delModName, "deleteme-")
-						err = os.Remove(modPath + modName)
-						if err != nil {
-							buf := fmt.Sprintf("Failed to remove mod: %v", modName)
-							LogCMS(cfg.Local.Channel.ChatChannel, buf)
-						} else {
-							buf := fmt.Sprintf("Removed mod: %v", modName)
-							LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
-						}
-					} else {
-						buf := "Mod queue: incorrect file permissions."
-						LogCMS(cfg.Local.Channel.ChatChannel, buf)
-					}
-				} else {
-					err := os.Rename(qPath+f.Name(), modPath+f.Name())
-					if err != nil {
-						msg := fmt.Sprintf("Unable to install mod: %v", f.Name())
-						LogCMS(cfg.Local.Channel.ChatChannel, msg)
-					} else {
-						buf := fmt.Sprintf("Installed mod: %v", f.Name())
-						LogGameCMS(false, cfg.Local.Channel.ChatChannel, buf)
-					}
-				}
-			}
-		}
-	}
-
 	glob.VoteBox.LastMapChange = time.Now()
 	VoidAllVotes()
 	WriteVotes()
-	return nil
+	return saveName, nil
 }
 
 type mapCreateSettings struct {
@@ -277,39 +207,25 @@ func runMapCreateCommand(factargs []string) error {
 }
 
 func GenNewMap() (string, error) {
-	SetResetDate()
-
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 
-	cfg.Local.Options.SkipReset = false //Turn off skip reset
-	cfg.WriteLCfg()
-
 	genpath := cfg.GetSavesFolder()
-	flist, err := filepath.Glob(genpath + "/gen-*.zip")
+	staging, err := os.MkdirTemp(genpath, ".cw-map-create-")
 	if err != nil {
-		cwlog.DoLogCW(fmt.Sprintf("mapReset: failed to list generated maps: %v", err))
 		return "", err
 	}
-	for _, f := range flist {
-		if err := os.Remove(f); err != nil {
-			cwlog.DoLogCW("Failed to delete: " + f)
-		}
-	}
+	defer os.RemoveAll(staging)
 
 	t := time.Now()
 	ourseed := int(t.UnixNano() - constants.CWEpoch)
-	cfg.Local.Options.Speed = 1
-	cfg.Local.Settings.AutoPause = true
 	haveSeed := false
 
-	//Use seed if specified, then clear it
+	// Consume a requested seed only after the new save is ready.
 	if cfg.Local.Settings.Seed > 0 {
 		haveSeed = true
 		origSeed := cfg.Local.Settings.Seed
 		ourseed = origSeed
-		cfg.Local.Settings.Seed = 0
-		cfg.WriteLCfg()
 
 		msg := fmt.Sprintf("Using custom map seed: %v", origSeed)
 		LogGameCMS(false, cfg.Local.Channel.ChatChannel, msg)
@@ -331,14 +247,9 @@ func GenNewMap() (string, error) {
 	ourcode := fmt.Sprintf("%02d%v", mapTypeNum, base64.RawURLEncoding.EncodeToString(buf.Bytes()))
 	sName := "gen-" + ourcode + ".zip"
 
-	filename := cfg.GetSavesFolder() +
-		"/" + sName
+	filename := filepath.Join(staging, sName)
 	factargs := buildNewMapArgs(filename, haveSeed, ourseed, createSettings)
 	announceMapGeneratorFallback(createSettings.fallbackNotice)
-
-	if cfg.Local.Settings.Scenario != "" || strings.EqualFold(cfg.Local.Settings.Scenario, "none") {
-		cfg.Local.Settings.NewMap = true
-	}
 
 	if err := runMapCreateCommand(factargs); err != nil {
 		if !createSettings.usingCachedGenerator {
@@ -357,6 +268,40 @@ func GenNewMap() (string, error) {
 		fallbackArgs := buildNewMapArgs(filename, haveSeed, ourseed, fallbackSettings)
 		if fallbackErr := runMapCreateCommand(fallbackArgs); fallbackErr != nil {
 			return "", fmt.Errorf("%w; fallback after cached map generator also failed: %v", err, fallbackErr)
+		}
+	}
+
+	if good, _ := CheckSave(staging, sName, false); !good {
+		return "", fmt.Errorf("map generator did not produce a valid save")
+	}
+	if err := os.Rename(filename, filepath.Join(genpath, sName)); err != nil {
+		return "", fmt.Errorf("install generated map: %w", err)
+	}
+	// Commit reset settings and retire older generated maps only after success.
+	cfg.Local.Options.Speed = 1
+	cfg.Local.Settings.AutoPause = true
+	cfg.Local.Options.SkipReset = false
+	if haveSeed {
+		cfg.Local.Settings.Seed = 0
+	}
+	cfg.Local.Settings.NewMap = cfg.Local.Settings.Scenario != "" && !strings.EqualFold(cfg.Local.Settings.Scenario, "none")
+	cfg.Local.PendingSave = sName
+	SetResetDate()
+	if !HasResetInterval() && HasResetTime() && !cfg.Local.Options.NextReset.After(time.Now()) {
+		// Generation completes the reset even if launching the new map has to
+		// wait or fails. A retry should start this map, not generate another one.
+		cfg.Local.Options.NextReset = time.Time{}
+	}
+	cfg.WriteLCfg()
+	flist, err := filepath.Glob(filepath.Join(genpath, "gen-*.zip"))
+	if err != nil {
+		cwlog.DoLogCW("Unable to list old generated maps: %v", err)
+	}
+	for _, old := range flist {
+		if filepath.Base(old) != sName {
+			if err := os.Remove(old); err != nil {
+				cwlog.DoLogCW("Failed to delete old generated map %s: %v", old, err)
+			}
 		}
 	}
 

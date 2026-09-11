@@ -393,47 +393,35 @@ func QuitFactorio(message string) {
 
 /* Send a string to Factorio, via stdin */
 func WriteFact(format string, args ...interface{}) {
-
-	var input string
-	if len(args) == 0 {
-		input = format
-	} else {
+	input := format
+	if len(args) != 0 {
 		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
+	}
+	buf := sclean.UnicodeCleanup(input)
+	if len(buf) > constants.MaxDiscordMsgLen || len(buf) <= 1 {
+		return
 	}
 
 	PipeLock.Lock()
-	defer PipeLock.Unlock()
-
-	/* Clean string */
-	buf := sclean.UnicodeCleanup(input)
-
-	gpipe := Pipe
+	gpipe, generation := Pipe, pipeGeneration
+	var err error
 	if gpipe != nil {
-
-		plen := len(buf)
-
-		if plen > constants.MaxDiscordMsgLen {
-			cwlog.DoLogCW("Message to Factorio, too long... Not sending.")
-			return
-		} else if plen <= 1 {
-			cwlog.DoLogCW("Message for Factorio too short... Not sending.")
-			return
-		}
-
-		_, err := io.WriteString(gpipe, buf+"\n")
-		if err != nil {
-			cwlog.DoLogCW("An error occurred when attempting to write to Factorio.\nError: %v Input: %v", err, input)
-			NotifyFactorioHealth(classifyFactorioPipeError(err), err)
-			NotifyFactorioGoodbye()
-			if glob.FactorioCancel != nil {
-				glob.FactorioCancel()
-			}
-			return
-		}
+		_, err = io.WriteString(gpipe, buf+"\n")
 	} else {
-		NotifyFactorioHealth("stdin-missing", errors.New("factorio stdin pipe is nil"))
-		NotifyFactorioGoodbye()
-		return
+		err = errors.New("factorio stdin pipe is nil")
+	}
+	PipeLock.Unlock()
+	// Never acquire the lifecycle mutex while holding PipeLock. Exit cleanup
+	// takes those locks in the opposite direction.
+	if err != nil {
+		kind := classifyFactorioPipeError(err)
+		if gpipe == nil {
+			kind = "stdin-missing"
+		}
+		cwlog.DoLogCW("Unable to write to Factorio: %v", err)
+		NotifyFactorioHealth(generation, kind, err)
+		// The controller handles this generation's failed pipe. A late write
+		// failure must not cancel whichever process happens to be current now.
 	}
 }
 
@@ -1060,59 +1048,14 @@ func DoChangeMap(arg string) {
 		return
 	}
 
-	path := cfg.GetSavesFolder()
-
-	/* Check if file is valid and found */
-	saveStr := fmt.Sprintf("%v.zip", arg)
-	good, _ := CheckSave(path, saveStr, false)
-	if !good {
-		msg := "DoChangeMap: Attempted to load an invalid save."
-		LogCMS(cfg.Local.Channel.ChatChannel, msg)
-		FactChat(msg)
-		return
-	}
-
-	SetAutolaunch(false, false)
-	_ = SubmitLifecycleRequest(Request{
+	if err := SubmitLifecycleRequest(Request{
 		Kind:     ActionChangeMap,
-		Reason:   "Server rebooting for map vote!",
+		Reason:   "Server rebooting to change map!",
 		SaveName: arg,
-	})
-}
-
-func doChangeMapAfterStop(arg string) error {
-	path := cfg.GetSavesFolder()
-	saveStr := fmt.Sprintf("%v.zip", arg)
-	selSaveName := path + "/" + saveStr
-	from, erra := os.Open(selSaveName)
-	if erra != nil {
-		return errors.New("an error occurred when attempting to open the selected save")
-	}
-	defer from.Close()
-
-	newmappath := path + "/" + cfg.Local.Name + "_new.zip"
-	_, err := os.Stat(newmappath)
-	if !os.IsNotExist(err) {
-		err = os.Remove(newmappath)
-		if err != nil {
-			return errors.New("an error occurred when attempting to remove the existing replacement save")
-		}
-	}
-	to, errb := os.OpenFile(newmappath, os.O_RDWR|os.O_CREATE, 0666)
-	if errb != nil {
-		return errors.New("an error occurred when attempting to create the save file")
-	}
-	defer to.Close()
-
-	_, errc := io.Copy(to, from)
-	if errc != nil {
-		return errors.New("an error occurred when attempting to write the save file")
+	}); err != nil {
+		LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Unable to change map: %v", err))
 	}
 
-	msg := fmt.Sprintf("Loading save: %v", arg)
-	cwlog.DoLogGame(msg)
-	glob.RelaunchThrottle = 0
-	return nil
 }
 
 func FileHasZipBomb(path string) bool {
@@ -1247,12 +1190,23 @@ func FactWhisper(player, format string, args ...interface{}) {
 	}
 }
 
-func WaitFactQuit(waiting bool) {
+func WaitFactQuit(waiting bool) error {
+	timeout := time.Duration(constants.MaxFactorioCloseWait) * 100 * time.Millisecond
 	if waiting {
-		WaitForLifecycleStop(2 * time.Minute)
-	} else {
-		WaitForLifecycleStop(time.Duration(constants.MaxFactorioCloseWait) * 100 * time.Millisecond)
+		// Allow the player grace period and the controller's save-aware shutdown
+		// to finish, but still abort installation if shutdown cannot be confirmed.
+		timeout = time.Duration(glob.UpdateGraceMinutes+1)*time.Minute +
+			constants.FactorioStopSaveTimeout + constants.FactorioStopInterruptTimeout + constants.FactorioStopKillTimeout
 	}
+	if !WaitForLifecycleStop(timeout) {
+		return errors.New("timed out waiting for Factorio to stop")
+	}
+	return nil
+}
+
+// StopFactorioAndWait follows the controller's save-aware shutdown deadlines.
+func StopFactorioAndWait(reason string) error {
+	return submitLifecycleRequestAndWait(Request{Kind: ActionStop, Reason: reason})
 }
 
 func StopFactorioForChatWireExit(reason string) {

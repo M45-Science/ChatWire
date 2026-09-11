@@ -3,6 +3,7 @@ package support
 import (
 	"io/fs"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -66,4 +67,23 @@ func GetSaveGame(doInject bool) (foundGood bool, fileName string, fileDir string
 	}
 
 	return false, "", ""
+}
+
+// Map transitions supply an explicit save; never silently fall back to a newer
+// file when the requested map is unavailable or invalid.
+func selectLaunchSave(saveName string) (bool, string, string) {
+	if saveName == "" {
+		saveName = cfg.Local.PendingSave
+	}
+	if saveName == "" {
+		return GetSaveGame(true)
+	}
+	if saveName != filepath.Base(saveName) {
+		return false, "", ""
+	}
+	good, folder := fact.CheckSave(cfg.GetSavesFolder(), saveName, true)
+	if !good {
+		return false, "", ""
+	}
+	return true, filepath.Join(cfg.GetSavesFolder(), saveName), folder
 }

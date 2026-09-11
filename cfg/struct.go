@@ -120,6 +120,7 @@ type local struct {
 	Port           int    `form:"RO"`
 	RCONPass       string `json:"-"`
 	LastSaveBackup int    `form:"RO" web:"Last Backup Slot"`
+	PendingSave    string `json:",omitempty" form:"-"`
 
 	Settings settings
 
@@ -135,7 +136,7 @@ type ModPackData struct {
 }
 
 type settings struct {
-	NewMap         bool   `json:"-"`
+	NewMap         bool   `json:",omitempty" form:"-"`
 	Scenario       string `web:"Scenario Name"`
 	MapGenerator   string `web:"Map Generator Name"`
 	MapPreset      string `web:"Map Preset Name"`

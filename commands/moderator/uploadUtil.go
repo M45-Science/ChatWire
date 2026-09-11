@@ -14,12 +14,10 @@ var (
 	foundOption, foundSave, foundModList bool
 )
 
-func stopWaitFact(msg string) {
-	if fact.FactorioBooted || fact.FactIsRunning {
-		fact.SetUpdateInProgress(false) //Skip queued updates
-
-		fact.SetAutolaunch(false, false)
-		_ = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionStop, Reason: msg})
-		fact.WaitFactQuit(false)
+func stopWaitFact(msg string) error {
+	fact.SetAutolaunch(false, false)
+	if fact.GetLifecycleState().Phase == fact.LifecycleStopped {
+		return nil
 	}
+	return fact.StopFactorioAndWait(msg)
 }

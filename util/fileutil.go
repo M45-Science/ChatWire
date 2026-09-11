@@ -3,10 +3,48 @@ package util
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
 )
+
+// CopyFileAtomic replaces dst only after the complete copy has been closed and
+// synced. Preserve the source timestamp so backups do not become the newest save.
+func CopyFileAtomic(src, dst string, perm os.FileMode) error {
+	from, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer from.Close()
+	info, err := from.Stat()
+	if err != nil {
+		return err
+	}
+	to, err := os.CreateTemp(filepath.Dir(dst), ".cw-copy-*.tmp")
+	if err != nil {
+		return err
+	}
+	temp := to.Name()
+	defer os.Remove(temp)
+	defer to.Close()
+	if err := to.Chmod(perm); err != nil {
+		return err
+	}
+	if _, err := io.Copy(to, from); err != nil {
+		return err
+	}
+	if err := to.Sync(); err != nil {
+		return err
+	}
+	if err := to.Close(); err != nil {
+		return err
+	}
+	if err := os.Chtimes(temp, info.ModTime(), info.ModTime()); err != nil {
+		return err
+	}
+	return os.Rename(temp, dst)
+}
 
 // TempFilePrefix is applied to temporary files created by WriteJSONAtomic.
 var TempFilePrefix string

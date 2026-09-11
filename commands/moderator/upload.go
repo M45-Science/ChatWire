@@ -6,6 +6,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
+	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -90,14 +91,20 @@ func UploadFile(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			handleCustomSave(i, attachmentURL, modSettingsBytes)
 		case "mod-list":
 			if !foundSave {
-				stopWaitFact("Server rebooting to load a new a new " + constants.ModListName + " file.")
+				if err := stopWaitFact("Server rebooting to load a new " + constants.ModListName + " file."); err != nil {
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Upload aborted: %v", err))
+					return
+				}
 				handleModList(modListBytes)
 
 				doLaunch = true
 			}
 		case "mod-settings":
 			if !foundSave {
-				stopWaitFact("Server rebooting to load new " + constants.ModSettingsName + " file.")
+				if err := stopWaitFact("Server rebooting to load new " + constants.ModSettingsName + " file."); err != nil {
+					fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Upload aborted: %v", err))
+					return
+				}
 				insertModSettings(modSettingsBytes)
 
 				doLaunch = true

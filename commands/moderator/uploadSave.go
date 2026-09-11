@@ -39,7 +39,10 @@ func handleCustomSave(i *discordgo.InteractionCreate, attachmentUrl string, modS
 	glob.SetUpdateMessage(disc.SmartEditDiscordEmbed(cfg.Local.Channel.ChatChannel, glob.GetUpdateMessage(), msgTitle,
 		sBuf, glob.COLOR_CYAN))
 
-	stopWaitFact("Server rebooting to load a new custom map.")
+	if err := stopWaitFact("Server rebooting to load a new custom map."); err != nil {
+		fact.LogCMS(cfg.Local.Channel.ChatChannel, fmt.Sprintf("Upload aborted: %v", err))
+		return
+	}
 
 	saveFileName := fmt.Sprintf("upload-%v-%v.zip", i.Member.User.ID, time.Now().UnixMilli())
 	if insertSaveGame(i, saveFileName, saveGameBytes) {

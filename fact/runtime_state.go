@@ -1,31 +1,48 @@
 package fact
 
-import "sync/atomic"
+import (
+	"io"
+	"sync/atomic"
+)
 
 var (
-	gameLineChState   atomic.Pointer[chan string]
+	gameLineChState   atomic.Pointer[gameOutput]
 	updateState       atomic.Bool
 	modOperationState atomic.Bool
 	autoStartState    atomic.Bool
 	numPlayersState   atomic.Int64
 )
 
-func SetGameLineCh(ch chan string) {
-	gameLineCh = ch
+type gameOutput struct {
+	lines      chan string
+	generation uint64
+}
+
+func SetGameLineCh(ch chan string, generation uint64) {
 	if ch == nil {
 		gameLineChState.Store(nil)
 		return
 	}
-	chCopy := ch
-	gameLineChState.Store(&chCopy)
+	gameLineChState.Store(&gameOutput{lines: ch, generation: generation})
+}
+
+func GameOutputCurrent() (chan string, uint64) {
+	output := gameLineChState.Load()
+	if output == nil {
+		return nil, 0
+	}
+	return output.lines, output.generation
 }
 
 func GameLineChCurrent() chan string {
-	ptr := gameLineChState.Load()
-	if ptr == nil {
-		return nil
-	}
-	return *ptr
+	lines, _ := GameOutputCurrent()
+	return lines
+}
+
+func SetFactorioPipe(pipe io.WriteCloser, generation uint64) {
+	PipeLock.Lock()
+	Pipe, pipeGeneration = pipe, generation
+	PipeLock.Unlock()
 }
 
 func SetUpdateInProgress(v bool) {

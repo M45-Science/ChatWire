@@ -10,9 +10,9 @@ import (
 
 var (
 	/*Factorio stdio links */
-	Pipe       io.WriteCloser
-	PipeLock   sync.Mutex
-	gameLineCh chan string
+	Pipe           io.WriteCloser
+	PipeLock       sync.Mutex
+	pipeGeneration uint64
 
 	/* Factorio patch info */
 	FactorioVersion = constants.Unknown
