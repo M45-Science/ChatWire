@@ -81,3 +81,13 @@ func TestRecordGameTickPreservesFractionalSecondsAtLowUPS(t *testing.T) {
 		t.Fatalf("low-UPS tick interpolation = %q, want 13", got)
 	}
 }
+
+func TestCurrentGametimeStringFormatsTickLikeChat(t *testing.T) {
+	start := time.Date(2026, time.September, 12, 12, 0, 0, 0, time.UTC)
+	ResetGametime(60)
+	RecordGameTick(3202801, 1, true, start)
+
+	if got := CurrentGametimeString(); got != "14-49-40" {
+		t.Fatalf("displayed tick time = %q, want %q", got, "14-49-40")
+	}
+}

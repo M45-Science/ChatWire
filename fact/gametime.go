@@ -132,9 +132,7 @@ func currentGametimeAt(now time.Time) string {
 }
 
 func CurrentGametimeString() string {
-	gameTimeClock.RLock()
-	defer gameTimeClock.RUnlock()
-	return GametimeString
+	return CurrentGametime()
 }
 
 func ResetGametime(initialUPS float64) {
