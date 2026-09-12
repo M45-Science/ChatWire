@@ -37,11 +37,7 @@ func startGameWatchdog() {
 				// Keep taking low-frequency authoritative samples while paused. That
 				// lets the clock and pause state recover when game time advances again.
 				nores := glob.IncrementNoResponseCount()
-				if glob.SoftModVersion == constants.Unknown {
-					fact.WriteSoftModCommand("hello", nil)
-				} else {
-					fact.WriteSoftModCommand("status", nil)
-				}
+				requestFactorioStatus()
 				/* Just in case factorio hangs, bogs down or is flooded */
 				if nores >= watchdogFailureThreshold(interval) {
 					msg := "Factorio unresponsive for over two minutes... rebooting."
@@ -53,6 +49,19 @@ func startGameWatchdog() {
 			}
 		}
 	}()
+}
+
+// requestFactorioStatus probes for the SoftMod protocol while retaining the
+// native /time fallback used by scenario and vanilla saves. Until hello is
+// acknowledged, both requests are needed: a server without SoftMod cannot
+// otherwise initialize its displayed game time.
+func requestFactorioStatus() {
+	if glob.SoftModVersion == constants.Unknown {
+		fact.WriteSoftModCommand("hello", nil)
+		fact.WriteFact("/time")
+		return
+	}
+	fact.WriteSoftModCommand("status", nil)
 }
 
 func watchdogPollInterval() time.Duration {

@@ -305,6 +305,9 @@ func TestHandleFactReadyMatchesWithoutLegacyPrefix(t *testing.T) {
 	if command != "hello" {
 		t.Fatalf("expected ready handling to request version, got %q", got)
 	}
+	if !strings.Contains(got, "\n/time\n") {
+		t.Fatalf("expected ready handling to initialize native game time, got %q", got)
+	}
 }
 
 func TestChatWireLinesAreCritical(t *testing.T) {

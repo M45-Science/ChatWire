@@ -1,12 +1,43 @@
 package support
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"ChatWire/constants"
 	"ChatWire/fact"
+	"ChatWire/glob"
 )
+
+func TestRequestFactorioStatusUsesNativeTimeUntilSoftModDetected(t *testing.T) {
+	originalVersion := glob.SoftModVersion
+	w := &testWriteCloser{}
+	fact.SetFactorioPipe(w, 0)
+	t.Cleanup(func() {
+		glob.SoftModVersion = originalVersion
+		fact.SetFactorioPipe(nil, 0)
+	})
+
+	glob.SoftModVersion = constants.Unknown
+	requestFactorioStatus()
+	if command, _ := capturedChatWireRequest(t, w.String()); command != "hello" {
+		t.Fatalf("unknown SoftMod probe command = %q, want hello", command)
+	}
+	if !strings.Contains(w.String(), "\n/time\n") {
+		t.Fatalf("unknown SoftMod probe omitted native /time fallback: %q", w.String())
+	}
+
+	w.Reset()
+	glob.SoftModVersion = "test"
+	requestFactorioStatus()
+	if command, _ := capturedChatWireRequest(t, w.String()); command != "status" {
+		t.Fatalf("detected SoftMod probe command = %q, want status", command)
+	}
+	if strings.Contains(w.String(), "/time") {
+		t.Fatalf("detected SoftMod probe unexpectedly used native /time: %q", w.String())
+	}
+}
 
 func TestWatchdogUsesSlowerPollingWhileIdle(t *testing.T) {
 	oldRunning := fact.FactIsRunning

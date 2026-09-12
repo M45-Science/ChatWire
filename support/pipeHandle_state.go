@@ -47,7 +47,9 @@ func handleFactReady(input *handleData) bool {
 		newHist := modupdate.ModHistoryItem{Name: modupdate.BootName, Date: time.Now(), InfoItem: true}
 		modupdate.AddModHistory(newHist)
 
-		fact.WriteSoftModCommand("hello", nil)
+		// Initialize time immediately on saves without SoftMod while also
+		// starting the normal machine-protocol handshake when it is available.
+		requestFactorioStatus()
 	}
 	return false
 }
