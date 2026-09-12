@@ -1,10 +1,11 @@
 package support
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
+	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/fact"
 )
@@ -36,17 +37,6 @@ func handleGameTime(input *handleData) bool {
 				}
 			}
 
-			var newtime string
-			if day > 0 {
-				newtime = fmt.Sprintf("%.2d-%.2d-%.2d-%.2d", day, hour, minute, second)
-			} else if hour > 0 {
-				newtime = fmt.Sprintf("%.2d-%.2d-%.2d", hour, minute, second)
-			} else if minute > 0 {
-				newtime = fmt.Sprintf("%.2d-%.2d", minute, second)
-			} else {
-				newtime = fmt.Sprintf("%.2d", second)
-			}
-
 			/* Don't add the time if we are slowed down for players connecting, or paused */
 			if fact.SlowConnectTimer == 0 && fact.PausedTicks <= 2 {
 				fact.TickHistoryLock.Lock()
@@ -61,16 +51,15 @@ func handleGameTime(input *handleData) bool {
 				fact.TickHistoryLock.Unlock()
 			}
 
-			if fact.LastGametime == fact.Gametime {
+			unchanged := fact.RecordGameTime(day, hour, minute, second, input.lowerLine, float64(cfg.Local.Options.Speed)*60, time.Now())
+			if unchanged {
 				if fact.PausedTicks <= constants.PauseThresh {
 					fact.PausedTicks = fact.PausedTicks + 2
 				}
 			} else {
 				fact.PausedTicks = 0
 			}
-			fact.LastGametime = fact.Gametime
-			fact.GametimeString = input.lowerLine
-			fact.Gametime = newtime
+			fact.SetGameTimePaused(fact.PausedTicks > constants.PauseThresh)
 		}
 	}
 	/* This might block input by accident, don't do it */

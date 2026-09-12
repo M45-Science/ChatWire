@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"ChatWire/constants"
-	"ChatWire/cwlog"
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/modupdate"
@@ -15,24 +13,6 @@ import (
 func isFactorioReadyLine(line string) bool {
 	line = strings.TrimSpace(line)
 	return line != "" && strings.Contains(line, "Starting RCON interface")
-}
-
-func handleSVersion(input *handleData) bool {
-	/******************
-	 * SVERSION
-	 ******************/
-	if strings.HasPrefix(input.line, "[SVERSION]") {
-		cwlog.DoLogCW(input.line)
-
-		if input.wordListLen > 0 {
-			glob.SoftModVersion = input.wordList[1]
-			glob.OnlineCommand = constants.SoftModOnlineCMD
-			cwlog.DoLogCW("Softmod detected: " + glob.SoftModVersion)
-			ConfigSoftMod()
-		}
-		return true
-	}
-	return false
 }
 
 func handleFactGoodbye(input *handleData) bool {
@@ -67,8 +47,7 @@ func handleFactReady(input *handleData) bool {
 		newHist := modupdate.ModHistoryItem{Name: modupdate.BootName, Date: time.Now(), InfoItem: true}
 		modupdate.AddModHistory(newHist)
 
-		fact.WriteFact("/sversion")
-		fact.WriteFact(glob.OnlineCommand)
+		fact.WriteSoftModCommand("hello", nil)
 	}
 	return false
 }

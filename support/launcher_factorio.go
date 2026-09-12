@@ -170,7 +170,7 @@ func LaunchFactorio(generation uint64, saveName string) error {
 		glob.RelaunchThrottle = 0
 	}
 
-	fact.Gametime = (constants.Unknown)
+	fact.ResetGametime(float64(cfg.Local.Options.Speed) * 60)
 	glob.ResetNoResponseCount()
 	cwlog.DoLogCW("Factorio booting...")
 
@@ -266,5 +266,6 @@ func LaunchFactorio(generation uint64, saveName string) error {
 func isCriticalFactorioLine(line string) bool {
 	// These are used to transition ChatWire state; dropping them can leave the server stuck in "booting".
 	return isFactorioReadyLine(line) ||
+		strings.Contains(line, "[CHATWIRE]") ||
 		strings.Contains(line, "Goodbye")
 }

@@ -63,8 +63,7 @@ const (
 	VeteranThresh    = (60 * 24 * 3) //3 days
 
 	/* Online commands */
-	OnlineCommand    = "/p o c"
-	SoftModOnlineCMD = "/online"
+	OnlineCommand = "/p o c"
 
 	/* ChatWire settings */
 	PauseThresh              = 5  /* Number of repeated time reports before we assume server is paused */
@@ -106,7 +105,6 @@ const (
 	/* Throttle Discord chat */
 	CMSRate            = 500 * time.Millisecond  //Time we spend waiting for buffer to fill up once active
 	CMSRestTime        = 3500 * time.Millisecond //Time to sleep after sending a message
-	CMSPollRate        = 100 * time.Millisecond  //Time between polls
 	MaxDiscordAttempts = 90
 
 	/* Discord limits */

@@ -55,7 +55,8 @@
 			"SteamURLDomain": ""
 		},
 		"DataFiles": {
-			"DBFile": "playerdb.json",
+			"DBFile": "playerdb.cwdb",
+			"DBFormat": "binary",
 			"Bans": "../composite.json"
 		}
 	},

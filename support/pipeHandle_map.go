@@ -57,7 +57,7 @@ func handleSaveMsg(input *handleData) bool {
 			savmatch := savreg.FindStringSubmatch(input.noTimecode)
 			if len(savmatch) > 1 {
 				if !cfg.Local.Options.HideAutosaves {
-					buf := fmt.Sprintf("`%v` 💾 %s", fact.Gametime, savmatch[1])
+					buf := fmt.Sprintf("`%v` 💾 %s", fact.CurrentGametime(), savmatch[1])
 					if fact.NumPlayersCurrent() > 0 {
 						fact.CMS(cfg.Local.Channel.ChatChannel, buf)
 					}

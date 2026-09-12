@@ -134,6 +134,8 @@ var (
 	lifecyclePlayerWarnDelay      = 3 * time.Second
 	lifecycleStartupIdleTimeout   = constants.FactorioStartupIdleTimeout
 	lifecycleStartupHardTimeout   = constants.FactorioStartupHardTimeout
+	lifecycleActivePollInterval   = time.Second
+	lifecycleIdlePollInterval     = 30 * time.Second
 	lifecycleSendQuit             = func() { WriteFact("/quit") }
 	lifecycleInterruptProcess     = interruptFactorioProcess
 	lifecycleKillProcess          = killFactorioProcess
@@ -375,6 +377,24 @@ func (lm *lifecycleManager) signal() {
 	}
 }
 
+func signalLifecycleStateChange() {
+	lifecycleMu.Lock()
+	lm := lifecycle
+	lifecycleMu.Unlock()
+	if lm != nil {
+		lm.signal()
+	}
+}
+
+func (lm *lifecycleManager) pollInterval() time.Duration {
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	if lm.phase == LifecycleStopped {
+		return lifecycleIdlePollInterval
+	}
+	return lifecycleActivePollInterval
+}
+
 func (lm *lifecycleManager) getCurrentGeneration() uint64 {
 	lm.mu.Lock()
 	defer lm.mu.Unlock()
@@ -435,8 +455,8 @@ func (lm *lifecycleManager) syncCompatibilityLocked() {
 }
 
 func (lm *lifecycleManager) run() {
-	ticker := time.NewTicker(250 * time.Millisecond)
-	defer ticker.Stop()
+	timer := time.NewTimer(lifecycleIdlePollInterval)
+	defer timer.Stop()
 	defer close(lm.doneCh)
 	defer lm.cancelPendingRequests()
 
@@ -467,11 +487,18 @@ func (lm *lifecycleManager) run() {
 			continue
 		}
 
+		if !timer.Stop() {
+			select {
+			case <-timer.C:
+			default:
+			}
+		}
+		timer.Reset(lm.pollInterval())
 		select {
 		case <-lm.stopCh:
 			return
 		case <-lm.signalCh:
-		case <-ticker.C:
+		case <-timer.C:
 		}
 	}
 }

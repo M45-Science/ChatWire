@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"ChatWire/constants"
@@ -42,7 +43,16 @@ func WriteGCfg() bool {
 func setGlobalDefaults() {
 	/* Automatic global defaults */
 	if Global.Paths.DataFiles.DBFile == "" {
-		Global.Paths.DataFiles.DBFile = "playerdb.json"
+		Global.Paths.DataFiles.DBFile = "playerdb.cwdb"
+	}
+	switch strings.ToLower(strings.TrimSpace(Global.Paths.DataFiles.DBFormat)) {
+	case "", "binary":
+		Global.Paths.DataFiles.DBFormat = "binary"
+	case "json":
+		Global.Paths.DataFiles.DBFormat = "json"
+	default:
+		cwlog.DoLogCW("Unknown player database format %q; using binary.", Global.Paths.DataFiles.DBFormat)
+		Global.Paths.DataFiles.DBFormat = "binary"
 	}
 	if Global.Paths.Folders.ServersRoot == "" {
 		ex, err := os.Executable()

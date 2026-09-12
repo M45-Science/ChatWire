@@ -142,9 +142,9 @@ func handleChatMsg(input *handleData) bool {
 				factname = sclean.UnicodeCleanup(factname)
 				factname = sclean.EscapeDiscordMarkdown(factname)
 				if dname != "" {
-					fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.Gametime, factname, cmess)
+					fbuf = fmt.Sprintf("`%v` **%s**: %s", fact.CurrentGametime(), factname, cmess)
 				} else {
-					fbuf = fmt.Sprintf("`%v` %s: %s", fact.Gametime, factname, cmess)
+					fbuf = fmt.Sprintf("`%v` %s: %s", fact.CurrentGametime(), factname, cmess)
 				}
 
 				/* Remove all but letters */

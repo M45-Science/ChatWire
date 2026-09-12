@@ -6,17 +6,6 @@ import (
 	"ChatWire/cwlog"
 )
 
-func handleCmdMsg(input *handleData) bool {
-	/******************
-	 * COMMAND REPORTING
-	 ******************/
-	if strings.HasPrefix(input.line, "[CMD]") {
-		cwlog.DoLogAudit(input.line)
-		return true
-	}
-	return false
-}
-
 func handleAuditMsg(input *handleData) bool {
 	/******************
 	 * AUDIT LOGGING

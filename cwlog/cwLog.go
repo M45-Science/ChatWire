@@ -199,20 +199,28 @@ func StartAuditLog() {
 }
 
 func AutoRotateLogs() {
-	//Rotate when date changes
+	// Rotate at the next UTC day boundary without polling once per second.
 	go func() {
-		startDay := time.Now().UTC().Day()
+		ctx := glob.RuntimeContext()
 		for {
-			currentDay := time.Now().UTC().Day()
-			if currentDay != startDay {
-				startDay = currentDay
+			timer := time.NewTimer(durationUntilNextUTCMidnight(time.Now()))
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return
+			case <-timer.C:
 				worker.Submit(func() {
 					StartCWLog()
 					StartGameLog()
 					StartAuditLog()
 				})
 			}
-			time.Sleep(time.Second)
 		}
 	}()
+}
+
+func durationUntilNextUTCMidnight(now time.Time) time.Duration {
+	now = now.UTC()
+	next := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1)
+	return next.Sub(now)
 }

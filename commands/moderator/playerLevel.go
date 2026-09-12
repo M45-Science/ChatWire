@@ -46,10 +46,13 @@ func PlayerLevel(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 		oldLevel := fact.PlayerLevelGet(aname, false)
 		glob.PlayerListLock.RLock()
-		nplayer := glob.PlayerList[aname]
+		playerName := ""
+		if nplayer := glob.PlayerList[aname]; nplayer != nil {
+			playerName = nplayer.Name
+		}
 		glob.PlayerListLock.RUnlock()
 
-		if nplayer != nil {
+		if playerName != "" {
 
 			/* Unban automatically */
 			if alevel >= 0 && oldLevel == -1 {
@@ -59,13 +62,19 @@ func PlayerLevel(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			if alevel == -1 && oldLevel != -1 {
 				reasonString := fmt.Sprintf("%v -- %v %v", reason, banBy, tNow.Format(banTimeFormat))
 				fact.WriteBan(aname, reasonString)
-				nplayer.BanReason = reasonString
+				glob.PlayerListLock.Lock()
+				if nplayer := glob.PlayerList[aname]; nplayer != nil {
+					nplayer.BanReason = reasonString
+				}
+				glob.PlayerListLock.Unlock()
 			}
 
-			fact.PlayerLevelSet(nplayer.Name, alevel, true)
-			fact.AutoPromote(aname, false, false)
-			fact.SetPlayerListDirty()
-			buf := fmt.Sprintf("Player: %v level set to %v", nplayer.Name, fact.LevelToString(nplayer.Level))
+			fact.PlayerLevelSet(playerName, alevel, true)
+			fact.AutoPromoteFromLevel(playerName, false, false, oldLevel)
+			// Publish immediately so every ChatWire process can apply the level to
+			// its own online copy of the player without waiting for the debounce.
+			fact.WritePlayers()
+			buf := fmt.Sprintf("Player: %v level set to %v", playerName, fact.LevelToString(alevel))
 			disc.InteractionEphemeralResponse(i, "Complete:", buf)
 			return
 		} else {

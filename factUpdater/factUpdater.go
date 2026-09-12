@@ -7,6 +7,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os/exec"
 	"strings"
@@ -99,7 +100,7 @@ func checkInstallTar(data []byte) error {
 
 	for _, item := range fileChecks {
 		if !item.good {
-			return errors.New("file '%v' missing from install package" + item.name)
+			return fmt.Errorf("file %q missing from install package", item.name)
 		}
 	}
 

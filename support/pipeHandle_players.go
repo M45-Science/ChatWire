@@ -51,7 +51,7 @@ func handlePlayerJoin(input *handleData) bool {
 	 * JOIN AREA
 	 *****************/
 	if strings.HasPrefix(input.noDatestamp, "[JOIN]") {
-		fact.WriteFact(glob.OnlineCommand)
+		fact.RequestOnlinePlayers()
 		cwlog.DoLogGame(input.noDatestamp)
 
 		if input.noDatestampListLen > 1 {
@@ -65,7 +65,7 @@ func handlePlayerJoin(input *handleData) bool {
 
 			pname = sclean.EscapeDiscordMarkdown(pname)
 
-			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.Gametime, pname, plevelname)
+			buf := fmt.Sprintf("`%v` **%s joined**%s", fact.CurrentGametime(), pname, plevelname)
 
 			/* If softmod is active, handle pause on connect */
 			if glob.SoftModVersion != constants.Unknown &&
@@ -78,8 +78,7 @@ func handlePlayerJoin(input *handleData) bool {
 						glob.PausedForConnect = false
 						glob.PausedFor = ""
 						glob.PausedConnectAttempt = false
-						fact.WriteFact(
-							fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+						fact.WriteSoftModSpeed(cfg.Local.Options.Speed)
 						buf = buf + " (Unpausing game)"
 					}
 				}
@@ -96,10 +95,10 @@ func handlePlayerJoin(input *handleData) bool {
 				did := disc.GetDiscordIDFromFactorioName(pname)
 				if did != "" {
 					if disc.IsPatreon(did) {
-						fact.WriteFact("/patreon %s", pname)
+						fact.WriteSoftModCommand("supporter", map[string]any{"name": pname, "patreon": true})
 					}
 					if disc.IsNitro(did) {
-						fact.WriteFact("/nitro %s", pname)
+						fact.WriteSoftModCommand("supporter", map[string]any{"name": pname, "nitro": true})
 					}
 				}
 			}
@@ -133,7 +132,7 @@ func handlePlayerLeave(input *handleData) bool {
 			// Refresh player count on leave events even when the soft-mod is active.
 			// Some servers auto-pause when empty, which can prevent the periodic /online
 			// poll from running and leave the channel name stuck with a stale count.
-			fact.WriteFact(glob.OnlineCommand)
+			fact.RequestOnlinePlayers()
 
 			fact.UpdateSeen(pname)
 		}
@@ -153,7 +152,7 @@ func handleIncomingAnnounce(input *handleData) bool {
 		if input.trimmedWordsLen > 1 {
 			pName := input.trimmedWords[input.trimmedWordsLen-1]
 
-			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.Gametime, pName)
+			dmsg := fmt.Sprintf("`%v` %v is connecting.", fact.CurrentGametime(), pName)
 			fmsg := fmt.Sprintf("%v is connecting.", pName)
 			cwlog.DoLogGame(dmsg)
 
@@ -169,7 +168,7 @@ func handleIncomingAnnounce(input *handleData) bool {
 			if glob.PausedForConnect {
 				if strings.EqualFold(glob.PausedFor, pName) {
 					glob.PausedConnectAttempt = true
-					fact.WriteFact("/aspeed 4")
+					fact.WriteSoftModSpeed(4.0 / 60.0)
 					msg := "Pausing game, requested by " + pName
 					fact.LogGameCMS(true, cfg.Local.Channel.ChatChannel, msg)
 				}
@@ -177,93 +176,6 @@ func handleIncomingAnnounce(input *handleData) bool {
 			glob.PausedLock.Unlock()
 			return true
 		}
-	}
-	return false
-}
-
-func handleOnlineMsg(input *handleData) bool {
-	/* ****************
-	 * "/online"
-	 * This is specific to our soft-mod
-	 ******************/
-	newMode := false
-	if strings.HasPrefix(input.line, "[ONLINE]") || strings.HasPrefix(input.line, "[ONLINE2]") {
-		tag := "[ONLINE] "
-		if strings.HasPrefix(input.line, "[ONLINE2]") {
-			tag = "[ONLINE2] "
-			newMode = true
-		}
-		newPlayerList := []glob.OnlinePlayerData{}
-		count := 0
-
-		prevCount := fact.NumPlayersCurrent()
-
-		//cwlog.DoLogCW(input.line)
-		line := strings.TrimPrefix(input.line, tag)
-
-		players := strings.Split(line, ";")
-		if len(players) > 0 {
-			for _, p := range players {
-				fields := strings.Split(p, ",")
-				if len(fields) > 3 {
-
-					//name,score,time,type;
-					pname := fields[0]
-					pscore := fields[1]
-					ptime := fields[2]
-					ptype := fields[3]
-					pafk := ""
-					if len(fields) > 4 {
-						pafk = fields[4]
-					}
-
-					plevel := fact.StringToLevel(ptype)
-
-					if pname != "" {
-						/* Mark as seen, async */
-						fact.UpdateSeen(pname)
-
-						/* Check if user is banned */
-						banlist.CheckBanList(pname, false)
-
-						timeInt, _ := strconv.Atoi(ptime)
-						scoreInt, _ := strconv.Atoi(pscore)
-						/* Handle new compacted format */
-						if newMode {
-							timeInt = (timeInt * 60 * 60)
-							scoreInt = (scoreInt * 60 * 60)
-						}
-						newPlayerList = append(newPlayerList, glob.OnlinePlayerData{Name: pname, ScoreTicks: scoreInt, TimeTicks: timeInt, Level: plevel, AFK: pafk})
-						count++
-					}
-
-				}
-			}
-			if count > 0 {
-				fact.SetNumPlayers(count)
-				fact.OnlinePlayersLock.Lock()
-				glob.OnlinePlayers = newPlayerList
-
-				fact.OnlinePlayersLock.Unlock()
-				if fact.NumPlayersCurrent() != prevCount {
-					fact.UpdateChannelName()
-				}
-				return true
-			}
-		}
-
-		/* Otherwise clear list */
-		fact.SetNumPlayers(0)
-		fact.OnlinePlayersLock.Lock()
-		glob.OnlinePlayers = []glob.OnlinePlayerData{}
-		fact.OnlinePlayersLock.Unlock()
-		if prevCount != 0 {
-			fact.UpdateChannelName()
-			// Last player left; force an immediate channel name refresh.
-			fact.DoUpdateChannelNameForce()
-		}
-
-		return true
 	}
 	return false
 }

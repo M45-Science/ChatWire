@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ChatWire/cwlog"
+	"ChatWire/glob"
 )
 
 var (
@@ -12,6 +13,9 @@ var (
 
 // Wait for a moment, so we don't lose factorio booting message on first connect.
 func waitForDiscord() {
+	if glob.NoDiscord != nil && *glob.NoDiscord {
+		return
+	}
 	if BotIsReady {
 		return
 	}

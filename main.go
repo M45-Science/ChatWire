@@ -100,9 +100,9 @@ func main() {
 		WithinHours:    support.WithinHours,
 		ExitChatWire:   exitHook,
 	})
+	support.StartFactorioLoops()
 	if !*glob.NoDiscord {
 		go support.MainLoops()
-		go support.HandleChat()
 	}
 
 	//If autolaunch is off, get current factorio version
@@ -352,7 +352,7 @@ func initTime() {
 	now := time.Now()
 	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
 	glob.VoteBox.LastMapChange = then.Round(time.Second)
-	fact.Gametime = (constants.Unknown)
+	fact.ResetGametime(float64(cfg.Local.Options.Speed) * 60)
 	glob.PausedAt = time.Now()
 	glob.Uptime = time.Now().UTC().Round(time.Second)
 	fact.LoadChannelUpdateCooldown()

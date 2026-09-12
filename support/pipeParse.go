@@ -2,7 +2,6 @@ package support
 
 import (
 	"strings"
-	"time"
 
 	"ChatWire/constants"
 	"ChatWire/fact"
@@ -16,13 +15,13 @@ type funcList struct {
 
 var noChatHandles = []funcList{
 	{function: handleDisconnect},
+	{function: handleChatWire},
 	{function: handleGameTime},
 	{function: handleOnlinePlayers},
 	{function: handlePlayerJoin},
 	{function: handlePlayerLeave},
 	{function: handleMapLoad},
 	{function: handleBan},
-	{function: handleSVersion},
 	{function: handleUnBan},
 	{function: handleFactGoodbye},
 	{function: handleFactReady},
@@ -32,16 +31,6 @@ var noChatHandles = []funcList{
 	{function: handleExitSave},
 	{function: handleDesync},
 	{function: handleCrashes},
-}
-
-var softModHandles = []funcList{
-	{function: handleCmdMsg},
-	{function: handleAuditMsg},
-	{function: handleActMsg},
-	{function: handleOnlineMsg},
-	{function: handleSoftModMsg},
-	{function: handlePlayerReport},
-	{function: handlePlayerRegister},
 }
 
 type handleData struct {
@@ -61,26 +50,39 @@ func runHandles(handles []funcList, input *handleData) {
 
 /*  Chat pipes in-game chat to Discord, and handles log events */
 func HandleChat() {
+	ctx := glob.RuntimeContext()
 
 	/* Don't log if the game isn't set to run */
-	for glob.ServerRunning() {
+	for {
 		lines, generation := fact.GameOutputCurrent()
 		if lines == nil {
-			time.Sleep(100 * time.Millisecond)
+			select {
+			case <-ctx.Done():
+				return
+			case <-fact.GameOutputChanged():
+			}
 			continue
 		}
 
-		// Factorio restarts replace fact.GameLineCh. Avoid blocking forever on a stale channel.
 		var readLine string
 		var ok bool
 		select {
 		case readLine, ok = <-lines:
 			if !ok {
-				time.Sleep(100 * time.Millisecond)
+				currentLines, currentGeneration := fact.GameOutputCurrent()
+				if currentLines == lines && currentGeneration == generation {
+					select {
+					case <-ctx.Done():
+						return
+					case <-fact.GameOutputChanged():
+					}
+				}
 				continue
 			}
-		case <-time.After(250 * time.Millisecond):
+		case <-fact.GameOutputChanged():
 			continue
+		case <-ctx.Done():
+			return
 		}
 		if generation != 0 && !fact.IsCurrentFactorioGeneration(generation) {
 			continue
@@ -119,13 +121,6 @@ func HandleChat() {
 				 * No-chat handles
 				 */
 				runHandles(noChatHandles, input)
-
-				/*
-				 * Soft-mod only
-				 */
-				if glob.SoftModVersion != constants.Unknown {
-					runHandles(softModHandles, input)
-				}
 
 			} else {
 

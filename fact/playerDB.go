@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"ChatWire/cfg"
@@ -12,13 +13,18 @@ import (
 	"ChatWire/glob"
 	"ChatWire/util"
 	"ChatWire/watcher"
-
-	"github.com/bytedance/sonic"
 )
 
 var (
 	playerListDirtyCh = make(chan struct{}, 1)
+	playerChanges     = struct {
+		sync.Mutex
+		next     uint64
+		versions map[string]uint64
+	}{versions: make(map[string]uint64)}
 )
+
+const playerDBLockTimeout = 5 * time.Second
 
 func PlayerListDirtySignal() <-chan struct{} {
 	return playerListDirtyCh
@@ -53,8 +59,25 @@ func setPlayerListUpdated() {
 	glob.PlayerListUpdatedLock.Unlock()
 }
 
-/* Mark DB dirty */
-func SetPlayerListDirty() {
+func markPlayerDirty(pname string) {
+	pname = strings.ToLower(strings.TrimSpace(pname))
+	if pname == "" {
+		return
+	}
+	playerChanges.Lock()
+	playerChanges.next++
+	playerChanges.versions[pname] = playerChanges.next
+	playerChanges.Unlock()
+}
+
+func playerChangePending(pname string) bool {
+	playerChanges.Lock()
+	_, ok := playerChanges.versions[strings.ToLower(pname)]
+	playerChanges.Unlock()
+	return ok
+}
+
+func signalPlayerListDirty() {
 	glob.PlayerListDirtyLock.Lock()
 	glob.PlayerListDirty = true
 	glob.PlayerListDirtyLock.Unlock()
@@ -64,9 +87,16 @@ func SetPlayerListDirty() {
 	}
 }
 
+/* Mark a player record as dirty. */
+func SetPlayerListDirty(pname string) {
+	markPlayerDirty(pname)
+	signalPlayerListDirty()
+}
+
 // SetPlayerStatsDirty marks player stats as updated (LastSeen / Minutes).
 // These changes are saved on a slower cadence than full DB changes.
-func SetPlayerStatsDirty() {
+func SetPlayerStatsDirty(pname string) {
+	markPlayerDirty(pname)
 	glob.PlayerStatsDirtyLock.Lock()
 	glob.PlayerStatsDirty = true
 	glob.PlayerStatsDirtyLock.Unlock()
@@ -97,7 +127,7 @@ func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 		glob.PlayerList[pname].Creation = 0
 		glob.PlayerList[pname].AlreadyBanned = true
 
-		SetPlayerListDirty()
+		SetPlayerListDirty(pname)
 		return true
 	}
 
@@ -118,7 +148,7 @@ func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 		WriteBan(pname, reason)
 	}
 
-	SetPlayerListDirty()
+	SetPlayerListDirty(pname)
 	return false
 }
 
@@ -139,7 +169,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 		glob.PlayerList[pname].Level = level
 		glob.PlayerList[pname].LastSeen = compactNow()
 
-		SetPlayerListDirty()
+		SetPlayerListDirty(pname)
 		return true
 	}
 
@@ -154,7 +184,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 	}
 	glob.PlayerList[pname] = &newplayer
 
-	SetPlayerListDirty()
+	SetPlayerListDirty(pname)
 	return false
 }
 
@@ -170,13 +200,24 @@ func UpdateSeen(pname string) {
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].LastSeen = compactNow()
 
-		SetPlayerStatsDirty()
+		SetPlayerStatsDirty(pname)
 		return
 	}
 }
 
 /* Set player level, add to db if not found */
 func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
+	return playerLevelSet(pname, level, modifyOnly, true)
+}
+
+// PlayerLevelSetFromGame records an in-game level change. SoftMod emits the
+// same message for both a real promotion and a ChatWire-requested assignment,
+// so matching levels must be ignored to avoid echo writes across servers.
+func PlayerLevelSetFromGame(pname string, level int) bool {
+	return playerLevelSet(pname, level, false, false)
+}
+
+func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bool {
 	if pname == "" || len(pname) > constants.MaxNameLength {
 		return false
 	}
@@ -187,15 +228,14 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	defer glob.PlayerListLock.Unlock()
 
 	if glob.PlayerList[pname] != nil {
-
-		glob.PlayerList[pname].LastSeen = compactNow()
-
 		if glob.PlayerList[pname].Level != level {
+			glob.PlayerList[pname].LastSeen = compactNow()
 			glob.PlayerList[pname].Level = level
-			SetPlayerListDirty()
+			SetPlayerListDirty(pname)
 			WhitelistPlayer(pname, level)
-		} else {
-			SetPlayerStatsDirty()
+		} else if touchUnchanged {
+			glob.PlayerList[pname].LastSeen = compactNow()
+			SetPlayerStatsDirty(pname)
 		}
 
 		/* Delete discord id upon delete */
@@ -219,7 +259,7 @@ func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
 	}
 	glob.PlayerList[pname] = &newplayer
 
-	SetPlayerListDirty()
+	SetPlayerListDirty(pname)
 	WhitelistPlayer(pname, level)
 
 	return false
@@ -310,7 +350,7 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 		/* Found in list */
 		glob.PlayerList[pname].LastSeen = compactNow()
 		level := glob.PlayerList[pname].Level
-		SetPlayerStatsDirty()
+		SetPlayerStatsDirty(pname)
 		return level
 	}
 
@@ -329,8 +369,49 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 	}
 	glob.PlayerList[pname] = &newplayer
 
-	SetPlayerListDirty()
+	SetPlayerListDirty(pname)
 	return 0
+}
+
+func snapshotPlayerChanges() (map[string]*glob.PlayerData, map[string]uint64) {
+	changes := make(map[string]*glob.PlayerData)
+	versions := make(map[string]uint64)
+
+	glob.PlayerListLock.RLock()
+	playerChanges.Lock()
+	for pname, version := range playerChanges.versions {
+		versions[pname] = version
+		if player := glob.PlayerList[pname]; player != nil {
+			copy := *player
+			changes[pname] = &copy
+		} else {
+			changes[pname] = nil
+		}
+	}
+	playerChanges.Unlock()
+	glob.PlayerListLock.RUnlock()
+
+	return changes, versions
+}
+
+func completePlayerChanges(versions map[string]uint64) {
+	playerChanges.Lock()
+	defer playerChanges.Unlock()
+	for pname, version := range versions {
+		if playerChanges.versions[pname] == version {
+			delete(playerChanges.versions, pname)
+		}
+	}
+}
+
+func mergePlayerChanges(players, changes map[string]*glob.PlayerData) {
+	for pname, player := range changes {
+		if player == nil {
+			delete(players, pname)
+			continue
+		}
+		players[pname] = player
+	}
 }
 
 /* Load database */
@@ -349,24 +430,37 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 
 	if filedata != nil {
 
-		var tempData = make(map[string]*glob.PlayerData)
-		err = sonic.Unmarshal(filedata, &tempData)
+		var tempData map[string]*glob.PlayerData
+		tempData, _, err = decodePlayerDatabase(filedata)
 		if err != nil {
-			cwlog.DoLogCW(err.Error())
+			cwlog.DoLogCW("LoadPlayers: " + err.Error())
+			return
 		}
 
 		banCount := 0
 		doBan := true
+		changedNames := make(map[string]struct{})
+		levelChanges := make(map[string]int)
 		//Add name back in, makes db file smaller
 		glob.PlayerListLock.Lock()
 		var removed int
 
 		for pname := range tempData {
+			if !bootMode && !minimize && !clearBans && playerChangePending(pname) {
+				continue
+			}
+			previousLevel := 0
+			previousPlayer := glob.PlayerList[pname]
+			if previousPlayer != nil {
+				previousLevel = previousPlayer.Level
+			}
 
 			if clearBans {
 				if tempData[pname].Level < 0 {
 					removed++
 					delete(tempData, pname)
+					delete(glob.PlayerList, pname)
+					changedNames[pname] = struct{}{}
 					continue
 				}
 			}
@@ -376,8 +470,11 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 				if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
 					removed++
 					delete(tempData, pname)
+					delete(glob.PlayerList, pname)
+					changedNames[pname] = struct{}{}
 					continue
 				}
+				changedNames[pname] = struct{}{}
 				//Delete unneeded data from member/reg/moderator
 				if tempData[pname].Level > 0 {
 					tempData[pname].SusScore = 0
@@ -403,6 +500,10 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			//Autopromote to veteran
 			if tempData[pname].Level == 2 && tempData[pname].Minutes > constants.VeteranThresh {
 				tempData[pname].Level = 3
+				changedNames[pname] = struct{}{}
+			}
+			if !bootMode && !minimize && !clearBans && (previousPlayer == nil || previousLevel != tempData[pname].Level) {
+				levelChanges[pname] = previousLevel
 			}
 			if bootMode {
 				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
@@ -417,6 +518,12 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			cwlog.DoLogCW("Removed: %v entries.\n", removed)
 		}
 		glob.PlayerListLock.Unlock()
+		for pname, previousLevel := range levelChanges {
+			syncOnlinePlayerLevel(pname, previousLevel, tempData[pname].Level)
+		}
+		for pname := range changedNames {
+			SetPlayerListDirty(pname)
+		}
 	}
 }
 
@@ -425,17 +532,50 @@ func WritePlayers() {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
-	glob.PlayerListLock.RLock()
-	defer glob.PlayerListLock.RUnlock()
-
 	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
+	changes, versions := snapshotPlayerChanges()
+	if len(changes) == 0 {
+		return
+	}
 
-	data, err := sonic.MarshalIndent(glob.PlayerList, "", "\t")
+	lock, err := util.AcquireFileLock(finalPath+".lock", cfg.Local.Callsign, playerDBLockTimeout)
 	if err != nil {
 		cwlog.DoLogCW("WritePlayers: " + err.Error())
+		signalPlayerListDirty()
+		return
+	}
+	defer func() {
+		if err := lock.Release(); err != nil {
+			cwlog.DoLogCW("WritePlayers: release database lock: %v", err)
+		}
+	}()
+
+	players := make(map[string]*glob.PlayerData)
+	filedata, err := os.ReadFile(finalPath)
+	if err != nil && !os.IsNotExist(err) {
+		cwlog.DoLogCW("WritePlayers: " + err.Error())
+		signalPlayerListDirty()
+		return
+	}
+	if len(filedata) > 0 {
+		if players, _, err = decodePlayerDatabase(filedata); err != nil {
+			cwlog.DoLogCW("WritePlayers: " + err.Error())
+			signalPlayerListDirty()
+			return
+		}
+	}
+	mergePlayerChanges(players, changes)
+
+	data, err := encodePlayerDatabase(players, cfg.Global.Paths.DataFiles.DBFormat)
+	if err != nil {
+		cwlog.DoLogCW("WritePlayers: " + err.Error())
+		signalPlayerListDirty()
 		return
 	}
 	if err := util.WriteBytesAtomic(finalPath, data, 0644); err != nil {
 		cwlog.DoLogCW("WritePlayers: " + err.Error())
+		signalPlayerListDirty()
+		return
 	}
+	completePlayerChanges(versions)
 }

@@ -65,8 +65,8 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Save name", fact.LastSaveName)
 	}
-	if fact.GametimeString != constants.Unknown {
-		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", fact.GametimeString)
+	if gameTimeString := fact.CurrentGametimeString(); gameTimeString != constants.Unknown {
+		buf = buf + fmt.Sprintf("%17v: %v\n", "Map time", gameTimeString)
 	}
 	if fact.NumPlayersCurrent() > 0 || verbose {
 		buf = buf + fmt.Sprintf("%17v: %v\n", "Players online", fact.NumPlayersCurrent())

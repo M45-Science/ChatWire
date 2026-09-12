@@ -19,7 +19,7 @@ func handleDisconnect(input *handleData) bool {
 			}
 			// Always refresh player count on disconnect events so channel names
 			// and reboot-when-empty logic don't get stuck with stale player data.
-			fact.WriteFact(glob.OnlineCommand)
+			fact.RequestOnlinePlayers()
 		}
 	}
 

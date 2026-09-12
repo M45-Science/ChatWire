@@ -24,6 +24,7 @@ import (
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/sclean"
+	"ChatWire/util"
 )
 
 const (
@@ -247,56 +248,44 @@ func WhitelistPlayer(pname string, level int) {
 		if cfg.Local.Options.CustomWhitelist {
 			return
 		}
-		if cfg.Local.Options.MembersOnly {
-			if level > 0 {
-				WriteFact("/whitelist add %s", pname)
-			}
-		}
+		requiredLevel := 0
 		if cfg.Local.Options.RegularsOnly {
-			if level > 1 {
-				WriteFact("/whitelist add %s", pname)
-			}
+			requiredLevel = 2
+		} else if cfg.Local.Options.MembersOnly {
+			requiredLevel = 1
+		}
+		if requiredLevel == 0 {
+			return
+		}
+		if level >= requiredLevel && level < 254 {
+			WriteFact("/whitelist add %s", pname)
+		} else {
+			WriteFact("/whitelist remove %s", pname)
 		}
 	}
 }
 
 /* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
-
 	wpath := cfg.GetFactorioFolder() +
 		constants.AdminlistName
 
 	glob.PlayerListLock.RLock()
-
-	var count = 0
-	var buf = "[\n"
-
-	//Add admins
+	admins := make([]string, 0)
 	for _, player := range glob.PlayerList {
-		if player.Level >= 254 {
-			/* Add admins to whitelist for custom whitelists */
-			if cfg.Local.Options.CustomWhitelist {
-				WriteFact("/whitelist add %s", player.Name)
-			}
-			buf = buf + "\"" + player.Name + "\",\n"
-			count = count + 1
+		if player != nil && player.Level >= 254 {
+			admins = append(admins, player.Name)
 		}
 	}
-
-	if count > 1 {
-		lchar := len(buf)
-		buf = buf[0 : lchar-2]
-	}
-	buf = buf + "\n]\n"
 	glob.PlayerListLock.RUnlock()
 
-	err := os.WriteFile(wpath, []byte(buf), 0644)
+	sort.Strings(admins)
 
-	if err != nil {
+	if err := util.WriteJSONAtomic(wpath, admins, 0644); err != nil {
 		cwlog.DoLogCW("WriteAdminlist: WriteFile failure")
 		return -1
 	}
-	return count
+	return len(admins)
 }
 
 /* Write a full whitelist for a server, before it boots */
@@ -307,75 +296,54 @@ func WriteWhitelist() int {
 
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		glob.PlayerListLock.RLock()
-
-		var buf = "[\n"
-		var localPlayerList []*glob.PlayerData
-		localPlayerList = make([]*glob.PlayerData, len(localPlayerList))
-
+		localPlayerList := make([]glob.PlayerData, 0, len(glob.PlayerList))
 		for _, player := range glob.PlayerList {
+			if player == nil {
+				continue
+			}
 			if cfg.Local.Options.RegularsOnly {
-				if player.Level > 1 {
-					localPlayerList = append(localPlayerList, player)
+				if player.Level > 1 && player.Level < 254 {
+					localPlayerList = append(localPlayerList, *player)
 				}
 			} else {
-				if player.Level > 0 {
-					localPlayerList = append(localPlayerList, player)
+				if player.Level > 0 && player.Level < 254 {
+					localPlayerList = append(localPlayerList, *player)
 				}
 			}
 		}
+		glob.PlayerListLock.RUnlock()
 
 		//Sort by last seen
 		sort.Slice(localPlayerList, func(i, j int) bool {
 			return localPlayerList[i].LastSeen < localPlayerList[j].LastSeen
 		})
 
-		l := len(localPlayerList) - 1
-		var count = 0
-
-		//Add admins
-		for x := l; x > 0; x-- {
-			var player = localPlayerList[x]
-			if player.Level >= 255 {
-				buf = buf + "\"" + player.Name + "\",\n"
-				count = count + 1
-			}
-		}
+		names := make([]string, 0, len(localPlayerList))
 
 		//Add veterans
-		for x := l; x > 0; x-- {
-			var player = localPlayerList[x]
+		for x := len(localPlayerList) - 1; x >= 0; x-- {
+			player := localPlayerList[x]
 			if player.Level == 3 {
-				buf = buf + "\"" + player.Name + "\",\n"
-				count = count + 1
+				names = append(names, player.Name)
 			}
 		}
 
 		//Everyone else
-		for x := l; x > 0; x-- {
-			if count >= constants.MaxWhitelist {
+		for x := len(localPlayerList) - 1; x >= 0; x-- {
+			if len(names) >= constants.MaxWhitelist {
 				break
 			}
-			var player = localPlayerList[x]
+			player := localPlayerList[x]
 			if player.Level < 3 {
-				buf = buf + "\"" + player.Name + "\",\n"
-				count = count + 1
+				names = append(names, player.Name)
 			}
 		}
 
-		if count > 1 {
-			lchar := len(buf)
-			buf = buf[0 : lchar-2]
-		}
-		buf = buf + "\n]\n"
-		glob.PlayerListLock.RUnlock()
-
-		err := os.WriteFile(wpath, []byte(buf), 0644)
-
-		if err != nil {
+		if err := util.WriteJSONAtomic(wpath, names, 0644); err != nil {
 			cwlog.DoLogCW("WriteWhitelist: WriteFile failure")
 			return -1
 		}
-		return count
+		return len(names)
 	} else {
 		_ = os.Remove(wpath)
 	}
@@ -493,12 +461,25 @@ func StringToLevel(in string) int {
 	return level
 }
 
-/* Promote a player to the level they have, in Factorio and on Discord */
+/* Promote a player to the level they have, in Factorio and on Discord. */
 func AutoPromote(pname string, bootMode bool, doBan bool) string {
+	return autoPromote(pname, bootMode, doBan, 0, false)
+}
+
+// AutoPromoteFromLevel applies a level transition, including any demotion or
+// reset needed to leave the player's previous group.
+func AutoPromoteFromLevel(pname string, bootMode bool, doBan bool, previousLevel int) string {
+	return autoPromote(pname, bootMode, doBan, previousLevel, true)
+}
+
+func autoPromote(pname string, bootMode bool, doBan bool, previousLevel int, hasPreviousLevel bool) string {
 	playerName := " *(New Player)* "
 
 	if pname != "" {
 		plevel := PlayerLevelGet(pname, false)
+		if !hasPreviousLevel {
+			previousLevel = plevel
+		}
 
 		if !bootMode {
 			if plevel <= -254 {
@@ -518,21 +499,15 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 
 			} else if plevel == 1 {
 				playerName = " *(Member)*"
-				WriteFact("/member %s", pname)
 
 			} else if plevel == 2 {
 				playerName = " *(Regular)*"
-
-				WriteFact("/regular %s", pname)
 			} else if plevel == 3 {
 				playerName = " *(Veteran)*"
-
-				WriteFact("/veteran %s", pname)
 			} else if plevel == 255 {
 				playerName = " *(Moderator)*"
-
-				WriteFact("/promote %s", pname)
 			}
+			applyPlayerLevelInGame(pname, previousLevel, plevel)
 		}
 
 		discid := disc.GetDiscordIDFromFactorioName(pname)
@@ -573,6 +548,23 @@ func AutoPromote(pname string, bootMode bool, doBan bool) string {
 
 	return playerName
 
+}
+
+func applyPlayerLevelInGame(pname string, previousLevel, level int) {
+	if level < 0 {
+		return
+	}
+	// Do not erase a new player's accumulated promotion score on every join.
+	if level == 0 && previousLevel == 0 {
+		return
+	}
+	WriteSoftModCommand("player-level", map[string]any{"name": pname, "level": level})
+}
+
+func syncOnlinePlayerLevel(pname string, previousLevel, level int) {
+	if onlineName, ok := onlinePlayerName(pname); ok {
+		applyPlayerLevelInGame(onlineName, previousLevel, level)
+	}
 }
 
 /* Update our channel name, but don't send it yet */
@@ -1091,9 +1083,14 @@ func BytesHasZipBomb(data []byte) bool {
 }
 
 func IsPlayerOnline(who string) bool {
+	_, online := onlinePlayerName(who)
+	return online
+}
+
+func onlinePlayerName(who string) (string, bool) {
 
 	if len(who) <= 0 {
-		return false
+		return "", false
 	}
 
 	OnlinePlayersLock.RLock()
@@ -1101,11 +1098,11 @@ func IsPlayerOnline(who string) bool {
 
 	for _, p := range glob.OnlinePlayers {
 		if strings.EqualFold(p.Name, who) {
-			return true
+			return p.Name, true
 		}
 	}
 
-	return false
+	return "", false
 }
 
 /* Send chat to factorio */
@@ -1130,7 +1127,7 @@ func FactChat(format string, args ...interface{}) {
 		 * /cchat command
 	*/
 	if glob.SoftModVersion != constants.Unknown {
-		WriteFact("/cchat " + input)
+		WriteSoftModCommand("chat", map[string]any{"text": input})
 	} else {
 		/*
 		 * Just in case there is no soft-mod,
@@ -1141,12 +1138,8 @@ func FactChat(format string, args ...interface{}) {
 		input = sclean.RemoveDiscordMarkdown(input)
 
 		/* Attempt to prevent anyone from running a command. */
-		strlen := len(input)
-		for z := 0; z < strlen; z++ {
-			input = strings.TrimLeft(input, " ")
-			input = strings.TrimLeft(input, "/")
-			input = strings.TrimRight(input, " ")
-		}
+		input = strings.TrimLeft(input, " /")
+		input = strings.TrimRight(input, " ")
 		WriteFact(input)
 	}
 }
@@ -1169,7 +1162,7 @@ func FactWhisper(player, format string, args ...interface{}) {
 		 * /cwhisper command
 	*/
 	if glob.SoftModVersion != constants.Unknown {
-		WriteFact("/cwhisper %v %v", player, input)
+		WriteSoftModCommand("whisper", map[string]any{"name": player, "text": input})
 	} else {
 		/*
 		 * Just in case there is no soft-mod,
@@ -1180,12 +1173,8 @@ func FactWhisper(player, format string, args ...interface{}) {
 		input = sclean.RemoveDiscordMarkdown(input)
 
 		/* Attempt to prevent anyone from running a command. */
-		strlen := len(input)
-		for z := 0; z < strlen; z++ {
-			input = strings.TrimLeft(input, " ")
-			input = strings.TrimLeft(input, "/")
-			input = strings.TrimRight(input, " ")
-		}
+		input = strings.TrimLeft(input, " /")
+		input = strings.TrimRight(input, " ")
 		WriteFact("/whisper %v %v", player, input)
 	}
 }

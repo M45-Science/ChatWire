@@ -28,7 +28,7 @@ Recent lifecycle work centralized start, stop, restart, map change, map reset, u
 ## Requirements
 
 - Linux
-- Go `1.25.0` or newer to build from source
+- Go `1.27.1` or newer to build from source
 - A Discord application with bot token, application ID, guild ID, and channel access
 - Factorio account credentials for update and server management features
 
@@ -39,7 +39,8 @@ Common generated files and directories:
 - `cw-local-config.json`
 - `../cw-global-config.json`
 - `cw.lock`
-- `../playerdb.json`
+- `../playerdb.cwdb` (versioned binary player database with fast Zstandard compression)
+- `../playerdb.cwdb.lock` (persistent advisory-lock metadata; safe to leave in place)
 - `../map-gen-json/`
 - `./map-gen-json/` for per-server `/map-exchange` custom settings and cached map-generator fallbacks
 - `./log/`
@@ -65,6 +66,8 @@ This produces the `ChatWire` binary in the current directory.
 5. Start the service with `./ChatWire`.
 
 If you need to regenerate config files, delete `cw-local-config.json` and `../cw-global-config.json`, then start ChatWire again.
+
+The player database defaults to the compressed binary format. Set `Paths.DataFiles.DBFormat` to `"json"` to retain readable JSON output. Reads auto-detect both formats, so an existing JSON database is migrated on its next write when `DBFormat` is `"binary"`; the configured `DBFile` name does not have to change.
 
 ## Default Layout
 
@@ -155,6 +158,9 @@ The [`example-files/`](example-files) directory includes:
 Copy them and adjust paths for your deployment.
 
 ## Development
+
+The machine interface to M45 SoftMod is documented in
+[`docs/softmod-protocol.md`](docs/softmod-protocol.md).
 
 Run the standard checks before committing:
 

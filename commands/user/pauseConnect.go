@@ -52,7 +52,7 @@ func PauseConnect(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			return
 		}
 
-		fact.WriteFact(fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+		fact.WriteSoftModSpeed(cfg.Local.Options.Speed)
 		glob.PausedForConnect = false
 		glob.PausedFor = ""
 		glob.PausedConnectAttempt = false

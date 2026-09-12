@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/hako/durafmt"
@@ -17,18 +18,17 @@ type scoreData struct {
 	Score int64
 }
 
-func Scoreboard(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+var scoreboardUnits, scoreboardUnitsErr = durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
 
-	units, err := durafmt.DefaultUnitsCoder.Decode("y:y,w:w,d:d,h:h,m:m,s:s,ms:ms,us:us")
-	if err != nil {
-		cwlog.DoLogCW("Scoreboard: failed to load duration units: %v", err)
+func Scoreboard(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	if scoreboardUnitsErr != nil {
+		cwlog.DoLogCW("Scoreboard: failed to load duration units: %v", scoreboardUnitsErr)
 		disc.InteractionEphemeralResponse(i, "Scoreboard", "An error occurred while generating the scoreboard. Please try again later.")
 		return
 	}
 
 	//Make list of scores
-	buf := "```"
-	scores := []scoreData{}
+	scores := make([]scoreData, 0)
 	glob.PlayerListLock.RLock()
 	for _, p := range glob.PlayerList {
 		if p.Level >= 2 {
@@ -41,22 +41,22 @@ func Scoreboard(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	sort.Slice(scores, func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
 	})
+	disc.InteractionEphemeralResponse(i, "Scoreboard:", formatScoreboard(scores))
+}
 
-	//Print scoreboard
-	count := 0
-	numScores := len(scores) - 1
-	if numScores > 40 {
-		numScores = 40
+func formatScoreboard(scores []scoreData) string {
+	if len(scores) > 40 {
+		scores = scores[:40]
 	}
-	for x := 0; x < numScores; x++ {
-		p := scores[x]
+
+	var buf strings.Builder
+	buf.WriteString("```")
+	for i, p := range scores {
 
 		n, _ := durafmt.ParseString(fmt.Sprintf("%vm", p.Score))
-		timestr := n.LimitFirstN(2).Format(units)
-		buf = buf + fmt.Sprintf("#%2v: %24v: %-15v\n", count+1, p.Name, timestr)
-
-		count++
+		timestr := n.LimitFirstN(2).Format(scoreboardUnits)
+		fmt.Fprintf(&buf, "#%2v: %24v: %-15v\n", i+1, p.Name, timestr)
 	}
-	buf = buf + "```"
-	disc.InteractionEphemeralResponse(i, "Scoreboard:", buf)
+	buf.WriteString("```")
+	return buf.String()
 }

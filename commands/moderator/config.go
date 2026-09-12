@@ -11,7 +11,6 @@ import (
 	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
-	"ChatWire/util"
 )
 
 /* Change server settings */
@@ -31,8 +30,7 @@ func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 						*co.BData = false
 					}
 					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.BData)
-					if co.FactUpdateCommand != "" && fact.FactorioBooted {
-						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", util.BoolToOnOff(*co.BData)))
+					if co.LiveSoftMod && fact.FactorioBooted {
 						buf = buf + " (live update)\n"
 					} else {
 						buf = buf + "\n"
@@ -60,8 +58,7 @@ func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 					*co.SData = o.StringValue()
 					buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.SData)
-					if co.FactUpdateCommand != "" && fact.FactorioBooted {
-						fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+					if co.LiveSoftMod && fact.FactorioBooted {
 						buf = buf + " (live update)\n"
 					} else {
 						buf = buf + "\n"
@@ -74,8 +71,7 @@ func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 						*co.IData = val
 						buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.IData)
 
-						if co.FactUpdateCommand != "" && fact.FactorioBooted {
-							fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+						if co.LiveSoftMod && fact.FactorioBooted {
 							buf = buf + " (live update)\n"
 						} else {
 							buf = buf + "\n"
@@ -91,8 +87,7 @@ func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 							*co.FData32 = val
 							buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData32)
 
-							if co.FactUpdateCommand != "" && fact.FactorioBooted {
-								fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							if co.LiveSoftMod && fact.FactorioBooted {
 								buf = buf + " (live update)\n"
 							} else {
 								buf = buf + "\n"
@@ -105,8 +100,7 @@ func ConfigServer(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 						} else {
 							*co.FData64 = val
 							buf = buf + fmt.Sprintf("%v: set to: %v", co.Name, *co.FData64)
-							if co.FactUpdateCommand != "" && fact.FactorioBooted {
-								fact.WriteFact(co.FactUpdateCommand + fmt.Sprintf(" %v", val))
+							if co.LiveSoftMod && fact.FactorioBooted {
 								buf = buf + " (live update)\n"
 							} else {
 								buf = buf + "\n"

@@ -421,7 +421,8 @@ func GetFactorioNameFromDiscordID(id string) string {
 	return ""
 }
 
-// GetPlayerDataFromName returns the stored PlayerData for the given Factorio name.
+// GetPlayerDataFromName returns a snapshot of the stored PlayerData for the
+// given Factorio name.
 func GetPlayerDataFromName(input string) *glob.PlayerData {
 	pname := strings.ToLower(input)
 
@@ -433,12 +434,44 @@ func GetPlayerDataFromName(input string) *glob.PlayerData {
 	defer glob.PlayerListLock.RUnlock()
 
 	p := glob.PlayerList[pname]
-	return p
+	if p == nil {
+		return nil
+	}
+	snapshot := *p
+	return &snapshot
 }
 
 // InteractionEphemeralResponse sends a simple ephemeral response using the default color.
 func InteractionEphemeralResponse(i *discordgo.InteractionCreate, title, message string) *discordgo.Message {
 	return InteractionEphemeralResponseColor(i, title, message, glob.COLOR_WHITE)
+}
+
+// InteractionEphemeralEmbeds sends a prepared set of ephemeral embeds.
+func InteractionEphemeralEmbeds(i *discordgo.InteractionCreate, embeds []*discordgo.MessageEmbed) *discordgo.Message {
+	glob.SetBootMessage(nil)
+	glob.ResetUpdateMessage()
+	if DS == nil || i == nil || len(embeds) == 0 {
+		return nil
+	}
+	if i.Member == nil || i.Member.User == nil {
+		cwlog.DoLogCW("EphemeralEmbeds nil user")
+		return nil
+	}
+	if i.Interaction != nil {
+		resp := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{Embeds: embeds, Flags: discordgo.MessageFlagsEphemeral},
+		}
+		if err := DS.InteractionRespond(i.Interaction, resp); err != nil {
+			_, _ = DS.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{Embeds: &embeds})
+		}
+		return nil
+	}
+	msg, err := DS.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{Embeds: embeds, Flags: discordgo.MessageFlagsEphemeral})
+	if err != nil {
+		cwlog.DoLogCW(err.Error())
+	}
+	return msg
 }
 
 // InteractionEphemeralResponseColor sends an ephemeral response with a specific embed color.

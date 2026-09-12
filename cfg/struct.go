@@ -95,8 +95,9 @@ type urlPaths struct {
 }
 
 type dataFiles struct {
-	DBFile string `form:"-"`
-	Bans   string `form:"-"`
+	DBFile   string `form:"-"`
+	DBFormat string `form:"-"`
+	Bans     string `form:"-"`
 }
 
 type globalOptions struct {

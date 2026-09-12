@@ -37,15 +37,17 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	for _, o := range a.Options {
 		if o.Type == discordgo.ApplicationCommandOptionString {
 			arg := o.StringValue()
+			needle := strings.ToLower(arg)
 
 			/*STANDARD WHOIS SEARCH*/
 			count := 0
 			format := "\n```%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v\n%7v: %v```\n"
 			for _, p := range slist {
-				if count > maxresults {
+				if count >= maxresults {
 					break
 				}
-				if strings.Contains(strings.ToLower(p.Name), strings.ToLower(arg)) || strings.Contains(strings.ToLower(disc.GetNameFromID(p.ID)), strings.ToLower(arg)) {
+				discordName := disc.GetNameFromID(p.ID)
+				if strings.Contains(strings.ToLower(p.Name), needle) || strings.Contains(strings.ToLower(discordName), needle) {
 
 					lseen := ""
 					if fact.IsPlayerOnline(p.Name) {
@@ -73,7 +75,7 @@ func Whois(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 						"Score",
 						timestr,
 						"Discord",
-						sclean.TruncateStringEllipsis(disc.GetNameFromID(p.ID), 20),
+						sclean.TruncateStringEllipsis(discordName, 20),
 						"Seen",
 						lseen,
 						"Joined",

@@ -39,7 +39,7 @@ func startOnlinePollLoop() {
 
 				//Game isn't paused
 				if fact.PausedTicks <= constants.PauseThresh {
-					fact.WriteFact(glob.OnlineCommand)
+					fact.RequestOnlinePlayers()
 				}
 			}
 			time.Sleep(time.Duration(cfg.Local.Options.PlayerPollIntervalSec) * time.Second)
@@ -58,17 +58,17 @@ func startPlayerTimeLoop() {
 				continue
 			}
 			now := time.Now()
-			updated := false
+			updatedPlayers := make([]string, 0)
 			glob.PlayerListLock.Lock() //Lock
 			for _, p := range glob.PlayerList {
 				if now.Sub(fact.ExpandTime(p.LastSeen)) <= time.Minute {
 					p.Minutes++
-					updated = true
+					updatedPlayers = append(updatedPlayers, p.Name)
 				}
 			}
 			glob.PlayerListLock.Unlock() //Unlock
-			if updated {
-				fact.SetPlayerStatsDirty()
+			for _, pname := range updatedPlayers {
+				fact.SetPlayerStatsDirty(pname)
 			}
 			time.Sleep(time.Minute)
 		}

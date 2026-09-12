@@ -8,7 +8,6 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/cwlog"
-	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
 )
@@ -35,65 +34,55 @@ func handleActMsg(input *handleData) bool {
 			}
 
 			fact.UpdateSeen(pname)
-			if pname != "" {
+			shouldWarn := false
+			glob.PlayerListLock.Lock()
+			p := glob.PlayerList[strings.ToLower(pname)]
+			if p != nil && p.Name != "" {
+				if p.Level < 2 {
+					if strings.Contains(action, "placed-ghost") {
+						p.SusScore -= 2
+					} else if strings.Contains(action, "mined-ghost") {
+						p.SusScore--
+					} else if strings.Contains(action, "placed") {
+						p.SusScore--
+					} else if strings.Contains(action, "mined") {
+						p.SusScore++
+					} else if strings.Contains(action, "decon") {
+						p.SusScore += 2
+					}
 
-				p := disc.GetPlayerDataFromName(pname)
-				if p != nil && p.Name != "" {
-					glob.PlayerListLock.Lock() //lock db
-					defer glob.PlayerListLock.Unlock()
-
-					if p.Level < 2 {
-
-						if strings.Contains(action, "placed-ghost") {
-							p.SusScore -= 2
-						} else if strings.Contains(action, "mined-ghost") {
-							p.SusScore -= 1
-						} else if strings.Contains(action, "placed") {
-							p.SusScore--
-						} else if strings.Contains(action, "mined") {
-							p.SusScore++
-						} else if strings.Contains(action, "decon") {
-							p.SusScore += 2
-						}
-
-						thresh := int64(constants.SusWarningThresh)
-						if p.Level > 0 {
-							thresh += 1000
-						}
-						if p.SusScore > thresh {
-
-							if time.Since(glob.LastSusWarning) > time.Minute*constants.SusWarningInterval {
-								glob.LastSusWarning = time.Now()
-
-								if !cfg.Global.Options.ShutupSusWarn {
-									suspect := "Possible suspicious activity: " + pname + "\n"
-
-									serverTag := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
-									if cfg.Local.Channel.ChatChannel != "" {
-										serverTag = fmt.Sprintf("<#%v> [%v]\n", cfg.Local.Channel.ChatChannel, serverTag)
-									}
-									logURL := ""
-									if cfg.GetGameLogURL() != "" {
-										logURL = "Log: " + cfg.GetGameLogURL() + "\n"
-									}
-									pingTag := ""
-									if cfg.Global.Discord.SusPingRole != "" {
-										pingTag = fmt.Sprintf("\n<@&%v>", cfg.Global.Discord.SusPingRole)
-									}
-
-									buf := serverTag + suspect + logURL + pingTag
-									fact.ReportStatus(buf)
-
-									fact.FactChat(suspect)
-								}
-
-								p.SusScore = 0
-							}
-						}
-					} else {
+					thresh := int64(constants.SusWarningThresh)
+					if p.Level > 0 {
+						thresh += 1000
+					}
+					if p.SusScore > thresh && time.Since(glob.LastSusWarning) > time.Minute*constants.SusWarningInterval {
+						glob.LastSusWarning = time.Now()
+						shouldWarn = !cfg.Global.Options.ShutupSusWarn
 						p.SusScore = 0
 					}
+				} else {
+					p.SusScore = 0
 				}
+			}
+			glob.PlayerListLock.Unlock()
+
+			if shouldWarn {
+				suspect := "Possible suspicious activity: " + pname + "\n"
+				serverTag := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
+				if cfg.Local.Channel.ChatChannel != "" {
+					serverTag = fmt.Sprintf("<#%v> [%v]\n", cfg.Local.Channel.ChatChannel, serverTag)
+				}
+				logURL := ""
+				if cfg.GetGameLogURL() != "" {
+					logURL = "Log: " + cfg.GetGameLogURL() + "\n"
+				}
+				pingTag := ""
+				if cfg.Global.Discord.SusPingRole != "" {
+					pingTag = fmt.Sprintf("\n<@&%v>", cfg.Global.Discord.SusPingRole)
+				}
+
+				fact.ReportStatus(serverTag + suspect + logURL + pingTag)
+				fact.FactChat(suspect)
 			}
 		}
 		return true
@@ -125,8 +114,8 @@ func handleBan(input *handleData) bool {
 				}
 			}
 
-			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
-			fact.WriteFact(glob.OnlineCommand)
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.CurrentGametime(), strings.Join(input.noDatestampList[1:], " ")))
+			fact.RequestOnlinePlayers()
 		}
 		return true
 	}
@@ -157,7 +146,7 @@ func handleUnBan(input *handleData) bool {
 				}
 			}
 
-			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.Gametime, strings.Join(input.noDatestampList[1:], " ")))
+			fact.LogGameCMS(false, cfg.Local.Channel.ChatChannel, fmt.Sprintf("`%v` %s", fact.CurrentGametime(), strings.Join(input.noDatestampList[1:], " ")))
 		}
 		return true
 	}

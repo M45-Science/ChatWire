@@ -7,6 +7,7 @@ import (
 
 var (
 	gameLineChState   atomic.Pointer[gameOutput]
+	gameOutputChanged = make(chan struct{}, 1)
 	updateState       atomic.Bool
 	modOperationState atomic.Bool
 	autoStartState    atomic.Bool
@@ -21,9 +22,13 @@ type gameOutput struct {
 func SetGameLineCh(ch chan string, generation uint64) {
 	if ch == nil {
 		gameLineChState.Store(nil)
-		return
+	} else {
+		gameLineChState.Store(&gameOutput{lines: ch, generation: generation})
 	}
-	gameLineChState.Store(&gameOutput{lines: ch, generation: generation})
+	select {
+	case gameOutputChanged <- struct{}{}:
+	default:
+	}
 }
 
 func GameOutputCurrent() (chan string, uint64) {
@@ -39,6 +44,12 @@ func GameLineChCurrent() chan string {
 	return lines
 }
 
+// GameOutputChanged reports that the current Factorio output channel was
+// replaced or cleared. Consumers can block on this instead of polling.
+func GameOutputChanged() <-chan struct{} {
+	return gameOutputChanged
+}
+
 func SetFactorioPipe(pipe io.WriteCloser, generation uint64) {
 	PipeLock.Lock()
 	Pipe, pipeGeneration = pipe, generation
@@ -48,6 +59,7 @@ func SetFactorioPipe(pipe io.WriteCloser, generation uint64) {
 func SetUpdateInProgress(v bool) {
 	DoUpdateFactorio = v
 	updateState.Store(v)
+	signalLifecycleStateChange()
 }
 
 func UpdateInProgress() bool {
@@ -57,6 +69,7 @@ func UpdateInProgress() bool {
 func SetModOperationInProgress(v bool) {
 	DoModOperation = v
 	modOperationState.Store(v)
+	signalLifecycleStateChange()
 }
 
 func ModOperationInProgress() bool {
@@ -66,6 +79,7 @@ func ModOperationInProgress() bool {
 func setAutostartEnabled(v bool) {
 	FactAutoStart = v
 	autoStartState.Store(v)
+	signalLifecycleStateChange()
 }
 
 func AutostartEnabled() bool {

@@ -1,7 +1,6 @@
 package support
 
 import (
-	"fmt"
 	"time"
 
 	"ChatWire/cfg"
@@ -25,8 +24,7 @@ func startPauseExpiryLoop() {
 				now := time.Now()
 				if now.Sub(glob.PausedAt) > limit {
 
-					fact.WriteFact(
-						fmt.Sprintf("/gspeed %0.2f", cfg.Local.Options.Speed))
+					fact.WriteSoftModSpeed(cfg.Local.Options.Speed)
 
 					if glob.PausedConnectAttempt {
 						msg := "Unpausing, " + glob.PausedFor + " did not finish joining within the time limit."

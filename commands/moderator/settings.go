@@ -44,9 +44,9 @@ type SettingListData struct {
 	MaxStrLen    int
 	MinStrLen    int
 
-	CheckString       func(string) bool
-	ListString        func() []string
-	FactUpdateCommand string
+	CheckString func(string) bool
+	ListString  func() []string
+	LiveSoftMod bool
 }
 
 /* Global settings */
@@ -158,7 +158,7 @@ var SettingList = []SettingListData{
 		MinStrLen: 1,
 		SData:     &cfg.Local.Name,
 
-		FactUpdateCommand: "/cname",
+		LiveSoftMod: true,
 	},
 	{
 		Name:      "port",
@@ -274,7 +274,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		FactUpdateCommand: "/restrict",
+		LiveSoftMod: true,
 	},
 	{
 		Name:      "friendly-fire",
@@ -286,7 +286,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		FactUpdateCommand: "/friendlyfire",
+		LiveSoftMod: true,
 	},
 	{
 		Name:      "one-life",
@@ -298,7 +298,7 @@ var SettingList = []SettingListData{
 
 		DefBool: false,
 
-		FactUpdateCommand: "/onelife",
+		LiveSoftMod: true,
 	},
 	{
 		Name:      "afk-kick-mins",
@@ -370,8 +370,8 @@ var SettingList = []SettingListData{
 		MinF32: 0.01,
 		DefInt: 1,
 
-		FData32:           &cfg.Local.Options.Speed,
-		FactUpdateCommand: "/gspeed",
+		FData32:     &cfg.Local.Options.Speed,
+		LiveSoftMod: true,
 	},
 	{
 		Name:      "scenario",
