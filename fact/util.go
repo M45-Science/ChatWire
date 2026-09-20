@@ -31,7 +31,24 @@ const (
 	MaxZipSize                  = 1024 * 1024 * 1024 //1gb
 	factorioReadyVersionTimeout = 3 * time.Second
 	factorioReadyVersionPoll    = 100 * time.Millisecond
+	discordCloseTimeout         = 5 * time.Second
 )
+
+var errDiscordCloseTimeout = errors.New("discord session close timed out")
+
+func closeDiscordSession(closeFn func() error, timeout time.Duration) error {
+	done := make(chan error, 1)
+	go func() {
+		done <- closeFn()
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(timeout):
+		return errDiscordCloseTimeout
+	}
+}
 
 func factorioReadyStatusKnown() bool {
 	return strings.TrimSpace(FactorioVersion) != "" && !strings.EqualFold(FactorioVersion, constants.Unknown)
@@ -1314,7 +1331,9 @@ func DoExit(delay bool) {
 	}
 
 	if disc.DS != nil {
-		disc.DS.Close()
+		if err := closeDiscordSession(disc.DS.Close, discordCloseTimeout); err != nil {
+			fmt.Fprintf(os.Stderr, "Discord session close failed: %v\n", err)
+		}
 	}
 	os.Exit(1)
 }
