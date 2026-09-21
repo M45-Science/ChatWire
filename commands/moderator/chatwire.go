@@ -3,7 +3,6 @@ package moderator
 import (
 	"github.com/bwmarrin/discordgo"
 
-	"ChatWire/cfg"
 	"ChatWire/disc"
 	"ChatWire/fact"
 	"ChatWire/glob"
@@ -53,29 +52,9 @@ func RebootCW(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 
 /* Reload config files */
 func ReloadConfig(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-
-	/* Read global and local configs */
-	if !cfg.ReadGCfg() {
-		buf := "Unable to reload global config file."
-		disc.InteractionEphemeralResponse(i, "Error:", buf)
+	if err := support.ReloadConfigFilesResult("Discord"); err != nil {
+		disc.InteractionEphemeralResponse(i, "Error", err.Error())
 		return
 	}
-	if !cfg.ReadLCfg() {
-		buf := "Unable to reload local config file."
-		disc.InteractionEphemeralResponse(i, "Error:", buf)
-		return
-	}
-
-	/* Re-Write global and local configs */
-	cfg.WriteGCfg()
-	cfg.WriteLCfg()
-	fact.DoUpdateChannelName()
-	buf := "Config files have been reloaded."
-	disc.InteractionEphemeralResponse(i, "Complete:", buf)
-
-	support.ConfigSoftMod()
-
-	/* This also uses /config to live change settings. */
-	fact.GenerateFactorioConfig()
-
+	disc.InteractionEphemeralResponse(i, "Complete", "Config files have been reloaded.")
 }

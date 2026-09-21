@@ -111,7 +111,7 @@ func fullPackage(info *InfoData, reportDiscord bool) error {
 		return fmt.Errorf("installing Factorio to '%v' failed: %v", factPath, err.Error())
 	}
 
-	fact.FactorioVersion = info.VersInt.IntToString()
+	fact.SetFactorioVersion(info.VersInt.IntToString())
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
 	cwlog.DoLogCW("Waiting %v before allowing Factorio to restart.", factorioInstallSettleTime)
 	time.Sleep(factorioInstallSettleTime)

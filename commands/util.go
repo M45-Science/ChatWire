@@ -20,7 +20,7 @@ import (
 	"github.com/hako/durafmt"
 )
 
-var commandLock sync.Mutex
+var commandLock = &glob.ControlLock
 var activeCommandMu sync.RWMutex
 
 type activeCommandState struct {
@@ -159,6 +159,9 @@ func isCommandLockExempt(i *discordgo.InteractionCreate) bool {
 	}
 
 	data := i.ApplicationCommandData()
+	if strings.EqualFold(data.Name, "web") {
+		return true
+	}
 	if !strings.EqualFold(data.Name, "chatwire") {
 		return false
 	}

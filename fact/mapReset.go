@@ -207,6 +207,11 @@ func runMapCreateCommand(factargs []string) error {
 }
 
 func GenNewMap() (string, error) {
+	unlock, lockErr := cfg.LockControlResources()
+	if lockErr != nil {
+		return "", lockErr
+	}
+	defer unlock()
 	glob.FactorioLock.Lock()
 	defer glob.FactorioLock.Unlock()
 

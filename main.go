@@ -1,6 +1,10 @@
 package main
 
 import (
+	"ChatWire/commands/moderator"
+	"ChatWire/controlruntime"
+	"ChatWire/webcontrol"
+	"context"
 	"flag"
 	"fmt"
 	_ "net/http/pprof"
@@ -45,6 +49,7 @@ func main() {
 	cleanDB := flag.Bool("cleanDB", false, "Clean/minimize player database and exit.")
 	cleanBans := flag.Bool("cleanBans", false, "Clean/minimize player database, along with bans and exit.")
 	glob.ProxyURL = flag.String("proxy", "", "http caching proxy url. Request format: proxy/http://example.doamin/path")
+	webConfigPath := flag.String("webControlConfig", "", "Optional private web control instance config")
 	flag.Parse()
 
 	runtimeTestMode := strings.TrimSpace(*runtimeSelfTest) != ""
@@ -100,6 +105,29 @@ func main() {
 		WithinHours:    support.WithinHours,
 		ExitChatWire:   exitHook,
 	})
+
+	if *webConfigPath != "" && !runtimeTestMode {
+		var wc webcontrol.InstanceConfig
+		if err := webcontrol.LoadConfig(*webConfigPath, &wc); err != nil {
+			cwlog.DoLogCW("Web control configuration invalid: %v", err)
+		} else {
+			rt, err := controlruntime.Start(wc)
+			if err != nil {
+				cwlog.DoLogCW("Web control startup failed: %v", err)
+			} else {
+				defer func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					_ = rt.Close(ctx)
+				}()
+				if strings.EqualFold(cfg.Local.Callsign, cfg.Global.PrimaryServer) && wc.BrokerSocket != "" {
+					if err := moderator.ConfigureWebBroker(wc.BrokerSocket, wc.BrokerCredentialFile); err != nil {
+						cwlog.DoLogCW("Web login broker configuration invalid: %v", err)
+					}
+				}
+			}
+		}
+	}
 	support.StartFactorioLoops()
 	if !*glob.NoDiscord {
 		go support.MainLoops()
@@ -113,7 +141,7 @@ func main() {
 	} else if *glob.NoAutoLaunch {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 		factUpdater.GetFactorioVersion(info)
-		fact.FactorioVersion = info.VersInt.IntToString()
+		fact.SetFactorioVersion(info.VersInt.IntToString())
 		cwlog.DoLogCW("Factorio version: " + fact.FactorioVersion)
 	}
 

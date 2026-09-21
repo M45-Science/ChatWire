@@ -1,80 +1,28 @@
 package moderator
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/M45-Science/rcon"
-	"github.com/bwmarrin/discordgo"
-
-	"ChatWire/cfg"
 	"ChatWire/cwlog"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
+	"github.com/bwmarrin/discordgo"
 )
 
-/* Set a player's level */
 func RCONCmd(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
-
 	var command string
-
-	a := i.ApplicationCommandData()
-
-	for _, arg := range a.Options {
-		if arg.Type == discordgo.ApplicationCommandOptionString {
-			if strings.EqualFold(arg.Name, "command") {
-				command = arg.StringValue()
-				//Fix missing slash
-				command = strings.TrimPrefix(command, "/")
-				command = "/" + command
-			}
+	for _, o := range i.ApplicationCommandData().Options {
+		if o.Name == "command" {
+			command = o.StringValue()
 		}
 	}
-
-	if command != "" {
-
-		portstr := fmt.Sprintf("%v", cfg.Local.Port+cfg.Global.Options.RconOffset)
-		remoteConsole, err := rcon.Dial("localhost"+":"+portstr, glob.RCONPass)
-
-		if err != nil || remoteConsole == nil {
-			msg := "RCON was unable to connect to Factorio."
-			cwlog.DoLogCW(msg)
-			disc.InteractionEphemeralResponse(i, "Error:", msg)
-			return
-		}
-
-		cwlog.DoLogAudit("RCON: %v: %v", i.Member.User.Username, command)
-
-		reqID, err := remoteConsole.Write(command)
-		if err != nil {
-			msg := "Was unable to write to RCON."
-			cwlog.DoLogCW(msg)
-			disc.InteractionEphemeralResponse(i, "Error:", msg)
-			return
-		}
-		resp, respReqID, err := remoteConsole.Read()
-		if err != nil {
-			msg := "Was unable to read from RCON."
-			cwlog.DoLogCW(msg)
-			disc.InteractionEphemeralResponse(i, "Error:", msg)
-			return
-		}
-
-		if reqID != respReqID {
-			msg := "RCON responded with an invalid ID."
-			cwlog.DoLogCW(msg)
-			disc.InteractionEphemeralResponse(i, "Error:", msg)
-			return
-		}
-
-		if resp == "" {
-			resp = "(Empty response)"
-		}
-
-		disc.InteractionEphemeralResponse(i, "Result:", resp)
-	} else {
-		msg := "You must supply a command to run."
-		disc.InteractionEphemeralResponse(i, "Error:", msg)
+	cwlog.DoLogAudit("RCON actor=%s source=discord", i.Member.User.ID)
+	out, err := fact.ExecuteRCON(command)
+	if err != nil {
+		disc.InteractionEphemeralResponse(i, "Error", err.Error())
+		return
 	}
-
+	if out == "" {
+		out = "(Empty response)"
+	}
+	disc.InteractionEphemeralResponse(i, "Result", out)
 }

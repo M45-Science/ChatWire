@@ -16,3 +16,9 @@ cw-local-config.json
 .cw-channel-update
 support/modUpdateHistory.dat
 map-gen-json/
+
+# Local web-control credentials/configuration and advisory locks
+/cw-web-config.json
+/cw-web-instance.json
+/web-control-state/
+*.write.lock

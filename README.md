@@ -97,6 +97,7 @@ That layout is only a default convention. Adjust paths in the generated config f
 | `-noDiscord` | Disable Discord integration. |
 | `-proxy` | HTTP caching proxy URL. Format: `http://example.domain/path` |
 | `-regCommands` | Register Discord commands. |
+| `-webControlConfig` | Optional path to the private web-control instance configuration; disabled when omitted. |
 | `-runtimeSelfTest` | Run runtime self-test cases, then exit. Example: `start,restart,stop,change-map,update-check,chatwire-reboot` |
 | `-runtimeSelfTestTimeout` | Per-step timeout for runtime self-tests. Default: `5m` |
 
@@ -161,6 +162,12 @@ Copy them and adjust paths for your deployment.
 
 The machine interface to M45 SoftMod is documented in
 [`docs/softmod-protocol.md`](docs/softmod-protocol.md).
+
+Moderator web controls are available through a separate `chatwire-web` service
+and opt-in private instance sockets. Run `/web` in Discord to request a private,
+single-use dashboard login link after configuring the service. See the
+[setup guide](docs/web-control-setup.md), [API contract](docs/web-control-openapi.json),
+and [architecture design](docs/web-control-api.md).
 
 Run the standard checks before committing:
 

@@ -1,6 +1,8 @@
 package support
 
 import (
+	"ChatWire/glob"
+	"errors"
 	"sync"
 
 	"ChatWire/cfg"
@@ -12,6 +14,13 @@ import (
 var configReloadLock sync.Mutex
 
 func ReloadConfigFiles(source string) {
+	glob.ControlLock.Lock()
+	defer glob.ControlLock.Unlock()
+	_ = ReloadConfigFilesResult(source)
+}
+
+// ReloadConfigFilesResult is used by adapters already holding ControlLock.
+func ReloadConfigFilesResult(source string) error {
 	configReloadLock.Lock()
 	defer configReloadLock.Unlock()
 
@@ -19,11 +28,11 @@ func ReloadConfigFiles(source string) {
 
 	if !cfg.ReadGCfg() {
 		cwlog.DoLogCW("Reload config failed: unable to read global config.")
-		return
+		return errors.New("unable to reload configuration")
 	}
 	if !cfg.ReadLCfg() {
 		cwlog.DoLogCW("Reload config failed: unable to read local config.")
-		return
+		return errors.New("unable to reload configuration")
 	}
 
 	cfg.WriteGCfg()
@@ -31,8 +40,11 @@ func ReloadConfigFiles(source string) {
 	util.SetTempFilePrefix(cfg.Local.Callsign + "-")
 
 	ConfigSoftMod()
-	fact.GenerateFactorioConfig()
+	if !fact.GenerateFactorioConfig() {
+		return errors.New("configuration loaded but Factorio settings could not be applied")
+	}
 	fact.DoUpdateChannelName()
 
 	cwlog.DoLogCW("Config files reloaded.")
+	return nil
 }

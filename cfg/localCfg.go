@@ -39,7 +39,7 @@ func WriteLCfg() bool {
 
 	Local.Channel.Comment = "ChannelID, if blank will attempt to create a new channel."
 
-	if err := util.WriteJSONAtomic(finalPath, Local, 0644); err != nil {
+	if err := writeConfigMerged(finalPath, Local); err != nil {
 		cwlog.DoLogCW("WriteLCfg: " + err.Error())
 		return false
 	}
@@ -185,6 +185,7 @@ func ReadLCfg() bool {
 			newcfg.Options.MembersOnly = false
 		}
 
+		rememberConfig(constants.CWLocalConfig, Local)
 		return true
 	}
 

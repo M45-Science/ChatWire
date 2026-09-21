@@ -1,0 +1,24 @@
+[Unit]
+Description=ChatWire moderator web controls
+After=network.target
+
+[Service]
+Type=simple
+User=chatwire
+Group=chatwire
+RuntimeDirectory=chatwire-web
+RuntimeDirectoryMode=0700
+StateDirectory=chatwire-web
+StateDirectoryMode=0700
+ExecStart=/usr/local/bin/chatwire-web -config /etc/chatwire-web/cw-web-config.json
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/etc/chatwire-web
+
+[Install]
+WantedBy=multi-user.target

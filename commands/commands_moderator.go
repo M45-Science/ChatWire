@@ -10,6 +10,8 @@ import (
 
 func moderatorCommands() []glob.CommandData {
 	return []glob.CommandData{
+		{AppCmd: glob.AppCmdData{Name: "web", Description: "Open web controls or revoke your web sessions.", Type: discordgo.ChatApplicationCommand,
+			Options: []glob.OptionData{{Name: "action", Description: "Login or sign out all browsers", Type: discordgo.ApplicationCommandOptionString, Choices: []glob.ChoiceData{{Name: "login", Value: "login"}, {Name: "logout-all", Value: "logout-all"}}}}}, Function: moderator.Web, ModeratorOnly: true, PrimaryOnly: true},
 		/* Admin Commands */
 		{AppCmd: glob.AppCmdData{
 			Name:        "chatwire",

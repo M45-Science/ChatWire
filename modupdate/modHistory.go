@@ -11,6 +11,8 @@ import (
 )
 
 func ListHistory(full bool) string {
+	ModHistoryLock.Lock()
+	defer ModHistoryLock.Unlock()
 	if len(ModHistory.History) == 0 {
 		return "**Mod History:**\n\nMod history is empty."
 	}
@@ -51,7 +53,9 @@ func ListHistory(full bool) string {
 }
 
 func ClearHistory() string {
+	ModHistoryLock.Lock()
 	ModHistory = ModHistoryData{}
+	ModHistoryLock.Unlock()
 	WriteModHistory()
 	return "Mod history was cleared."
 }

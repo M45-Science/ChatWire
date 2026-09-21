@@ -23,6 +23,11 @@ func DoQuickLatestSilent(force bool) (*InfoData, string, bool, bool) {
 func doQuickLatest(force bool, reportDiscord bool) (*InfoData, string, bool, bool) {
 	glob.UpdatersLock.Lock()
 	defer glob.UpdatersLock.Unlock()
+	unlock, lockErr := cfg.LockControlResources()
+	if lockErr != nil {
+		return nil, "Shared game files are busy.", true, false
+	}
+	defer unlock()
 
 	if reportDiscord {
 		glob.ResetUpdateMessage()

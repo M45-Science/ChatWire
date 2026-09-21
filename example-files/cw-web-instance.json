@@ -1,0 +1,8 @@
+{
+  "id": "server-a",
+  "socket": "/run/chatwire-a/control.sock",
+  "credential_file": "/etc/chatwire-web/a.key",
+  "broker_socket": "/run/chatwire-web/login.sock",
+  "broker_credential_file": "/etc/chatwire-web/broker.key",
+  "state_dir": "/var/lib/chatwire-control/a"
+}

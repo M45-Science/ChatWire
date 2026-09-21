@@ -11,7 +11,6 @@ import (
 	"ChatWire/constants"
 	"ChatWire/cwlog"
 	"ChatWire/glob"
-	"ChatWire/util"
 	"ChatWire/watcher"
 )
 
@@ -32,7 +31,7 @@ func WriteGCfg() bool {
 	Global.Discord.Roles.RoleCache.Comment = "Cached Role IDs, in case lookup is slow or fails."
 	Global.Options.Comment = "RoleID to ping on map resets, if any."
 
-	if err := util.WriteJSONAtomic(finalPath, Global, 0644); err != nil {
+	if err := writeConfigMerged(finalPath, Global); err != nil {
 		cwlog.DoLogCW("WriteGCfg: " + err.Error())
 		return false
 	}
@@ -180,6 +179,7 @@ func ReadGCfg() bool {
 		Global = newcfg
 		setGlobalDefaults()
 
+		rememberConfig(constants.CWGlobalConfig, Global)
 		return true
 	}
 

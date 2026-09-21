@@ -18,6 +18,17 @@ import (
 )
 
 func SyncMods(i *discordgo.InteractionCreate, optionalFileName string) bool {
+	return SyncModsService(optionalFileName)
+}
+
+// SyncModsService performs the operation independently of a Discord interaction.
+func SyncModsService(optionalFileName string) bool {
+	unlock, err := cfg.LockControlResources()
+	if err != nil {
+		cwlog.DoLogCW("Mod sync: shared game files busy")
+		return false
+	}
+	defer unlock()
 	opToken := fact.BeginOperation("Mod Sync", "Syncing mods. This can take a while on large modpacks or slow downloads.")
 	fact.SetModOperationInProgress(true)
 	defer func() {

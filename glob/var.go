@@ -114,3 +114,6 @@ var (
 	PausedFor            string
 	PausedLock           sync.Mutex
 )
+
+// ControlLock serializes user commands across Discord and the local web API.
+var ControlLock sync.Mutex

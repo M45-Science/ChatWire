@@ -362,7 +362,7 @@ func getFactorioVersion() {
 	if fact.FactorioVersion == constants.Unknown {
 		info := &factUpdater.InfoData{Xreleases: cfg.Local.Options.ExpUpdates, Build: "headless", Distro: "linux64"}
 		factUpdater.GetFactorioVersion(info)
-		fact.FactorioVersion = info.VersInt.IntToString()
+		fact.SetFactorioVersion(info.VersInt.IntToString())
 	}
 	//Just in case that fails too
 	if fact.FactorioVersion == constants.Unknown {

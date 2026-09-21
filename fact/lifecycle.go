@@ -44,6 +44,8 @@ type Request struct {
 	ForceChatWireExit bool
 	RequestID         string
 	WhenEmpty         bool
+	// BeforeExit persists an external operation checkpoint before process exit.
+	BeforeExit func() error
 }
 
 type State struct {
@@ -200,6 +202,9 @@ func SubmitLifecycleRequest(req Request) error {
 	_, err := submitLifecycleRequest(req, false)
 	return err
 }
+
+// SubmitLifecycleRequestAndWait reports execution completion, not just acceptance.
+func SubmitLifecycleRequestAndWait(req Request) error { return submitLifecycleRequestAndWait(req) }
 
 func submitLifecycleRequestAndWait(req Request) error {
 	_, err := submitLifecycleRequest(req, true)
@@ -743,8 +748,13 @@ func (lm *lifecycleManager) execute(req lifecycleRequest) {
 	case ActionRestartChatWire:
 		err = lm.executeStop(req.Reason)
 		if err == nil && lm.hooks.ExitChatWire != nil {
-			cwlog.DoLogCW("lifecycle: follow-up action executed kind=%s", req.Kind)
-			lm.hooks.ExitChatWire(req.ForceChatWireExit)
+			if req.BeforeExit != nil {
+				err = req.BeforeExit()
+			}
+			if err == nil {
+				cwlog.DoLogCW("lifecycle: follow-up action executed kind=%s", req.Kind)
+				lm.hooks.ExitChatWire(req.ForceChatWireExit)
+			}
 		}
 	case ActionChangeMap:
 		wasAuto := AutostartEnabled()

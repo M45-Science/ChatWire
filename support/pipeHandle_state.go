@@ -62,7 +62,7 @@ func handleFactVersion(input *handleData) bool {
 		fact.NotifyFactorioProgress(input.generation, "mod-load", modLoadStatusDetail(input.noTimecode))
 		//cwlog.DoLogCW(input.noTimecode)
 		if input.noTimecodeListLen > 3 {
-			fact.FactorioVersion = input.noTimecodeList[3]
+			fact.SetFactorioVersion(input.noTimecodeList[3])
 		}
 	} else if strings.HasPrefix(input.noTimecode, "Loading mod ") {
 		fact.NotifyFactorioProgress(input.generation, "mod-load", modLoadStatusDetail(input.noTimecode))

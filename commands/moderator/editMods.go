@@ -18,6 +18,8 @@ import (
 )
 
 func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	glob.UpdatersLock.Lock()
+	defer glob.UpdatersLock.Unlock()
 
 	var msg string
 	tmsg := ""

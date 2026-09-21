@@ -34,7 +34,7 @@ func handleMapLoad(input *handleData) bool {
 			filename := regaa.ReplaceAllString(fullpath, "")
 
 			fact.GameMapName = filename
-			fact.GameMapPath = fullpath
+			fact.SetGameMapPath(fullpath)
 			fact.LastSaveName = filename
 
 			cwlog.DoLogCW("Loading map %s (%v)...", filename, humanize.Bytes(uint64(sizei)))
@@ -101,7 +101,7 @@ func handleExitSave(input *handleData) bool {
 
 			/* Document save name for archive command */
 			fact.GameMapName = filename
-			fact.GameMapPath = fullpath
+			fact.SetGameMapPath(fullpath)
 
 			/* Log actions */
 			cwlog.DoLogCW("Map saved as: %v, backup: %v", filename, newName)

@@ -283,6 +283,11 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 }
 
 func CheckModUpdates(dryRun bool, emitProgress bool, suppressChecking bool, suppressNoUpdates bool) (bool, error) {
+	unlock, lockErr := cfg.LockControlResources()
+	if lockErr != nil {
+		return false, lockErr
+	}
+	defer unlock()
 	opToken := fact.BeginOperation("Mod Updates", "Checking for mod updates.")
 	if suppressChecking {
 		fact.SuppressPendingOperationAnnouncement(opToken)
@@ -589,4 +594,13 @@ func removeDownload(name string, list []downloadData) []downloadData {
 		}
 	}
 	return out
+}
+
+// CheckModsForControl preserves manual-update restart scheduling for HTTP.
+func CheckModsForControl() (bool, error) {
+	updated, err := CheckModUpdates(false, true, false, false)
+	if err == nil && updated && fact.GetLifecycleState().Phase != fact.LifecycleStopped {
+		err = fact.SubmitLifecycleRequest(fact.Request{Kind: fact.ActionRestartFactorio, Reason: "Rebooting Factorio after mod updates.", WhenEmpty: true})
+	}
+	return updated, err
 }

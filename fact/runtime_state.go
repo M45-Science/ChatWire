@@ -94,3 +94,21 @@ func SetNumPlayers(v int) {
 func NumPlayersCurrent() int {
 	return int(numPlayersState.Load())
 }
+
+// These immutable values let the HTTP adapter observe metadata without reading
+// the legacy globals concurrently with the game-output parser.
+var webVersion atomic.Pointer[string]
+var webMapPath atomic.Pointer[string]
+
+func SetFactorioVersion(value string) { FactorioVersion = value; webVersion.Store(&value) }
+func SetGameMapPath(value string)     { GameMapPath = value; webMapPath.Store(&value) }
+func WebRuntimeMetadata() (version, mapPath string) {
+	version = "unknown"
+	if p := webVersion.Load(); p != nil {
+		version = *p
+	}
+	if p := webMapPath.Load(); p != nil {
+		mapPath = *p
+	}
+	return
+}

@@ -1,0 +1,27 @@
+{
+  "listen": "127.0.0.1:8787",
+  "public_origin": "https://chatwire.example.org",
+  "state_dir": "/var/lib/chatwire-web",
+  "broker_socket": "/run/chatwire-web/login.sock",
+  "broker_credential_file": "/etc/chatwire-web/broker.key",
+  "primary": "server-a",
+  "guild_id": "REPLACE_WITH_DISCORD_GUILD_ID",
+  "admin_role_ids": ["111111111111111111"],
+  "moderator_role_ids": ["222222222222222222"],
+  "instances": [
+    {
+      "id": "server-a",
+      "label": "Server A",
+      "enabled": true,
+      "socket": "/run/chatwire-a/control.sock",
+      "credential_file": "/etc/chatwire-web/a.key"
+    },
+    {
+      "id": "server-b",
+      "label": "Server B",
+      "enabled": true,
+      "socket": "/run/chatwire-b/control.sock",
+      "credential_file": "/etc/chatwire-web/b.key"
+    }
+  ]
+}
