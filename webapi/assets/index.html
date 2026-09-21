@@ -1,1 +1,35 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatWire · Server controls</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script></head><body><aside><a class="brand" href="/">CHAT<span>WIRE</span></a><p class="eyebrow">SERVER CONTROL</p><label for="server">Local instance</label><select id="server"><option value="">All servers</option></select><nav id="nav" aria-label="Controls"></nav><footer><span id="identity"></span><button id="logout" class="quiet">Sign out</button></footer></aside><main><header><div><p class="eyebrow" id="scope">LOCAL HOST</p><h1 id="title">Overview</h1></div><button id="refresh" class="quiet">Refresh</button></header><p id="notice" role="status" aria-live="polite"></p><section id="content" aria-label="Server controls"><p>Connecting…</p></section></main><dialog id="confirm"><h2>Confirm action</h2><p id="confirm-text"></p><pre id="confirm-detail"></pre><div class="buttons"><button id="cancel" class="quiet">Cancel</button><button id="execute">Confirm and run</button></div></dialog></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#30312c">
+  <title>ChatWire · Server controls</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <aside>
+    <a class="brand" href="/" aria-label="ChatWire home"><svg class="gear" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="m13 1 6 0 1 5 3 2 5-1 3 5-4 4v3l4 3-3 5-5-1-3 2-1 4h-6l-1-4-3-2-5 1-3-5 4-3v-3l-4-4 3-5 5 1 3-2z"/><circle cx="16" cy="17" r="6" fill="#303429"/><circle cx="16" cy="17" r="2" fill="currentColor"/></svg><strong>CHAT<span>WIRE</span></strong></a>
+    <p class="eyebrow">SERVER CONTROL</p>
+    <label for="server">Local instance</label>
+    <select id="server"><option value="">All servers</option></select>
+    <nav id="nav" aria-label="Controls"></nav>
+    <footer><span id="identity"></span><button id="logout" class="quiet">Sign out</button></footer>
+  </aside>
+  <main>
+    <header>
+      <div><p class="eyebrow" id="scope">LOCAL HOST</p><h1 id="title">Overview</h1></div>
+      <button id="refresh" class="quiet">Refresh</button>
+    </header>
+    <p id="notice" role="status" aria-live="polite"></p>
+    <section id="content" aria-label="Server controls"><p>Connecting…</p></section>
+  </main>
+  <dialog id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <h2 id="confirm-title">Confirm action</h2>
+    <p id="confirm-text"></p>
+    <pre id="confirm-detail"></pre>
+    <div class="buttons"><button id="cancel" class="quiet">Cancel</button><button id="execute">Confirm and run</button></div>
+  </dialog>
+</body>
+</html>
