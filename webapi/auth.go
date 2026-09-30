@@ -153,25 +153,33 @@ func (a *Auth) check(ctx context.Context, raw string, touch bool) (session, erro
 		return session{}, errors.New("sign in using /web in Discord")
 	}
 	if a.now().Sub(s.Checked) >= time.Minute {
+		checked := a.now()
 		actor, e := a.authorize(ctx, s.Actor.ID)
 		if e != nil {
 			a.revoke(s.Actor.ID)
 			return session{}, e
 		}
 		s.Actor = actor
-		s.Checked = a.now()
+		s.Checked = checked
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.prune()
-	if _, ok = a.sessions[k]; !ok || a.epochs[s.Actor.ID] != s.Epoch {
+	current, ok := a.sessions[k]
+	if !ok || a.epochs[s.Actor.ID] != s.Epoch {
 		return session{}, errors.New("session revoked")
 	}
-	if touch {
-		s.Seen = a.now()
+	// A role refresh runs without the mutex. Preserve activity and any newer
+	// authorization snapshot committed by another request during that refresh.
+	if s.Checked.After(current.Checked) {
+		current.Actor = s.Actor
+		current.Checked = s.Checked
 	}
-	a.sessions[k] = s
-	return s, nil
+	if now := a.now(); touch && now.After(current.Seen) {
+		current.Seen = now
+	}
+	a.sessions[k] = current
+	return current, nil
 }
 func (a *Auth) revoke(user string) {
 	a.mu.Lock()

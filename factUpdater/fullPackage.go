@@ -115,6 +115,7 @@ func fullPackage(info *InfoData, reportDiscord bool) error {
 	cwlog.DoLogCW("Factorio was installed to: %v", factPath)
 	cwlog.DoLogCW("Waiting %v before allowing Factorio to restart.", factorioInstallSettleTime)
 	time.Sleep(factorioInstallSettleTime)
+	fact.MarkFactorioUpdated()
 
 	return nil
 }

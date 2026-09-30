@@ -130,10 +130,6 @@ func ReadBanFile(firstboot bool) {
 		return
 	}
 
-	//Empty, just return
-	if len(newBans) <= 0 {
-		return
-	}
 	revBuf := ""
 	//Detect removed bans
 	for o, oldBan := range BanList {
@@ -218,6 +214,9 @@ func ReadBanFile(firstboot bool) {
 func parseBanFileData(data []byte) ([]banDataType, error) {
 	var newBans []banDataType
 	if err := json.Unmarshal(data, &newBans); err == nil {
+		if newBans == nil {
+			return nil, fmt.Errorf("ban list must be a JSON array")
+		}
 		return newBans, nil
 	} else {
 		newBans = nil

@@ -10,6 +10,7 @@ import (
 	"ChatWire/modedit"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 )
@@ -121,6 +122,10 @@ func releaseMatchesFactorioVersion(rel modRelease) bool {
 }
 
 func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string, progress *modUpdateProgress) ([]downloadData, error) {
+	return resolveDepsWithPrefs(modPortalData, wasDep, depth, parents, modedit.VersionPrefs{}, progress)
+}
+
+func resolveDepsWithPrefs(modPortalData []modPortalFullData, wasDep bool, depth int, parents []string, prefs modedit.VersionPrefs, progress *modUpdateProgress) ([]downloadData, error) {
 
 	if depth > 10 {
 		return []downloadData{}, nil
@@ -149,13 +154,21 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 			candidate.Version = item.installed.Version
 		}
 		var candidateDeps []downloadData
+		preferred := modedit.GetVersion(prefs, item.Name)
+		if strings.EqualFold(preferred, "auto") {
+			preferred = ""
+		}
+		preferredResolved := false
 
 		//Check all releases
 		for _, rel := range item.Releases {
+			if preferred != "" && rel.Version != preferred {
+				continue
+			}
 			//cwlog.DoLogCW("RELEASES: %v: Local: %v, Rel: %v", item.Name, item.installed.Version, rel.Version)
 
 			releaseNewer := false
-			if item.installed.Version == "" {
+			if preferred != "" || item.installed.Version == "" {
 				releaseNewer = true
 			} else {
 				var err error
@@ -174,7 +187,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 					return []downloadData{}, err
 				}
 				//If release is newer check deps
-				if releaseNewer {
+				if releaseNewer || preferred != "" {
 					if !releaseMatchesFactorioVersion(rel) {
 						continue
 					}
@@ -230,7 +243,7 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 								}
 							}
 							// Recursively check dep's deps
-							dl, err := resolveDeps([]modPortalFullData{depPortalInfo}, true, depth+1, append(parents, item.Name), progress)
+							dl, err := resolveDepsWithPrefs([]modPortalFullData{depPortalInfo}, true, depth+1, append(parents, item.Name), prefs, progress)
 							if err != nil {
 								cwlog.DoLogCW("resolveDeps: dep: resolveDeps: %v", err)
 								return []downloadData{}, err
@@ -260,16 +273,21 @@ func resolveDeps(modPortalData []modPortalFullData, wasDep bool, depth int, pare
 					if depsMet {
 						candidate = rel
 						candidateDeps = releaseDeps
+						preferredResolved = true
 					}
 				}
 			}
 		}
 
+		if preferred != "" && !preferredResolved {
+			return nil, fmt.Errorf("cannot resolve preferred version %s for %s with compatible dependencies and Factorio version", preferred, item.Name)
+		}
+		// A pinned release may stay installed while one of its dependencies changes.
+		for _, dep := range candidateDeps {
+			downloadMods = addDownload(dep, downloadMods)
+		}
 		//Add candidate to the download list
 		if candidate.Version != "0.0.0" && item.installed.Version != candidate.Version {
-			for _, dep := range candidateDeps {
-				downloadMods = addDownload(dep, downloadMods)
-			}
 			downloadMods = addDownload(downloadData{Title: item.Title, Name: item.Name, Filename: candidate.FileName,
 				OldFilename: item.installed.Filename, Data: candidate, Version: candidate.Version,
 				OldVersion: item.installed.Version, wasDep: wasDep,
@@ -357,7 +375,7 @@ func CheckModUpdates(dryRun bool, emitProgress bool, suppressChecking bool, supp
 		//cwlog.DoLogCW("Got portal info: %v", newInfo.Name)
 	}
 
-	downloadList, err := resolveDeps(modPortalData, false, 0, nil, &progress)
+	downloadList, err := resolveDepsWithPrefs(modPortalData, false, 0, nil, versionPrefs, &progress)
 
 	if err != nil {
 		cwlog.DoLogCW("NEWCheckModUpdates: resolveDeps: " + err.Error())
@@ -365,41 +383,11 @@ func CheckModUpdates(dryRun bool, emitProgress bool, suppressChecking bool, supp
 		return false, err
 	}
 
-	_, err = checkIncompatible(installedMods, downloadList)
+	err = validateDownloadPlan(installedMods, downloadList)
 	if err != nil {
 		cwlog.DoLogCW(err.Error())
 		fact.FailOperation(opToken, "Mod Updates", err.Error(), glob.COLOR_RED)
 		return false, err
-	}
-
-	// Apply version preferences
-	for _, inst := range installedMods {
-		pref := modedit.GetVersion(versionPrefs, inst.Name)
-		if pref == "" || strings.EqualFold(pref, "auto") {
-			continue
-		}
-		progress.emit(fmt.Sprintf("Prefs: %s", inst.Name))
-
-		// Remove automatic updates for this mod
-		downloadList = removeDownload(inst.Name, downloadList)
-
-		// Already at the preferred version
-		if pref == inst.Version {
-			continue
-		}
-
-		info, perr := DownloadModInfo(inst.Name)
-		if perr == nil {
-			for _, rel := range info.Releases {
-				if rel.Version == pref {
-					dl := downloadData{Name: inst.Name, Title: info.Title,
-						Filename: rel.FileName, OldFilename: inst.Filename,
-						Data: rel, Version: rel.Version, OldVersion: inst.Version}
-					downloadList = append(downloadList, dl)
-					break
-				}
-			}
-		}
 	}
 
 	//Dry run ends here
@@ -476,46 +464,54 @@ type incMod struct {
 	Deps          []string
 }
 
-func checkIncompatible(installed []modZipInfo, downloadList []downloadData) (bool, error) {
-
-	combined := []incMod{}
-	for _, imod := range installed {
-		if !imod.Enabled {
-			continue
+// validateDownloadPlan checks the actual versions that will coexist after the
+// update. Replacements supersede installed metadata, and merged dependency
+// downloads must still satisfy every enabled mod, including pinned releases.
+func validateDownloadPlan(installed []modZipInfo, downloads []downloadData) error {
+	final := map[string]incMod{}
+	for _, mod := range installed {
+		if mod.Enabled {
+			final[mod.Name] = incMod{Name: mod.Name, Version: mod.Version, Deps: mod.Dependencies}
 		}
-		combined = append(combined, incMod{Name: imod.Name, Version: imod.Version, Deps: imod.Dependencies})
 	}
-	for _, dmod := range downloadList {
-		combined = append(combined, incMod{Name: dmod.Name, Version: dmod.Version, Deps: dmod.Data.InfoJSON.Dependencies})
+	for _, mod := range downloads {
+		final[mod.Name] = incMod{Name: mod.Name, Version: mod.Version, Deps: mod.Data.InfoJSON.Dependencies}
 	}
-
-	for _, itemA := range combined {
-		for _, itemB := range combined {
-			if itemA.Name == itemB.Name {
+	names := make([]string, 0, len(final))
+	for name := range final {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		mod := final[name]
+		for _, raw := range mod.Deps {
+			dep := parseDep(raw)
+			version := final[dep.name].Version
+			if dep.name == "base" {
+				version = fact.FactorioVersion
+			}
+			present := version != "" && version != "0.0.0"
+			if !present && (dep.optional || dep.incompatible) {
 				continue
 			}
-			for _, depA := range itemA.Deps {
-				depInfo := parseDep(depA)
-				if depInfo.optional {
-					continue
+			matches := present
+			if present && dep.version != "" {
+				var err error
+				matches, err = checkVersion(dep.equality, dep.version, version)
+				if err != nil {
+					return fmt.Errorf("invalid dependency %q for %s: %w", raw, name, err)
 				}
-				if depInfo.incompatible {
-					if itemB.Name == depInfo.name {
-						good, _ := checkVersion(depInfo.equality, depInfo.version, itemB.Version)
-						if !good {
-							emsg := fmt.Sprintf("checkIncompatible: %v-%v not compatible with %v-%v (%v)! Auto-update disabled.", itemA.Name, itemA.Version, itemB.Name, itemB.Version, depInfo.name)
-							cwlog.DoLogCW(emsg)
-							cfg.Local.Options.ModUpdate = false
-							cfg.WriteLCfg()
-							return true, errors.New(emsg)
-						}
-					}
+			}
+			if dep.incompatible {
+				if matches {
+					return fmt.Errorf("planned mod %s-%s is incompatible with %s-%s", name, mod.Version, dep.name, version)
 				}
+			} else if !matches {
+				return fmt.Errorf("planned mod %s-%s requires %s; selected dependency version is %q", name, mod.Version, raw, version)
 			}
 		}
 	}
-
-	return false, nil
+	return nil
 }
 
 func parseDep(input string) depRequires {
@@ -583,17 +579,6 @@ func addDownload(input downloadData, list []downloadData) []downloadData {
 		cwlog.DoLogCW("Added download: %v-%v", input.Name, input.Version)
 	}
 	return append(list, input)
-}
-
-// removeDownload removes any pending downloads for the given mod name.
-func removeDownload(name string, list []downloadData) []downloadData {
-	out := []downloadData{}
-	for _, item := range list {
-		if item.Name != name {
-			out = append(out, item)
-		}
-	}
-	return out
 }
 
 // CheckModsForControl preserves manual-update restart scheduling for HTTP.

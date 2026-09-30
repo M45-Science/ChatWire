@@ -61,7 +61,7 @@ func handleChatWire(input *handleData) bool {
 
 	switch envelope.Kind {
 	case "response":
-		handleChatWireResponse(envelope)
+		handleChatWireResponse(input.generation, envelope)
 	case "event":
 		handleChatWireEvent(envelope.Event, envelope.Data)
 	default:
@@ -70,7 +70,7 @@ func handleChatWire(input *handleData) bool {
 	return true
 }
 
-func handleChatWireResponse(envelope chatWireEnvelope) {
+func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 	if !envelope.OK {
 		cwlog.DoLogCW("SoftMod request %s (%s) failed: %s", envelope.ID, envelope.Command, envelope.Error)
 		return
@@ -87,6 +87,7 @@ func handleChatWireResponse(envelope chatWireEnvelope) {
 		}
 		firstHello := glob.SoftModVersion == constants.Unknown
 		glob.SoftModVersion = data.Version
+		fact.NotifySoftModDetected(generation)
 		if firstHello {
 			cwlog.DoLogCW("Softmod detected: " + data.Version)
 			ConfigSoftMod()

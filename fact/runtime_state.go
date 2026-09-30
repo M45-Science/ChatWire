@@ -6,12 +6,13 @@ import (
 )
 
 var (
-	gameLineChState   atomic.Pointer[gameOutput]
-	gameOutputChanged = make(chan struct{}, 1)
-	updateState       atomic.Bool
-	modOperationState atomic.Bool
-	autoStartState    atomic.Bool
-	numPlayersState   atomic.Int64
+	gameLineChState       atomic.Pointer[gameOutput]
+	gameOutputChanged     = make(chan struct{}, 1)
+	updateState           atomic.Bool
+	modOperationState     atomic.Bool
+	autoStartState        atomic.Bool
+	numPlayersState       atomic.Int64
+	factorioUpdatePending atomic.Bool
 )
 
 type gameOutput struct {
@@ -65,6 +66,10 @@ func SetUpdateInProgress(v bool) {
 func UpdateInProgress() bool {
 	return updateState.Load()
 }
+
+// MarkFactorioUpdated arms SoftMod verification for the next successful launch,
+// including an automatic start after the updater releases its installation lock.
+func MarkFactorioUpdated() { factorioUpdatePending.Store(true) }
 
 func SetModOperationInProgress(v bool) {
 	DoModOperation = v

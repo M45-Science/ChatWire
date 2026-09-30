@@ -83,6 +83,7 @@ type lifecycleProgressEvent struct {
 }
 
 const lifecycleOptionalProgressDelay = 5 * time.Second
+const softModUpdateStartupGrace = 30 * time.Second
 
 type lifecycleHealthEvent struct {
 	generation uint64
@@ -92,34 +93,36 @@ type lifecycleHealthEvent struct {
 }
 
 type lifecycleManager struct {
-	mu                  sync.Mutex
-	hooks               LifecycleHooks
-	phase               LifecyclePhase
-	phaseSince          time.Time
-	booted              bool
-	currentPID          int
-	currentGeneration   uint64
-	currentAction       string
-	lastError           string
-	startedAt           time.Time
-	readyAt             time.Time
-	queue               []lifecycleRequest
-	signalCh            chan struct{}
-	readyCh             chan uint64
-	goodbyeCh           chan uint64
-	exitCh              chan processExitEvent
-	progressCh          chan lifecycleProgressEvent
-	healthCh            chan lifecycleHealthEvent
-	started             bool
-	shutdownRequested   bool
-	healthRestartQueued bool
-	operationToken      string
-	operationKind       ActionKind
-	operationSaveName   string
-	lastProgressAt      time.Time
-	lastProgressKind    string
-	stopCh              chan struct{}
-	doneCh              chan struct{}
+	mu                    sync.Mutex
+	hooks                 LifecycleHooks
+	phase                 LifecyclePhase
+	phaseSince            time.Time
+	booted                bool
+	currentPID            int
+	currentGeneration     uint64
+	currentAction         string
+	lastError             string
+	startedAt             time.Time
+	readyAt               time.Time
+	queue                 []lifecycleRequest
+	signalCh              chan struct{}
+	readyCh               chan uint64
+	goodbyeCh             chan uint64
+	exitCh                chan processExitEvent
+	progressCh            chan lifecycleProgressEvent
+	healthCh              chan lifecycleHealthEvent
+	started               bool
+	shutdownRequested     bool
+	healthRestartQueued   bool
+	softModDetected       bool
+	softModUpdateRecovery bool
+	operationToken        string
+	operationKind         ActionKind
+	operationSaveName     string
+	lastProgressAt        time.Time
+	lastProgressKind      string
+	stopCh                chan struct{}
+	doneCh                chan struct{}
 }
 
 var (
@@ -289,6 +292,24 @@ func NotifyFactorioReady(gen uint64) {
 	case lm.readyCh <- gen:
 	default:
 	}
+	lm.signal()
+}
+
+// NotifySoftModDetected associates the hello response with its process, so a
+// delayed response from an older boot cannot cancel recovery for a newer one.
+func NotifySoftModDetected(generation uint64) {
+	lifecycleMu.Lock()
+	lm := lifecycle
+	lifecycleMu.Unlock()
+	if lm == nil {
+		return
+	}
+	lm.mu.Lock()
+	if generation != 0 && generation == lm.currentGeneration {
+		lm.softModDetected = true
+		lm.softModUpdateRecovery = false
+	}
+	lm.mu.Unlock()
 	lm.signal()
 }
 
@@ -474,6 +495,7 @@ func (lm *lifecycleManager) run() {
 		lm.drainAsyncEvents()
 		lm.reconcileProcessHealth()
 		lm.checkStartupTimeout()
+		lm.checkSoftModAfterUpdate(time.Now())
 
 		if req, ok := lm.nextRequest(); ok {
 			lm.execute(req)
@@ -848,6 +870,8 @@ func (lm *lifecycleManager) executeStart(reason, saveName string) error {
 	lm.lastProgressKind = "spawn"
 	lm.readyAt = time.Time{}
 	lm.booted = false
+	lm.softModDetected = false
+	lm.softModUpdateRecovery = false
 	lm.currentPID = 0
 	lm.currentGeneration++
 	gen := lm.currentGeneration
@@ -870,6 +894,7 @@ func (lm *lifecycleManager) executeStart(reason, saveName string) error {
 	}
 
 	lm.mu.Lock()
+	lm.softModUpdateRecovery = factorioUpdatePending.Swap(false) && cfg.Local.Options.SoftModOptions.InjectSoftMod && !lm.softModDetected
 	if glob.FactorioCmd != nil && glob.FactorioCmd.Process != nil {
 		lm.currentPID = glob.FactorioCmd.Process.Pid
 	}
@@ -878,6 +903,33 @@ func (lm *lifecycleManager) executeStart(reason, saveName string) error {
 
 	cwlog.DoLogCW("lifecycle: process spawned generation=%d pid=%d spawn_elapsed=%v", gen, lm.GetState().PID, time.Since(started).Round(time.Millisecond))
 	return nil
+}
+
+func (lm *lifecycleManager) checkSoftModAfterUpdate(now time.Time) {
+	lm.mu.Lock()
+	if !lm.softModUpdateRecovery || lm.softModDetected || !cfg.Local.Options.SoftModOptions.InjectSoftMod ||
+		lm.phase != LifecycleRunning || !lm.booted || lm.readyAt.IsZero() || now.Sub(lm.readyAt) < softModUpdateStartupGrace ||
+		UpdateInProgress() || ModOperationInProgress() || lm.shutdownRequested {
+		lm.mu.Unlock()
+		return
+	}
+	for _, req := range lm.queue {
+		if req.Kind == ActionRestartFactorio || req.Kind == ActionRestartChatWire || req.Kind == ActionStop || req.Kind == ActionChangeMap || req.Kind == ActionMapReset {
+			lm.mu.Unlock()
+			return
+		}
+	}
+	// Consume the recovery before queuing its restart. That restart reinjects
+	// SoftMod through the normal launcher and cannot arm another recovery loop.
+	lm.softModUpdateRecovery = false
+	reason := "SoftMod missing after Factorio update; rebooting to restore it."
+	lm.queue = append(lm.queue, lifecycleRequest{
+		Request:    Request{Kind: ActionRestartFactorio, Reason: reason, RequestID: fmt.Sprintf("softmod-update-recovery-%d", lm.currentGeneration)},
+		acceptedAt: now,
+	})
+	lm.syncCompatibilityLocked()
+	lm.mu.Unlock()
+	cwlog.DoLogCW(reason)
 }
 
 func (lm *lifecycleManager) executeStop(reason string) error {
@@ -1212,6 +1264,12 @@ func (lm *lifecycleManager) finalizeStopped(generation uint64, exitErr error, re
 	lm.lastProgressAt = time.Time{}
 	lm.lastProgressKind = ""
 	lm.healthRestartQueued = false
+	if lm.softModUpdateRecovery {
+		// An interrupted boot has not finished verifying the update. Carry the
+		// check to the next launch; the recovery restart itself consumes it.
+		factorioUpdatePending.Store(true)
+		lm.softModUpdateRecovery = false
+	}
 	if !continuing {
 		lm.operationToken = ""
 		lm.operationKind = ""

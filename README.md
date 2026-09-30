@@ -126,6 +126,15 @@ ChatWire watches the player database and ban list for file changes. Config reloa
 
 For multi-instance environments, see `example-files/reload-config.sh`.
 
+### SoftMod Recovery After Factorio Updates
+
+When `Options.SoftModOptions.InjectSoftMod` is enabled, the first successful
+Factorio launch after an installation or update waits 30 seconds after startup
+readiness for the SoftMod handshake. If SoftMod is still missing, ChatWire queues
+one additional Factorio restart to reinject it through the normal launch path.
+This recovery does not repeat if SoftMod remains unavailable, and it defers to
+an already queued stop, restart, or map change.
+
 ### Firewall IP Bans
 
 The moderator slash command `/ip-ban` manages UFW deny rules for public IPv4 addresses.

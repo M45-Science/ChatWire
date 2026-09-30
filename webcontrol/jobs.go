@@ -35,18 +35,19 @@ type jobDisk struct {
 	Hash string `json:"hash"`
 }
 type Jobs struct {
-	mu    sync.Mutex
-	dir   string
-	items map[string]Job
-	keys  map[string]string
-	busy  string
+	mu      sync.Mutex
+	dir     string
+	items   map[string]Job
+	keys    map[string]string
+	busy    string
+	pending map[string]bool
 }
 
 func NewJobs(dir string) (*Jobs, error) {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return nil, err
 	}
-	j := &Jobs{dir: dir, items: map[string]Job{}, keys: map[string]string{}}
+	j := &Jobs{dir: dir, items: map[string]Job{}, keys: map[string]string{}, pending: map[string]bool{}}
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
@@ -139,6 +140,14 @@ func (j *Jobs) Start(server string, a Actor, action, key string, payload []byte,
 	if j.busy != "" {
 		return Job{}, 409, errors.New("another control operation is active")
 	}
+	// Repair failed outcome writes before accepting another operation. The
+	// original acceptance remains durable, so retries can never replay it.
+	for id := range j.pending {
+		if err := j.save(j.items[id]); err != nil {
+			return Job{}, 503, errors.New("operation storage unavailable")
+		}
+		delete(j.pending, id)
+	}
 	now := time.Now().UTC()
 	v := Job{ID: "job_" + Token(), ServerID: server, Actor: a, Action: action, State: "queued", Phase: "accepted", CreatedAt: now, UpdatedAt: now, Key: k, Hash: h}
 	if err := j.save(v); err != nil {
@@ -150,16 +159,16 @@ func (j *Jobs) Start(server string, a Actor, action, key string, payload []byte,
 	go func() {
 		defer func() {
 			if recover() != nil {
-				_ = j.Update(v.ID, "unknown", "interrupted", nil, "Operation interrupted; inspect instance logs before retrying.")
+				j.finish(v.ID, "unknown", "interrupted", nil, "Operation interrupted; inspect instance logs before retrying.")
 			}
 			j.mu.Lock()
-			current := j.items[v.ID]
-			if current.State == "succeeded" || current.State == "failed" || current.State == "unknown" || current.State == "interrupted" {
+			if j.busy == v.ID {
 				j.busy = ""
 			}
 			j.mu.Unlock()
 		}()
 		if err := j.Update(v.ID, "running", "executing", nil, ""); err != nil {
+			j.finish(v.ID, "failed", "storage_error", nil, "Operation was not executed because its start could not be persisted.")
 			return
 		}
 		result, err := run(v.ID)
@@ -172,9 +181,33 @@ func (j *Jobs) Start(server string, a Actor, action, key string, payload []byte,
 			}
 			msg = err.Error()
 		}
-		_ = j.Update(v.ID, state, "complete", result, msg)
+		j.finish(v.ID, state, "complete", result, msg)
 	}()
 	return v, 202, nil
+}
+
+// finish records that the worker has exited even if storage is temporarily
+// unavailable. A failed completion write has an unknown durable outcome; keep
+// its idempotency record and retry the checkpoint before admitting new work.
+func (j *Jobs) finish(id, state, phase string, result any, msg string) {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	v := j.items[id]
+	v.State, v.Phase, v.Result, v.Error = state, phase, result, msg
+	v.UpdatedAt = time.Now().UTC()
+	if err := j.save(v); err != nil {
+		if phase != "storage_error" {
+			v.State = "unknown"
+		}
+		v.Phase = "storage_error"
+		v.Result = nil
+		v.Error = "Unable to persist operation outcome; inspect instance logs before retrying."
+		if phase == "storage_error" {
+			v.Error = msg
+		}
+		j.pending[id] = true
+	}
+	j.items[id] = v
 }
 func (j *Jobs) Update(id, state, phase string, result any, msg string) error {
 	j.mu.Lock()
