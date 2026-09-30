@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestPrivateIdentityAndSharedPermission(t *testing.T) {
@@ -44,11 +45,22 @@ func TestKnownJobRetryDoesNotNeedFreshPreview(t *testing.T) {
 	p := Params{Command: "help"}
 	b, _ := json.Marshal(p)
 	release := make(chan struct{})
-	defer close(release)
 	job, _, e := rt.Jobs.Start("a", a, "rcon", "retry-key", b, func(string) (any, error) { <-release; return nil, nil })
 	if e != nil {
 		t.Fatal(e)
 	}
+	t.Cleanup(func() {
+		close(release)
+		deadline := time.Now().Add(5 * time.Second)
+		for time.Now().Before(deadline) {
+			completed, ok := rt.Jobs.Get(job.ID)
+			if ok && completed.State == "succeeded" {
+				return
+			}
+			time.Sleep(time.Millisecond)
+		}
+		t.Error("background job did not finish before temporary-directory cleanup")
+	})
 	r := httptest.NewRequest("POST", "/internal/v1/actions/rcon", strings.NewReader(`{"command":"help"}`))
 	r.Header.Set("X-ChatWire-Instance", "a")
 	actorBytes, _ := json.Marshal(a)

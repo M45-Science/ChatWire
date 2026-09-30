@@ -13,13 +13,16 @@ func TestDurableIdempotencyAndRecovery(t *testing.T) {
 		t.Fatal(e)
 	}
 	release := make(chan struct{})
-	done := make(chan struct{})
 	a := Actor{ID: "123"}
-	run := func(string) (any, error) { <-release; close(done); return "done", nil }
+	run := func(string) (any, error) { <-release; return "done", nil }
 	first, status, e := jobs.Start("a", a, "restart", "key", []byte(`{}`), run)
 	if e != nil || status != 202 {
 		t.Fatalf("%d %v", status, e)
 	}
+	t.Cleanup(func() {
+		close(release)
+		waitJob(t, jobs, first.ID, "succeeded")
+	})
 	again, status, e := jobs.Start("a", a, "restart", "key", []byte(`{}`), run)
 	if e != nil || status != 200 || again.ID != first.ID {
 		t.Fatal("duplicate not reconciled")
@@ -38,8 +41,6 @@ func TestDurableIdempotencyAndRecovery(t *testing.T) {
 	if _, found, e := reopened.Lookup("a", a, "restart", "key", []byte(`{}`)); !found || e != nil {
 		t.Fatal("durable idempotency lost")
 	}
-	close(release)
-	<-done
 }
 func TestJobFailureAndPanicReleaseAdmission(t *testing.T) {
 	j, e := NewJobs(t.TempDir())
