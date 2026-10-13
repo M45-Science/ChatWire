@@ -206,3 +206,15 @@ func TestResolveDepsSkipsWrongFactorioVersionRelease(t *testing.T) {
 		t.Fatalf("expected no downloads for incompatible factorio_version, got %+v", downloads)
 	}
 }
+
+func TestResolveDepsReportsUninstallableRequestedMod(t *testing.T) {
+	oldVersion := fact.FactorioVersion
+	t.Cleanup(func() { fact.FactorioVersion = oldVersion })
+	fact.FactorioVersion = "2.0.76"
+	for _, installedVersion := range []string{"", "0.0.0"} {
+		_, err := resolveDeps([]modPortalFullData{{Name: "unavailable", installed: modZipInfo{Version: installedVersion}}}, false, 0, nil, nil)
+		if err == nil {
+			t.Fatal("expected explicit error for requested mod without a compatible release")
+		}
+	}
+}

@@ -143,6 +143,12 @@ func LaunchFactorio(generation uint64, saveName string) error {
 		return fmt.Errorf("unable to write factorio config")
 	}
 
+	// Factorio reads its admin list during startup, before the ready message.
+	if fact.WriteAdminlist() < 0 {
+		return fmt.Errorf("unable to write Factorio admin list")
+	}
+	tempargs = append(tempargs, "--server-adminlist", cfg.GetFactorioFolder()+constants.AdminlistName)
+
 	/* Write or delete whitelist */
 	if !cfg.Local.Options.CustomWhitelist {
 		count := fact.WriteWhitelist()

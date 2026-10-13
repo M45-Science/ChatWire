@@ -233,3 +233,27 @@ func TestWhitelistPlayerRemovesIneligiblePlayersAndAdmins(t *testing.T) {
 		t.Fatalf("whitelist commands = %q, want %q", got, want)
 	}
 }
+
+func TestOfflineModeratorAdminAccessSyncsOnPrivateServer(t *testing.T) {
+	isolatePlayerChanges(t)
+	pipe := installPlayerLevelCapturePipe(t)
+	oldLocal, oldBooted, oldRunning, oldPlayers := cfg.Local, FactorioBooted, FactIsRunning, glob.PlayerList
+	t.Cleanup(func() {
+		cfg.Local, FactorioBooted, FactIsRunning, glob.PlayerList = oldLocal, oldBooted, oldRunning, oldPlayers
+	})
+	FactorioBooted, FactIsRunning = true, true
+	cfg.Local.Options.CustomWhitelist = true
+	glob.PlayerList = map[string]*glob.PlayerData{"alice": {Name: "alice", Level: 3}}
+	PlayerLevelSet("alice", 255, false)
+	PlayerLevelSet("alice", 255, false)
+	PlayerLevelSet("alice", 3, false)
+	PlayerSetID("newmod", "123", 255)
+	glob.PlayerListLock.Lock()
+	addPlayer("remote", 255, "", 0, 0, "", 0, 0, false)
+	addPlayer("remote", -1, "", 0, 0, "", 0, 0, false)
+	glob.PlayerListLock.Unlock()
+	want := "/promote alice\n/demote alice\n/promote newmod\n/promote remote\n/demote remote\n"
+	if got := pipe.String(); got != want {
+		t.Fatalf("commands = %q, want %q", got, want)
+	}
+}

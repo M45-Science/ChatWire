@@ -166,6 +166,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].ID = id
+		syncPlayerAdminAccess(pname, glob.PlayerList[pname].Level, level)
 		glob.PlayerList[pname].Level = level
 		glob.PlayerList[pname].LastSeen = compactNow()
 
@@ -185,6 +186,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 	glob.PlayerList[pname] = &newplayer
 
 	SetPlayerListDirty(pname)
+	syncPlayerAdminAccess(pname, 0, level)
 	return false
 }
 
@@ -230,6 +232,7 @@ func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bo
 	if glob.PlayerList[pname] != nil {
 		if glob.PlayerList[pname].Level != level {
 			glob.PlayerList[pname].LastSeen = compactNow()
+			syncPlayerAdminAccess(pname, glob.PlayerList[pname].Level, level)
 			glob.PlayerList[pname].Level = level
 			SetPlayerListDirty(pname)
 			WhitelistPlayer(pname, level)
@@ -260,6 +263,7 @@ func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bo
 	glob.PlayerList[pname] = &newplayer
 
 	SetPlayerListDirty(pname)
+	syncPlayerAdminAccess(pname, 0, level)
 	WhitelistPlayer(pname, level)
 
 	return false
@@ -288,6 +292,7 @@ func addPlayer(iname string, level int, id string, creation int64, seen int64, r
 		}
 
 		if level != glob.PlayerList[pname].Level {
+			syncPlayerAdminAccess(pname, glob.PlayerList[pname].Level, level)
 			glob.PlayerList[pname].Level = level
 			WhitelistPlayer(pname, level)
 		}
@@ -330,6 +335,7 @@ func addPlayer(iname string, level int, id string, creation int64, seen int64, r
 		WriteBan(pname, reason)
 		didBan = true
 	}
+	syncPlayerAdminAccess(pname, 0, level)
 	WhitelistPlayer(pname, level)
 
 	return didBan

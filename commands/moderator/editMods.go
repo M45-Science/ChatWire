@@ -9,7 +9,9 @@ import (
 	"ChatWire/glob"
 	"ChatWire/modedit"
 	"ChatWire/modupdate"
-	"ChatWire/util"
+	"errors"
+	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -18,6 +20,13 @@ import (
 )
 
 func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
+	// Acknowledge before waiting for another updater or contacting the mod portal.
+	for _, option := range i.ApplicationCommandData().Options {
+		if strings.EqualFold(option.Name, "add-mod") {
+			disc.InteractionEphemeralResponseColor(i, "Edit-Mods", "Checking requested mods and downloading available releases…", glob.COLOR_CYAN)
+			break
+		}
+	}
 	glob.UpdatersLock.Lock()
 	defer glob.UpdatersLock.Unlock()
 
@@ -62,7 +71,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 			msg = toggleMod(i, option.StringValue(), false)
 			tmsg = tmsg + msg + "\n"
 		case "add-mod":
-			tmsg = tmsg + addMod(i, option.StringValue())
+			tmsg = tmsg + addMod(i, option.StringValue()) + "\n"
 		case "set-version-pref":
 			tmsg = tmsg + setVersion(option.StringValue())
 		case "clear-all-mods":
@@ -161,85 +170,144 @@ func clearAllMods() string {
 }
 
 func addMod(i *discordgo.InteractionCreate, input string) string {
+	return addMods(input, i.Member.User.Username, parseModName, func() (bool, error) {
+		return modupdate.CheckModUpdates(false, false, false, false)
+	})
+}
 
-	input = strings.ReplaceAll(input, " ", "")
-	mods := strings.Split(input, ",")
-
-	buf := ""
-	modList, _ := modupdate.GetModList()
-
-	for _, mod := range mods {
-		modName, success := parseModName(mod)
-		if !success {
-			return modName + ": mod not found."
+// A list entry is a request to install a mod, not proof that it downloaded.
+// Keep failed requests retryable and process the rest of a comma-separated batch.
+func addMods(input, actor string, resolve func(string) (string, bool), update func() (bool, error)) string {
+	modList, err := modupdate.GetModList()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "Unable to read mod list: " + err.Error()
+	}
+	files, err := modupdate.GetModFiles()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "Unable to read mod files: " + err.Error()
+	}
+	installed := map[string]bool{}
+	for _, file := range files {
+		installed[strings.ToLower(file.Name)] = true
+	}
+	var responses, requested, added []string
+	seen := map[string]bool{}
+	for _, inputName := range strings.Split(input, ",") {
+		inputName = strings.TrimSpace(inputName)
+		if inputName == "" {
+			continue
 		}
+		name, ok := resolve(inputName)
+		if !ok {
+			responses = append(responses, name)
+			continue
+		}
+		key := strings.ToLower(name)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		listed := false
 		for _, item := range modList.Mods {
-			if item.Name == modName {
-				return "The mod " + modName + " is already installed!"
+			if strings.EqualFold(item.Name, name) {
+				listed = true
+				if !item.Enabled {
+					responses = append(responses, name+": already listed but disabled; use enable-mod first.")
+					name = ""
+				}
+				break
 			}
 		}
-		disc.InteractionEphemeralResponseColor(i, "Status", "Adding mods: "+modName, glob.COLOR_CYAN)
-
-		modupdate.AddModHistory(modupdate.ModHistoryItem{
-			Name: mod, Notes: "Added by " + i.Member.User.Username, Date: time.Now()})
-
-		modList.Mods = append(modList.Mods, modupdate.ModData{Name: modName, Enabled: true})
-		modupdate.WriteModsList(modList)
-
-		if buf != "" {
-			buf = buf + ", "
+		if name == "" {
+			continue
 		}
-		buf = buf + modName
-	}
-
-	if buf != "" {
-		if _, err := modupdate.CheckModUpdates(false, false, false, false); err != nil {
-			cwlog.DoLogCW("CheckModUpdates failed: %v", err)
+		if installed[key] || modupdate.IsBaseMod(name) {
+			responses = append(responses, name+": already installed.")
+			continue
 		}
-		return "Adding mods: " + buf
+		requested = append(requested, name)
+		if !listed {
+			modList.Mods = append(modList.Mods, modupdate.ModData{Name: name, Enabled: true})
+			added = append(added, name)
+		}
 	}
+	if len(requested) > 0 {
+		if len(added) > 0 && !modupdate.WriteModsList(modList) {
+			responses = append(responses, "Unable to save mod list; no downloads were attempted.")
+			return strings.Join(responses, "\n")
+		}
+		for _, name := range added {
+			modupdate.AddModHistory(modupdate.ModHistoryItem{
+				Name: name, Notes: "Added by " + actor, Date: time.Now(),
+			})
+		}
+		_, updateErr := update()
+		if updateErr != nil {
+			responses = append(responses, "Mod installation/update failed: "+updateErr.Error())
+		}
+		files, err = modupdate.GetModFiles()
+		if err != nil {
+			responses = append(responses, "Unable to verify downloaded mods: "+err.Error())
+		} else {
+			for _, file := range files {
+				installed[strings.ToLower(file.Name)] = true
+			}
+			for _, name := range requested {
+				if installed[strings.ToLower(name)] {
+					if updateErr != nil {
+						responses = append(responses, name+": downloaded, but the batch failed; resolve the reported errors before restarting.")
+					} else {
+						responses = append(responses, name+": installed; applies on the next Factorio start.")
+					}
+				} else {
+					responses = append(responses, name+": not installed. Still listed for retry; check release compatibility and the reported errors, then run add-mod again.")
+				}
+			}
+		}
+	}
+	if len(responses) == 0 {
+		return "You must specify mods to add."
+	}
+	return strings.Join(responses, "\n")
+}
 
-	return "You must specify mods to add."
+func modInputName(input string) (string, error) {
+	name := strings.TrimSpace(input)
+	if strings.Contains(name, "://") {
+		u, err := url.Parse(name)
+		if err != nil {
+			return "", fmt.Errorf("invalid mod URL: %w", err)
+		}
+		if (u.Scheme != "https" && u.Scheme != "http") || !strings.EqualFold(u.Host, "mods.factorio.com") {
+			return "", fmt.Errorf("expected a mods.factorio.com URL")
+		}
+		// URL.Path is decoded, so names such as Orphan%20Finder are passed to
+		// DownloadModInfo as Orphan Finder and escaped exactly once there.
+		parts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
+		if len(parts) < 2 || (parts[0] != "mod" && parts[0] != "download") {
+			return "", fmt.Errorf("expected a mod or download URL")
+		}
+		name = parts[1]
+	}
+	if strings.TrimSpace(name) == "" {
+		return "", fmt.Errorf("missing mod name")
+	}
+	return name, nil
 }
 
 func parseModName(input string) (string, bool) {
-	name := strings.TrimSpace(input)
-
-	if util.ContainsIgnoreCase(name, "factorio.com") {
-		temp := util.TrimPrefixIgnoreCase(name, "https")
-		temp = util.TrimPrefixIgnoreCase(temp, "http")
-		temp = util.TrimPrefixIgnoreCase(temp, "://mods.factorio.com/mod/")
-		temp = util.TrimPrefixIgnoreCase(temp, "://mods.factorio.com/download/")
-		var parts []string
-		if strings.Contains(temp, "?") {
-			parts = strings.Split(temp, "?")
-		} else {
-			parts = strings.Split(temp, "/")
-		}
-		modName := parts[0]
-
-		modData, err := modupdate.DownloadModInfo(modName)
-		if err != nil {
-			if strings.HasPrefix(err.Error(), "Mod info unmarshal failed") {
-				return "Mod not found: " + modName, false
-			} else {
-				return "Error looking up mod: " + modName, false
-			}
-		}
-
-		return modData.Name, true
-
-	} else {
-		modData, err := modupdate.DownloadModInfo(name)
-		if err != nil {
-			if strings.HasPrefix(err.Error(), "Mod info unmarshal failed") {
-				return "Mod not found: " + name, false
-			} else {
-				return "Error looking up mod: " + name, false
-			}
-		}
-		return modData.Name, true
+	name, err := modInputName(input)
+	if err != nil {
+		return input + ": " + err.Error(), false
 	}
+	if modupdate.IsBaseMod(name) {
+		return name, true
+	}
+	modData, err := modupdate.DownloadModInfo(name)
+	if err != nil {
+		return "Error looking up mod " + name + ": " + err.Error(), false
+	}
+	return modData.Name, true
 }
 
 func toggleMod(i *discordgo.InteractionCreate, name string, value bool) string {

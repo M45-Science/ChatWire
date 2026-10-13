@@ -286,8 +286,7 @@ func GetModFiles() ([]modZipInfo, error) {
 	//Read mods directory
 	modList, err := os.ReadDir(cfg.GetModsFolder())
 	if err != nil {
-		emsg := "checkModUpdates: Unable to read mods dir: " + err.Error()
-		return nil, errors.New(emsg)
+		return nil, fmt.Errorf("unable to read mods dir: %w", err)
 	}
 
 	//Find all mods, read info.json inside each
@@ -565,6 +564,9 @@ func DownloadModInfo(name string) (modPortalFullData, error) {
 		emsg := "Mod info unmarshal failed: " + err.Error()
 		cwlog.DoLogCW(emsg)
 		return modPortalFullData{}, errors.New(emsg)
+	}
+	if strings.TrimSpace(newInfo.Name) == "" {
+		return modPortalFullData{}, fmt.Errorf("mod not found or invalid portal response: %s", name)
 	}
 	modInfoCache[name] = newInfo
 	return newInfo, nil

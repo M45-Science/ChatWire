@@ -33,7 +33,6 @@ func handleFactReady(input *handleData) bool {
 	 ******************/
 	if isFactorioReadyLine(input.noTimecode) {
 		fact.NotifyFactorioProgress(input.generation, "rcon-ready", "")
-		fact.WriteAdminlist()
 
 		// A Factorio boot implies no players online yet; clear any stale count so the
 		// Discord channel name can be refreshed immediately.

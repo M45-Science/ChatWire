@@ -282,6 +282,19 @@ func WhitelistPlayer(pname string, level int) {
 	}
 }
 
+// Sync admin access even for offline players: they must be able to pass the
+// server's access checks before joining and receiving their SoftMod level.
+func syncPlayerAdminAccess(name string, previousLevel, level int) {
+	if !FactorioBooted || !FactIsRunning || (previousLevel >= 254) == (level >= 254) {
+		return
+	}
+	if level >= 254 {
+		WriteFact("/promote %s", name)
+	} else {
+		WriteFact("/demote %s", name)
+	}
+}
+
 /* Write a adminlist for a server, before it boots */
 func WriteAdminlist() int {
 	wpath := cfg.GetFactorioFolder() +

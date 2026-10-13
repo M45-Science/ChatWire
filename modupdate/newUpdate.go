@@ -282,6 +282,9 @@ func resolveDepsWithPrefs(modPortalData []modPortalFullData, wasDep bool, depth 
 		if preferred != "" && !preferredResolved {
 			return nil, fmt.Errorf("cannot resolve preferred version %s for %s with compatible dependencies and Factorio version", preferred, item.Name)
 		}
+		if !wasDep && candidate.Version == "0.0.0" {
+			return nil, fmt.Errorf("cannot install %s: no release has compatible dependencies and Factorio version", item.Name)
+		}
 		// A pinned release may stay installed while one of its dependencies changes.
 		for _, dep := range candidateDeps {
 			downloadMods = addDownload(dep, downloadMods)
