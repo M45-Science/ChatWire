@@ -45,7 +45,14 @@ func gameModListText() (string, error) {
 		return "", err
 	}
 	mergedMods := modupdate.MergeModLists(append(modFiles, builtins...), modList)
-	sort.Slice(mergedMods, func(i, j int) bool { return strings.ToLower(mergedMods[i].Name) < strings.ToLower(mergedMods[j].Name) })
+	sort.Slice(mergedMods, func(i, j int) bool {
+		builtinI := modupdate.IsBaseMod(mergedMods[i].Name)
+		builtinJ := modupdate.IsBaseMod(mergedMods[j].Name)
+		if builtinI != builtinJ {
+			return builtinI
+		}
+		return strings.ToLower(mergedMods[i].Name) < strings.ToLower(mergedMods[j].Name)
+	})
 	configured := map[string]bool{}
 	for _, mod := range modList.Mods {
 		configured[mod.Name] = true
