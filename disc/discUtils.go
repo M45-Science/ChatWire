@@ -532,8 +532,13 @@ func InteractionEphemeralFileResponse(i *discordgo.InteractionCreate, title, mes
 		}
 		err := DS.InteractionRespond(i.Interaction, resp)
 		if err != nil {
+			// Multipart encoding consumes the reader even when Discord rejects an
+			// already-acknowledged interaction. The edit needs a fresh reader.
+			file = &discordgo.File{Name: filename, Reader: bytes.NewReader(data)}
 			newResp := &discordgo.WebhookEdit{Embeds: &embed, Files: []*discordgo.File{file}}
-			DS.InteractionResponseEdit(i.Interaction, newResp)
+			if _, editErr := DS.InteractionResponseEdit(i.Interaction, newResp); editErr != nil {
+				cwlog.DoLogCW("EphemeralFileResponse edit failed: %v", editErr)
+			}
 		}
 		return nil
 	}

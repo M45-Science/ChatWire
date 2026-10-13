@@ -89,7 +89,7 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 
 	if len(tmsg) > constants.MaxDiscordMsgLen {
-		disc.InteractionEphemeralFileResponse(i, "Edit-Mods", "See attached history.", "mod-history.txt", []byte(tmsg))
+		disc.InteractionEphemeralFileResponse(i, "Edit-Mods", "See attached results.", "edit-mods-results.txt", []byte(tmsg))
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
 	}
