@@ -3,6 +3,7 @@ package fact
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -263,6 +264,10 @@ func clearOnlinePlayers() {
 func WhitelistPlayer(pname string, level int) {
 	if FactorioBooted && FactIsRunning {
 		if cfg.Local.Options.CustomWhitelist {
+			// Preserve manual invitations while restoring automatic staff access.
+			if level >= 254 {
+				WriteFact("/whitelist add %s", pname)
+			}
 			return
 		}
 		requiredLevel := 0
@@ -274,7 +279,7 @@ func WhitelistPlayer(pname string, level int) {
 		if requiredLevel == 0 {
 			return
 		}
-		if level >= requiredLevel && level < 254 {
+		if level >= requiredLevel {
 			WriteFact("/whitelist add %s", pname)
 		} else {
 			WriteFact("/whitelist remove %s", pname)
@@ -324,6 +329,10 @@ func WriteWhitelist() int {
 	wpath := cfg.GetFactorioFolder() +
 		constants.WhitelistName
 
+	if cfg.Local.Options.CustomWhitelist {
+		return writeCustomWhitelist(wpath)
+	}
+
 	if cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly {
 		glob.PlayerListLock.RLock()
 		localPlayerList := make([]glob.PlayerData, 0, len(glob.PlayerList))
@@ -332,11 +341,11 @@ func WriteWhitelist() int {
 				continue
 			}
 			if cfg.Local.Options.RegularsOnly {
-				if player.Level > 1 && player.Level < 254 {
+				if player.Level > 1 {
 					localPlayerList = append(localPlayerList, *player)
 				}
 			} else {
-				if player.Level > 0 && player.Level < 254 {
+				if player.Level > 0 {
 					localPlayerList = append(localPlayerList, *player)
 				}
 			}
@@ -350,10 +359,10 @@ func WriteWhitelist() int {
 
 		names := make([]string, 0, len(localPlayerList))
 
-		//Add veterans
+		// Keep moderators/admins and veterans ahead of the capped regular list.
 		for x := len(localPlayerList) - 1; x >= 0; x-- {
 			player := localPlayerList[x]
-			if player.Level == 3 {
+			if player.Level >= 3 {
 				names = append(names, player.Name)
 			}
 		}
@@ -379,6 +388,43 @@ func WriteWhitelist() int {
 	}
 
 	return 0
+}
+
+// Private servers retain their invitations and also admit registered staff.
+// Read failures must not overwrite an existing invite list.
+func writeCustomWhitelist(path string) int {
+	names := make([]string, 0)
+	data, err := os.ReadFile(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		cwlog.DoLogCW("WriteWhitelist: read custom whitelist: %v", err)
+		return -1
+	}
+	if err == nil {
+		if err := json.Unmarshal(data, &names); err != nil {
+			cwlog.DoLogCW("WriteWhitelist: decode custom whitelist: %v", err)
+			return -1
+		}
+	}
+	seen := make(map[string]bool, len(names))
+	for _, name := range names {
+		seen[strings.ToLower(name)] = true
+	}
+	var admins []string
+	glob.PlayerListLock.RLock()
+	for _, player := range glob.PlayerList {
+		if player != nil && player.Level >= 254 && !seen[strings.ToLower(player.Name)] {
+			admins = append(admins, player.Name)
+			seen[strings.ToLower(player.Name)] = true
+		}
+	}
+	glob.PlayerListLock.RUnlock()
+	sort.Strings(admins)
+	names = append(names, admins...)
+	if err := util.WriteJSONAtomic(path, names, 0644); err != nil {
+		cwlog.DoLogCW("WriteWhitelist: write custom whitelist: %v", err)
+		return -1
+	}
+	return len(names)
 }
 
 /* Quit Factorio */

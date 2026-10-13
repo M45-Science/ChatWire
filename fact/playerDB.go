@@ -167,6 +167,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 	if glob.PlayerList[pname] != nil {
 		glob.PlayerList[pname].ID = id
 		syncPlayerAdminAccess(pname, glob.PlayerList[pname].Level, level)
+		WhitelistPlayer(pname, level)
 		glob.PlayerList[pname].Level = level
 		glob.PlayerList[pname].LastSeen = compactNow()
 
@@ -187,6 +188,7 @@ func PlayerSetID(pname string, id string, level int) bool {
 
 	SetPlayerListDirty(pname)
 	syncPlayerAdminAccess(pname, 0, level)
+	WhitelistPlayer(pname, level)
 	return false
 }
 

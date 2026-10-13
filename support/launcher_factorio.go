@@ -150,11 +150,12 @@ func LaunchFactorio(generation uint64, saveName string) error {
 	tempargs = append(tempargs, "--server-adminlist", cfg.GetFactorioFolder()+constants.AdminlistName)
 
 	/* Write or delete whitelist */
-	if !cfg.Local.Options.CustomWhitelist {
-		count := fact.WriteWhitelist()
-		if count > 0 && (cfg.Local.Options.MembersOnly || cfg.Local.Options.RegularsOnly) {
-			cwlog.DoLogCW("Whitelist of %v players written.", count)
-		}
+	count := fact.WriteWhitelist()
+	if count < 0 {
+		return fmt.Errorf("unable to write Factorio whitelist")
+	}
+	if count > 0 {
+		cwlog.DoLogCW("Whitelist of %v players written.", count)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
