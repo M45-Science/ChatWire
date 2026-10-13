@@ -1,12 +1,16 @@
 package user
 
 import (
+	"errors"
+	"os"
+	"sort"
+	"strings"
+
 	"ChatWire/constants"
 	"ChatWire/disc"
 	"ChatWire/glob"
 	"ChatWire/modedit"
 	"ChatWire/modupdate"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -15,84 +19,73 @@ func ListGameMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if disc.DS == nil {
 		return
 	}
-
-	modFiles, err := modupdate.GetModFiles()
+	buf, err := gameModListText()
 	if err != nil {
-		disc.InteractionEphemeralResponse(i, "List-Mods: Error", "Unable to read mod files.")
+		disc.InteractionEphemeralResponse(i, "List-Mods: Error", err.Error())
 		return
 	}
-	modList, _ := modupdate.GetModList()
-	mergedMods := modupdate.MergeModLists(modFiles, modList)
+	if len(buf) > constants.MaxDiscordMsgLen {
+		disc.InteractionEphemeralFileResponse(i, "List-Mods", "See attached mod list.", "mod-list.txt", []byte(buf))
+	} else {
+		disc.InteractionEphemeralResponse(i, "List-Mods", buf)
+	}
+}
 
+func gameModListText() (string, error) {
+	modFiles, err := modupdate.GetModFiles()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", err
+	}
+	builtins, err := modupdate.GetBuiltinModFiles()
+	if err != nil {
+		return "", err
+	}
+	modList, err := modupdate.GetModList()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", err
+	}
+	mergedMods := modupdate.MergeModLists(append(modFiles, builtins...), modList)
+	sort.Slice(mergedMods, func(i, j int) bool { return strings.ToLower(mergedMods[i].Name) < strings.ToLower(mergedMods[j].Name) })
+	configured := map[string]bool{}
+	for _, mod := range modList.Mods {
+		configured[mod.Name] = true
+	}
 	prefs := modedit.ReadPrefs()
 	prefMap := map[string]string{}
 	for _, p := range prefs.Mods {
 		prefMap[strings.ToLower(p.Name)] = p.Version
 	}
 
-	ebuf := ""
+	var enabled, disabled, unconfigured []string
 	for _, item := range mergedMods {
-		if item.Name == "base" || !item.Enabled {
-			continue
+		line := item.Name
+		if item.Version != "" && item.Version != "0.0.0" && item.Version != constants.Unknown {
+			line += " (" + item.Version + ")"
 		}
-		if ebuf != "" {
-			ebuf += "\n"
-		}
-		line := ""
 		if modupdate.IsBaseMod(item.Name) {
-			line = item.Name + " (base mod)"
-		} else if item.Version != "" {
-			ebuf = ebuf + item.Name + " (" + item.Version + ")"
-		} else {
-			line = item.Name
-		}
-		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" && !strings.EqualFold(v, "auto") {
-			line += " **(FORCE " + v + ")**"
-		}
-		ebuf += line
-	}
-
-	dbuf := ""
-	for _, item := range mergedMods {
-		if item.Name == "base" || item.Enabled {
-			continue
-		}
-		if dbuf != "" {
-			dbuf += "\n"
-		}
-		line := ""
-		if modupdate.IsBaseMod(item.Name) {
-			line = item.Name + " (base mod)"
-		} else if item.Version != constants.Unknown {
-			line = item.Name + " (" + item.Version + ")"
-		} else {
-			line = item.Name
-		}
-		if v, ok := prefMap[strings.ToLower(item.Name)]; ok && v != "" && !strings.EqualFold(v, "auto") {
+			line += " (built-in)"
+			if !configured[item.Name] {
+				unconfigured = append(unconfigured, line)
+				continue
+			}
+		} else if v := prefMap[strings.ToLower(item.Name)]; v != "" && !strings.EqualFold(v, "auto") {
 			line += " (force " + v + ")"
 		}
-		dbuf += line
-	}
-
-	if ebuf == "" {
-		ebuf = "Enabled: None"
-	} else {
-		ebuf = "Enabled:\n" + ebuf
-	}
-
-	if dbuf == "" {
-		dbuf = "\n\nDisabled: None"
-	} else {
-		dbuf = "Disabled:\n" + dbuf
-		if ebuf != "" {
-			dbuf = "\n\n" + dbuf
+		if item.Enabled {
+			enabled = append(enabled, line)
+		} else {
+			disabled = append(disabled, line)
 		}
 	}
-
-	buf := ebuf + dbuf
-	if buf == "" {
-		buf = "No mods installed."
+	section := func(name string, lines []string) string {
+		if len(lines) == 0 {
+			return name + ": None"
+		}
+		return name + ":\n" + strings.Join(lines, "\n")
 	}
-
-	disc.InteractionEphemeralResponse(i, "List-Mods", buf)
+	sections := []string{section("Enabled", enabled), section("Disabled", disabled)}
+	if len(unconfigured) > 0 {
+		sections = append(sections, section("Built-in mods: not configured", unconfigured))
+	}
+	return strings.Join(sections, "\n\n"), nil
 }

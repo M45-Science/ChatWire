@@ -40,20 +40,6 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	// Reply early for simple enable/disable requests, then let the normal toggle
-	// path complete without trying to send a second interaction response.
-	if len(optionsList) == 1 {
-		option := optionsList[0]
-		switch strings.ToLower(option.Name) {
-		case "enable-mod":
-			handleToggleImmediate(i, option.StringValue(), true)
-			return
-		case "disable-mod":
-			handleToggleImmediate(i, option.StringValue(), false)
-			return
-		}
-	}
-
 	for _, option := range optionsList {
 		oName := strings.ToLower(option.Name)
 
@@ -93,62 +79,6 @@ func EditMods(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	} else {
 		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", tmsg, glob.COLOR_CYAN)
 	}
-}
-
-func handleToggleImmediate(i *discordgo.InteractionCreate, name string, value bool) {
-	msg, ok := previewToggleResponse(name, value)
-	if !ok {
-		disc.InteractionEphemeralResponseColor(i, "Edit-Mods", msg, glob.COLOR_RED)
-		return
-	}
-
-	disc.InteractionEphemeralResponseColor(i, "Edit-Mods", msg, glob.COLOR_CYAN)
-	result := toggleMod(i, name, value)
-	if result == "" {
-		return
-	}
-	cwlog.DoLogCW("EditMods %s: %s", enableStr(value, false), result)
-}
-
-func previewToggleResponse(name string, value bool) (string, bool) {
-	if fact.FactorioBooted || fact.FactIsRunning {
-		return "Factorio is currently running. You must stop Factorio first.", false
-	}
-	if name == "" {
-		return "You must specify a mod(s) to " + enableStr(value, false) + ".", false
-	}
-
-	modList, _ := modupdate.GetModList()
-	input := strings.ReplaceAll(name, " ", "")
-	parts := strings.Split(input, ",")
-
-	responses := []string{}
-	for _, part := range parts {
-		if part == "" {
-			continue
-		}
-
-		found := false
-		for _, mod := range modList.Mods {
-			if mod.Name == "base" {
-				continue
-			}
-			if strings.EqualFold(mod.Name, part) {
-				responses = append(responses, "The mod '"+mod.Name+"' is now "+enableStr(value, true)+".")
-				found = true
-				break
-			}
-		}
-		if !found {
-			return "There is no mod by the name: " + part, false
-		}
-	}
-
-	if len(responses) == 0 {
-		return "You must specify a mod(s) to " + enableStr(value, false) + ".", false
-	}
-
-	return strings.Join(responses, "\n"), true
 }
 
 func clearAllMods() string {
@@ -312,64 +242,90 @@ func parseModName(input string) (string, bool) {
 
 func toggleMod(i *discordgo.InteractionCreate, name string, value bool) string {
 	if fact.FactorioBooted || fact.FactIsRunning {
-		emsg := "Factorio is currently running. You must stop Factorio first."
-		return emsg
+		return "Factorio is currently running. You must stop Factorio first."
 	}
-	if name == "" {
-		emsg := "You must specify a mod(s) to " + enableStr(value, false) + "."
-		return emsg
-	}
-
-	modFiles, err := modupdate.GetModFiles()
-	if err != nil {
-		return "Unable to read mod files."
-	}
-	modList, _ := modupdate.GetModList()
-	mergedMods := modupdate.MergeModLists(modFiles, modList)
-
-	//Remove spaces
-	input := strings.ReplaceAll(name, " ", "")
-	parts := strings.Split(input, ",")
-
-	emsg := ""
-	dirty := false
+	parts := strings.Split(name, ",")
+	requested := map[string]bool{}
 	for _, part := range parts {
+		if part = strings.TrimSpace(part); part != "" {
+			requested[strings.ToLower(part)] = true
+		}
+	}
+	if len(requested) == 0 {
+		return "You must specify a mod(s) to " + enableStr(value, false) + "."
+	}
+	modFiles, err := modupdate.GetModFiles()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "Unable to read mod files: " + err.Error()
+	}
+	modList, err := modupdate.GetModList()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "Unable to read mod list: " + err.Error()
+	}
+	builtins, err := modupdate.GetBuiltinModFiles()
+	if err != nil {
+		return "Unable to read built-in mods: " + err.Error()
+	}
+	// Discover only requested built-ins, so toggling Space Age does not create
+	// unrelated settings for Quality or Elevated Rails after a clear.
+	for _, builtin := range builtins {
+		if builtin.Name != "base" && requested[strings.ToLower(builtin.Name)] {
+			modFiles = append(modFiles, builtin)
+		}
+	}
+	configured := map[string]bool{}
+	for _, mod := range modList.Mods {
+		configured[mod.Name] = true
+	}
+	mergedMods := modupdate.MergeModLists(modFiles, modList)
+	var responses []string
+	var history []modupdate.ModHistoryItem
+	seen := map[string]bool{}
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		key := strings.ToLower(part)
+		if part == "" || seen[key] {
+			continue
+		}
+		seen[key] = true
+		if key == "base" {
+			responses = append(responses, "The base mod is required and cannot be toggled.")
+			continue
+		}
 		found := false
 		for m, mod := range mergedMods {
-			if mod.Name == "base" {
+			if !strings.EqualFold(mod.Name, part) {
 				continue
 			}
-			if strings.EqualFold(mod.Name, part) {
-				if mod.Enabled != value {
-					emsg = emsg + "The mod '" + mod.Name + "' is now " + enableStr(value, true) + "."
-					mergedMods[m].Enabled = value
-
-					modupdate.AddModHistory(modupdate.ModHistoryItem{
-						Name: mod.Name, Notes: enableStr(value, true) + " by " + i.Member.User.Username, Date: time.Now()})
-
-					dirty = true
-
-				} else {
-					emsg = emsg + "The mod '" + mod.Name + "' was already " + enableStr(value, true) + "!"
-				}
-				found = true
-				break
+			found = true
+			if mod.Enabled != value || (modupdate.IsBaseMod(mod.Name) && !configured[mod.Name]) {
+				mergedMods[m].Enabled = value
+				history = append(history, modupdate.ModHistoryItem{
+					Name: mod.Name, Notes: enableStr(value, true) + " by " + i.Member.User.Username, Date: time.Now(),
+				})
+				responses = append(responses, "The mod '"+mod.Name+"' is now "+enableStr(value, true)+".")
+			} else {
+				responses = append(responses, "The mod '"+mod.Name+"' was already "+enableStr(value, true)+"!")
 			}
+			break
 		}
 		if !found {
-			emsg = emsg + "There is no mod by the name: " + input
+			responses = append(responses, "There is no mod by the name: "+part)
 		}
 	}
-	if dirty {
-		modupdate.WriteModHistory()
-		outMods := []modupdate.ModData{}
+	if len(history) > 0 {
+		outMods := make([]modupdate.ModData, 0, len(mergedMods))
 		for _, item := range mergedMods {
 			outMods = append(outMods, modupdate.ModData{Name: item.Name, Enabled: item.Enabled})
 		}
-		outputList := modupdate.ModListData{Mods: outMods}
-		modupdate.WriteModsList(outputList)
+		if !modupdate.WriteModsList(modupdate.ModListData{Mods: outMods}) {
+			return "Unable to save mod list; mod settings were not changed."
+		}
+		for _, item := range history {
+			modupdate.AddModHistory(item)
+		}
 	}
-	return emsg
+	return strings.Join(responses, "\n")
 }
 
 /* Bool to string */
