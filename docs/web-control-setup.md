@@ -131,6 +131,15 @@ return the latest 100 operations. Shared players and saves use bounded pages.
 Config changes retain the existing runtime's reload semantics; a process-wide
 migration to immutable config snapshots is separate from this HTTP adapter.
 
+The Mods page discovers bundled components from the installed Factorio release,
+including Recycler in 2.1, and distinguishes explicit enable/disable settings from
+unconfigured defaults. **Enable complete Space Age set** enables Space Age,
+Quality, and their installed dependencies. Built-in component edits require
+Factorio to be stopped. Required dependencies are enabled together, invalid
+removals/disables are rejected before writing, and bundled versions cannot be
+pinned or downloaded separately. Quality may be disabled independently with
+Space Age 2.1 because it is a recommended dependency.
+
 The dashboard stays available when an instance reboots. If ChatWire itself is
 stopped, it reports offline and its service manager must recover it. The HTTP
 server does not run arbitrary shell commands or start stopped systemd units.

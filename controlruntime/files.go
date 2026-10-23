@@ -122,12 +122,12 @@ func (rt *Runtime) fileRoutes(mux *http.ServeMux) {
 		webcontrol.JSON(w, 200, map[string]any{"generators": names, "presets": constants.MapTypes})
 	})
 	mux.HandleFunc("GET /internal/v1/mods", func(w http.ResponseWriter, r *http.Request) {
-		v, e := modupdate.GetModList()
+		v, e := modupdate.GetModInventory()
 		if e != nil {
 			webcontrol.Error(w, 503, "unavailable", "Cannot read mod list.")
 			return
 		}
-		webcontrol.JSON(w, 200, v)
+		webcontrol.JSON(w, 200, map[string]any{"mods": v})
 	})
 	mux.HandleFunc("GET /internal/v1/mods/history", func(w http.ResponseWriter, r *http.Request) {
 		webcontrol.JSON(w, 200, map[string]string{"history": cfg.RedactWebText(modupdate.ListHistory(r.URL.Query().Get("full") == "true"))})

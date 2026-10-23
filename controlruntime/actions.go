@@ -185,12 +185,15 @@ func editMods(p Params) (any, error) {
 		}
 	}
 	list, e := modupdate.GetModList()
-	if e != nil {
+	if e != nil && !os.IsNotExist(e) {
 		return nil, fail("Cannot read mod list.")
 	}
 	if p.Operation == "version" {
 		if len(p.Mods) != 1 {
 			return nil, fail("Set one mod version at a time.")
+		}
+		if modupdate.IsBaseMod(p.Mods[0]) {
+			return nil, fail("Built-in versions follow the Factorio installation and cannot be pinned.")
 		}
 		if e = modedit.SetVersion(p.Mods[0], p.Version); e != nil {
 			return nil, fail("Invalid mod version preference.")
@@ -198,8 +201,15 @@ func editMods(p Params) (any, error) {
 		return "Version preference saved.", nil
 	}
 	for _, name := range p.Mods {
-		if modupdate.IsBaseMod(name) && p.Operation != "enable" {
-			return nil, fail("Base mods cannot be removed or disabled.")
+		if modupdate.IsBaseMod(name) {
+			if p.Operation != "enable" && p.Operation != "disable" {
+				return nil, fail("Built-in mods ship with Factorio; use enable or disable.")
+			}
+			list, e = modupdate.SetBuiltinModEnabled(list, name, p.Operation == "enable")
+			if e != nil {
+				return nil, e
+			}
+			continue
 		}
 		idx := -1
 		for i, m := range list.Mods {
@@ -231,6 +241,9 @@ func editMods(p Params) (any, error) {
 		default:
 			return nil, fail("Operation must be add, remove, enable, disable, or version.")
 		}
+	}
+	if e = modupdate.ValidateBuiltinModDependencies(list); e != nil {
+		return nil, e
 	}
 	if !modupdate.WriteModsList(list) {
 		return nil, fail("Unable to write mod list.")

@@ -70,7 +70,16 @@ async function saves(){
  const up=panel('Stage an upload'),kind=node('select');[['save','Save game (.zip)'],['mod-list','Mod list (.json)'],['mod-settings','Mod settings (.dat)']].forEach(([v,t])=>kind.add(new Option(t,v)));const file=node('input');file.type='file';
  up.append(kind,file,button('Upload',async()=>{if(!file.files[0])throw new Error('Choose a file.');const body=new FormData();body.append(kind.value,file.files[0]);const u=await api(root+'/uploads',{method:'POST',body});const detail=node('div');detail.append(node('p',`Staged ${u.name}. Applying will stop Factorio.`));actionForm(detail,'upload-apply',{upload_ids:u.id});detail.append(button('Discard upload',async()=>{await api(root+'/uploads/'+encodeURIComponent(u.id),{method:'DELETE'});detail.remove();}));up.append(detail);}));
 }
-async function mods(){const result=await api(base()+'/mods');panel('Mod list').append(dataTable(result.mods||result.Mods||[],['name','enabled']));const edit=panel('Edit mods');actionForm(edit,'mods-edit');const history=await api(base()+'/mods/history');panel('History').append(node('pre',history.history));}
+async function mods(){
+ const result=await api(base()+'/mods'),list=result.mods||result.Mods||[];
+ const builtins=list.filter(m=>m.builtin),p=panel('Built-in Factorio components');
+ p.append(node('p','These components ship with Factorio. Stop Factorio before changing them. Required components are enabled together; versions follow the Factorio installation.'));
+ if(builtins.some(m=>m.name==='space-age'))p.append(button('Enable complete Space Age set',()=>runAction('mods-edit',{operation:'enable',mods:['space-age','quality']})));
+ for(const mod of builtins){const row=node('div',undefined,'field'),state=mod.configured?(mod.enabled?'Enabled':'Disabled'):'Not configured (Factorio defaults)';row.append(node('span',`${mod.title||mod.name} · ${mod.version||'bundled'} · ${state}`));const controls=node('div',undefined,'buttons');controls.append(button('Enable',()=>runAction('mods-edit',{operation:'enable',mods:[mod.name]})));if(mod.name!=='base')controls.append(button('Disable',()=>runAction('mods-edit',{operation:'disable',mods:[mod.name]})));row.append(controls);p.append(row);}
+ if(!builtins.length)p.append(node('p','Built-in inventory is unavailable from this instance.'));
+ panel('Portal mods').append(dataTable(list.filter(m=>!m.builtin),['name','enabled']));
+ const edit=panel('Edit mods');actionForm(edit,'mods-edit');const history=await api(base()+'/mods/history');panel('History').append(node('pre',history.history));
+}
 async function players(){
  const online=await api(base()+'/players');panel('Online in this instance').append(dataTable(online.items,['Name','Level','AFK']));
  const listPanel=panel('Shared player database'),search=node('input');search.type='search';search.placeholder='Search player names';search.setAttribute('aria-label','Search player names');const rows=node('div');
