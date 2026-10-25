@@ -302,7 +302,9 @@ func Execute(action, rawIP, actor string) (string, error) {
 	if wait, limited := firewallLimiter.Check(); limited {
 		return "", fmt.Errorf("firewall commands are cooling down; retry in %s", wait.Round(time.Second))
 	}
-	args := []string{"deny", "from", ip.String()}
+	// Put bans ahead of broad port allows in UFW's user rules. UFW's
+	// before.rules can still accept traffic belonging to established connections.
+	args := []string{"insert", "1", "deny", "from", ip.String()}
 	if action == "unban" {
 		ips, e := getCurrentUFWDenyIPs()
 		if e != nil {
@@ -311,7 +313,7 @@ func Execute(action, rawIP, actor string) (string, error) {
 		if !slices.Contains(ips, ip.String()) {
 			return "", errors.New("IP has no deny rule")
 		}
-		args = append([]string{"delete"}, args...)
+		args = []string{"delete", "deny", "from", ip.String()}
 	}
 	out, e := runUFW(true, args...)
 	if e != nil {

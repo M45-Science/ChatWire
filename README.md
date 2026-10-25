@@ -139,9 +139,15 @@ an already queued stop, restart, or map change.
 
 The moderator slash command `/ip-ban` manages UFW deny rules for public IPv4 addresses.
 
-- `action=ban` adds a deny rule
+- `action=ban` inserts a deny rule at position 1, ahead of existing user allow rules
 - `action=unban` removes a deny rule
 - `action=list` shows current IPv4 deny entries
+
+UFW's default `before.rules` accepts established/related traffic before user
+rules, so an existing session (including tracked UDP traffic) can survive a ban.
+Inserting at position 1 fixes user-rule ordering; it does not clear conntrack.
+Existing appended bans may need to be removed and re-added to move them ahead of
+allow rules; UFW can skip inserting an identical rule that already exists.
 
 This requires:
 
