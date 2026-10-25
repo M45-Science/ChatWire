@@ -111,3 +111,63 @@ func TestIntervalPatchSchedulesAndDisablesNextReset(t *testing.T) {
 		t.Fatal("zero interval did not disable reset")
 	}
 }
+
+func TestClearedMapSelectionSurvivesConfigReload(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		pendingSave string
+		newMap      bool
+	}{
+		{name: "save", pendingSave: "old-map.zip"},
+		{name: "scenario", newMap: true},
+		{name: "save-and-scenario", pendingSave: "old-map.zip", newMap: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			webFixture(t)
+			runtime := local{Name: "Alpha", Callsign: "a", Port: 34197,
+				PendingSave: tc.pendingSave, Settings: settings{NewMap: tc.newMap}}
+			data, err := json.Marshal(runtime)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(constants.CWLocalConfig, data, 0600); err != nil {
+				t.Fatal(err)
+			}
+			rememberConfig(constants.CWLocalConfig, runtime)
+
+			// An unrelated web edit must survive the runtime's completion write.
+			v, err := WebRead(false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := WebPatch(false, false, v.Revision, map[string]json.RawMessage{
+				"Name": json.RawMessage(`"Web name"`),
+			}); err != nil {
+				t.Fatal(err)
+			}
+
+			runtime.PendingSave = ""
+			runtime.Settings.NewMap = false
+			// A later routine write must not resurrect the completed selection.
+			for i := 0; i < 2; i++ {
+				if err := writeConfigMerged(constants.CWLocalConfig, runtime); err != nil {
+					t.Fatal(err)
+				}
+				data, err := os.ReadFile(constants.CWLocalConfig)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var reloaded local
+				if err := json.Unmarshal(data, &reloaded); err != nil {
+					t.Fatal(err)
+				}
+				if reloaded.PendingSave != "" || reloaded.Settings.NewMap {
+					t.Fatalf("write %d: restart would replay completed map selection: save=%q newMap=%v", i, reloaded.PendingSave, reloaded.Settings.NewMap)
+				}
+				if reloaded.Name != "Web name" {
+					t.Fatal("completion write lost deferred web edit")
+				}
+			}
+		})
+	}
+}

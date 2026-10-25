@@ -121,7 +121,8 @@ type local struct {
 	Port           int    `form:"RO"`
 	RCONPass       string `json:"-"`
 	LastSaveBackup int    `form:"RO" web:"Last Backup Slot"`
-	PendingSave    string `json:",omitempty" form:"-"`
+	// Persist the empty value so config merging cannot restore a completed selection.
+	PendingSave string `form:"-"`
 
 	Settings settings
 
@@ -137,7 +138,8 @@ type ModPackData struct {
 }
 
 type settings struct {
-	NewMap         bool   `json:",omitempty" form:"-"`
+	// Persist false when a pending scenario reset completes.
+	NewMap         bool   `form:"-"`
 	Scenario       string `web:"Scenario Name"`
 	MapGenerator   string `web:"Map Generator Name"`
 	MapPreset      string `web:"Map Preset Name"`
