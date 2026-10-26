@@ -45,8 +45,11 @@ func TestAnnounceMapPreviewQueuesServerChat(t *testing.T) {
 	want, _ := MapPreviewURL(sampleMapExchangeString)
 	select {
 	case message := <-disc.CMSChan:
-		if message.Channel != "preview-test-channel" || message.Text != "New map preview: "+want {
+		if message.Channel != "preview-test-channel" || message.Text != "" || message.Embed == nil {
 			t.Fatalf("wrong chat announcement: %+v", message)
+		}
+		if message.Embed.Title != "New map" || message.Embed.Description != "[Preview map]("+want+")" {
+			t.Fatalf("wrong preview embed: %+v", message.Embed)
 		}
 	default:
 		t.Fatal("no chat announcement queued")

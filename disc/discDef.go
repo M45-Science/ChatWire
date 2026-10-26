@@ -30,6 +30,7 @@ var (
 type CMSBuf struct {
 	Channel string
 	Text    string
+	Embed   *discordgo.MessageEmbed
 }
 
 // RoleListData caches lists of Discord users for specific roles.

@@ -208,27 +208,37 @@ func QueueDiscordMessage(ch string, text string) {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
-		item := CMSBuf{Channel: ch, Text: line}
+		queueCMSItem(CMSBuf{Channel: ch, Text: line})
+	}
+}
 
+// QueueDiscordEmbed preserves the full link while waiting for a Discord session.
+func QueueDiscordEmbed(ch string, embed *discordgo.MessageEmbed) {
+	if ch == "" || embed == nil {
+		return
+	}
+	queueCMSItem(CMSBuf{Channel: ch, Embed: embed})
+}
+
+func queueCMSItem(item CMSBuf) {
+	select {
+	case CMSChan <- item:
+	default:
+		// Buffer is full; drop the oldest message to make room, otherwise drop this one.
+		select {
+		case <-CMSChan:
+		default:
+		}
 		select {
 		case CMSChan <- item:
 		default:
-			// Buffer is full; drop the oldest message to make room, otherwise drop this one.
-			select {
-			case <-CMSChan:
-			default:
-			}
-			select {
-			case CMSChan <- item:
-			default:
-				atomic.AddUint64(&cmsDropCount, 1)
-				now := time.Now().UnixNano()
-				last := atomic.LoadInt64(&cmsLastDropLogUnixNano)
-				if now-last > int64(10*time.Second) && atomic.CompareAndSwapInt64(&cmsLastDropLogUnixNano, last, now) {
-					dropped := atomic.SwapUint64(&cmsDropCount, 0)
-					if dropped > 0 {
-						cwlog.DoLogCW("Discord CMS buffer full; dropped %d messages (Discord down or rate-limited).", dropped)
-					}
+			atomic.AddUint64(&cmsDropCount, 1)
+			now := time.Now().UnixNano()
+			last := atomic.LoadInt64(&cmsLastDropLogUnixNano)
+			if now-last > int64(10*time.Second) && atomic.CompareAndSwapInt64(&cmsLastDropLogUnixNano, last, now) {
+				dropped := atomic.SwapUint64(&cmsDropCount, 0)
+				if dropped > 0 {
+					cwlog.DoLogCW("Discord CMS buffer full; dropped %d messages (Discord down or rate-limited).", dropped)
 				}
 			}
 		}

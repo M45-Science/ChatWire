@@ -9,6 +9,7 @@ import (
 	"ChatWire/cfg"
 	"ChatWire/constants"
 	"ChatWire/disc"
+	"ChatWire/glob"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -34,9 +35,11 @@ func MapPreviewURL(exchange string) (string, error) {
 }
 
 func mapPreviewMessage(url string) *discordgo.MessageSend {
-	message := "New map preview: " + url
+	message := "[Preview map](" + url + ")"
 	if len(message) <= constants.MaxDiscordMsgLen {
-		return &discordgo.MessageSend{Content: message}
+		return &discordgo.MessageSend{Embeds: []*discordgo.MessageEmbed{{
+			Title: "New map", Description: message, Color: glob.COLOR_GREEN,
+		}}}
 	}
 	// Never let the normal chat truncation turn a long exchange into a broken link.
 	return &discordgo.MessageSend{
@@ -56,7 +59,7 @@ func AnnounceMapPreview(exchange string) error {
 	}
 	message := mapPreviewMessage(url)
 	if len(message.Files) == 0 {
-		LogCMS(channel, message.Content)
+		disc.QueueDiscordEmbed(channel, message.Embeds[0])
 		return nil
 	}
 	if disc.DS == nil {

@@ -85,6 +85,13 @@ func startCMSBuffer() {
 
 				/* Put messages into proper lists */
 				for _, msg := range lcopy {
+					if msg.Embed != nil {
+						if !takeCMSToken(ctx, tokens) {
+							return
+						}
+						disc.SmartWriteDiscordEmbed(msg.Channel, msg.Embed)
+						continue
+					}
 					if strings.EqualFold(msg.Channel, cfg.Local.Channel.ChatChannel) {
 						factmsg = append(factmsg, msg.Text)
 					} else if strings.EqualFold(msg.Channel, cfg.Global.Discord.ReportChannel) {
