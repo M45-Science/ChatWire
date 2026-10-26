@@ -11,6 +11,11 @@ func userCommands() []glob.CommandData {
 	return []glob.CommandData{
 		/* USER COMMANDS */
 		{AppCmd: glob.AppCmdData{
+			Name:        "map-preview",
+			Description: "Get a FactMapGen preview link for the current map.",
+			Type:        discordgo.ChatApplicationCommand,
+		}, Function: user.MapPreview},
+		{AppCmd: glob.AppCmdData{
 			Name:        "info",
 			Description: "Displays status and settings of the server.",
 			Type:        discordgo.ChatApplicationCommand,

@@ -199,3 +199,7 @@ Some integration tests connect to Discord. Set `CW_TEST_TOKEN`, `CW_TEST_GUILD`,
 - `-noDiscord` allows Factorio lifecycle management without connecting the bot.
 - `-noAutoLaunch` prevents ChatWire from starting Factorio automatically on startup.
 - `-runtimeSelfTest` is intended for exercising lifecycle actions in a live-like environment and exits when the requested cases finish.
+
+New maps initialized by SoftMod send their actual map exchange string on the first ChatWire handshake. ChatWire posts a self-contained FactMapGen preview link in the server's chat channel. Normal restarts and SoftMod upgrades do not repost it. This requires SoftMod build 673 or newer and the matching ChatWire protocol handler.
+
+`/map-preview` is also available on demand in Factorio and Discord. Factorio replies privately to the requesting player, or to RCON when called from the console. Discord invokes this fixed read-only command over RCON and returns an ephemeral link (or a text attachment for exceptionally long links). Register the new Discord slash command during the planned rollout; it requires the updated SoftMod to be loaded. Manual requests do not consume or repeat the automatic new-map announcement.

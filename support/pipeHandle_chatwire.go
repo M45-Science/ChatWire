@@ -102,6 +102,17 @@ func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 
 func handleChatWireEvent(event string, data json.RawMessage) {
 	switch event {
+	case "map-preview":
+		var preview struct {
+			ExchangeString string `json:"exchange_string"`
+		}
+		if err := json.Unmarshal(data, &preview); err != nil {
+			cwlog.DoLogCW("Invalid map preview event: %v", err)
+			return
+		}
+		if err := fact.AnnounceMapPreview(preview.ExchangeString); err != nil {
+			cwlog.DoLogCW("Unable to announce new map preview: %v", err)
+		}
 	case "online":
 		handleChatWireOnline(data)
 	case "player-level":
