@@ -112,6 +112,56 @@ func TestIntervalPatchSchedulesAndDisablesNextReset(t *testing.T) {
 	}
 }
 
+func TestIntervalPatchAcceptsLongResetSchedules(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		interval ResetInterval
+	}{
+		{name: "three months", interval: ResetInterval{Months: 3}},
+		{name: "six months", interval: ResetInterval{Months: 6}},
+		{name: "weeks", interval: ResetInterval{Weeks: 26}},
+		{name: "days", interval: ResetInterval{Days: 182}},
+		{name: "hours", interval: ResetInterval{Hours: 4320}},
+		{name: "combined", interval: ResetInterval{Months: 3, Weeks: 1, Days: 2, Hours: 3}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			webFixture(t)
+			v, err := WebRead(false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			patch := map[string]json.RawMessage{}
+			for key, value := range map[string]int{
+				"Months": tc.interval.Months, "Weeks": tc.interval.Weeks,
+				"Days": tc.interval.Days, "Hours": tc.interval.Hours,
+			} {
+				patch["Options.ResetInterval."+key], err = json.Marshal(value)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			resetAt := func(now time.Time) time.Time {
+				return now.UTC().AddDate(0, tc.interval.Months, tc.interval.Weeks*7+tc.interval.Days).
+					Add(time.Duration(tc.interval.Hours) * time.Hour).Round(time.Second)
+			}
+			earliest := resetAt(time.Now())
+			next, err := WebPatch(false, false, v.Revision, patch)
+			latest := resetAt(time.Now())
+			if err != nil {
+				t.Fatal(err)
+			}
+			date, err := time.Parse(time.RFC3339, next.Values["Options.NextReset"].(string))
+			if err != nil || date.Before(earliest) || date.After(latest) {
+				t.Fatalf("next reset = %v, error = %v; want between %v and %v", date, err, earliest, latest)
+			}
+			stored, err := WebRead(false)
+			if err != nil || stored.Values["Options.NextReset"] != next.Values["Options.NextReset"] {
+				t.Fatalf("reset schedule was not persisted: %v", err)
+			}
+		})
+	}
+}
+
 func TestClearedMapSelectionSurvivesConfigReload(t *testing.T) {
 	for _, tc := range []struct {
 		name        string

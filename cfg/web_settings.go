@@ -204,7 +204,7 @@ func WebSchema(global bool) []WebField {
 				f.Min = &min
 				f.Max = &max
 			}
-			limits := map[string][2]float64{"Port": {1024, 65535}, "Settings.AFKMin": {5, 120}, "Settings.AutosaveMin": {5, 30}, "Settings.Heartbeats": {1, 240}, "Settings.Seed": {0, 4294967295}, "Options.Speed": {0.01, 10}, "Options.AutosaveMax": {64, 1024}, "Options.RconOffset": {1, 64511}, "Options.PlayStartHour": {0, 23}, "Options.PlayEndHour": {0, 23}, "Options.ResetHour": {0, 23}, "Options.ResetInterval.Months": {0, 3}, "Options.ResetInterval.Weeks": {0, 13}, "Options.ResetInterval.Days": {0, 93}, "Options.ResetInterval.Hours": {0, 2232}, "Options.PlayerPollIntervalSec": {1, 86400}, "Options.RoleRefreshIntervalSec": {1, 86400}, "Options.MapResetCheckIntervalSec": {1, 86400}}
+			limits := map[string][2]float64{"Port": {1024, 65535}, "Settings.AFKMin": {5, 120}, "Settings.AutosaveMin": {5, 30}, "Settings.Heartbeats": {1, 240}, "Settings.Seed": {0, 4294967295}, "Options.Speed": {0.01, 10}, "Options.AutosaveMax": {64, 1024}, "Options.RconOffset": {1, 64511}, "Options.PlayStartHour": {0, 23}, "Options.PlayEndHour": {0, 23}, "Options.ResetHour": {0, 23}, "Options.ResetInterval.Months": {0, 6}, "Options.ResetInterval.Weeks": {0, 26}, "Options.ResetInterval.Days": {0, 182}, "Options.ResetInterval.Hours": {0, 4320}, "Options.PlayerPollIntervalSec": {1, 86400}, "Options.RoleRefreshIntervalSec": {1, 86400}, "Options.MapResetCheckIntervalSec": {1, 86400}}
 			if l, ok := limits[key]; ok {
 				a, b := l[0], l[1]
 				f.Min = &a
@@ -347,13 +347,6 @@ func WebPatch(global, admin bool, expected string, patch map[string]json.RawMess
 		offset, _ := g["Options.RconOffset"].(float64)
 		if p+offset > 65535 {
 			return WebSettings{}, errors.New("computed RCON port exceeds 65535")
-		}
-		months, _ := values["Options.ResetInterval.Months"].(float64)
-		weeks, _ := values["Options.ResetInterval.Weeks"].(float64)
-		days, _ := values["Options.ResetInterval.Days"].(float64)
-		hours, _ := values["Options.ResetInterval.Hours"].(float64)
-		if months*31+weeks*7+days+hours/24 > 93 {
-			return WebSettings{}, errors.New("combined map reset interval exceeds three months")
 		}
 	}
 	if !global {

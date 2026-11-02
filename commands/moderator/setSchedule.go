@@ -57,14 +57,6 @@ func SetSchedule(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	if gotInterval {
 		cfg.Local.Options.ResetInterval = n
 		fact.SetResetDate()
-
-		if cfg.Local.Options.NextReset.UTC().Sub(time.Now().UTC()) > (time.Hour*24*30*3 + (time.Hour * 24)) {
-			buf = buf + "The maximum map reset interval is 3 months, rejecting."
-			disc.InteractionEphemeralResponse(i, "Map Schedule", buf)
-			cfg.Local.Options.ResetInterval = cfg.ResetInterval{}
-			cfg.Local.Options.NextReset = time.Time{}
-			return
-		}
 	}
 
 	cfg.WriteLCfg()
