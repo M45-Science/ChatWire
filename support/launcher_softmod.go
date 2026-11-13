@@ -6,10 +6,10 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"ChatWire/cfg"
-	"ChatWire/constants"
 	"ChatWire/cwlog"
 )
 
@@ -32,7 +32,7 @@ func keepSaveEntry(name, folderName string) bool {
 }
 
 /* Used for reading softmod directory */
-func readFolder(path string, sdir string) []zipFilesData {
+func readFolder(path string, sdir string) ([]zipFilesData, error) {
 
 	var zipFiles []zipFilesData
 
@@ -40,7 +40,7 @@ func readFolder(path string, sdir string) []zipFilesData {
 	sFiles, err := os.ReadDir(path)
 	if err != nil {
 		cwlog.DoLogCW("Unable to read softmod folder.")
-		return nil
+		return nil, err
 	}
 
 	for _, file := range sFiles {
@@ -48,34 +48,39 @@ func readFolder(path string, sdir string) []zipFilesData {
 			dat, err := os.ReadFile(path + "/" + file.Name())
 			if err != nil {
 				cwlog.DoLogCW("injectSoftMod: Unable to read softmod files.")
-				continue
+				return nil, err
 			}
 
 			zipFiles = append(zipFiles, zipFilesData{Name: sdir + "/" + file.Name(), Data: dat})
 		} else {
-			tfiles := readFolder(path+"/"+file.Name(), sdir+"/"+file.Name())
+			tfiles, err := readFolder(path+"/"+file.Name(), sdir+"/"+file.Name())
+			if err != nil {
+				return nil, err
+			}
 			zipFiles = append(zipFiles, tfiles...)
 		}
 	}
 
-	return zipFiles
+	return zipFiles, nil
 }
 
 /* Insert our softmod files into the save zip */
-func injectSoftMod(fileName, folderName string) {
+func injectSoftMod(fileName, folderName string) error {
 	var zipFiles []zipFilesData
 
 	/* Read needed files from existing save */
 	archive, errz := zip.OpenReader(fileName)
 	if errz != nil {
 		cwlog.DoLogCW("sm-inject: unable to open save game.")
-		return
+		return fmt.Errorf("SoftMod injection failed for %s", fileName)
 	} else {
 		for _, f := range archive.File {
 			if keepSaveEntry(f.Name, folderName) {
 				file, err := f.Open()
 				if err != nil {
 					cwlog.DoLogCW("sm-inject: unable to open " + f.Name)
+					_ = archive.Close()
+					return fmt.Errorf("open save entry %s: %w", f.Name, err)
 				} else {
 					data, rerr := io.ReadAll(file)
 					cerr := file.Close()
@@ -83,13 +88,17 @@ func injectSoftMod(fileName, folderName string) {
 					dlen := uint64(len(data))
 					if rerr != nil && rerr != io.EOF {
 						cwlog.DoLogCW("Unable to read file: " + f.Name)
-						continue
+						_ = archive.Close()
+						return fmt.Errorf("read save entry %s", f.Name)
 					} else if cerr != nil {
 						cwlog.DoLogCW("Unable to close file: " + f.Name)
-						continue
+						_ = archive.Close()
+						return fmt.Errorf("read save entry %s", f.Name)
 					} else if dlen != f.UncompressedSize64 {
 						sbuf := fmt.Sprintf("%v vs %v", dlen, f.UncompressedSize64)
 						cwlog.DoLogCW("Sizes did not match: " + f.Name + ", " + sbuf)
+						_ = archive.Close()
+						return fmt.Errorf("size mismatch for save entry %s", f.Name)
 					} else {
 						tmp := zipFilesData{Name: f.Name, Data: data}
 						zipFiles = append(zipFiles, tmp)
@@ -99,7 +108,7 @@ func injectSoftMod(fileName, folderName string) {
 		}
 		if err := archive.Close(); err != nil {
 			cwlog.DoLogCW("sm-inject: unable to close save game: %v", err)
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
 
 		/* Read files in from softmod */
@@ -107,7 +116,10 @@ func injectSoftMod(fileName, folderName string) {
 		allowList := []string{"README.md", "preview.jpg", "LICENSE"} /* Always include */
 		allowExt := []string{".lua", ".png", ".cfg"}
 
-		tfiles := readFolder(cfg.Local.Options.SoftModOptions.SoftModPath, folderName)
+		tfiles, err := readFolder(cfg.Local.Options.SoftModOptions.SoftModPath, folderName)
+		if err != nil {
+			return fmt.Errorf("read SoftMod payload: %w", err)
+		}
 		var addFiles []zipFilesData
 		for _, tf := range tfiles {
 			skip := false
@@ -130,23 +142,30 @@ func injectSoftMod(fileName, folderName string) {
 				}
 			}
 		}
+		hasControl := false
+		for _, f := range addFiles {
+			if f.Name == folderName+"/control.lua" && len(f.Data) > 0 {
+				hasControl = true
+			}
+		}
+		if !hasControl {
+			return fmt.Errorf("SoftMod payload requires a nonempty control.lua")
+		}
 		zipFiles = append(zipFiles, addFiles...)
 
 		numFiles := len(zipFiles)
 		if numFiles <= 0 {
 			cwlog.DoLogCW("No softmod files found, stopping.")
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
 
 		/* Add old save files into zip */
-		path := cfg.GetSavesFolder()
-
-		tempSaveName := path + constants.TempSaveName
-		newZipFile, err := os.Create(tempSaveName)
+		newZipFile, err := os.CreateTemp(filepath.Dir(fileName), ".softmod-*.zip")
 		if err != nil {
 			cwlog.DoLogCW("injectSoftMod: Unable to create temp save.")
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
+		tempSaveName := newZipFile.Name()
 		defer os.Remove(tempSaveName)
 
 		zipWriter := zip.NewWriter(newZipFile)
@@ -161,7 +180,7 @@ func injectSoftMod(fileName, folderName string) {
 				cwlog.DoLogCW("injectSoftMod: Unable to create blank file in zip.")
 				_ = zipWriter.Close()
 				_ = newZipFile.Close()
-				return
+				return fmt.Errorf("SoftMod injection failed for %s", fileName)
 			}
 
 			_, err = writer.Write(file.Data)
@@ -169,31 +188,32 @@ func injectSoftMod(fileName, folderName string) {
 				cwlog.DoLogCW("injectSoftMod: Unable to copy file data into zip.")
 				_ = zipWriter.Close()
 				_ = newZipFile.Close()
-				return
+				return fmt.Errorf("SoftMod injection failed for %s", fileName)
 			}
 		}
 
 		if err := zipWriter.Close(); err != nil {
 			cwlog.DoLogCW("injectSoftMod: Unable to finalize temp save: %v", err)
 			_ = newZipFile.Close()
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
 		if err := newZipFile.Sync(); err != nil {
 			cwlog.DoLogCW("injectSoftMod: Unable to sync temp save: %v", err)
 			_ = newZipFile.Close()
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
 		if err := newZipFile.Close(); err != nil {
 			cwlog.DoLogCW("injectSoftMod: Unable to close temp save: %v", err)
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
 
 		err = os.Rename(tempSaveName, fileName)
 		if err != nil {
 			cwlog.DoLogCW("Couldn't rename softmod temp save.")
-			return
+			return fmt.Errorf("SoftMod injection failed for %s", fileName)
 		}
 		cwlog.DoLogCW("SoftMod injected.")
 
 	}
+	return nil
 }

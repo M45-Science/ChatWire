@@ -128,7 +128,9 @@ func LaunchFactorio(generation uint64, saveName string) error {
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
 		if cfg.Local.Settings.Scenario == "" || cfg.Local.Settings.Scenario == "none" {
-			injectSoftMod(fileName, folderName)
+			if err := injectSoftMod(fileName, folderName); err != nil {
+				return fmt.Errorf("inject SoftMod: %w", err)
+			}
 		} else {
 			cwlog.DoLogCW("Softmod disabled for scenario.")
 		}
