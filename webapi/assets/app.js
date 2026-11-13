@@ -23,30 +23,61 @@ async function loadServers(){servers=await api('/api/v1/servers');selector.repla
 function navigation(){const names=['Overview','Settings','Actions','Players','Maps & saves','Mods','Console','Firewall','Activity'];if(me.actor.admin)names.push('Shared settings','Host settings');$('#nav').replaceChildren(...names.map(name=>button(name,async()=>{if(dirty&&!confirm('Discard unsaved changes?'))return;dirty=false;page=name;await render();},name===page?'active':'')));$('#nav').querySelector('button.active')?.setAttribute('aria-current','page');}
 async function render(){navigation();$('#title').textContent=page;$('#scope').textContent=selected?(servers.find(s=>s.id===selected)?.label||selected):'ALL LOCAL INSTANCES';content.replaceChildren();notify('');if(page!=='Overview'&&page!=='Shared settings'&&page!=='Activity'&&page!=='Host settings'&&page!=='Firewall'&&!selected){panel().append(node('p','Choose a local instance to view these controls.'));return;}
  try{switch(page){case 'Overview':await overview();break;case 'Settings':await settings(false);break;case 'Shared settings':await settings(true);break;case 'Actions':await actions();break;case 'Players':await players();break;case 'Maps & saves':await saves();break;case 'Mods':await mods();break;case 'Console':await consolePage();break;case 'Activity':await activity();break;case 'Host settings':await hostSettings();break;case 'Firewall':await firewallPage();break;}}catch(e){if(e.name!=='AbortError')notify(e.message,true);}}
-async function overview(){
- await loadServers();
- const cards=node('div',undefined,'cards');content.append(cards);
- for(const s of servers){
-  if(selected&&s.id!==selected)continue;
-  const card=node('section',undefined,'card');
+function updateOverviewCards(cards,list){
+ const visible=list.filter(s=>!selected||s.id===selected);
+ const existing=new Map([...cards.children].map(card=>[card.dataset.serverId,card]));
+ for(const s of visible){
+  let card=existing.get(s.id);
+  if(!card){
+   card=node('section',undefined,'card');card.dataset.serverId=s.id;
+   card.append(node('h2'),node('p',undefined,'status'));
+   const metrics=node('dl',undefined,'server-metrics');
+   for(const label of ['Players','Autostart']){const metric=node('div');metric.append(node('dt',label),node('dd'));metrics.append(metric);}
+   card.append(metrics,node('p',undefined,'meta'),node('p',undefined,'meta'),node('p',undefined,'meta'));
+   card.append(button('Manage server',async()=>{selected=s.id;selector.value=selected;page='Actions';await render();}));
+   cards.append(card);
+  }
+  existing.delete(s.id);
   const phase=s.available?s.status.lifecycle.Phase:'Offline';
   card.dataset.state=!s.available?'offline':phase==='running'?'running':phase==='stopped'?'stopped':'busy';
-  card.append(node('h2',s.label),node('p',phase,'status'));
-  if(s.available){
-   const metrics=node('dl',undefined,'server-metrics');
-   for(const [label,value]of [['Players',s.status.players],['Autostart',s.status.autostart?'On':'Off']]){
-    const metric=node('div');metric.append(node('dt',label),node('dd',String(value)));metrics.append(metric);
-   }
-   card.append(metrics,node('p',`Factorio ${s.status.version} · ${s.status.map||'No map loaded'}`,'meta'));
-   const c=s.status.configuration;
-   if(c&&(c.local_desired_revision!==c.local_runtime_revision||c.global_desired_revision!==c.global_runtime_revision))card.append(node('p','Saved configuration differs from runtime.','meta'));
-   if(s.status.lifecycle.PendingAction)card.append(node('p','Pending: '+s.status.lifecycle.PendingAction,'meta'));
-  }else card.append(node('p','ChatWire is unavailable. Factorio state is unknown.','meta'));
-  card.append(button('Manage server',async()=>{selected=s.id;selector.value=selected;page='Actions';await render();}));
-  cards.append(card);
+  const setText=(el,text)=>{if(el.textContent!==text)el.textContent=text;};
+  setText(card.querySelector('h2'),s.label);setText(card.querySelector('.status'),phase);
+  const metrics=card.querySelector('.server-metrics');metrics.hidden=!s.available;
+  const [description,configuration,pending]=card.querySelectorAll('.meta');
+  setText(description,s.available?`Factorio ${s.status.version} · ${s.status.map||'No map loaded'}`:'ChatWire is unavailable. Factorio state is unknown.');
+  const c=s.available&&s.status.configuration;
+  const changed=c&&(c.local_desired_revision!==c.local_runtime_revision||c.global_desired_revision!==c.global_runtime_revision);
+  configuration.hidden=!changed;setText(configuration,changed?'Saved configuration differs from runtime.':'');
+  const action=s.available&&s.status.lifecycle.PendingAction;
+  pending.hidden=!action;setText(pending,action?'Pending: '+action:'');
+  if(s.available){const values=metrics.querySelectorAll('dd');setText(values[0],String(s.status.players));setText(values[1],s.status.autostart?'On':'Off');}
  }
+ for(const card of existing.values())card.remove();
+}
+let overviewRefresh;
+async function refreshOverview(){
+ const cards=content.querySelector('.cards');
+ if(!cards||page!=='Overview')return;
+ if(overviewRefresh?.cards===cards)return overviewRefresh.promise;
+ const promise=(async()=>{
+  const list=await api('/api/v1/servers');
+  if(!cards.isConnected||page!=='Overview')return;
+  const choices=rows=>JSON.stringify(rows.map(s=>[s.id,s.label,s.available]));
+  if(choices(list)!==choices(servers)){
+   const options=[new Option('All servers',''),...list.map(s=>new Option(s.label+(s.available?'':' · offline'),s.id))];
+   selector.replaceChildren(...options);selector.value=selected;
+  }
+  servers=list;updateOverviewCards(cards,list);
+ })();
+ const refresh={cards,promise};overviewRefresh=refresh;
+ try{await promise;}finally{if(overviewRefresh===refresh)overviewRefresh=undefined;}
+}
+async function overview(){
+ await loadServers();
+ const cards=node('div',undefined,'cards');content.append(cards);updateOverviewCards(cards,servers);
  if(!selected)await bulkControls(content);
 }
+
 async function settings(global){const root=global?'/api/v1/settings/global':base()+'/settings';const [schema,current]=await Promise.all([api(root+'/schema'),api(root)]);const p=panel(global?'Shared configuration':'Server configuration');p.append(node('p',current.application));const form=node('form'),inputs=[];for(const f of schema){if(f.read_only||f.admin&&!me.actor.admin)continue;const row=node('label',undefined,'field'),label=node('span',f.label||f.key);label.append(node('small',f.effect.replaceAll('_',' ')+(f.secret?' · stored value hidden':'')));let input;if(f.choices?.length){input=node('select');f.choices.forEach(v=>input.add(new Option(v,v)));input.value=current.values[f.key]??'';}else{input=node('input');input.type=f.secret?'password':f.type==='bool'?'checkbox':(f.type==='int'||f.type==='float32')?'number':'text';if(input.type==='checkbox')input.checked=!!current.values[f.key];else if(!f.secret)input.value=current.values[f.key]??'';if(f.secret)input.placeholder=current.values[f.key]?.configured?'Configured — leave blank to keep':'Not configured';if(f.min!==undefined)input.min=f.min;if(f.max!==undefined)input.max=f.max;if(f.type==='float32')input.step='any';}input.addEventListener('input',()=>{dirty=true;});row.append(label,input);form.append(row);let clearInput;if(f.secret){const clearLabel=node('label',undefined,'field');clearLabel.append(node('span','Clear stored '+(f.label||f.key)));clearInput=node('input');clearInput.type='checkbox';clearInput.addEventListener('change',()=>dirty=true);clearLabel.append(clearInput);form.append(clearLabel);}inputs.push({f,input,clearInput});}
  const save=node('button','Save settings');save.type='submit';form.append(save);form.addEventListener('submit',async e=>{e.preventDefault();save.disabled=true;try{const patch={};for(const {f,input,clearInput}of inputs){let v=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;if(f.secret){if(clearInput.checked)v='';else if(!v)continue;}if(JSON.stringify(v)!==JSON.stringify(current.values[f.key]))patch[f.key]=v;}if(!Object.keys(patch).length){notify('No changes to save.');return;}if(patch['Options.SoftModOptions.OneLife']===true&&!confirm('Enable one-life permadeath? This cannot be undone on the current map.'))return;await api(root,{method:'PATCH',headers:{'If-Match':'"'+current.revision+'"'},body:JSON.stringify(patch)});dirty=false;await render();notify('Saved. Reload configuration or use the indicated restart to apply.');}catch(err){notify(err.message,true);}finally{save.disabled=false;}});p.append(form);}
 const fields={
@@ -89,8 +120,8 @@ async function players(){
 }
 async function consolePage(){actionForm(panel('Remote console'),'rcon');const result=await api(base()+'/logs');panel('Recent log output').append(node('pre',result.text));}
 async function activity(){const result=selected?{[selected]:await api(base()+'/jobs')}:await api('/api/v1/jobs');for(const [id,jobs]of Object.entries(result)){const p=panel(servers.find(s=>s.id===id)?.label||id);if(!Array.isArray(jobs)){p.append(node('p','Instance unavailable.'));continue;}for(const job of jobs){const details=node('details');details.append(node('summary',`${job.action} · ${job.state} · ${new Date(job.created_at).toLocaleString()}`));details.append(node('pre',JSON.stringify({id:job.id,actor:job.actor.name,state:job.state,error:job.error,result:job.result},null,2)));p.append(details);}}}
-selector.addEventListener('change',async()=>{if(dirty&&!confirm('Discard unsaved changes?')){selector.value=selected;return;}dirty=false;selected=selector.value;await render();});$('#refresh').addEventListener('click',()=>{if(!dirty)render();});$('#logout').addEventListener('click',async()=>{try{await api('/auth/logout',{method:'POST'});location.assign('/login');}catch(e){notify(e.message,true);}});window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
-(async()=>{try{me=await api('/api/v1/me');$('#identity').textContent=me.actor.name+(me.actor.admin?' · Admin':' · Moderator');await loadServers();await render();const events=new EventSource('/api/v1/events');events.addEventListener('resync_required',()=>{clearTimeout(refreshTimer);if(!dirty&&(page==='Overview'||page==='Activity'))refreshTimer=setTimeout(()=>render(),250);});events.onerror=()=>{notify('Live updates disconnected. Refresh to verify access and server state.');};}catch(e){content.replaceChildren();panel('Sign in through Discord').append(node('p','Run /web in Discord and open the private link to access your server controls.'));notify(e.message,true);}})();
+selector.addEventListener('change',async()=>{if(dirty&&!confirm('Discard unsaved changes?')){selector.value=selected;return;}dirty=false;selected=selector.value;await render();});$('#refresh').addEventListener('click',()=>{if(!dirty)(page==='Overview'?refreshOverview():render()).catch(e=>{if(e.name!=='AbortError')notify(e.message,true);});});$('#logout').addEventListener('click',async()=>{try{await api('/auth/logout',{method:'POST'});location.assign('/login');}catch(e){notify(e.message,true);}});window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+(async()=>{try{me=await api('/api/v1/me');$('#identity').textContent=me.actor.name+(me.actor.admin?' · Admin':' · Moderator');await loadServers();await render();const events=new EventSource('/api/v1/events');events.addEventListener('resync_required',()=>{clearTimeout(refreshTimer);if(!dirty&&(page==='Overview'||page==='Activity'))refreshTimer=setTimeout(()=>{(page==='Overview'?refreshOverview():render()).catch(e=>{if(e.name!=='AbortError')notify(e.message,true);});},250);});events.onerror=()=>{notify('Live updates disconnected. Refresh to verify access and server state.');};}catch(e){content.replaceChildren();panel('Sign in through Discord').append(node('p','Run /web in Discord and open the private link to access your server controls.'));notify(e.message,true);}})();
 
 let lastActivity=0;for(const event of ['pointerdown','keydown'])document.addEventListener(event,()=>{if(me&&Date.now()-lastActivity>60000){lastActivity=Date.now();api('/auth/activity',{method:'POST'}).catch(e=>notify(e.message,true));}});
 
