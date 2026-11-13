@@ -20,6 +20,10 @@ func handleMapLoad(input *handleData) bool {
 	 * MAP LOAD
 	 ******************/
 	if strings.HasPrefix(input.noTimecode, "Loading map") {
+		// New saves can reuse the same surface names and coordinates.
+		mapActivityAlerts.mu.Lock()
+		clear(mapActivityAlerts.sites)
+		mapActivityAlerts.mu.Unlock()
 		fact.NotifyFactorioProgress(input.generation, "map-load", "")
 		cwlog.DoLogCW(input.noTimecode)
 

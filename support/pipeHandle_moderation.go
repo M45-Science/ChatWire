@@ -25,70 +25,99 @@ func handleActMsg(input *handleData) bool {
 	} else if strings.HasPrefix(input.line, "[ACT]") || strings.HasPrefix(input.line, "[TODO]") {
 		cwlog.DoLogGame(input.line)
 		if input.wordListLen > 2 {
-
-			pname := input.wordList[1]
-			action := input.wordList[2]
-
-			if pname == "" {
-				return true
-			}
-
-			fact.UpdateSeen(pname)
-			shouldWarn := false
-			glob.PlayerListLock.Lock()
-			p := glob.PlayerList[strings.ToLower(pname)]
-			if p != nil && p.Name != "" {
-				if p.Level < 2 {
-					if strings.Contains(action, "placed-ghost") {
-						p.SusScore -= 2
-					} else if strings.Contains(action, "mined-ghost") {
-						p.SusScore--
-					} else if strings.Contains(action, "placed") {
-						p.SusScore--
-					} else if strings.Contains(action, "mined") {
-						p.SusScore++
-					} else if strings.Contains(action, "decon") {
-						p.SusScore += 2
-					}
-
-					thresh := int64(constants.SusWarningThresh)
-					if p.Level > 0 {
-						thresh += 1000
-					}
-					if p.SusScore > thresh && time.Since(glob.LastSusWarning) > time.Minute*constants.SusWarningInterval {
-						glob.LastSusWarning = time.Now()
-						shouldWarn = !cfg.Global.Options.ShutupSusWarn
-						p.SusScore = 0
-					}
-				} else {
-					p.SusScore = 0
+			pname, action := input.wordList[1], input.wordList[2]
+			if pname != "" {
+				fact.UpdateSeen(pname)
+				if input.wordList[0] == "[ACT]" {
+					detail := strings.TrimSpace(strings.Join(input.wordList[3:], " "))
+					scoreActivity(pname, action, detail)
 				}
-			}
-			glob.PlayerListLock.Unlock()
-
-			if shouldWarn {
-				suspect := "Possible suspicious activity: " + pname + "\n"
-				serverTag := fmt.Sprintf("%v-%v", cfg.Local.Callsign, cfg.Local.Name)
-				if cfg.Local.Channel.ChatChannel != "" {
-					serverTag = fmt.Sprintf("<#%v> [%v]\n", cfg.Local.Channel.ChatChannel, serverTag)
-				}
-				logURL := ""
-				if cfg.GetGameLogURL() != "" {
-					logURL = "Log: " + cfg.GetGameLogURL() + "\n"
-				}
-				pingTag := ""
-				if cfg.Global.Discord.SusPingRole != "" {
-					pingTag = fmt.Sprintf("\n<@&%v>", cfg.Global.Discord.SusPingRole)
-				}
-
-				fact.ReportStatus(serverTag + suspect + logURL + pingTag)
-				fact.FactChat(suspect)
 			}
 		}
 		return true
 	}
 
 	return false
+}
+
+// Score only explicit actions. Planner rectangles accompany entity-level
+// records and cancellations never add suspicion or trigger an alert.
+func scoreActivity(player, action, detail string) {
+	var delta int64
+	switch action {
+	case "placed-ghost":
+		delta = -2
+	case "mined-ghost", "placed":
+		delta = -1
+	case "mined":
+		delta = 1
+	case "decon":
+		if detail == "" || strings.HasPrefix(detail, "[") {
+			return
+		}
+		delta = 2
+	case "undecon":
+	default:
+		return
+	}
+	glob.PlayerListLock.Lock()
+	p := glob.PlayerList[strings.ToLower(player)]
+	if p == nil || p.Name == "" {
+		glob.PlayerListLock.Unlock()
+		return
+	}
+	if p.Level >= 2 {
+		p.SusScore = 0
+		glob.PlayerListLock.Unlock()
+		return
+	}
+	p.SusScore += delta
+	thresh := int64(constants.SusWarningThresh)
+	if p.Level > 0 {
+		thresh += 1000
+	}
+	qualified := delta > 0 && p.SusScore > thresh
+	if qualified {
+		p.SusScore = 0
+	}
+	glob.PlayerListLock.Unlock()
+	if !cfg.Global.Options.ShutupSusWarn {
+		mapActivityAlerts.record(time.Now(), player, action, detail, qualified)
+	}
+}
+
+func startActivityAlertLoop() {
+	go func() {
+		ctx := glob.RuntimeContext()
+		for waitForContext(ctx, time.Second) {
+			for _, alert := range mapActivityAlerts.due(time.Now()) {
+				glob.PlayerListLock.RLock()
+				p := glob.PlayerList[strings.ToLower(alert.player)]
+				eligible := p != nil && p.Level >= 0 && p.Level < 2
+				glob.PlayerListLock.RUnlock()
+				if eligible && !cfg.Global.Options.ShutupSusWarn {
+					reportActivityAlert(alert.message)
+				}
+			}
+		}
+	}()
+}
+
+func reportActivityAlert(message string) {
+	serverTag := fmt.Sprintf("[%s-%s]\n", cfg.Local.Callsign, cfg.Local.Name)
+	if cfg.Local.Channel.ChatChannel != "" {
+		serverTag = "<#" + cfg.Local.Channel.ChatChannel + "> " + serverTag
+	}
+	// Only the configured alert role should be able to notify Discord users.
+	text := serverTag + strings.ReplaceAll(message, "@", "@\u200b")
+	if url := cfg.GetGameLogURL(); url != "" {
+		text += "\nLog: " + url
+	}
+	if role := cfg.Global.Discord.SusPingRole; role != "" {
+		text += "\n<@&" + role + ">"
+	}
+	fact.ReportStatus(text)
+	fact.FactChat("%s", message)
 }
 
 func handleBan(input *handleData) bool {

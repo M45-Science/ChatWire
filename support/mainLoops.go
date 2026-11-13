@@ -4,6 +4,7 @@ package support
 // They run even when Discord integration is disabled.
 func StartFactorioLoops() {
 	startGameWatchdog()
+	startActivityAlertLoop()
 	go HandleChat()
 }
 

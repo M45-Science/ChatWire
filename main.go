@@ -376,7 +376,6 @@ func initMaps() {
 }
 
 func initTime() {
-	glob.LastSusWarning = time.Now().Add(time.Duration(-constants.SusWarningInterval) * time.Minute)
 	now := time.Now()
 	then := now.Add(time.Duration(-constants.MapCooldownMins+1) * time.Minute)
 	glob.VoteBox.LastMapChange = then.Round(time.Second)

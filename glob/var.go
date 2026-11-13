@@ -103,7 +103,6 @@ var (
 	ChatterSpamScore map[string]int
 
 	//Message throttles
-	LastSusWarning  time.Time
 	LastCrashReport time.Time
 
 	/* Pause command */
