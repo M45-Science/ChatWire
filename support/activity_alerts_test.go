@@ -198,3 +198,30 @@ func TestEarlyReviewAudience(t *testing.T) {
 		}
 	}
 }
+
+func TestGameHeadsUpOnePerIncident(t *testing.T) {
+	a := activityAlerts{sites: make(map[string][]*activitySite)}
+	start := time.Unix(10000, 0)
+	check := func(sec int, who, gps, review string, wantGame bool) {
+		t.Helper()
+		now := start.Add(time.Duration(sec) * time.Second)
+		a.record(now, who, "mined", "rail "+gps, true, review)
+		got := a.due(now.Add(burstQuiet))
+		if len(got) != 1 || (got[0].gameMessage != "") != wantGame {
+			t.Fatalf("at %d: %+v", sec, got)
+		}
+		if wantGame {
+			for _, want := range []string{who, gps, "/report", "/banish"} {
+				if !strings.Contains(got[0].gameMessage, want) {
+					t.Fatal(got[0].gameMessage)
+				}
+			}
+		}
+	}
+	check(0, "A", "[gps=0,0]", "early review", false)
+	check(121, "A", "[gps=0,0]", "", true)
+	check(362, "A", "[gps=0,0]", "", false)
+	check(370, "B", "[gps=0,0]", "", true)
+	check(380, "A", "[gps=800,0]", "", true)
+	check(2300, "A", "[gps=0,0]", "", true)
+}

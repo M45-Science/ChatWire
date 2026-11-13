@@ -65,6 +65,7 @@ type activitySite struct {
 	firstGPS          string
 	miningContext     string
 	normalAlert       bool
+	gameNotified      bool
 }
 
 const earlySessionWindow = 15 * time.Minute
@@ -215,6 +216,7 @@ func (s *activitySite) summary() string {
 type activityAlert struct {
 	player, message string
 	reportOnly      bool
+	gameMessage     string
 }
 
 func (a *activityAlerts) due(now time.Time) []activityAlert {
@@ -235,7 +237,20 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 					if s.miningContext != "" {
 						msg += " " + s.miningContext
 					}
-					alerts = append(alerts, activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert})
+					alert := activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert}
+					if s.normalAlert && !s.gameNotified {
+						what := "mining"
+						if s.marks > 0 {
+							what = fmt.Sprintf("%d deconstruction marks", s.marks)
+						}
+						location := ""
+						if s.firstGPS != "" {
+							location = " near " + s.firstGPS
+						}
+						alert.gameMessage = fmt.Sprintf("Activity check: %s by %s%s. If you see damage, use /report with details. Eligible players can vote with /banish.", what, s.player, location)
+						s.gameNotified = true
+					}
+					alerts = append(alerts, alert)
 					if s.delay == 0 {
 						s.delay = firstRepeat
 					} else {

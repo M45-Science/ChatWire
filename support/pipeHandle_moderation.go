@@ -143,7 +143,9 @@ func reportActivityAlert(alert activityAlert) {
 		text += "\n<@&" + role + ">"
 	}
 	fact.ReportStatus(text)
-	fact.FactChat("%s", message)
+	if alert.gameMessage != "" {
+		fact.FactChat("%s", alert.gameMessage)
+	}
 }
 
 func handleBan(input *handleData) bool {

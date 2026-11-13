@@ -29,6 +29,8 @@ Recent lifecycle work centralized start, stop, restart, map change, map reset, u
 
 For New and Member players, ChatWire counts structures manually mined and placed during the first 15 minutes after a recorded map join. If a player mines at least eight and mines at least three times as many as they place, a mining event can get a temporary 36-point bonus toward the existing warning threshold. The bonus can qualify one warning per session and is never stored in the player database. When the bonus alone makes the difference, the alert goes to the moderation report channel with the elapsed time and counts, without pinging the alert role or posting in game chat. The usual per-player and per-site backoff applies.
 
+A normal-threshold warning gives players one in-game activity check per player and site, including the location when available. Discord carries the detailed follow-ups. After 30 quiet minutes at the site, a new incident can give players another heads-up. Players can send what they witnessed with `/report`; eligible players can vote with `/banish`.
+
 ## Requirements
 
 - Linux
