@@ -93,7 +93,7 @@ func LaunchFactorio(generation uint64, saveName string) error {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
-	if cfg.Local.Settings.NewMap && cfg.Local.Settings.Scenario != "none" && cfg.Local.Settings.Scenario != "" {
+	if cfg.Local.Settings.NewMap && !strings.EqualFold(cfg.Local.Settings.Scenario, "none") && cfg.Local.Settings.Scenario != "" {
 		// Keep the pending scenario until readiness, including failed launches.
 		tempargs = append(tempargs, "--start-server-load-scenario")
 		tempargs = append(tempargs, cfg.Local.Settings.Scenario)
@@ -127,7 +127,7 @@ func LaunchFactorio(generation uint64, saveName string) error {
 
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
-		if cfg.Local.Settings.Scenario == "" || cfg.Local.Settings.Scenario == "none" {
+		if cfg.Local.Settings.Scenario == "" || strings.EqualFold(cfg.Local.Settings.Scenario, "none") {
 			if err := injectSoftMod(fileName, folderName); err != nil {
 				return fmt.Errorf("inject SoftMod: %w", err)
 			}
