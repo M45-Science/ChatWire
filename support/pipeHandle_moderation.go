@@ -131,18 +131,20 @@ func reportActivityAlert(alert activityAlert) {
 	if url := cfg.GetGameLogURL(); url != "" {
 		text += "\nLog: " + url
 	}
-	if alert.reportOnly {
-		if channel := cfg.Global.Discord.ReportChannel; channel != "" {
-			fact.LogCMS(channel, text)
-		} else {
-			cwlog.DoLogCW("%s", text)
+	reportChannel := cfg.Global.Discord.ReportChannel
+	if reportChannel != "" {
+		reportText := text
+		if role := cfg.Global.Discord.SusPingRole; alert.pingRole && role != "" {
+			reportText += "\n<@&" + role + ">"
 		}
-		return
+		fact.LogCMS(reportChannel, reportText)
+	} else {
+		cwlog.DoLogCW("%s", text)
 	}
-	if role := cfg.Global.Discord.SusPingRole; role != "" {
-		text += "\n<@&" + role + ">"
+	// A map-channel copy must not ping the same role a second time.
+	if mapChannel := cfg.Local.Channel.ChatChannel; !alert.reportOnly && mapChannel != "" && mapChannel != reportChannel {
+		fact.CMS(mapChannel, text)
 	}
-	fact.ReportStatus(text)
 	if alert.gameMessage != "" {
 		fact.FactChat("%s", alert.gameMessage)
 	}

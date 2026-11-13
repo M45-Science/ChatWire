@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"ChatWire/cfg"
+	"ChatWire/disc"
 	"ChatWire/glob"
 )
 
@@ -202,12 +203,15 @@ func TestEarlyReviewAudience(t *testing.T) {
 func TestGameHeadsUpOnePerIncident(t *testing.T) {
 	a := activityAlerts{sites: make(map[string][]*activitySite)}
 	start := time.Unix(10000, 0)
-	check := func(sec int, who, gps, review string, wantGame bool) {
+	check := func(sec int, who, gps, review string, wantGame, wantPing bool) {
 		t.Helper()
 		now := start.Add(time.Duration(sec) * time.Second)
+		for i := 1; i < witnessMineMinimum; i++ {
+			a.record(now, who, "mined", "rail "+gps, false, "")
+		}
 		a.record(now, who, "mined", "rail "+gps, true, review)
 		got := a.due(now.Add(burstQuiet))
-		if len(got) != 1 || (got[0].gameMessage != "") != wantGame {
+		if len(got) != 1 || (got[0].gameMessage != "") != wantGame || got[0].pingRole != wantPing {
 			t.Fatalf("at %d: %+v", sec, got)
 		}
 		if wantGame {
@@ -218,10 +222,75 @@ func TestGameHeadsUpOnePerIncident(t *testing.T) {
 			}
 		}
 	}
-	check(0, "A", "[gps=0,0]", "early review", false)
-	check(121, "A", "[gps=0,0]", "", true)
-	check(362, "A", "[gps=0,0]", "", false)
-	check(370, "B", "[gps=0,0]", "", true)
-	check(380, "A", "[gps=800,0]", "", true)
-	check(2300, "A", "[gps=0,0]", "", true)
+	check(0, "A", "[gps=0,0]", "early review", false, true)
+	check(121, "A", "[gps=0,0]", "", true, false)
+	check(362, "A", "[gps=0,0]", "", false, false)
+	check(370, "B", "[gps=0,0]", "", true, true)
+	check(380, "A", "[gps=800,0]", "", true, true)
+	check(2300, "A", "[gps=0,0]", "", true, true)
+}
+
+func TestWitnessWarningEvidence(t *testing.T) {
+	for _, tc := range []struct {
+		name                          string
+		marks, cancels, mined, placed int
+		gps                           string
+		want                          bool
+	}{
+		{"net marks below", 40, 1, 0, 0, "[gps=1,2]", false},
+		{"net marks at cutoff", 41, 1, 0, 0, "[gps=1,2]", true},
+		{"missing location", 60, 0, 0, 0, "", false},
+		{"mine below", 0, 0, 15, 0, "[gps=1,2]", false},
+		{"mining and building", 0, 0, 16, 6, "[gps=1,2]", false},
+		{"mine at cutoff", 0, 0, 16, 5, "[gps=1,2]", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			a := activityAlerts{sites: make(map[string][]*activitySite)}
+			now := time.Unix(1000, 0)
+			for _, v := range []struct {
+				action string
+				n      int
+			}{{"placed", tc.placed}, {"mined", tc.mined}, {"decon", tc.marks}, {"undecon", tc.cancels}} {
+				for i := 0; i < v.n; i++ {
+					a.record(now, "A", v.action, "rail "+tc.gps, i == 0 && (v.action == "mined" || v.action == "decon"), "")
+				}
+			}
+			got := a.due(now.Add(burstQuiet))
+			if len(got) != 1 || !got[0].pingRole || (got[0].gameMessage != "") != tc.want {
+				t.Fatal(got)
+			}
+		})
+	}
+}
+
+func TestActivityMentionOnlyOnceInReportChannel(t *testing.T) {
+	oldQueue, oldReport, oldMap, oldRole := disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole
+	defer func() {
+		disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole = oldQueue, oldReport, oldMap, oldRole
+	}()
+	disc.CMSChan = make(chan disc.CMSBuf, 64)
+	cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole = "report", "map", "123"
+	for _, review := range []bool{true, false} {
+		for _, ping := range []bool{true, false} {
+			reportActivityAlert(activityAlert{message: "check", reportOnly: review, pingRole: ping})
+			pings, reports, mapCopies := 0, 0, 0
+			for len(disc.CMSChan) > 0 {
+				m := <-disc.CMSChan
+				if m.Channel == "report" {
+					reports++
+				} else if m.Channel == "map" {
+					mapCopies++
+				}
+				if strings.Contains(m.Text, "<@&123>") {
+					pings++
+					if m.Channel != "report" {
+						t.Fatal("duplicate public ping")
+					}
+				}
+			}
+			if reports == 0 || (mapCopies == 0) != review || (pings == 1) != ping || pings > 1 {
+				t.Fatal(review, ping, reports, mapCopies, pings)
+			}
+		}
+	}
 }

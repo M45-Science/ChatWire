@@ -27,9 +27,9 @@ Recent lifecycle work centralized start, stop, restart, map change, map reset, u
 
 ## Early-session activity review
 
-For New and Member players, ChatWire counts structures manually mined and placed during the first 15 minutes after a recorded map join. If a player mines at least eight and mines at least three times as many as they place, a mining event can get a temporary 36-point bonus toward the existing warning threshold. The bonus can qualify one warning per session and is never stored in the player database. When the bonus alone makes the difference, the alert goes to the moderation report channel with the elapsed time and counts, without pinging the alert role or posting in game chat. The usual per-player and per-site backoff applies.
+For New and Member players, ChatWire counts structures manually mined and placed during the first 15 minutes after a recorded map join. If a player mines at least eight and mines at least three times as many as they place, a mining event can get a temporary 36-point bonus toward the existing warning threshold. The bonus can qualify one warning per session and is never stored in the player database. An early-removal alert goes to the moderation report channel with the elapsed time and counts. The first qualifying alert of either kind for a player at a site mentions the configured moderator role there. Follow-ups and map-channel copies carry no role mention. A different player, another site, or 30 quiet minutes can start a new incident.
 
-A normal-threshold warning gives players one in-game activity check per player and site, including the location when available. Discord carries the detailed follow-ups. After 30 quiet minutes at the site, a new incident can give players another heads-up. Players can send what they witnessed with `/report`; eligible players can vote with `/banish`.
+Players get at most one in-game warning per player and site. It needs a normal-threshold alert, a GPS location and a burst with either 40 more deconstruction marks than cancellations or at least 16 manually mined structures with at least three times as many mined as placed. The message gives the location and counts so witnesses can decide whether to use `/report` or, when eligible, `/banish`.
 
 ## Requirements
 

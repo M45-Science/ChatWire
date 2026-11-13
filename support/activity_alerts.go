@@ -13,12 +13,14 @@ import (
 )
 
 const (
-	burstQuiet  = 3 * time.Second
-	burstLimit  = 15 * time.Second
-	siteRadius  = 128 // tiles from the first reported position, on the same surface
-	firstRepeat = constants.SusWarningInterval * time.Minute
-	maxRepeat   = 16 * time.Minute
-	siteExpiry  = 30 * time.Minute
+	burstQuiet         = 3 * time.Second
+	burstLimit         = 15 * time.Second
+	siteRadius         = 128 // tiles from the first reported position, on the same surface
+	firstRepeat        = constants.SusWarningInterval * time.Minute
+	maxRepeat          = 16 * time.Minute
+	witnessMarkMinimum = 40
+	witnessMineMinimum = 16
+	siteExpiry         = 30 * time.Minute
 )
 
 type activityLocation struct {
@@ -60,6 +62,7 @@ type activitySite struct {
 	delay             time.Duration
 	armed             bool
 	marks, cancels    int
+	mined, placed     int
 	types             map[string]int
 	player            string
 	firstGPS          string
@@ -121,7 +124,7 @@ var mapActivityAlerts = activityAlerts{sites: make(map[string][]*activitySite)}
 func (a *activityAlerts) record(now time.Time, player, action, detail string, qualified bool, context string) {
 	cancel := action == "undecon"
 	mark := action == "decon"
-	if !mark && !cancel && !qualified {
+	if !mark && !cancel && action != "mined" && action != "placed" && !qualified {
 		return
 	}
 	entity, _, _ := strings.Cut(detail, " ")
@@ -170,6 +173,10 @@ func (a *activityAlerts) record(now time.Time, player, action, detail string, qu
 		site.marks++
 	} else if cancel {
 		site.cancels++
+	} else if action == "mined" {
+		site.mined++
+	} else if action == "placed" {
+		site.placed++
 	}
 	if context != "" {
 		site.miningContext = context
@@ -216,6 +223,7 @@ func (s *activitySite) summary() string {
 type activityAlert struct {
 	player, message string
 	reportOnly      bool
+	pingRole        bool
 	gameMessage     string
 }
 
@@ -237,18 +245,20 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 					if s.miningContext != "" {
 						msg += " " + s.miningContext
 					}
-					alert := activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert}
-					if s.normalAlert && !s.gameNotified {
-						what := "mining"
-						if s.marks > 0 {
-							what = fmt.Sprintf("%d deconstruction marks", s.marks)
+					// delay is zero until the first alert of either kind at this site.
+					alert := activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert, pingRole: s.delay == 0}
+					if s.normalAlert && !s.gameNotified && s.firstGPS != "" {
+						var what string
+						switch {
+						case s.marks-s.cancels >= witnessMarkMinimum:
+							what = fmt.Sprintf("%d deconstruction marks (%d cancellations)", s.marks, s.cancels)
+						case s.mined >= witnessMineMinimum && s.mined >= 3*s.placed:
+							what = fmt.Sprintf("%d structures mined, %d placed", s.mined, s.placed)
 						}
-						location := ""
-						if s.firstGPS != "" {
-							location = " near " + s.firstGPS
+						if what != "" {
+							alert.gameMessage = fmt.Sprintf("Activity check near %s: %s by %s. If you see damage, use /report with details. Eligible players can vote with /banish.", s.firstGPS, what, s.player)
+							s.gameNotified = true
 						}
-						alert.gameMessage = fmt.Sprintf("Activity check: %s by %s%s. If you see damage, use /report with details. Eligible players can vote with /banish.", what, s.player, location)
-						s.gameNotified = true
 					}
 					alerts = append(alerts, alert)
 					if s.delay == 0 {
@@ -258,6 +268,7 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 					}
 					s.next = now.Add(s.delay)
 				}
+				s.mined, s.placed = 0, 0
 				s.miningContext = ""
 				s.normalAlert = false
 				s.first = time.Time{}
