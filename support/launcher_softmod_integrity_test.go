@@ -104,3 +104,16 @@ func TestInjectionSuccess(t *testing.T) {
 		t.Fatal("unexpected entries", len(archive.File))
 	}
 }
+
+func TestScenarioSentinel(t *testing.T) {
+	for _, name := range []string{"", "none", "NONE", "None"} {
+		if hasCustomScenario(name) {
+			t.Fatalf("%q treated as a custom scenario", name)
+		}
+	}
+	for _, name := range []string{"freeplay", "pvp", "none-other"} {
+		if !hasCustomScenario(name) {
+			t.Fatalf("%q lost custom scenario", name)
+		}
+	}
+}

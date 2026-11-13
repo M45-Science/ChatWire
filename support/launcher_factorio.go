@@ -93,7 +93,7 @@ func LaunchFactorio(generation uint64, saveName string) error {
 		cfg.Global.Paths.Folders.FactorioDir + "/" +
 		constants.ServSettingsName
 
-	if cfg.Local.Settings.NewMap && !strings.EqualFold(cfg.Local.Settings.Scenario, "none") && cfg.Local.Settings.Scenario != "" {
+	if cfg.Local.Settings.NewMap && hasCustomScenario(cfg.Local.Settings.Scenario) {
 		// Keep the pending scenario until readiness, including failed launches.
 		tempargs = append(tempargs, "--start-server-load-scenario")
 		tempargs = append(tempargs, cfg.Local.Settings.Scenario)
@@ -127,7 +127,7 @@ func LaunchFactorio(generation uint64, saveName string) error {
 
 	/* Inject softmod */
 	if cfg.Local.Options.SoftModOptions.InjectSoftMod {
-		if cfg.Local.Settings.Scenario == "" || strings.EqualFold(cfg.Local.Settings.Scenario, "none") {
+		if !hasCustomScenario(cfg.Local.Settings.Scenario) {
 			if err := injectSoftMod(fileName, folderName); err != nil {
 				return fmt.Errorf("inject SoftMod: %w", err)
 			}
@@ -278,3 +278,5 @@ func isCriticalFactorioLine(line string) bool {
 		strings.Contains(line, "[CHATWIRE]") ||
 		strings.Contains(line, "Goodbye")
 }
+
+func hasCustomScenario(name string) bool { return name != "" && !strings.EqualFold(name, "none") }
