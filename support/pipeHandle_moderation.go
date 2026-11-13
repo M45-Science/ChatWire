@@ -71,19 +71,36 @@ func scoreActivity(player, action, detail string) {
 		glob.PlayerListLock.Unlock()
 		return
 	}
+	now := time.Now()
+	mapActivityAlerts.mu.Lock()
+	session := mapActivityAlerts.sessions[strings.ToLower(player)]
+	qualified, context := session.warningScore(now, action, delta, p)
+	mapActivityAlerts.mu.Unlock()
+	glob.PlayerListLock.Unlock()
+	if !cfg.Global.Options.ShutupSusWarn {
+		mapActivityAlerts.record(now, player, action, detail, qualified, context)
+	}
+}
+
+func (s *activitySession) warningScore(now time.Time, action string, delta int64, p *glob.PlayerData) (bool, string) {
+	bonus := s.observe(now, action)
 	p.SusScore += delta
 	thresh := int64(constants.SusWarningThresh)
 	if p.Level > 0 {
 		thresh += 1000
 	}
-	qualified := delta > 0 && p.SusScore > thresh
+	qualified := delta > 0 && p.SusScore+bonus > thresh
 	if qualified {
+		extraReview := p.SusScore <= thresh && bonus > 0
 		p.SusScore = 0
+		if bonus > 0 {
+			s.bonusUsed = true
+		}
+		if extraReview {
+			return true, fmt.Sprintf("Since joining %s ago: %d mined, %d placed.", now.Sub(s.joined).Round(time.Second), s.mined, s.placed)
+		}
 	}
-	glob.PlayerListLock.Unlock()
-	if !cfg.Global.Options.ShutupSusWarn {
-		mapActivityAlerts.record(time.Now(), player, action, detail, qualified)
-	}
+	return qualified, ""
 }
 
 func startActivityAlertLoop() {
@@ -96,14 +113,15 @@ func startActivityAlertLoop() {
 				eligible := p != nil && p.Level >= 0 && p.Level < 2
 				glob.PlayerListLock.RUnlock()
 				if eligible && !cfg.Global.Options.ShutupSusWarn {
-					reportActivityAlert(alert.message)
+					reportActivityAlert(alert)
 				}
 			}
 		}
 	}()
 }
 
-func reportActivityAlert(message string) {
+func reportActivityAlert(alert activityAlert) {
+	message := alert.message
 	serverTag := fmt.Sprintf("[%s-%s]\n", cfg.Local.Callsign, cfg.Local.Name)
 	if cfg.Local.Channel.ChatChannel != "" {
 		serverTag = "<#" + cfg.Local.Channel.ChatChannel + "> " + serverTag
@@ -112,6 +130,14 @@ func reportActivityAlert(message string) {
 	text := serverTag + strings.ReplaceAll(message, "@", "@\u200b")
 	if url := cfg.GetGameLogURL(); url != "" {
 		text += "\nLog: " + url
+	}
+	if alert.reportOnly {
+		if channel := cfg.Global.Discord.ReportChannel; channel != "" {
+			fact.LogCMS(channel, text)
+		} else {
+			cwlog.DoLogCW("%s", text)
+		}
+		return
 	}
 	if role := cfg.Global.Discord.SusPingRole; role != "" {
 		text += "\n<@&" + role + ">"

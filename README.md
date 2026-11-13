@@ -25,6 +25,10 @@ ChatWire runs alongside a Linux Factorio dedicated server and handles:
 
 Recent lifecycle work centralized start, stop, restart, map change, map reset, update, and ChatWire reboot handling behind a single controller with progress-aware timeouts and stronger process health detection.
 
+## Early-session activity review
+
+For New and Member players, ChatWire counts structures manually mined and placed during the first 15 minutes after a recorded map join. If a player mines at least eight and mines at least three times as many as they place, a mining event can get a temporary 36-point bonus toward the existing warning threshold. The bonus can qualify one warning per session and is never stored in the player database. When the bonus alone makes the difference, the alert goes to the moderation report channel with the elapsed time and counts, without pinging the alert role or posting in game chat. The usual per-player and per-site backoff applies.
+
 ## Requirements
 
 - Linux

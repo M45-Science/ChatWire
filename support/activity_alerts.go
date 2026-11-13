@@ -63,16 +63,61 @@ type activitySite struct {
 	types             map[string]int
 	player            string
 	firstGPS          string
+	miningContext     string
+	normalAlert       bool
+}
+
+const earlySessionWindow = 15 * time.Minute
+const earlyMiningBonus = 36
+
+type activitySession struct {
+	bonusUsed     bool
+	joined        time.Time
+	mined, placed int
+}
+
+// Keep the bonus local to this session and qualifying mining events. Repeated
+// events do not accumulate the bonus in the persistent player database.
+func (s *activitySession) observe(now time.Time, action string) int64 {
+	if s == nil || now.Before(s.joined) || now.Sub(s.joined) > earlySessionWindow {
+		return 0
+	}
+	switch action {
+	case "placed":
+		s.placed++
+	case "mined":
+		s.mined++
+		if !s.bonusUsed && s.mined >= 8 && s.mined >= 3*s.placed {
+			return earlyMiningBonus
+		}
+	}
+	return 0
+}
+
+func (a *activityAlerts) join(player string, now time.Time) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.sessions == nil {
+		a.sessions = make(map[string]*activitySession)
+	}
+	a.sessions[strings.ToLower(player)] = &activitySession{joined: now}
+}
+
+func (a *activityAlerts) leave(player string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	delete(a.sessions, strings.ToLower(player))
 }
 
 type activityAlerts struct {
-	mu    sync.Mutex
-	sites map[string][]*activitySite
+	mu       sync.Mutex
+	sessions map[string]*activitySession
+	sites    map[string][]*activitySite
 }
 
 var mapActivityAlerts = activityAlerts{sites: make(map[string][]*activitySite)}
 
-func (a *activityAlerts) record(now time.Time, player, action, detail string, qualified bool) {
+func (a *activityAlerts) record(now time.Time, player, action, detail string, qualified bool, context string) {
 	cancel := action == "undecon"
 	mark := action == "decon"
 	if !mark && !cancel && !qualified {
@@ -125,6 +170,10 @@ func (a *activityAlerts) record(now time.Time, player, action, detail string, qu
 	} else if cancel {
 		site.cancels++
 	}
+	if context != "" {
+		site.miningContext = context
+	}
+	site.normalAlert = site.normalAlert || (qualified && context == "")
 	site.armed = site.armed || qualified
 }
 
@@ -134,6 +183,9 @@ func (s *activitySite) summary() string {
 		where = "location unavailable"
 	}
 	if s.marks == 0 {
+		if !s.normalAlert {
+			return fmt.Sprintf("Early-session mining review: %s near %s.", s.player, where)
+		}
 		return fmt.Sprintf("Possible suspicious activity: %s near %s (mining activity).", s.player, where)
 	}
 	names := make([]string, 0, len(s.types))
@@ -160,18 +212,30 @@ func (s *activitySite) summary() string {
 	return msg
 }
 
-type activityAlert struct{ player, message string }
+type activityAlert struct {
+	player, message string
+	reportOnly      bool
+}
 
 func (a *activityAlerts) due(now time.Time) []activityAlert {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	var alerts []activityAlert
+	for key, s := range a.sessions {
+		if now.Sub(s.joined) > earlySessionWindow {
+			delete(a.sessions, key)
+		}
+	}
 	for player, sites := range a.sites {
 		keep := sites[:0]
 		for _, s := range sites {
 			if !s.first.IsZero() && (now.Sub(s.last) >= burstQuiet || now.Sub(s.first) >= burstLimit) && (!s.armed || !now.Before(s.next)) {
 				if s.armed {
-					alerts = append(alerts, activityAlert{s.player, s.summary()})
+					msg := s.summary()
+					if s.miningContext != "" {
+						msg += " " + s.miningContext
+					}
+					alerts = append(alerts, activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert})
 					if s.delay == 0 {
 						s.delay = firstRepeat
 					} else {
@@ -179,6 +243,8 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 					}
 					s.next = now.Add(s.delay)
 				}
+				s.miningContext = ""
+				s.normalAlert = false
 				s.first = time.Time{}
 				s.marks, s.cancels, s.types, s.armed = 0, 0, nil, false
 			}

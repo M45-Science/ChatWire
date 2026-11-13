@@ -23,6 +23,7 @@ func handleMapLoad(input *handleData) bool {
 		// New saves can reuse the same surface names and coordinates.
 		mapActivityAlerts.mu.Lock()
 		clear(mapActivityAlerts.sites)
+		clear(mapActivityAlerts.sessions)
 		mapActivityAlerts.mu.Unlock()
 		fact.NotifyFactorioProgress(input.generation, "map-load", "")
 		cwlog.DoLogCW(input.noTimecode)

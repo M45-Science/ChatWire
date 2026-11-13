@@ -61,6 +61,7 @@ func handlePlayerJoin(input *handleData) bool {
 			if banlist.CheckBanList(pname, true) {
 				return true
 			}
+			mapActivityAlerts.join(pname, time.Now())
 			plevelname := fact.AutoPromote(pname, false, true)
 
 			pname = sclean.EscapeDiscordMarkdown(pname)
@@ -122,6 +123,7 @@ func handlePlayerLeave(input *handleData) bool {
 		/* Mark as seen, async */
 		if input.noDatestampListLen > 1 {
 			pname := input.noDatestampList[1]
+			mapActivityAlerts.leave(pname)
 
 			/* Show quit if there is no soft-mod */
 			if glob.SoftModVersion == constants.Unknown {
