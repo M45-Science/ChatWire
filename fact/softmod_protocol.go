@@ -42,7 +42,8 @@ func WriteSoftModCommand(command string, data any) string {
 	if err != nil {
 		return ""
 	}
-	WriteFact("/chatwire %s", encoded)
+	// Machine messages may carry a 10 KiB quickbar plus the protocol envelope.
+	writeFactorioLine("/chatwire "+encoded, 32*1024)
 	return id
 }
 

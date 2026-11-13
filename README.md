@@ -46,6 +46,7 @@ Common generated files and directories:
 - `../cw-global-config.json`
 - `cw.lock`
 - `../playerdb.cwdb` (versioned binary player database with fast Zstandard compression)
+- `../quickbar-presets.json` (personal quickbar presets shared by all instances, created on first store)
 - `../playerdb.cwdb.lock` (persistent advisory-lock metadata; safe to leave in place)
 - `../map-gen-json/`
 - `./map-gen-json/` for per-server `/map-exchange` custom settings and cached map-generator fallbacks

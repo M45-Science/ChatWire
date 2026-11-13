@@ -102,6 +102,8 @@ func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 
 func handleChatWireEvent(event string, data json.RawMessage) {
 	switch event {
+	case "quickbar-preset":
+		handleQuickbarPreset(data)
 	case "map-preview":
 		var preview struct {
 			ExchangeString string `json:"exchange_string"`

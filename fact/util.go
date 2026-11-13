@@ -441,8 +441,12 @@ func WriteFact(format string, args ...interface{}) {
 	if len(args) != 0 {
 		input = fmt.Sprintf(format, append([]interface{}(nil), args...)...)
 	}
+	writeFactorioLine(input, constants.MaxDiscordMsgLen)
+}
+
+func writeFactorioLine(input string, maxLength int) {
 	buf := sclean.UnicodeCleanup(input)
-	if len(buf) > constants.MaxDiscordMsgLen || len(buf) <= 1 {
+	if len(buf) > maxLength || len(buf) <= 1 {
 		return
 	}
 
