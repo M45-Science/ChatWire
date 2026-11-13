@@ -18,6 +18,8 @@ const (
 	siteRadius         = 128 // tiles from the first reported position, on the same surface
 	firstRepeat        = constants.SusWarningInterval * time.Minute
 	maxRepeat          = 16 * time.Minute
+	reviewMarkMinimum  = 120
+	reviewMineMinimum  = 48
 	witnessMarkMinimum = 40
 	witnessMineMinimum = 16
 	siteExpiry         = 30 * time.Minute
@@ -69,6 +71,8 @@ type activitySite struct {
 	miningContext     string
 	normalAlert       bool
 	gameNotified      bool
+	roleNotified      bool
+	early             bool
 }
 
 const earlySessionWindow = 15 * time.Minute
@@ -182,6 +186,12 @@ func (a *activityAlerts) record(now time.Time, player, action, detail string, qu
 		site.miningContext = context
 	}
 	site.normalAlert = site.normalAlert || (qualified && context == "")
+	if qualified {
+		session := a.sessions[key]
+		if session != nil && !now.Before(session.joined) && now.Sub(session.joined) <= earlySessionWindow {
+			site.early = true
+		}
+	}
 	site.armed = site.armed || qualified
 }
 
@@ -245,20 +255,31 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 					if s.miningContext != "" {
 						msg += " " + s.miningContext
 					}
-					// delay is zero until the first alert of either kind at this site.
-					alert := activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert, pingRole: s.delay == 0}
+					netMarks := s.marks - s.cancels
+					miningImbalance := s.mined >= 3*s.placed
+					pingEvidence := s.miningContext != "" || netMarks >= reviewMarkMinimum || (s.mined >= reviewMineMinimum && miningImbalance)
+					alert := activityAlert{player: s.player, message: msg, reportOnly: !s.normalAlert}
 					if s.normalAlert && !s.gameNotified && s.firstGPS != "" {
+						markMinimum, mineMinimum := 4*witnessMarkMinimum, 4*witnessMineMinimum
+						if s.early {
+							markMinimum, mineMinimum = witnessMarkMinimum, witnessMineMinimum
+						}
 						var what string
 						switch {
-						case s.marks-s.cancels >= witnessMarkMinimum:
+						case netMarks >= markMinimum:
 							what = fmt.Sprintf("%d deconstruction marks (%d cancellations)", s.marks, s.cancels)
-						case s.mined >= witnessMineMinimum && s.mined >= 3*s.placed:
+						case s.mined >= mineMinimum && miningImbalance:
 							what = fmt.Sprintf("%d structures mined, %d placed", s.mined, s.placed)
 						}
 						if what != "" {
 							alert.gameMessage = fmt.Sprintf("Activity check near %s: %s by %s. If you see damage, use /report with details. Eligible players can vote with /banish.", s.firstGPS, what, s.player)
 							s.gameNotified = true
 						}
+					}
+					// A witness warning also merits a moderator ping if this incident has not paged yet.
+					if !s.roleNotified && (pingEvidence || alert.gameMessage != "") {
+						alert.pingRole = true
+						s.roleNotified = true
 					}
 					alerts = append(alerts, alert)
 					if s.delay == 0 {
@@ -270,6 +291,7 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 				}
 				s.mined, s.placed = 0, 0
 				s.miningContext = ""
+				s.early = false
 				s.normalAlert = false
 				s.first = time.Time{}
 				s.marks, s.cancels, s.types, s.armed = 0, 0, nil, false

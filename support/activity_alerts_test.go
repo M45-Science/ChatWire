@@ -236,7 +236,7 @@ func TestGameHeadsUpOnePerIncident(t *testing.T) {
 	check := func(sec int, who, gps, review string, wantGame, wantPing bool) {
 		t.Helper()
 		now := start.Add(time.Duration(sec) * time.Second)
-		for i := 1; i < witnessMineMinimum; i++ {
+		for i := 1; i < 4*witnessMineMinimum; i++ {
 			a.record(now, who, "mined", "rail "+gps, false, "")
 		}
 		a.record(now, who, "mined", "rail "+gps, true, review)
@@ -277,6 +277,7 @@ func TestWitnessWarningEvidence(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			a := activityAlerts{sites: make(map[string][]*activitySite)}
 			now := time.Unix(1000, 0)
+			a.join("A", now)
 			for _, v := range []struct {
 				action string
 				n      int
@@ -286,7 +287,7 @@ func TestWitnessWarningEvidence(t *testing.T) {
 				}
 			}
 			got := a.due(now.Add(burstQuiet))
-			if len(got) != 1 || !got[0].pingRole || (got[0].gameMessage != "") != tc.want {
+			if len(got) != 1 || got[0].pingRole != (tc.want || tc.marks-tc.cancels >= reviewMarkMinimum || tc.mined >= reviewMineMinimum && tc.mined >= 3*tc.placed) || (got[0].gameMessage != "") != tc.want {
 				t.Fatal(got)
 			}
 		})
@@ -321,6 +322,29 @@ func TestActivityMentionOnlyOnceInReportChannel(t *testing.T) {
 			if reports == 0 || (mapCopies == 0) != review || (pings == 1) != ping || pings > 1 {
 				t.Fatal(review, ping, reports, mapCopies, pings)
 			}
+		}
+	}
+}
+
+func TestQuietScoreCrossingCanEscalateAtSameSite(t *testing.T) {
+	a := activityAlerts{sites: make(map[string][]*activitySite)}
+	start := time.Unix(50000, 0)
+	for i, tc := range []struct {
+		marks, cancels int
+		ping, game     bool
+	}{
+		{120, 1, false, false}, {120, 0, true, false}, {159, 0, false, false}, {160, 0, false, true},
+	} {
+		now := start.Add(time.Duration(i) * 10 * time.Minute)
+		for j := 0; j < tc.marks; j++ {
+			a.record(now, "Tester", "decon", "rail at [gps=1,2]", j == 0, "")
+		}
+		for j := 0; j < tc.cancels; j++ {
+			a.record(now, "Tester", "undecon", "rail at [gps=1,2]", false, "")
+		}
+		got := a.due(now.Add(burstQuiet))
+		if len(got) != 1 || got[0].pingRole != tc.ping || (got[0].gameMessage != "") != tc.game {
+			t.Fatal(i, got)
 		}
 	}
 }
