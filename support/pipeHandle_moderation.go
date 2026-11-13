@@ -85,9 +85,9 @@ func scoreActivity(player, action, detail string) {
 func (s *activitySession) warningScore(now time.Time, action string, delta int64, p *glob.PlayerData) (bool, string) {
 	bonus := s.observe(now, action)
 	p.SusScore += delta
-	thresh := int64(constants.SusWarningThresh)
+	thresh := int64(constants.NewWarningThreshold)
 	if p.Level > 0 {
-		thresh += 1000
+		thresh = constants.MemberWarningThreshold
 	}
 	qualified := delta > 0 && p.SusScore+bonus > thresh
 	if qualified {

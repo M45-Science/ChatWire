@@ -4,7 +4,7 @@ import "time"
 
 const (
 	ProgName           = "ChatWire"
-	Version            = "2717-11.12.2026-1002p" // build-mm.dd.yyyy-hhmmsuffix
+	Version            = "2718-11.12.2026-1011p" // build-mm.dd.yyyy-hhmmsuffix
 	CWEpoch            = 1653239822390688174     //Never change this
 	SeenDivisor        = 60
 	SeenEpoch          = 1546326000
@@ -59,8 +59,9 @@ const (
 	SpamResetThres = time.Second * 15
 
 	/* Player suspect settings */
-	SusWarningThresh = 40
-	VeteranThresh    = (60 * 24 * 3) //3 days
+	NewWarningThreshold    = 40
+	MemberWarningThreshold = 1300
+	VeteranThresh          = (60 * 24 * 3) //3 days
 
 	/* Online commands */
 	OnlineCommand = "/p o c"

@@ -114,6 +114,36 @@ func TestActivityContinuousBurstAndRankThreshold(t *testing.T) {
 	}
 }
 
+func TestWarningScoreBoundariesByRank(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		level     int
+		threshold int64
+	}{
+		{"New", 0, 40}, {"Member", 1, 1300},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			now := time.Unix(1000, 0)
+			p := glob.PlayerData{Level: tc.level, SusScore: tc.threshold - 1}
+			var session *activitySession
+			if ok, _ := session.warningScore(now, "mined", 1, &p); ok || p.SusScore != tc.threshold {
+				t.Fatal("warned at threshold")
+			}
+			if ok, _ := session.warningScore(now, "mined", 1, &p); !ok || p.SusScore != 0 {
+				t.Fatal("missed threshold crossing")
+			}
+			session = &activitySession{joined: now, mined: 7}
+			p.SusScore = tc.threshold - earlyMiningBonus - 1
+			if ok, _ := session.warningScore(now, "mined", 1, &p); ok {
+				t.Fatal("early warning at threshold")
+			}
+			if ok, note := session.warningScore(now, "mined", 1, &p); !ok || note == "" {
+				t.Fatal("missed early threshold crossing")
+			}
+		})
+	}
+}
+
 func TestEarlyMiningWeight(t *testing.T) {
 	start := time.Unix(10000, 0)
 	now := start.Add(5 * time.Minute)
