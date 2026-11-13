@@ -34,7 +34,7 @@ Players get at most one in-game warning per player and site. It needs a normal-t
 ## Requirements
 
 - Linux
-- Go `1.27.1` or newer to build from source
+- Go `1.27.4` or newer to build from source
 - A Discord application with bot token, application ID, guild ID, and channel access
 - Factorio account credentials for update and server management features
 
