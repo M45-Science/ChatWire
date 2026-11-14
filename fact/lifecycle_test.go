@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"ChatWire/cfg"
@@ -615,39 +616,43 @@ func TestLifecycleStopReturnsErrorIfProcessNeverExits(t *testing.T) {
 }
 
 func TestLifecycleStopSaveProgressExtendsDeadline(t *testing.T) {
-	resetLifecycleTestState(t)
+	// Use a fake clock so save progress cannot lose the 3 ms versus 5 ms
+	// deadline race to scheduler delays on a busy CI runner.
+	synctest.Test(t, func(t *testing.T) {
+		resetLifecycleTestState(t)
 
-	lifecycleStopGraceTimeout = 5 * time.Millisecond
-	lifecycleStopIdleTimeout = 5 * time.Millisecond
-	lifecycleStopSaveTimeout = 40 * time.Millisecond
-	lifecycleStopPollInterval = time.Millisecond
+		lifecycleStopGraceTimeout = 5 * time.Millisecond
+		lifecycleStopIdleTimeout = 5 * time.Millisecond
+		lifecycleStopSaveTimeout = 40 * time.Millisecond
+		lifecycleStopPollInterval = time.Millisecond
 
-	var alive atomic.Bool
-	alive.Store(true)
-	interrupts := 0
-	lifecycleProcessAlive = func() bool { return alive.Load() }
-	lifecycleInterruptProcess = func() { interrupts++ }
+		var alive atomic.Bool
+		alive.Store(true)
+		interrupts := 0
+		lifecycleProcessAlive = func() bool { return alive.Load() }
+		lifecycleInterruptProcess = func() { interrupts++ }
 
-	lm := newTestLifecycleManager(LifecycleHooks{})
-	lm.phase = LifecycleRunning
-	lm.booted = false
-	lm.currentGeneration = 1
-	lm.startedAt = time.Now()
-	lm.syncCompatibilityLocked()
+		lm := newTestLifecycleManager(LifecycleHooks{})
+		lm.phase = LifecycleRunning
+		lm.booted = false
+		lm.currentGeneration = 1
+		lm.startedAt = time.Now()
+		lm.syncCompatibilityLocked()
 
-	go func() {
-		time.Sleep(3 * time.Millisecond)
-		lm.progressCh <- lifecycleProgressEvent{generation: 1, kind: "save", at: time.Now()}
-		time.Sleep(10 * time.Millisecond)
-		alive.Store(false)
-	}()
+		go func() {
+			time.Sleep(3 * time.Millisecond)
+			lm.progressCh <- lifecycleProgressEvent{generation: 1, kind: "save", at: time.Now()}
+			time.Sleep(10 * time.Millisecond)
+			alive.Store(false)
+		}()
 
-	if err := lm.executeStop("save progress"); err != nil {
-		t.Fatalf("expected stop to succeed with save progress, got %v", err)
-	}
-	if interrupts != 0 {
-		t.Fatalf("expected no interrupt while save progress extends deadline, got %d", interrupts)
-	}
+		if err := lm.executeStop("save progress"); err != nil {
+			t.Fatalf("expected stop to succeed with save progress, got %v", err)
+		}
+		if interrupts != 0 {
+			t.Fatalf("expected no interrupt while save progress extends deadline, got %d", interrupts)
+		}
+	})
 }
 
 func TestLifecycleFinalizeStoppedCancelsDelayedSaveReminderForMapReset(t *testing.T) {
