@@ -525,11 +525,12 @@ func parseDep(input string) depRequires {
 	if strings.Contains(input, "!") {
 		incompatible = true
 	}
-	//Mark optional
-	if strings.HasPrefix(input, "?") || strings.HasPrefix(input, "(?)") || strings.HasPrefix(input, "( ? )") {
+	// Recommended dependencies may be absent during an update, just like optional ones.
+	if strings.HasPrefix(input, "+") || strings.HasPrefix(input, "?") || strings.HasPrefix(input, "(?)") || strings.HasPrefix(input, "( ? )") {
 		optional = true
 	}
 	//Remove prefixes before processing
+	input = strings.TrimPrefix(input, "+")
 	input = strings.TrimPrefix(input, "~")
 	input = strings.TrimPrefix(input, "!")
 	input = strings.TrimPrefix(input, "?")

@@ -218,3 +218,23 @@ func TestResolveDepsReportsUninstallableRequestedMod(t *testing.T) {
 		}
 	}
 }
+
+func TestMoshineRecommendedDependency(t *testing.T) {
+	const raw = "+ sun_heat_and_cooling >= 1.3.0"
+	dep := parseDep(raw)
+	if !dep.optional || dep.name != "sun_heat_and_cooling" || dep.version != "1.3.0" {
+		t.Fatalf("parsed recommendation: %+v", dep)
+	}
+	for _, tc := range []struct {
+		version string
+		wantErr bool
+	}{{"", false}, {"1.2.9", true}, {"1.3.0", false}} {
+		mods := []modZipInfo{{Name: "Moshine", Version: "1.2.13", Enabled: true, Dependencies: []string{raw}}}
+		if tc.version != "" {
+			mods = append(mods, modZipInfo{Name: dep.name, Version: tc.version, Enabled: true})
+		}
+		if err := validateDownloadPlan(mods, nil); (err != nil) != tc.wantErr {
+			t.Errorf("recommended mod version %q: %v", tc.version, err)
+		}
+	}
+}
