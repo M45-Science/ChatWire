@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -103,6 +104,10 @@ func handleQuickbarPreset(data json.RawMessage) {
 	fact.WriteSoftModCommand("quickbar-result", reply)
 }
 
+// Preset labels are owner-controlled UI text. Block tag syntax rather than
+// restricting brackets, Unicode or player identity names in general.
+var quickbarLabelMarkup = regexp.MustCompile(`\[(?:[^\]]*=|[/.](?:color|font)\])`)
+
 func validateQuickbarRequest(req *quickbarRequest, reply *quickbarReply) error {
 	switch req.Action {
 	case "access":
@@ -132,6 +137,10 @@ func validateQuickbarRequest(req *quickbarRequest, reply *quickbarReply) error {
 	if req.Action == "rename" || req.Action == "store" {
 		if req.Action == "rename" && req.Label == nil {
 			return errors.New("missing preset name")
+		}
+		if req.Label != nil && quickbarLabelMarkup.MatchString(*req.Label) {
+			reply.Error = "Preset names cannot contain rich-text tags."
+			return nil
 		}
 		if req.Label != nil && utf8.RuneCountInString(*req.Label) > 32 {
 			reply.Error = "Preset names can have up to 32 characters."
@@ -183,7 +192,11 @@ func fillQuickbarReply(db map[string][]quickbarPreset, req quickbarRequest, repl
 	}
 	for i, preset := range slots[:min(len(slots), len(reply.Labels))] {
 		if i > 0 {
-			reply.Labels[i] = preset.Label
+			// Legacy markup gets the built-in slot label. The stored name and
+			// toolbar are left intact so the player can rename the slot.
+			if !quickbarLabelMarkup.MatchString(preset.Label) {
+				reply.Labels[i] = preset.Label
+			}
 		}
 	}
 }
