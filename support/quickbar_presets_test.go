@@ -88,10 +88,7 @@ func TestQuickbarWireRoundTrip(t *testing.T) {
 	w := &testWriteCloser{}
 	fact.SetFactorioPipe(w, 0)
 	t.Cleanup(func() { cfg.Global.Paths.Folders.ServersRoot = oldRoot; fact.SetFactorioPipe(nil, 0) })
-	exchange, err := fact.EncodeSoftModPayload([]byte("M45-QB2=iron-plate,"))
-	if err != nil {
-		t.Fatal(err)
-	}
+	const exchange = "Q3:BA0VrE"
 	call := func(action string, slot int) map[string]any {
 		t.Helper()
 		w.Reset()
@@ -245,5 +242,25 @@ func TestQuickbarRenamePreservesLayoutAndDefault(t *testing.T) {
 	call("rename", &name)
 	if r := call("load", nil); r.Exchange != exchange || r.Labels[1] != "" {
 		t.Fatal(r)
+	}
+}
+
+func TestQuickbarExchangeEnvelopes(t *testing.T) {
+	for _, exchange := range []string{"Q3:", "Q3:AAx", "Q3:_A-", "Q3:BA+", "Q3:BA", "Q3:BA!", "Q4:BA0VrE"} {
+		if validQuickbarEnvelope(exchange) {
+			t.Errorf("accepted malformed envelope %q", exchange)
+		}
+	}
+	if !validQuickbarEnvelope("Q3:AA") {
+		t.Fatal("empty V3 toolbar rejected")
+	}
+	for _, payload := range []string{"M45-QB1=rail,", "M45-QB2=AA:l,", "M45-QB4=AA,"} {
+		exchange, err := fact.EncodeSoftModPayload([]byte(payload))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if validQuickbarEnvelope(exchange) == strings.Contains(payload, "QB4") {
+			t.Errorf("unexpected result for %q", payload)
+		}
 	}
 }

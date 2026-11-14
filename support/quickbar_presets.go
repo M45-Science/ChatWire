@@ -108,6 +108,28 @@ func handleQuickbarPreset(data json.RawMessage) {
 // restricting brackets, Unicode or player identity names in general.
 var quickbarLabelMarkup = regexp.MustCompile(`\[(?:[^\]]*=|[/.](?:color|font)\])`)
 
+// ChatWire stores exchanges verbatim. SoftMod interprets the slot payload and
+// resolves item and quality names against the map that loads the preset.
+func validQuickbarEnvelope(exchange string) bool {
+	if payload, packed := strings.CutPrefix(exchange, "Q3:"); packed {
+		const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+		if len(payload) < 2 || strings.Trim(payload, alphabet) != "" {
+			return false
+		}
+		// The first seven bits give the occupied slot count. Empty toolbars
+		// have only that field and zero padding. Other toolbars also carry
+		// position, extension, item and quality mode bits (14 bits minimum).
+		slots := strings.IndexByte(alphabet, payload[0])*2 + strings.IndexByte(alphabet, payload[1])/32
+		if slots == 0 {
+			return payload == "AA"
+		}
+		return slots <= 100 && len(payload) >= 3
+	}
+	decoded, err := fact.DecodeSoftModPayload(exchange)
+	return err == nil && len(decoded) <= 10240 &&
+		(strings.HasPrefix(string(decoded), "M45-QB2=") || strings.HasPrefix(string(decoded), "M45-QB1="))
+}
+
 func validateQuickbarRequest(req *quickbarRequest, reply *quickbarReply) error {
 	switch req.Action {
 	case "access":
@@ -129,8 +151,7 @@ func validateQuickbarRequest(req *quickbarRequest, reply *quickbarReply) error {
 		if len(req.Exchange) == 0 || len(req.Exchange) > 10240 {
 			return errors.New("invalid preset size")
 		}
-		decoded, err := fact.DecodeSoftModPayload(req.Exchange)
-		if err != nil || len(decoded) > 10240 || !strings.HasPrefix(string(decoded), "M45-QB2=") {
+		if !validQuickbarEnvelope(req.Exchange) {
 			return errors.New("invalid quickbar exchange string")
 		}
 	}
