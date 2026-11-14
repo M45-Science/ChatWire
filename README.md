@@ -25,6 +25,14 @@ ChatWire runs alongside a Linux Factorio dedicated server and handles:
 
 Recent lifecycle work centralized start, stop, restart, map change, map reset, update, and ChatWire reboot handling behind a single controller with progress-aware timeouts and stronger process health detection.
 
+## Quickbar preset saving
+
+SoftMod skips unchanged Store requests and keeps its one-second UI cooldown. ChatWire combines all Store and Rename requests into one write to `quickbar-presets.json` every five seconds when changes are queued. The latest toolbar and label per player/slot win; different players and slots are saved together. There is no extra change comparison in ChatWire. Each flush locks and reloads the latest shared file before applying only its queued slots, preserving other server instances' changes. Flushes are serialized, and an idle interval does not write. Loading presets and checking access read the committed data immediately. SoftMod shows “Saving…” for queued requests and only confirms saving after persistence; failures remain retryable. Orderly shutdown flushes pending changes early.
+
+## Activity visibility
+
+Enable **Hide Activity** in the per-server web settings, or set the local Discord setting `hide-activity` to `true`, to hide raw `[ACT]` notices and activity-summary copies in the map Discord channel. The JSON option is `Options.HideActivity` in `cw-local-config.json`. After saving web or JSON edits, use `reload-config` to apply them. It defaults to `false` (activity remains visible). Disabling it shows activity again. Activity logs, suspicion scoring, moderation report delivery and in-game witness warnings remain active. This setting is independent of the global **Suspicious Warning Mute**.
+
 ## Early-session activity review
 
 For New and Member players, ChatWire counts structures manually mined and placed during the first 15 minutes after a recorded map join. If a player mines at least eight and mines at least three times as many as they place, a mining event can get a temporary 36-point bonus toward the existing warning threshold. The effective score must exceed 40 for New or 1,300 for Member. Regular and Veteran players are outside this automatic scoring rule. The bonus can qualify one warning per session and is never stored in the player database. An early-removal alert goes to the moderation report channel with the elapsed time and counts. All score crossings are reported. The first early-removal alert, or the first qualifying burst at that site with at least 120 net deconstruction marks or 48 structures mined at a 3:1 mining-to-placement ratio, mentions the configured moderator role. A qualifying in-game witness warning also pings moderators if the incident has not already done so. An earlier quiet report leaves that ping available. Follow-ups and map-channel copies carry no role mention. A different player, another site, or 30 quiet minutes can start a new incident.

@@ -2,12 +2,15 @@ package support
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
 )
 
@@ -294,35 +297,92 @@ func TestWitnessWarningEvidence(t *testing.T) {
 	}
 }
 
-func TestActivityMentionOnlyOnceInReportChannel(t *testing.T) {
-	oldQueue, oldReport, oldMap, oldRole := disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole
+func TestActivityVisibilityKeepsReportsAndMentions(t *testing.T) {
+	oldQueue, oldReport, oldMap, oldRole, oldHide := disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole, cfg.Local.Options.HideActivity
 	defer func() {
-		disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole = oldQueue, oldReport, oldMap, oldRole
+		disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole, cfg.Local.Options.HideActivity = oldQueue, oldReport, oldMap, oldRole, oldHide
 	}()
 	disc.CMSChan = make(chan disc.CMSBuf, 64)
 	cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, cfg.Global.Discord.SusPingRole = "report", "map", "123"
-	for _, review := range []bool{true, false} {
-		for _, ping := range []bool{true, false} {
-			reportActivityAlert(activityAlert{message: "check", reportOnly: review, pingRole: ping})
-			pings, reports, mapCopies := 0, 0, 0
-			for len(disc.CMSChan) > 0 {
-				m := <-disc.CMSChan
-				if m.Channel == "report" {
-					reports++
-				} else if m.Channel == "map" {
-					mapCopies++
-				}
-				if strings.Contains(m.Text, "<@&123>") {
-					pings++
-					if m.Channel != "report" {
-						t.Fatal("duplicate public ping")
+	for _, hide := range []bool{false, true} {
+		cfg.Local.Options.HideActivity = hide
+		for _, review := range []bool{true, false} {
+			for _, ping := range []bool{true, false} {
+				reportActivityAlert(activityAlert{message: "check", reportOnly: review, pingRole: ping})
+				pings, reports, mapCopies := 0, 0, 0
+				for len(disc.CMSChan) > 0 {
+					m := <-disc.CMSChan
+					if m.Channel == "report" {
+						reports++
+					} else if m.Channel == "map" {
+						mapCopies++
+					}
+					if strings.Contains(m.Text, "<@&123>") {
+						pings++
+						if m.Channel != "report" {
+							t.Fatal("duplicate public ping")
+						}
 					}
 				}
-			}
-			if reports == 0 || (mapCopies == 0) != review || (pings == 1) != ping || pings > 1 {
-				t.Fatal(review, ping, reports, mapCopies, pings)
+				if reports == 0 || (mapCopies == 0) != (review || hide) || (pings == 1) != ping || pings > 1 {
+					t.Fatal(hide, review, ping, reports, mapCopies, pings)
+				}
 			}
 		}
+	}
+}
+
+func TestHideActivityMessagesPreserveLogsAndScoring(t *testing.T) {
+	resetSupportTestState(t)
+	oldQueue, oldMap, oldHide, oldMute, oldLog := disc.CMSChan, cfg.Local.Channel.ChatChannel, cfg.Local.Options.HideActivity, cfg.Global.Options.ShutupSusWarn, glob.GameLogDesc
+	t.Cleanup(func() {
+		disc.CMSChan, cfg.Local.Channel.ChatChannel, cfg.Local.Options.HideActivity, cfg.Global.Options.ShutupSusWarn, glob.GameLogDesc = oldQueue, oldMap, oldHide, oldMute, oldLog
+		clear(mapActivityAlerts.sites)
+	})
+	clear(mapActivityAlerts.sites)
+	logPath := filepath.Join(t.TempDir(), "activity.log")
+	log, err := os.Create(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer log.Close()
+	glob.GameLogDesc = log
+	disc.CMSChan = make(chan disc.CMSBuf, 64)
+	cfg.Local.Channel.ChatChannel = "map"
+	cfg.Global.Options.ShutupSusWarn = false
+	p := &glob.PlayerData{Name: "Tester"}
+	glob.PlayerList["tester"] = p
+	for _, protocol := range []bool{false, true} {
+		for _, hide := range []bool{false, true, false} {
+			cfg.Local.Options.HideActivity = hide
+			for _, text := range []string{"[ACT] Tester decon belt at [gps=1,2]", "Research automation completed.", "Tester joined (Member)"} {
+				if protocol {
+					dispatchChatWireTextEvent("message", text)
+				} else if !handleSoftModMsg(preProcessFactorioOutput("[MSG] " + text)) {
+					t.Fatal("legacy message was not handled")
+				}
+				wantVisible := !hide || !strings.HasPrefix(text, "[ACT]")
+				if (len(disc.CMSChan) > 0) != wantVisible {
+					t.Fatalf("protocol=%v hide=%v text=%q: queue=%d", protocol, hide, text, len(disc.CMSChan))
+				}
+				for len(disc.CMSChan) > 0 {
+					<-disc.CMSChan
+				}
+			}
+			before := p.SusScore
+			dispatchChatWireTextEvent("activity", "Tester decon belt at [gps=1,2]")
+			if p.SusScore != before+2 {
+				t.Fatal("activity visibility affected scoring")
+			}
+		}
+	}
+	logged, err := os.ReadFile(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Six public messages and six scoring events, including hidden notices.
+	if got := strings.Count(string(logged), "[ACT] Tester decon belt"); got != 12 {
+		t.Fatalf("activity logs lost: got %d records", got)
 	}
 }
 
@@ -346,5 +406,29 @@ func TestQuietScoreCrossingCanEscalateAtSameSite(t *testing.T) {
 		if len(got) != 1 || got[0].pingRole != tc.ping || (got[0].gameMessage != "") != tc.game {
 			t.Fatal(i, got)
 		}
+	}
+}
+
+func TestHideActivityPreservesGameWitnessWarning(t *testing.T) {
+	resetSupportTestState(t)
+	oldHide, oldQueue, oldReport, oldMap, oldPipe := cfg.Local.Options.HideActivity, disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel, fact.Pipe
+	t.Cleanup(func() {
+		cfg.Local.Options.HideActivity, disc.CMSChan, cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel = oldHide, oldQueue, oldReport, oldMap
+		fact.PipeLock.Lock()
+		fact.Pipe = oldPipe
+		fact.PipeLock.Unlock()
+	})
+	cfg.Local.Options.HideActivity = true
+	cfg.Global.Discord.ReportChannel, cfg.Local.Channel.ChatChannel = "report", "map"
+	disc.CMSChan = make(chan disc.CMSBuf, 8)
+	w := &testWriteCloser{}
+	fact.PipeLock.Lock()
+	fact.Pipe = w
+	fact.PipeLock.Unlock()
+	glob.SoftModVersion = "test"
+	reportActivityAlert(activityAlert{message: "review", gameMessage: "Activity check near [gps=1,2]"})
+	command, data := capturedChatWireRequest(t, w.String())
+	if command != "chat" || data["text"] != "Activity check near [gps=1,2]" {
+		t.Fatalf("witness warning lost: %s %+v", command, data)
 	}
 }

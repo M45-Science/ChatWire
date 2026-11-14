@@ -172,6 +172,7 @@ type localOptions struct {
 
 	HideAutosaves bool `web:"Hide Autosaves"`
 	HideResearch  bool `web:"Hide Research"`
+	HideActivity  bool `web:"Hide Activity"`
 
 	PlayHourEnable bool `web:"Limit Open Hours"`
 	PlayStartHour  int  `web:"Open Hour"`

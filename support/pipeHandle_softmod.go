@@ -20,6 +20,12 @@ func handleSoftModMsg(input *handleData) bool {
 		if input.wordListLen > 0 {
 			ctext := strings.Join(input.wordList[1:], " ")
 
+			// SoftMod also sends activity as message events for public notices.
+			// Keep the log above; scoring uses the separate activity event.
+			if cfg.Local.Options.HideActivity && (ctext == "[ACT]" || strings.HasPrefix(ctext, "[ACT] ")) {
+				return true
+			}
+
 			/* Clean strings */
 			cmess := sclean.UnicodeCleanup(ctext)
 			cmess = sclean.EscapeDiscordMarkdown(cmess)

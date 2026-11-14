@@ -91,7 +91,10 @@ func main() {
 	fact.ReadVotes()
 	cwlog.StartGameLog()
 	runtimeChatWireExitCh := make(chan bool, 1)
-	exitHook := fact.DoExit
+	exitHook := func(delay bool) {
+		support.FlushQuickbarPresets()
+		fact.DoExit(delay)
+	}
 	if runtimeTestMode {
 		exitHook = func(delay bool) {
 			select {
@@ -193,6 +196,7 @@ func main() {
 	fact.WaitFactQuit(false)
 	fact.StopLifecycleManager()
 
+	support.FlushQuickbarPresets()
 	fact.DoExit(false)
 }
 

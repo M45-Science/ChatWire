@@ -3,6 +3,7 @@ package support
 // StartFactorioLoops starts the loops required to manage and observe Factorio.
 // They run even when Discord integration is disabled.
 func StartFactorioLoops() {
+	startQuickbarSaveLoop()
 	startGameWatchdog()
 	startActivityAlertLoop()
 	go HandleChat()

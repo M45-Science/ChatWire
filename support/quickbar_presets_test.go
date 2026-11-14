@@ -31,9 +31,10 @@ func TestQuickbarRoleAccess(t *testing.T) {
 		admin bool
 		want  int
 	}{
-		{"member", 1, "", false, 0}, {"regular", 2, "", false, 3}, {"veteran", 3, "", false, 5}, {"veteran-admin", 3, "", true, 10}, {"patron", 1, "123", false, 10},
-		{"veteran-patron", 3, "123", false, 10}, {"supporter", 0, "456", false, 10},
-		{"game-admin", 0, "", true, 10}, {"moderator", 255, "", true, 10}, {"supporting-admin", 255, "123", true, 10},
+		{"new", 0, "", false, 0}, {"member", 1, "", false, 2}, {"regular", 2, "", false, 4}, {"veteran", 3, "", false, 8},
+		{"veteran-admin", 3, "", true, 16}, {"patron", 1, "123", false, 16},
+		{"veteran-patron", 3, "123", false, 16}, {"supporter", 0, "456", false, 16},
+		{"game-admin", 0, "", true, 16}, {"moderator", 255, "", true, 16}, {"supporting-admin", 255, "123", true, 16},
 		{"demoted-admin", 255, "", false, 0}, {"banned", -1, "123", true, 0},
 	} {
 		glob.PlayerList[tc.name] = &glob.PlayerData{Level: tc.level, ID: tc.role}
@@ -50,15 +51,10 @@ func TestQuickbarIndependentSlotsAndPlayers(t *testing.T) {
 		t.Fatal(err)
 	}
 	label := "Rails"
-	done := make(chan error, 3)
 	for slot := 1; slot <= 3; slot++ {
-		go func(slot int) {
-			done <- readWriteQuickbar(path, quickbarRequest{Name: "Alice", Action: "store", Slot: slot, Label: &label, Exchange: encoded}, &quickbarReply{Labels: make([]string, 3)})
-		}(slot)
-	}
-	for range 3 {
-		if err := <-done; err != nil {
-			t.Fatal(err)
+		reply := quickbarReply{Labels: make([]string, 3)}
+		if err := readWriteQuickbar(path, quickbarRequest{Name: "Alice", Action: "store", Slot: slot, Label: &label, Exchange: encoded}, &reply); err != nil || reply.Error != "" {
+			t.Fatalf("store: %v %s", err, reply.Error)
 		}
 	}
 	for slot := 1; slot <= 3; slot++ {
@@ -107,6 +103,11 @@ func TestQuickbarWireRoundTrip(t *testing.T) {
 			t.Fatal("event not handled")
 		}
 		cmd, data := capturedChatWireRequest(t, w.String())
+		if data["pending"] == true {
+			w.Reset()
+			FlushQuickbarPresets()
+			cmd, data = capturedChatWireRequest(t, w.String())
+		}
 		if cmd != "quickbar-result" || data["id"] != float64(8) {
 			t.Fatalf("unexpected reply: %s %#v", cmd, data)
 		}
@@ -122,21 +123,31 @@ func TestQuickbarWireRoundTrip(t *testing.T) {
 	if data := call("access", 1); data["exchange"] != exchange {
 		t.Fatal(data)
 	}
-	if data := call("store", 5); data["error"] != nil || len(data["labels"].([]any)) != 5 {
+	if data := call("store", 8); data["error"] != nil || len(data["labels"].([]any)) != 8 {
 		t.Fatal(data)
 	}
 	glob.PlayerList["alice"].Level = 2
-	if data := call("store", 3); data["error"] != nil || len(data["labels"].([]any)) != 3 {
+	if data := call("store", 4); data["error"] != nil || len(data["labels"].([]any)) != 4 {
 		t.Fatal(data)
 	}
-	if data := call("load", 5); data["error"] == nil || data["exchange"] != nil {
+	if data := call("load", 8); data["error"] == nil || data["exchange"] != nil {
 		t.Fatal(data)
 	}
 	glob.PlayerList["alice"].Level = 3
-	if data := call("load", 5); data["exchange"] != exchange {
+	if data := call("load", 8); data["exchange"] != exchange {
 		t.Fatal(data)
 	}
 	glob.PlayerList["alice"].Level = 1
+	if data := call("load", 1); data["allowed"] != true || data["exchange"] != exchange || len(data["labels"].([]any)) != 2 {
+		t.Fatal(data)
+	}
+	if data := call("store", 2); data["error"] != nil {
+		t.Fatal(data)
+	}
+	if data := call("store", 3); data["error"] == nil {
+		t.Fatal("member could store a third preset", data)
+	}
+	glob.PlayerList["alice"].Level = 0
 	if data := call("load", 1); data["allowed"] != false || data["exchange"] != nil {
 		t.Fatal(data)
 	}
@@ -162,23 +173,26 @@ func TestQuickbarLegacySlotsAndRoleChange(t *testing.T) {
 		err := readWriteQuickbar(path, quickbarRequest{Name: "Alice", Action: action, Slot: slot, FirstJoin: true, Label: &label, Exchange: encoded}, &r)
 		return r, err
 	}
-	if r, err := run("access", 0, 10); err != nil || r.Exchange != encoded || r.Labels[2] != "Rail" || r.Labels[9] != "" {
+	if r, err := run("access", 0, 16); err != nil || r.Exchange != encoded || r.Labels[2] != "Rail" || r.Labels[15] != "" {
 		t.Fatalf("legacy access: %+v %v", r, err)
 	}
-	if r, err := run("store", 10, 10); err != nil || r.Labels[9] != "Oil" {
-		t.Fatalf("slot ten: %+v %v", r, err)
+	if r, err := run("store", 16, 16); err != nil || r.Labels[15] != "Oil" {
+		t.Fatalf("slot sixteen: %+v %v", r, err)
 	}
 	for _, action := range []string{"store", "load", "rename"} {
-		for _, tc := range [][2]int{{4, 3}, {6, 5}, {10, 3}, {11, 10}} {
+		for _, tc := range [][2]int{{3, 2}, {5, 4}, {9, 8}, {16, 2}, {17, 16}} {
 			if _, err := run(action, tc[0], tc[1]); err == nil {
 				t.Fatalf("%s allowed slot %d with limit %d", action, tc[0], tc[1])
 			}
 		}
 	}
-	if r, err := run("store", 2, 3); err != nil || len(r.Labels) != 3 || r.Labels[2] != "Rail" {
+	if r, err := run("store", 2, 2); err != nil || len(r.Labels) != 2 {
 		t.Fatalf("downgrade: %+v %v", r, err)
 	}
-	if r, err := run("load", 10, 10); err != nil || r.Exchange != encoded || r.Labels[9] != "Oil" {
+	if r, err := run("load", 3, 4); err != nil || r.Exchange != encoded || r.Labels[2] != "Rail" {
+		t.Fatalf("legacy slot after downgrade: %+v %v", r, err)
+	}
+	if r, err := run("load", 16, 16); err != nil || r.Exchange != encoded || r.Labels[15] != "Oil" {
 		t.Fatalf("restored slot: %+v %v", r, err)
 	}
 }

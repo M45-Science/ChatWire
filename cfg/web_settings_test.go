@@ -221,3 +221,33 @@ func TestClearedMapSelectionSurvivesConfigReload(t *testing.T) {
 		})
 	}
 }
+
+func TestHideActivityWebSettingPersists(t *testing.T) {
+	webFixture(t)
+	v, err := WebRead(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(constants.CWLocalConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var existing local
+	if err := json.Unmarshal(data, &existing); err != nil {
+		t.Fatal(err)
+	}
+	if existing.Options.HideActivity {
+		t.Fatal("activity should remain visible when the option is absent")
+	}
+	for _, hide := range []bool{true, false} {
+		value, _ := json.Marshal(hide)
+		updated, err := WebPatch(false, false, v.Revision, map[string]json.RawMessage{"Options.HideActivity": value})
+		if err != nil {
+			t.Fatal(err)
+		}
+		v, err = WebRead(false)
+		if err != nil || v.Values["Options.HideActivity"] != hide || updated.Values["Options.HideActivity"] != hide {
+			t.Fatalf("activity visibility did not persist: %+v, %v", v, err)
+		}
+	}
+}

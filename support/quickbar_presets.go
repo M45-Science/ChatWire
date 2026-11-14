@@ -19,9 +19,11 @@ import (
 )
 
 const (
-	regularQuickbarSlots = 3
-	veteranQuickbarSlots = 5
-	maxQuickbarSlots     = 10
+	memberQuickbarSlots  = 2
+	regularQuickbarSlots = 4
+	veteranQuickbarSlots = 8
+	maxQuickbarSlots     = 16
+	quickbarSaveInterval = 5 * time.Second
 )
 
 type quickbarPreset struct {
@@ -47,6 +49,7 @@ type quickbarReply struct {
 	Labels   []string `json:"labels"`
 	Exchange string   `json:"exchange,omitempty"`
 	Error    string   `json:"error,omitempty"`
+	Pending  bool     `json:"pending,omitempty"`
 }
 
 func quickbarSlotLimit(req quickbarRequest) int {
@@ -70,6 +73,9 @@ func quickbarSlotLimit(req quickbarRequest) int {
 	if level == 2 {
 		return regularQuickbarSlots
 	}
+	if level == 1 {
+		return memberQuickbarSlots
+	}
 	return 0
 }
 
@@ -82,7 +88,14 @@ func handleQuickbarPreset(data json.RawMessage) {
 	reply := quickbarReply{Name: req.Name, ID: req.ID, Allowed: limit > 0, Labels: make([]string, limit)}
 	if reply.Allowed {
 		path := filepath.Join(cfg.Global.Paths.Folders.ServersRoot, "quickbar-presets.json")
-		if err := readWriteQuickbar(path, req, &reply); err != nil {
+		if req.Action == "store" || req.Action == "rename" {
+			if err := validateQuickbarRequest(&req, &reply); err != nil {
+				reply.Error = "ChatWire could not access this preset. Please try again."
+			} else if reply.Error == "" {
+				quickbarSaves.enqueue(path, req, reply)
+				return
+			}
+		} else if err := readWriteQuickbar(path, req, &reply); err != nil {
 			cwlog.DoLogCW("Quickbar preset %s failed for %s: %v", req.Action, req.Name, err)
 			reply.Error = "ChatWire could not access this preset. Please try again."
 		}
@@ -90,7 +103,7 @@ func handleQuickbarPreset(data json.RawMessage) {
 	fact.WriteSoftModCommand("quickbar-result", reply)
 }
 
-func readWriteQuickbar(path string, req quickbarRequest, reply *quickbarReply) error {
+func validateQuickbarRequest(req *quickbarRequest, reply *quickbarReply) error {
 	switch req.Action {
 	case "access":
 	case "load", "store", "rename":
@@ -124,58 +137,78 @@ func readWriteQuickbar(path string, req quickbarRequest, reply *quickbarReply) e
 			reply.Error = "Preset names can have up to 32 characters."
 			return nil
 		}
-		// Every server locks the same file before reading and replacing a slot.
-		lock, err := util.AcquireFileLock(path+".lock", cfg.Local.Callsign, 2*time.Second)
-		if err != nil {
-			return err
-		}
-		defer lock.Release()
+	}
+	return nil
+}
+
+func readQuickbarDatabase(path string) (map[string][]quickbarPreset, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return make(map[string][]quickbarPreset), nil
+	}
+	if err != nil {
+		return nil, err
 	}
 	var db map[string][]quickbarPreset
-	data, err := os.ReadFile(path)
-	switch {
-	case errors.Is(err, os.ErrNotExist):
-		db = make(map[string][]quickbarPreset)
-	case err != nil:
-		return err
-	default:
-		if err := json.Unmarshal(data, &db); err != nil {
-			return err
-		}
-		if db == nil {
-			return errors.New("invalid quickbar database")
-		}
+	if err := json.Unmarshal(data, &db); err != nil {
+		return nil, err
 	}
+	if db == nil {
+		return nil, errors.New("invalid quickbar database")
+	}
+	return db, nil
+}
+
+func applyQuickbarPreset(db map[string][]quickbarPreset, req quickbarRequest) {
 	key := strings.ToLower(req.Name)
 	slots := db[key]
-	switch req.Action {
-	case "store", "rename":
-		for len(slots) < req.Slot {
-			slots = append(slots, quickbarPreset{})
-		}
-		if req.Action == "store" {
-			slots[req.Slot-1].Exchange = req.Exchange
-		}
-		if req.Label != nil {
-			slots[req.Slot-1].Label = strings.TrimSpace(*req.Label)
-		}
-		db[key] = slots
-		if err := util.WriteJSONAtomic(path, db, 0600); err != nil {
-			return err
-		}
-	case "load":
-		if req.Slot <= len(slots) {
-			reply.Exchange = slots[req.Slot-1].Exchange
-		}
-	case "access":
-		if req.FirstJoin && len(slots) > 0 {
-			reply.Exchange = slots[0].Exchange
-		}
+	for len(slots) < req.Slot {
+		slots = append(slots, quickbarPreset{})
+	}
+	if req.Action == "store" {
+		slots[req.Slot-1].Exchange = req.Exchange
+	}
+	if req.Label != nil {
+		slots[req.Slot-1].Label = strings.TrimSpace(*req.Label)
+	}
+	db[key] = slots
+}
+
+func fillQuickbarReply(db map[string][]quickbarPreset, req quickbarRequest, reply *quickbarReply) {
+	slots := db[strings.ToLower(req.Name)]
+	if req.Action == "load" && req.Slot <= len(slots) {
+		reply.Exchange = slots[req.Slot-1].Exchange
+	} else if req.Action == "access" && req.FirstJoin && len(slots) > 0 {
+		reply.Exchange = slots[0].Exchange
 	}
 	for i, preset := range slots[:min(len(slots), len(reply.Labels))] {
 		if i > 0 {
 			reply.Labels[i] = preset.Label
 		}
 	}
+}
+
+func readWriteQuickbar(path string, req quickbarRequest, reply *quickbarReply) error {
+	if err := validateQuickbarRequest(&req, reply); err != nil || reply.Error != "" {
+		return err
+	}
+	if req.Action == "store" || req.Action == "rename" {
+		lock, err := util.AcquireFileLock(path+".lock", cfg.Local.Callsign, 2*time.Second)
+		if err != nil {
+			return err
+		}
+		defer lock.Release()
+	}
+	db, err := readQuickbarDatabase(path)
+	if err != nil {
+		return err
+	}
+	if req.Action == "store" || req.Action == "rename" {
+		applyQuickbarPreset(db, req)
+		if err := util.WriteJSONAtomic(path, db, 0600); err != nil {
+			return err
+		}
+	}
+	fillQuickbarReply(db, req, reply)
 	return nil
 }

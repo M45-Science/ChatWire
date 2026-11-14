@@ -13,6 +13,7 @@ var classifiedWebFields = map[string]bool{
 	"local.Options.AutoUpdate":                       true,
 	"local.Options.CustomWhitelist":                  true,
 	"local.Options.ExpUpdates":                       true,
+	"local.Options.HideActivity":                     true,
 	"local.Options.HideAutosaves":                    true,
 	"local.Options.HideResearch":                     true,
 	"local.Options.LocalDescription":                 true,

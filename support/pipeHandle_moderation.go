@@ -142,7 +142,7 @@ func reportActivityAlert(alert activityAlert) {
 		cwlog.DoLogCW("%s", text)
 	}
 	// A map-channel copy must not ping the same role a second time.
-	if mapChannel := cfg.Local.Channel.ChatChannel; !alert.reportOnly && mapChannel != "" && mapChannel != reportChannel {
+	if mapChannel := cfg.Local.Channel.ChatChannel; !cfg.Local.Options.HideActivity && !alert.reportOnly && mapChannel != "" && mapChannel != reportChannel {
 		fact.CMS(mapChannel, text)
 	}
 	if alert.gameMessage != "" {

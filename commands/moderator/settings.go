@@ -235,6 +235,14 @@ var SettingList = []SettingListData{
 		BData: &cfg.Local.Options.HideAutosaves,
 	},
 	{
+		Name:      "hide-activity",
+		ShortDesc: "Hide Activity",
+		Desc:      "Hide routine [ACT] notices and activity summaries in map Discord chat. Keep logs, moderation reports and in-game warnings.",
+		Type:      TYPE_BOOL,
+		DefBool:   false,
+		BData:     &cfg.Local.Options.HideActivity,
+	},
+	{
 		Name:      "hide-research",
 		ShortDesc: "Hide Science Research",
 		Desc:      "Don't display science research on Discord.",
