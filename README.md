@@ -82,6 +82,18 @@ This produces the `ChatWire` binary in the current directory.
 
 If you need to regenerate config files, delete `cw-local-config.json` and `../cw-global-config.json`, then start ChatWire again.
 
+The delayed M45 essentials panel uses one shared player timestamp (`th` in JSON)
+to limit join reminders to once per 24 hours for New/Member ranks and once per
+30 days for higher ranks. There is no lifetime count limit. Cooldown claims reload
+and lock the shared database before writing, and stale local player saves preserve
+the newer timestamp. The timestamp is reserved before replying to SoftMod, so a
+lost reply or disconnect can skip that reminder rather than produce duplicates.
+
+Binary player databases now write version 2, adding the reminder timestamp, and
+still read version 1 and legacy JSON. Update all ChatWire instances sharing a
+database together: older binaries cannot read version 2 and older JSON writers
+would discard the new field. Rollback requires exporting to the old schema first.
+
 The player database defaults to the compressed binary format. Set `Paths.DataFiles.DBFormat` to `"json"` to retain readable JSON output. Reads auto-detect both formats, so an existing JSON database is migrated on its next write when `DBFormat` is `"binary"`; the configured `DBFile` name does not have to change.
 
 ## Default Layout

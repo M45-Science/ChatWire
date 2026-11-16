@@ -102,6 +102,8 @@ func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 
 func handleChatWireEvent(event string, data json.RawMessage) {
 	switch event {
+	case "tool-hint":
+		handleToolHint(data)
 	case "quickbar-preset":
 		handleQuickbarPreset(data)
 	case "map-preview":

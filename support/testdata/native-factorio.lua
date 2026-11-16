@@ -28,7 +28,7 @@ script.on_nth_tick(1, function()
         check(not storage.CW_MapPreviewPending, "reload rearmed new-map announcement")
         CW_AnnounceNewMapPreview()
     else
-        local player = player_fixture()
+        local player = args.mode == "essentials" and storage.native_hint_started and game.get_player(1) or player_fixture()
         if args.mode == "export" then
             storage.SM_Store.quickbar_presets = true
             QUICKBAR_MakeExchangeButton(player)
@@ -64,6 +64,132 @@ script.on_nth_tick(1, function()
             check(ExportQuickbar(player, false) == args.reply.exchange, "persisted toolbar changed")
             check(player.get_quick_bar_slot(2, 1).filter.quality == "uncommon", "quality lost")
             check(player.get_quick_bar_slot(10, 10).filter.name == "rail", "last slot lost")
+        elseif args.mode == "essentials" then
+            local pdata = storage.PData[player.index]
+            if not storage.native_hint_started then
+                check(not player.gui.screen.m45_info_window, "Help/Info still opens on join")
+                ESSENTIALS_Join(player)
+                storage.SM_Store.tool_hints = true
+                storage.native_hint_started = game.tick
+            end
+            local elapsed = game.tick - storage.native_hint_started
+            local s = pdata.essentials
+            if elapsed < 60 then
+                check(s.waiting and not s.pending, "idle join started the reminder timer")
+                check(not player.gui.screen.m45_essentials, "idle join opened panel")
+                return
+            end
+            if elapsed == 60 then
+                ESSENTIALS_Activity{player_index = player.index, name = defines.events.on_built_entity}
+                check(not s.waiting and s.remaining == 480, "first action did not start eight-second timer")
+            end
+            if elapsed < 540 then
+                check(not s.pending and not player.gui.screen.m45_essentials, "panel opened before eight seconds")
+                return
+            end
+            if elapsed == 540 then
+                local dialog = player.gui.screen.add{type = "frame", name = "native_hint_busy"}
+                player.opened = dialog
+            end
+            if elapsed <= 590 then
+                check(not s.pending, "hint interrupted an open interface")
+                if elapsed == 590 then
+                    player.opened = nil
+                    player.gui.screen.native_hint_busy.destroy()
+                end
+                return
+            end
+            if not s.pending then return end
+            local request = s.pending
+            ESSENTIALS_Result{name = player.name, id = request + 1, allowed = true}
+            check(s.pending == request and not s.ready, "stale response accepted")
+            ESSENTIALS_Result{name = player.name, id = request, allowed = true}
+            ESSENTIALS_Tick()
+            local panel = player.gui.screen.m45_essentials
+            check(panel and not player.opened, "panel missing or stole keyboard focus")
+            check(panel.location.x > player.display_resolution.width / 2, "panel is not on right edge")
+            check(panel.style.maximal_width <= 640, "panel exceeds width cap")
+            check(panel.body.type == "flow", "essentials should not have a scrollbar")
+            check(panel.body.grid.column_count == 2, "essentials should use two columns")
+            local first = panel.body.grid.children[1]
+            for _, card in pairs(panel.body.grid.children) do
+                check(card.style.minimal_width == first.style.minimal_width and card.style.minimal_height == first.style.minimal_height, "grid cards have different sizes")
+            end
+            local home_height = first.style.minimal_height
+            local children = panel.body.grid.children
+            check(children[#children - 1].name == "essentials_discord_section", "Discord is not immediately before Patreon")
+            check(children[#children].name == "essentials_patreon_section", "Patreon is not the last essentials button")
+            check(panel.body.children[2].name == "credits", "supporter credits do not follow the grid")
+            check(panel.titlebar.logo.style.stretch_image_to_widget_size, "title logo is not scaled")
+            check(not panel.actions.essentials_help.visible, "home page has a redundant Back button")
+            storage.SM_Store.patreonCredits = {"Zed", "Alice", "ALICE", "[color=red]Name"}
+            ESSENTIALS_RefreshCredits(player)
+            check(panel.body.credits.names.caption == "[color=red]Name, Alice, Zed", "supporter names were not sorted and deduplicated")
+            check(panel.body.credits.names.style.rich_text_setting == defines.rich_text_setting.disabled, "supporter names allow markup")
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.grid.essentials_membership_section.essentials_membership}
+            check(panel.body.membership_page.visible and not panel.body.grid.visible and not panel.body.credits.visible, "membership did not open on its own page")
+            check(panel.body.membership_page.status.caption:find("Your level: New", 1, true), "membership page did not show current rank")
+            check(#panel.body.membership_page.levels.children == 8, "membership page is missing a level")
+            check(panel.body.membership_page.banish.essentials_membership_players.sprite == "file/img/buttons/online-64.png", "Banish instructions do not show the Players toolbar icon")
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.membership_page.essentials_membership_discord}
+            check(panel.body.discord_page.visible and not panel.body.membership_page.visible, "Discord did not open on its own page")
+            check(panel.body.discord_page.invite.read_only, "Discord invite is not read-only")
+            ESSENTIALS_Click{player_index = player.index, element = panel.actions.essentials_help}
+            check(panel.body.membership_page.visible, "Back from Discord did not restore membership")
+            ESSENTIALS_Click{player_index = player.index, element = panel.actions.essentials_help}
+            check(panel.body.grid.visible and not panel.body.membership_page.visible, "Back did not restore essentials")
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.grid.essentials_patreon_section.essentials_patreon}
+            check(panel.body.patreon_page.visible and not panel.body.grid.visible, "Patreon did not open on its own page")
+            check(panel.body.patreon_page.invite.read_only, "Patreon link is not read-only")
+            ESSENTIALS_Click{player_index = player.index, element = panel.actions.essentials_help}
+            check(panel.body.grid.visible, "Back from Patreon did not restore the grid")
+            for _, card in pairs(panel.body.grid.children) do
+                check(card.style.minimal_height == home_height and #card.children == 2, "opening a detail page changed the main grid")
+            end
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.grid.essentials_todo_section.essentials_todo}
+            check(not player.gui.screen.m45_essentials and player.gui.screen.m45_todo, "to-do action failed")
+            player.gui.screen.m45_todo.destroy()
+            ESSENTIALS_Open(player)
+            panel = player.gui.screen.m45_essentials
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.grid.essentials_players_section.essentials_players}
+            check(not player.gui.screen.m45_essentials and player.gui.left.m45_online, "Players action failed")
+            player.gui.left.m45_online.destroy()
+            ESSENTIALS_Open(player)
+            panel = player.gui.screen.m45_essentials
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.grid.essentials_membership_section.essentials_membership}
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.membership_page.banish.essentials_membership_players}
+            check(not player.gui.screen.m45_essentials and player.gui.left.m45_online, "Players icon in Banish instructions did not open the player list")
+            player.gui.left.m45_online.destroy()
+            -- A fresh join creates a new session; delayed replies from the old session are ignored.
+            ESSENTIALS_Join(player)
+            ESSENTIALS_Result{name = player.name, id = request, allowed = true}
+            check(not pdata.essentials.ready, "old-session response accepted")
+            local fresh = pdata.essentials
+            fresh.pending = request + 1
+            ESSENTIALS_Result{name = player.name, id = fresh.pending, allowed = false}
+            ESSENTIALS_Tick()
+            check(not player.gui.screen.m45_essentials, "cooldown denial opened panel")
+            fresh.pending = request + 2
+            ESSENTIALS_Result{name = player.name, id = fresh.pending, allowed = true}
+            ESSENTIALS_Tick()
+            panel = player.gui.screen.m45_essentials
+            ESSENTIALS_Click{player_index = player.index, element = panel.body.grid.essentials_toolbar_section.essentials_toolbar}
+            check(player.gui.screen.quickbar_manager and not player.gui.screen.m45_essentials, "toolbar action failed")
+            QUICKBAR_OpenManager(player) -- Opening twice should reuse the same window.
+            player.gui.screen.quickbar_manager.destroy()
+            fresh.pending = request + 3
+            ESSENTIALS_Result{name = player.name, id = fresh.pending, allowed = true}
+            ESSENTIALS_Tick()
+            panel = player.gui.screen.m45_essentials
+            ESSENTIALS_Click{player_index = player.index, element = panel.actions.essentials_close}
+            check(not player.gui.screen.m45_essentials, "Got it did not close panel")
+            ESSENTIALS_Leave(player)
+            check(not pdata.essentials, "disconnect retained pending introduction")
+            INFO_Clicks{player_index = player.index, element = player.gui.top.m45_button}
+            check(player.gui.screen.m45_essentials and not player.gui.screen.m45_info_window, "Help/Info did not open the compact panel")
+            check(not pdata.essentials.waiting and not pdata.essentials.pending, "manual Help/Info rearmed automatic reminders")
+            INFO_Clicks{player_index = player.index, element = player.gui.top.m45_button}
+            check(not player.gui.screen.m45_essentials, "Help/Info button did not toggle closed")
         elseif args.mode == "deconstruction" then
             if not cleanup_fixture then
                 local surface = game.create_surface("native-cleanup", {width = 256, height = 256})

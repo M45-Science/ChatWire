@@ -28,6 +28,13 @@ reaped on failure. Existing server files and settings are not modified.
 
 ## Coverage
 
+- **Join essentials:** no immediate Help/Info popup; idle joins do not start the
+  timer; first activity starts the eight-second delay; open interfaces defer the
+  introduction; stale replies are ignored; one right-side panel opens without
+  taking focus; Banish, Discord, Patreon and To-do actions work; Map Vote has its own page and
+  Back navigation; supporter credits are sorted and deduplicated; the Help/Info
+  button toggles the new panel; disconnects clear state.
+
 - **Quickbar persistence:** real GUI Store event, Factorio's exchange encoding,
   ChatWire's permission check and queued write, pending acknowledgement, final
   acknowledgement after flushing, a fresh file-backed Load request, and real

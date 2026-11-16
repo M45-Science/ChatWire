@@ -23,6 +23,7 @@ func samplePlayerDatabase(count int) map[string]*glob.PlayerData {
 			LastSeen:      2_000_000 + int64(i),
 			Minutes:       int64(i * 17),
 			SusScore:      int64(i % 23),
+			LastToolHint:  1_800_000_000 + int64(i),
 			AlreadyBanned: true,
 			SpamScore:     99,
 		}

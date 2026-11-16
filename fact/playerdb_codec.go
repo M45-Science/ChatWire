@@ -21,7 +21,7 @@ const (
 	playerDBFormatBinary = "binary"
 	playerDBFormatJSON   = "json"
 
-	playerDBBinaryVersion = uint16(1)
+	playerDBBinaryVersion = uint16(2)
 	playerDBCodecZstd     = byte(1)
 	playerDBHeaderSize    = 24
 
@@ -39,7 +39,7 @@ var (
 	playerDBCodecInit error
 )
 
-// Binary v1 uses this little-endian envelope:
+// Binary v1 and v2 use this little-endian envelope:
 //
 //	[8] magic "CWPLAYER"
 //	[2] version
@@ -51,7 +51,8 @@ var (
 //
 // The payload starts with a record count. Each key-sorted record stores the
 // player name, level, Discord ID, ban reason, creation/seen times, minutes, and
-// suspicion score using length-prefixed strings and signed varints.
+// suspicion score using length-prefixed strings and signed varints. Version 2
+// appends the last tool-hint Unix timestamp to each record; v1 reads as zero.
 func initPlayerDBCodecs() error {
 	playerDBCodecs.Do(func() {
 		playerDBEncoder, playerDBCodecInit = zstd.NewWriter(nil,
@@ -149,6 +150,7 @@ func encodeBinaryPlayerDatabase(players map[string]*glob.PlayerData) ([]byte, er
 		payload = binary.AppendVarint(payload, player.LastSeen)
 		payload = binary.AppendVarint(payload, player.Minutes)
 		payload = binary.AppendVarint(payload, player.SusScore)
+		payload = binary.AppendVarint(payload, player.LastToolHint)
 		if len(payload) > maxPlayerDBPayload {
 			return nil, fmt.Errorf("player database payload exceeds %d bytes", maxPlayerDBPayload)
 		}
@@ -172,7 +174,8 @@ func decodeBinaryPlayerDatabase(data []byte) (map[string]*glob.PlayerData, error
 	if len(data) < playerDBHeaderSize {
 		return nil, errors.New("binary player database header is truncated")
 	}
-	if binary.LittleEndian.Uint16(data[8:10]) != playerDBBinaryVersion {
+	version := binary.LittleEndian.Uint16(data[8:10])
+	if version != 1 && version != playerDBBinaryVersion {
 		return nil, fmt.Errorf("unsupported binary player database version %d", binary.LittleEndian.Uint16(data[8:10]))
 	}
 	if data[10] != playerDBCodecZstd {
@@ -199,7 +202,7 @@ func decodeBinaryPlayerDatabase(data []byte) (map[string]*glob.PlayerData, error
 	if got, want := crc32.Checksum(payload, playerDBCRC), binary.LittleEndian.Uint32(data[20:24]); got != want {
 		return nil, fmt.Errorf("binary player database checksum mismatch: got %08x, want %08x", got, want)
 	}
-	return decodePlayerDBPayload(payload)
+	return decodePlayerDBPayload(payload, version)
 }
 
 func appendPlayerDBString(dst []byte, value string) ([]byte, error) {
@@ -255,7 +258,7 @@ func (r *playerDBReader) string() (string, error) {
 	return value, nil
 }
 
-func decodePlayerDBPayload(payload []byte) (map[string]*glob.PlayerData, error) {
+func decodePlayerDBPayload(payload []byte, version uint16) (map[string]*glob.PlayerData, error) {
 	reader := playerDBReader{data: payload}
 	count, err := reader.uvarint()
 	if err != nil {
@@ -319,14 +322,22 @@ func decodePlayerDBPayload(payload []byte) (map[string]*glob.PlayerData, error) 
 			return nil, fmt.Errorf("decode player %q suspicious score: %w", name, err)
 		}
 
+		var lastToolHint int64
+		if version >= 2 {
+			lastToolHint, err = reader.varint()
+			if err != nil {
+				return nil, fmt.Errorf("decode player %q tool hint: %w", name, err)
+			}
+		}
 		players[name] = &glob.PlayerData{
-			Level:     int(level),
-			ID:        id,
-			BanReason: banReason,
-			Creation:  creation,
-			LastSeen:  lastSeen,
-			Minutes:   minutes,
-			SusScore:  susScore,
+			Level:        int(level),
+			ID:           id,
+			BanReason:    banReason,
+			Creation:     creation,
+			LastSeen:     lastSeen,
+			Minutes:      minutes,
+			SusScore:     susScore,
+			LastToolHint: lastToolHint,
 		}
 	}
 	if reader.off != len(payload) {

@@ -15,6 +15,7 @@ func ConfigSoftMod() {
 		"server_name":      strings.ToUpper(cfg.Local.Callsign + "-" + cfg.Local.Name),
 		"restrict":         cfg.Local.Options.SoftModOptions.Restrict,
 		"quickbar_presets": true,
+		"tool_hints":       true,
 		"friendly_fire":    cfg.Local.Options.SoftModOptions.FriendlyFire,
 		"one_life":         cfg.Local.Options.SoftModOptions.OneLife,
 		"reset_duration":   resetDurationText(),

@@ -137,7 +137,7 @@ func (n nativeFactorio) run(t *testing.T, save string, arg any) string {
 	if save != "" {
 		args = []string{"--test-save", save}
 	}
-	args = append(args, "--test-ticks", "600", "--test-arg", string(data))
+	args = append(args, "--test-ticks", "1200", "--test-arg", string(data))
 	out, err := n.command(ctx, args...).CombinedOutput()
 	if err != nil {
 		t.Fatalf("native Factorio: %v\n%s", err, out)
@@ -497,4 +497,9 @@ func nativeFixedPortLifecycle(t *testing.T, nonblocking bool) {
 	if glob.SoftModVersion != constants.Unknown {
 		t.Fatal("test unexpectedly changed production SoftMod state")
 	}
+}
+
+func TestNativeFactorioEssentials(t *testing.T) {
+	n := nativeFixture(t)
+	n.run(t, "", map[string]any{"mode": "essentials"})
 }

@@ -418,6 +418,11 @@ func mergePlayerChanges(players, changes map[string]*glob.PlayerData) {
 			delete(players, pname)
 			continue
 		}
+		if previous := players[pname]; previous != nil && previous.LastToolHint > player.LastToolHint {
+			copy := *player
+			copy.LastToolHint = previous.LastToolHint
+			player = &copy
+		}
 		players[pname] = player
 	}
 }
@@ -517,6 +522,9 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
 			} else {
 				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
+			}
+			if loaded := glob.PlayerList[strings.ToLower(pname)]; loaded != nil && tempData[pname].LastToolHint > loaded.LastToolHint {
+				loaded.LastToolHint = tempData[pname].LastToolHint
 			}
 			if didBan {
 				banCount++
