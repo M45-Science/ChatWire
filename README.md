@@ -209,6 +209,11 @@ go test ./...
 
 Some integration tests connect to Discord. Set `CW_TEST_TOKEN`, `CW_TEST_GUILD`, and `CW_TEST_APP` to enable them.
 
+The [native Factorio suite](docs/native-factorio-tests.md) validates SoftMod
+handshakes, quickbar persistence, map previews, fixed-port startup, graceful
+save-and-quit, and depleted-miner moderation with an isolated headless engine.
+Set `CW_FACTORIO_BINARY` to opt in; it requires no Discord credentials.
+
 ## Notes
 
 - `-noDiscord` allows Factorio lifecycle management without connecting the bot.

@@ -56,6 +56,37 @@ func TestDeconstructionProtocolBurst(t *testing.T) {
 	}
 }
 
+func TestDepletedDrillCleanupDoesNotScoreOrCancelOtherMarks(t *testing.T) {
+	resetSupportTestState(t)
+	clear(mapActivityAlerts.sites)
+	clear(mapActivityAlerts.sessions)
+	oldMute := cfg.Global.Options.ShutupSusWarn
+	cfg.Global.Options.ShutupSusWarn = false
+	t.Cleanup(func() {
+		cfg.Global.Options.ShutupSusWarn = oldMute
+		clear(mapActivityAlerts.sites)
+		clear(mapActivityAlerts.sessions)
+	})
+	p := &glob.PlayerData{Name: "Tester"}
+	glob.PlayerList["tester"] = p
+	mapActivityAlerts.join("Tester", time.Now())
+	for i := 0; i < 64; i++ {
+		dispatchChatWireTextEvent("activity", "Tester decon-depleted electric-mining-drill at [gps=0,0]")
+		dispatchChatWireTextEvent("activity", "Tester undecon-depleted electric-mining-drill at [gps=0,0]")
+	}
+	if p.SusScore != 0 || len(mapActivityAlerts.sites) != 0 {
+		t.Fatal("cleanup contributed suspicion or an incident")
+	}
+	for i := 0; i < 64; i++ {
+		dispatchChatWireTextEvent("activity", "Tester decon steel-chest at [gps=0,0]")
+		dispatchChatWireTextEvent("activity", "Tester undecon-depleted electric-mining-drill at [gps=0,0]")
+	}
+	alerts := mapActivityAlerts.due(time.Now().Add(time.Minute))
+	if len(alerts) != 1 || !strings.Contains(alerts[0].message, "64 marks") || strings.Contains(alerts[0].message, "cancellation") {
+		t.Fatalf("cleanup hid live-structure incident: %+v", alerts)
+	}
+}
+
 func TestActivitySitesBackOffIndependently(t *testing.T) {
 	a := activityAlerts{sites: make(map[string][]*activitySite)}
 	t0 := time.Unix(1000, 0)
