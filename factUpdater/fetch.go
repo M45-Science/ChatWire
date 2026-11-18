@@ -42,7 +42,8 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 
 	//Use proxy if provided
 	var URL string
-	if *glob.ProxyURL != "" && !noproxy {
+	useProxy := !noproxy && glob.ProxyURL != nil && *glob.ProxyURL != ""
+	if useProxy {
 		proxy := strings.TrimSuffix(*glob.ProxyURL, "/")
 		URL = proxy + "/" + url.PathEscape(input)
 	} else {
@@ -74,7 +75,8 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 					cwlog.DoLogCW("fetch: failed to close body after 429: %v", cerr)
 				}
 			}
-			cwlog.DoLogCW("HttpGet: received 429 for %s, retrying in %v", input, retryWait)
+			path, _, _ := strings.Cut(input, "?")
+			cwlog.DoLogCW("HttpGet: received 429 for %s, retrying in %v", path, retryWait)
 			time.Sleep(retryWait)
 			continue
 		}
@@ -109,22 +111,14 @@ func HttpGet(noproxy bool, input string, quick bool) ([]byte, string, error) {
 	}
 
 	//Check data length
-	if *glob.ProxyURL != "" {
-		if res.ContentLength > 0 {
-			if len(body) != int(res.ContentLength) {
-				return nil, "", errors.New("data ended early")
-			}
-		} else {
-			return nil, "", errors.New("proxy did not supply content length")
-		}
-	} else {
-		if res.ContentLength > 0 {
-			if len(body) != int(res.ContentLength) {
-				return nil, "", errors.New("data ended early")
-			}
-		} else if res.ContentLength != -1 {
-			return nil, "", errors.New("content length did not match")
-		}
+	if res.ContentLength <= 0 && useProxy {
+		return nil, "", errors.New("proxy did not supply content length")
+	}
+	if res.ContentLength == 0 {
+		return nil, "", errors.New("content length did not match")
+	}
+	if res.ContentLength > 0 && int64(len(body)) != res.ContentLength {
+		return nil, "", errors.New("data ended early")
 	}
 
 	realurl := res.Request.URL.String()

@@ -19,6 +19,8 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -136,28 +138,48 @@ func GetModList() (ModListData, error) {
 }
 
 func modInfoRead(modName string, rawData []byte) *modZipInfo {
-	var err error
+	var archive *zip.Reader
 	if rawData == nil {
-		path := cfg.GetModsFolder() + "/" + modName
-
-		rawData, err = os.ReadFile(path)
+		file, err := zip.OpenReader(filepath.Join(cfg.GetModsFolder(), modName))
 		if err != nil {
-			cwlog.DoLogCW("ReadModZipInfo: " + err.Error())
+			cwlog.DoLogCW("ReadModZipInfo: %v", err)
+			return nil
+		}
+		defer file.Close()
+		archive = &file.Reader
+	} else {
+		var err error
+		archive, err = zip.NewReader(bytes.NewReader(rawData), int64(len(rawData)))
+		if err != nil {
+			cwlog.DoLogCW("ReadModZipInfo: %v", err)
 			return nil
 		}
 	}
-	jsonData := getModJSON(rawData)
 
-	modData := modZipInfo{}
-	err = json.Unmarshal(jsonData, &modData)
-	if err != nil {
-		cwlog.DoLogCW("ReadModZipInfo: Unmarshal failure: " + err.Error())
-		buf := fmt.Sprintf("%v", modData)
-		cwlog.DoLogCW(buf)
-		return nil
+	for _, entry := range archive.File {
+		if path.Base(entry.Name) != "info.json" || strings.Count(entry.Name, "/") > 1 || entry.FileInfo().IsDir() {
+			continue
+		}
+		file, err := entry.Open()
+		if err != nil {
+			cwlog.DoLogCW("ReadModZipInfo: %v", err)
+			return nil
+		}
+		defer file.Close()
+		data, err := io.ReadAll(file)
+		if err != nil {
+			cwlog.DoLogCW("ReadModZipInfo: %v", err)
+			return nil
+		}
+		var info modZipInfo
+		if err := json.Unmarshal(data, &info); err != nil {
+			cwlog.DoLogCW("ReadModZipInfo: %v", err)
+			return nil
+		}
+		return &info
 	}
-
-	return &modData
+	cwlog.DoLogCW("ReadModZipInfo: missing info.json")
+	return nil
 }
 
 var modListFileLock sync.Mutex
@@ -200,42 +222,6 @@ func WriteModsList(modList ModListData) bool {
 
 	cwlog.DoLogCW("Wrote " + constants.ModListName)
 	return true
-}
-
-func getModJSON(data []byte) []byte {
-	modListFileLock.Lock()
-	defer modListFileLock.Unlock()
-
-	// Create a reader from the byte array
-	byteReader := bytes.NewReader(data)
-
-	// Create a zip reader
-	zipReader, err := zip.NewReader(byteReader, int64(len(data)))
-	if err != nil {
-		return nil
-	}
-
-	for _, file := range zipReader.File {
-		if strings.HasSuffix(file.Name, "info.json") {
-			if strings.Count(file.Name, "/") < 2 {
-				f, err := file.Open()
-				if err != nil {
-					return nil
-				}
-				defer f.Close()
-
-				var buf bytes.Buffer
-				_, err = io.Copy(&buf, f)
-				if err != nil {
-					return nil
-				}
-
-				return buf.Bytes()
-			}
-		}
-	}
-
-	return nil
 }
 
 func parseOperator(input string) int {

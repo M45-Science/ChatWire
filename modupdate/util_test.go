@@ -1,6 +1,11 @@
 package modupdate
 
-import "testing"
+import (
+	"archive/zip"
+	"bytes"
+	"encoding/json"
+	"testing"
+)
 
 func TestIsBaseMod(t *testing.T) {
 	bundledMods := []string{"base", "elevated-rails", "quality", "space-age", "recycler"}
@@ -40,5 +45,26 @@ func TestResetModInfoCacheClearsEntries(t *testing.T) {
 	defer ModInfoLock.Unlock()
 	if len(modInfoCache) != 0 {
 		t.Fatalf("expected empty mod info cache after reset, got %d entries", len(modInfoCache))
+	}
+}
+
+func TestModInfoIgnoresSimilarlyNamedFiles(t *testing.T) {
+	var buf bytes.Buffer
+	archive := zip.NewWriter(&buf)
+	for _, name := range []string{"example/other-info.json", "example/nested/info.json", "example/info.json"} {
+		entry, err := archive.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := json.NewEncoder(entry).Encode(modZipInfo{Name: name}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := archive.Close(); err != nil {
+		t.Fatal(err)
+	}
+	info := modInfoRead("", buf.Bytes())
+	if info == nil || info.Name != "example/info.json" {
+		t.Fatalf("selected wrong mod metadata: %+v", info)
 	}
 }
