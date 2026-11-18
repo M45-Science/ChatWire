@@ -17,8 +17,7 @@ type getLatestData struct {
 }
 
 type getLatestPartData struct {
-	Headless    string `json:"headless"`
-	HeadlessInt versionInts
+	Headless string `json:"headless"`
 }
 
 type versionInts struct {

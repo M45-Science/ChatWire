@@ -63,7 +63,9 @@ func factBinExist() error {
 
 func checkInstallTar(data []byte) error {
 
+	const executable = "factorio/bin/x64/factorio"
 	var fileChecks = []checkInstallData{
+		{name: executable},
 		{name: "factorio/data/eula.txt"},
 		{name: "factorio/data/licenses.txt"},
 		{name: "factorio/data/credits.txt"},
@@ -89,6 +91,9 @@ func checkInstallTar(data []byte) error {
 		}
 
 		if tar.TypeReg == header.Typeflag {
+			if header.Name == executable && (header.Size == 0 || header.Mode&0111 == 0) {
+				return fmt.Errorf("%s must be nonempty and executable", executable)
+			}
 			for i, item := range fileChecks {
 				if item.name == header.Name {
 					fileChecks[i].good = true

@@ -14,24 +14,9 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
-func parseStringsLatest(entry *getLatestData) error {
-	sInt, err := parseVersionString(entry.Stable.Headless)
-	if err != nil {
-		return err
-	}
-	xInt, err := parseVersionString(entry.Experimental.Headless)
-	if err != nil {
-		return err
-	}
-
-	entry.Stable.HeadlessInt = sInt
-	entry.Experimental.HeadlessInt = xInt
-	return nil
-}
-
 func parseVersionString(input string) (versionInts, error) {
 	if input == "" {
-		return versionInts{}, nil
+		return versionInts{}, errors.New("missing version number")
 	}
 
 	parts := strings.Split(input, ".")

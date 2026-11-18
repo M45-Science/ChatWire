@@ -131,10 +131,13 @@ func quickLatest(info *InfoData) (*versionInts, error) {
 		return nil, errors.New("unable to unmarshal json data: " + err.Error())
 	}
 
-	parseStringsLatest(tempList)
+	selected := tempList.Stable.Headless
 	if info.Xreleases {
-		return &tempList.Experimental.HeadlessInt, err
-	} else {
-		return &tempList.Stable.HeadlessInt, err
+		selected = tempList.Experimental.Headless
 	}
+	version, err := parseVersionString(selected)
+	if err != nil {
+		return nil, fmt.Errorf("invalid headless release: %w", err)
+	}
+	return &version, nil
 }

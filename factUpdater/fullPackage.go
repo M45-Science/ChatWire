@@ -26,11 +26,7 @@ func fullPackage(info *InfoData, reportDiscord bool) error {
 	var filename string
 	var err error
 
-	branch := "stable"
-	if info.Xreleases {
-		branch = "latest"
-	}
-	url := fmt.Sprintf("%v%v/%v/%v", baseDownloadURL, branch, info.Build, info.Distro)
+	url := fmt.Sprintf("%s%s/%s/%s", baseDownloadURL, info.VersInt.IntToString(), info.Build, info.Distro)
 	var data []byte
 
 	if reportDiscord {
