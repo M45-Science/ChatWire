@@ -61,6 +61,7 @@ var classifiedWebFields = map[string]bool{
 	"global.Discord.Comment":                         true,
 	"global.Discord.Guild":                           true,
 	"global.Discord.ReportChannel":                   true,
+	"global.Discord.PopularMapsChannel":              true,
 	"global.Discord.Roles.Admin":                     true,
 	"global.Discord.Roles.Comment":                   true,
 	"global.Discord.Roles.Member":                    true,

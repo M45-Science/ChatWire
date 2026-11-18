@@ -18,12 +18,13 @@ type discord struct {
 	Guild       string `form:"RO"`
 	Application string `form:"hidden"`
 
-	ReportChannel   string `form:"RO" web:"Report Channel ID"`
-	AnnounceChannel string `form:"RO" web:"Announce Channel ID"`
-	Roles           roles
-	Comment         string `form:"-"`
-	SusPingRole     string `web:"Suspicious Ping RoleID"`
-	BanishPingRole  string `web:"Banish Ping RoleID"`
+	ReportChannel      string `form:"RO" web:"Report Channel ID"`
+	AnnounceChannel    string `form:"RO" web:"Announce Channel ID"`
+	PopularMapsChannel string `form:"RO" web:"Popular Maps Channel ID"`
+	Roles              roles
+	Comment            string `form:"-"`
+	SusPingRole        string `web:"Suspicious Ping RoleID"`
+	BanishPingRole     string `web:"Banish Ping RoleID"`
 }
 
 type roles struct {

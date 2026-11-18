@@ -6,6 +6,7 @@ func StartFactorioLoops() {
 	startQuickbarSaveLoop()
 	startGameWatchdog()
 	startActivityAlertLoop()
+	startPopularMapsLoop()
 	go HandleChat()
 }
 
