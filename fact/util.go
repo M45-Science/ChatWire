@@ -176,26 +176,25 @@ func CheckSave(path, name string, showError bool) (good bool, folder string) {
 		defer zip.Close()
 		for _, file := range zip.File {
 			fc, err := file.Open()
-
 			if err != nil {
-
 				buf := fmt.Sprintf("Save '%v' is corrupted or invalid: '%v'.", name, err.Error())
 				if showError {
 					CMS(cfg.Local.Channel.ChatChannel, buf)
 				}
 				cwlog.DoLogCW(buf)
 				break
-			} else {
-				defer fc.Close()
-				if strings.HasSuffix(file.Name, "level.dat0") {
-					content, err := io.ReadAll(fc)
-					if len(content) > constants.LevelDatMinSize && err == nil {
-						return true, filepath.Dir(file.Name)
-					} else {
-						return false, ""
-					}
-				}
 			}
+			if filepath.Base(file.Name) != "level.dat0" || file.FileInfo().IsDir() {
+				fc.Close()
+				continue
+			}
+			// Read through EOF so archive/zip checks the CRC without retaining the payload.
+			size, err := io.Copy(io.Discard, fc)
+			fc.Close()
+			if err != nil || size <= constants.LevelDatMinSize {
+				return false, ""
+			}
+			return true, filepath.Dir(file.Name)
 		}
 		buf := fmt.Sprintf("Save '%v' did not contain any save data.", name)
 		if showError {

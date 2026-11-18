@@ -375,3 +375,28 @@ func TestRegressionOldStdoutCloseDoesNotRestartNewGeneration(t *testing.T) {
 		t.Fatalf("old process stdout closure queued an unnecessary restart for new generation %d", lm.currentGeneration)
 	}
 }
+
+func TestCheckSaveRequiresExactLevelFilenameAndValidContents(t *testing.T) {
+	dir := t.TempDir()
+	filename := filepath.Join(dir, "world.zip")
+	data := writeTransitionSave(t, filename, 'A')
+	if ok, folder := CheckSave(dir, "world.zip", false); !ok || folder != "map" {
+		t.Fatalf("valid save rejected, folder %q", folder)
+	}
+	for _, tc := range []struct {
+		name     string
+		from, to []byte
+	}{
+		{"similarly named file", []byte("map/level.dat0"), []byte("map-level.dat0")},
+		{"checksum mismatch", bytes.Repeat([]byte{'A'}, 16), bytes.Repeat([]byte{'B'}, 16)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := os.WriteFile(filename, bytes.ReplaceAll(data, tc.from, tc.to), 0644); err != nil {
+				t.Fatal(err)
+			}
+			if ok, _ := CheckSave(dir, "world.zip", false); ok {
+				t.Fatal("invalid save accepted")
+			}
+		})
+	}
+}
