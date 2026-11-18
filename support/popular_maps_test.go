@@ -1,50 +1,49 @@
 package support
 
 import (
-	"ChatWire/cfg"
-	"github.com/bwmarrin/discordgo"
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
+
+	"ChatWire/cfg"
+	"ChatWire/disc"
+	"github.com/bwmarrin/discordgo"
 )
 
-func TestPopularMapsCalendarPeriods(t *testing.T) {
+func TestPopularMapsRollingPeriods(t *testing.T) {
 	oldGlobal, oldLocal := cfg.Global, cfg.Local
 	t.Cleanup(func() { cfg.Global, cfg.Local = oldGlobal, oldLocal })
 	cfg.Global.Paths.Folders.ServersRoot = t.TempDir()
 	now := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
 	cfg.Local.Callsign, cfg.Local.Name = "a", "Alpha"
 	for _, sample := range []struct {
-		day     int
-		minutes int
-	}{{18, 60}, {16, 120}, {10, 180}, {31, 600}} {
-		d := now.AddDate(0, 0, sample.day-18)
-		if sample.day == 31 {
-			d = time.Date(2026, 10, 31, 0, 0, 0, 0, time.UTC)
-		}
-		if err := recordMapMinutes(d, sample.minutes); err != nil {
+		age   time.Duration
+		count int
+	}{
+		{time.Hour, 10}, {24 * time.Hour, 20}, {6 * 24 * time.Hour, 30}, {7 * 24 * time.Hour, 40}, {29 * 24 * time.Hour, 50}, {30 * 24 * time.Hour, 60},
+	} {
+		if err := recordMapMinutes(now.Add(-sample.age), sample.count); err != nil {
 			t.Fatal(err)
 		}
 	}
-	cfg.Local.Callsign, cfg.Local.Name = "b", "Beta"
-	if err := recordMapMinutes(now, 90); err != nil {
-		t.Fatal(err)
-	}
-	today := popularityRanking(now, time.Date(2026, 11, 18, 0, 0, 0, 0, time.UTC))
-	if len(today) != 2 || today[0].Name != "Beta" || today[0].Minutes != 90 {
-		t.Fatalf("today: %+v", today)
-	}
-	week := popularityRanking(now, time.Date(2026, 11, 16, 0, 0, 0, 0, time.UTC))
-	if len(week) != 2 || week[0].Name != "Alpha" || week[0].Minutes != 180 {
-		t.Fatalf("week: %+v", week)
-	}
-	month := popularityRanking(now, time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC))
-	if len(month) != 2 || month[0].Minutes != 360 {
-		t.Fatalf("month: %+v", month)
+	for _, tc := range []struct {
+		window time.Duration
+		want   int
+	}{{24 * time.Hour, 10}, {7 * 24 * time.Hour, 60}, {30 * 24 * time.Hour, 150}} {
+		rows := popularityRanking(now, now.Add(-tc.window))
+		if len(rows) != 1 || rows[0].Minutes != tc.want {
+			t.Fatalf("window %v: %+v, want %d", tc.window, rows, tc.want)
+		}
 	}
 	report := popularMapsDescription(now)
-	if !strings.Contains(report, "6.0 hours") || !strings.Contains(report, "UTC") {
-		t.Fatalf("report: %s", report)
+	for _, want := range []string{"**Last 24 hours**", "**Last 7 days**", "**Last 30 days**"} {
+		if !strings.Contains(report, want) {
+			t.Fatalf("missing %q: %s", want, report)
+		}
 	}
 }
 
@@ -72,4 +71,84 @@ func TestResolvePopularMapsChannel(t *testing.T) {
 	if err != nil || got != "created" || creates != 1 {
 		t.Fatalf("creation: %q %v (%d)", got, err, creates)
 	}
+}
+
+type popularityTransport func(*http.Request) (*http.Response, error)
+
+func (f popularityTransport) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestPublishPopularMapsEditsOnlyWhenDisplayedContentChanges(t *testing.T) {
+	oldGlobal, oldLocal, oldSession := cfg.Global, cfg.Local, disc.DS
+	t.Cleanup(func() { cfg.Global, cfg.Local, disc.DS = oldGlobal, oldLocal, oldSession })
+	cfg.Global.Paths.Folders.ServersRoot = t.TempDir()
+	cfg.Global.Discord.PopularMapsChannel = "123"
+	cfg.Local.Callsign, cfg.Local.Name = "a", "Alpha"
+	session, err := discordgo.New("Bot test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	disc.DS = session
+	now := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
+
+	var posted *discordgo.Message
+	var methods []string
+	session.Client = &http.Client{Transport: popularityTransport(func(r *http.Request) (*http.Response, error) {
+		methods = append(methods, r.Method)
+		status := http.StatusOK
+		var result any
+		switch r.Method {
+		case http.MethodPost, http.MethodPatch:
+			var payload discordgo.Message
+			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+				t.Fatal(err)
+			}
+			if len(payload.Embeds) != 1 {
+				t.Fatalf("expected one embed in %s", r.Method)
+			}
+			payload.ID = "456"
+			payload.Embeds[0].Type = discordgo.EmbedTypeRich
+			posted = &payload
+			result = posted
+		case http.MethodGet:
+			result = posted
+			if posted == nil {
+				status = http.StatusNotFound
+				result = discordgo.APIErrorMessage{Code: discordgo.ErrCodeUnknownMessage}
+			}
+		default:
+			t.Fatalf("unexpected Discord request: %s", r.Method)
+		}
+		data, err := json.Marshal(result)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return &http.Response{StatusCode: status, Header: make(http.Header), Body: io.NopCloser(bytes.NewReader(data)), Request: r}, nil
+	})}
+
+	refresh := func(want string) {
+		t.Helper()
+		methods = nil
+		if err := publishPopularMaps(now); err != nil {
+			t.Fatal(err)
+		}
+		if got := strings.Join(methods, " "); got != want {
+			t.Fatalf("requests = %q, want %q", got, want)
+		}
+	}
+	if err := recordMapMinutes(now, 60); err != nil {
+		t.Fatal(err)
+	}
+	refresh("POST")
+	now = now.Add(15 * time.Minute)
+	if err := recordMapMinutes(now, 1); err != nil {
+		t.Fatal(err)
+	} // Still displayed as 1.0 hours.
+	refresh("GET")
+	if err := recordMapMinutes(now, 60); err != nil {
+		t.Fatal(err)
+	}
+	refresh("GET PATCH")
+	refresh("GET")
+	posted = nil // Deleted from Discord, while the saved message ID is still present.
+	refresh("GET POST")
 }

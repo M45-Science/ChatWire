@@ -119,29 +119,11 @@ func Info(cmd *glob.CommandData, i *discordgo.InteractionCreate) {
 	}
 	/* End tick history */
 
-	glob.PlayerListLock.RLock()
-	var mem, reg, vet, mod, ban int
-	for _, player := range glob.PlayerList {
-		switch player.Level {
-		case -1:
-			ban++
-		case 1:
-			mem++
-		case 2:
-			reg++
-		case 3:
-			vet++
-		case 255:
-			mod++
-		}
-	}
-	bCount := banlist.Count()
-	ban += bCount
-
-	total := ban + mem + reg + vet + mod
+	ranks := fact.PlayerRankCounts()
+	ban := ranks["Banned"] + banlist.Count()
+	total := ban + ranks["Member"] + ranks["Regular"] + ranks["Veteran"] + ranks["Moderator"]
 	buf = buf + fmt.Sprintf("Members: %v, Regulars: %v, Veterans: %v\nModerators: %v, Banned: %v, Total: %v\n",
-		mem, reg, vet, mod, ban, total)
-	glob.PlayerListLock.RUnlock()
+		ranks["Member"], ranks["Regular"], ranks["Veteran"], ranks["Moderator"], ban, total)
 
 	if fact.PausedTicks > 4 {
 		buf = buf + "\n(Server is paused)\n"

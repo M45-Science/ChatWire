@@ -26,6 +26,19 @@ var (
 
 const playerDBLockTimeout = 5 * time.Second
 
+// PlayerRankCounts counts each known Factorio player once at their current rank.
+func PlayerRankCounts() map[string]int {
+	counts := make(map[string]int)
+	glob.PlayerListLock.RLock()
+	defer glob.PlayerListLock.RUnlock()
+	for _, player := range glob.PlayerList {
+		if player != nil {
+			counts[LevelToString(player.Level)]++
+		}
+	}
+	return counts
+}
+
 func PlayerListDirtySignal() <-chan struct{} {
 	return playerListDirtyCh
 }

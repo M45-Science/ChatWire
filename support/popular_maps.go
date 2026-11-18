@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -25,13 +26,14 @@ type mapMinutes struct {
 	Name    string
 	Channel string
 	Minutes int
+	Buckets map[string]int `json:",omitempty"`
 }
 
 func popularityDir() string {
 	return filepath.Join(cfg.Global.Paths.Folders.ServersRoot, "map-popularity")
 }
 func popularityFile(day time.Time, callsign string) string {
-	return filepath.Join(popularityDir(), day.UTC().Format("2006-01-02"), filepath.Base(callsign)+".json")
+	return filepath.Join(popularityDir(), "minutes", day.UTC().Format("2006-01-02"), filepath.Base(callsign)+".json")
 }
 func recordMapMinutes(now time.Time, count int) error {
 	if count <= 0 {
@@ -49,6 +51,10 @@ func recordMapMinutes(now time.Time, count int) error {
 	}
 	entry.Name, entry.Channel = cfg.Local.Name, cfg.Local.Channel.ChatChannel
 	entry.Minutes += count
+	if entry.Buckets == nil {
+		entry.Buckets = make(map[string]int)
+	}
+	entry.Buckets[now.UTC().Truncate(time.Minute).Format(time.RFC3339)] += count
 	data, err = json.Marshal(entry)
 	if err != nil {
 		return err
@@ -73,8 +79,10 @@ func recordMapMinutes(now time.Time, count int) error {
 
 func popularityRanking(now, start time.Time) []mapMinutes {
 	totals := map[string]mapMinutes{}
-	for day := start; !day.After(now); day = day.AddDate(0, 0, 1) {
-		files, err := filepath.Glob(filepath.Join(popularityDir(), day.Format("2006-01-02"), "*.json"))
+	start, now = start.UTC(), now.UTC()
+	day := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.UTC)
+	for ; !day.After(now); day = day.AddDate(0, 0, 1) {
+		files, err := filepath.Glob(filepath.Join(popularityDir(), "minutes", day.Format("2006-01-02"), "*.json"))
 		if err != nil {
 			continue
 		}
@@ -84,12 +92,25 @@ func popularityRanking(now, start time.Time) []mapMinutes {
 				continue
 			}
 			var entry mapMinutes
-			if json.Unmarshal(data, &entry) != nil || entry.Minutes <= 0 {
+			if json.Unmarshal(data, &entry) != nil {
 				continue
 			}
-			key := filepath.Base(path)
+			minutes := 0
+			for stamp, count := range entry.Buckets {
+				t, err := time.Parse(time.RFC3339, stamp)
+				if err == nil && t.After(start) && !t.After(now) {
+					minutes += count
+				}
+			}
+			if minutes <= 0 {
+				continue
+			}
+			key := strings.TrimSuffix(filepath.Base(path), "-history.json")
+			if key == filepath.Base(path) {
+				key = strings.TrimSuffix(key, ".json")
+			}
 			total := totals[key]
-			total.Minutes += entry.Minutes
+			total.Minutes += minutes
 			total.Name, total.Channel = entry.Name, entry.Channel
 			totals[key] = total
 		}
@@ -102,38 +123,38 @@ func popularityRanking(now, start time.Time) []mapMinutes {
 		if result[i].Minutes != result[j].Minutes {
 			return result[i].Minutes > result[j].Minutes
 		}
-		return result[i].Name < result[j].Name
+		if result[i].Name != result[j].Name {
+			return result[i].Name < result[j].Name
+		}
+		return result[i].Channel < result[j].Channel
 	})
 	return result
 }
 func popularMapsDescription(now time.Time) string {
 	now = now.UTC()
-	day := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	week := day.AddDate(0, 0, -(int(day.Weekday())+6)%7)
-	month := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	var b strings.Builder
-	b.WriteString("Combined player hours · UTC calendar periods · updated every 15 minutes\n")
+	ranks := fact.PlayerRankCounts()
+	fmt.Fprintf(&b, "Members: %d · Regulars: %d · Veterans: %d\n\n", ranks["Member"], ranks["Regular"], ranks["Veteran"])
+	b.WriteString("Player hours · historical activity estimated from logs · updated every 15 minutes · [m45sci.xyz](https://m45sci.xyz)\n")
 	for _, period := range []struct {
 		name  string
 		start time.Time
-	}{{"Today", day}, {"This week", week}, {"This month", month}} {
+	}{{"Last 24 hours", now.Add(-24 * time.Hour)}, {"Last 7 days", now.Add(-7 * 24 * time.Hour)}, {"Last 30 days", now.Add(-30 * 24 * time.Hour)}} {
 		fmt.Fprintf(&b, "\n**%s**\n", period.name)
-		rows := popularityRanking(day, period.start)
+		rows := popularityRanking(now, period.start)
 		if len(rows) == 0 {
 			b.WriteString("No activity recorded yet.\n")
 			continue
 		}
-		if len(rows) > 10 {
-			rows = rows[:10]
+		if len(rows) > 5 {
+			rows = rows[:5]
 		}
 		for i, row := range rows {
-			name := strings.NewReplacer("\n", " ", "\r", " ", "@", "@\u200b").Replace(row.Name)
-			if row.Channel != "" {
-				name = "<#" + row.Channel + ">"
-			}
+			name := leaderboardMapLabel(row.Name, row.Channel)
 			fmt.Fprintf(&b, "%d. %s — %.1f hours\n", i+1, name, float64(row.Minutes)/60)
 		}
 	}
+	fmt.Fprintf(&b, "\n**Recently reset**\n%s", recentResetSummary(now))
 	return b.String()
 }
 
@@ -193,6 +214,19 @@ func savePopularityMessage(path string, saved popularityMessage) error {
 	return os.Rename(file.Name(), path)
 }
 
+func matchesPopularMapsPost(msg *discordgo.Message, want *discordgo.MessageEmbed) bool {
+	if msg == nil || len(msg.Embeds) != 1 || msg.Embeds[0] == nil {
+		return false
+	}
+	got := *msg.Embeds[0]
+	// Discord adds the embed type and can return an empty fields array.
+	got.Type = want.Type
+	if len(got.Fields) == 0 && len(want.Fields) == 0 {
+		got.Fields = want.Fields
+	}
+	return reflect.DeepEqual(&got, want)
+}
+
 func publishPopularMaps(now time.Time) error {
 	if disc.DS == nil {
 		return nil
@@ -229,10 +263,16 @@ func publishPopularMaps(now time.Time) error {
 		}
 	}
 
-	embed := &discordgo.MessageEmbed{Title: "Most popular maps", Description: popularMapsDescription(now), Color: glob.COLOR_CYAN}
+	embed := popularMapsEmbed(now)
 	var msg *discordgo.Message
 	if saved.Channel == channel && saved.ID != "" {
-		msg, err = disc.DS.ChannelMessageEditEmbed(channel, saved.ID, embed)
+		msg, err = disc.DS.ChannelMessage(channel, saved.ID)
+		if err == nil {
+			if matchesPopularMapsPost(msg, embed) {
+				return nil
+			}
+			msg, err = disc.DS.ChannelMessageEditEmbed(channel, saved.ID, embed)
+		}
 		if err != nil {
 			var restErr *discordgo.RESTError
 			if !errors.As(err, &restErr) || restErr.Response == nil || restErr.Response.StatusCode != http.StatusNotFound {
