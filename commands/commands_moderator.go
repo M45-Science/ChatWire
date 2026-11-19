@@ -12,6 +12,11 @@ func moderatorCommands() []glob.CommandData {
 	return []glob.CommandData{
 		{AppCmd: glob.AppCmdData{Name: "web", Description: "Open web controls or revoke your web sessions.", Type: discordgo.ChatApplicationCommand,
 			Options: []glob.OptionData{{Name: "action", Description: "Login or sign out all browsers", Type: discordgo.ApplicationCommandOptionString, Choices: []glob.ChoiceData{{Name: "login", Value: "login"}, {Name: "logout-all", Value: "logout-all"}}}}}, Function: moderator.Web, ModeratorOnly: true, PrimaryOnly: true},
+		{AppCmd: glob.AppCmdData{Name: "mute-warning-pings", Description: "Temporarily mute moderator warning pings for a Factorio player.",
+			Options: []glob.OptionData{
+				{Name: "name", Description: "Factorio player name", Type: discordgo.ApplicationCommandOptionString, Required: true},
+				{Name: "minutes", Description: "Number of minutes (default 30)", Type: discordgo.ApplicationCommandOptionInteger, MinValue: glob.Ptr(1.0), MaxValue: glob.Ptr(153722867.0)},
+			}}, Function: moderator.WarningPingMute, ModeratorOnly: true, PrimaryOnly: true},
 		/* Admin Commands */
 		{AppCmd: glob.AppCmdData{
 			Name:        "chatwire",

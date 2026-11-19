@@ -277,7 +277,7 @@ func (a *activityAlerts) due(now time.Time) []activityAlert {
 						}
 					}
 					// A witness warning also merits a moderator ping if this incident has not paged yet.
-					if !s.roleNotified && (pingEvidence || alert.gameMessage != "") {
+					if !s.roleNotified && (pingEvidence || alert.gameMessage != "") && !warningPingMuted(s.player, now) {
 						alert.pingRole = true
 						s.roleNotified = true
 					}

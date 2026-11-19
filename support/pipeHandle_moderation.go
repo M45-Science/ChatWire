@@ -134,8 +134,8 @@ func reportActivityAlert(alert activityAlert) {
 	reportChannel := cfg.Global.Discord.ReportChannel
 	if reportChannel != "" {
 		reportText := text
-		if role := cfg.Global.Discord.SusPingRole; alert.pingRole && role != "" {
-			reportText += "\n<@&" + role + ">"
+		if role := cfg.Global.Discord.SusPingRole; alert.pingRole && role != "" && !warningPingMuted(alert.player, time.Now()) {
+			reportText += "\n<@&" + role + "> To mute warning pings for " + strings.ReplaceAll(alert.player, "@", "@\u200b") + ", run `/mute-warning-pings` with their name (30 minutes by default)."
 		}
 		fact.LogCMS(reportChannel, reportText)
 	} else {
