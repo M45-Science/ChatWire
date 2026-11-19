@@ -1,11 +1,14 @@
 package moderator
 
 import (
+	"ChatWire/cfg"
 	"ChatWire/disc"
+	"ChatWire/fact"
 	"ChatWire/glob"
 	"ChatWire/support"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"strings"
 )
 
 func WarningPingMute(_ *glob.CommandData, i *discordgo.InteractionCreate) {
@@ -24,5 +27,20 @@ func WarningPingMute(_ *glob.CommandData, i *discordgo.InteractionCreate) {
 		disc.InteractionEphemeralResponse(i, "Error", err.Error())
 		return
 	}
-	disc.InteractionEphemeralResponse(i, "Complete", fmt.Sprintf("Warning pings for %s are muted until <t:%d:F>. Warnings remain visible.", name, until.Unix()))
+	moderator := "Unknown moderator"
+	if i.Member != nil && i.Member.User != nil {
+		moderator = i.Member.User.Username
+	} else if i.User != nil {
+		moderator = i.User.Username
+	}
+	clean := func(s string) string {
+		return strings.ReplaceAll(strings.Join(strings.Fields(s), " "), "@", "@\u200b")
+	}
+	confirmation := fmt.Sprintf("%s muted warning pings for %s for %d minutes, until <t:%d:F>. Warnings remain visible.", clean(moderator), clean(name), minutes, until.Unix())
+	if cfg.Global.Discord.ReportChannel != "" {
+		fact.LogCMS(cfg.Global.Discord.ReportChannel, confirmation)
+		disc.InteractionEphemeralResponse(i, "Complete", confirmation)
+	} else {
+		disc.InteractionEphemeralResponse(i, "Complete", confirmation+" No moderation report channel is configured.")
+	}
 }
