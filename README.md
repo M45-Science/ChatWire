@@ -91,10 +91,12 @@ and lock the shared database before writing, and stale local player saves preser
 the newer timestamp. The timestamp is reserved before replying to SoftMod, so a
 lost reply or disconnect can skip that reminder rather than produce duplicates.
 
-Binary player databases now write version 2, adding the reminder timestamp, and
-still read version 1 and legacy JSON. Update all ChatWire instances sharing a
-database together: older binaries cannot read version 2 and older JSON writers
-would discard the new field. Rollback requires exporting to the old schema first.
+Binary player databases write version 3 with level and ban revisions. ChatWire
+also reads versions 1 and 2 and legacy JSON. Update all ChatWire instances and
+other writers sharing a database together. Older binaries cannot read version 3,
+and older JSON writers discard revision fields. Rollback requires exporting to
+the old schema first. Load the updated SoftMod on each map to enable tagged ban
+sync. Maps without that capability continue to use the legacy console path.
 
 The player database defaults to the compressed binary format. Set `Paths.DataFiles.DBFormat` to `"json"` to retain readable JSON output. Reads auto-detect both formats, so an existing JSON database is migrated on its next write when `DBFormat` is `"binary"`; the configured `DBFile` name does not have to change.
 

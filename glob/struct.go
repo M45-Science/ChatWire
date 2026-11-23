@@ -8,20 +8,25 @@ import (
 
 // PlayerData stores persistent information about a single player.
 type PlayerData struct {
-	Name         string `json:"-"`
-	Level        int    `json:"l,omitempty"`
-	ID           string `json:"i,omitempty"`
-	BanReason    string `json:"b,omitempty"`
-	Creation     int64  `json:"c,omitempty"`
-	LastSeen     int64  `json:"s,omitempty"`
-	Minutes      int64  `json:"m,omitempty"`
-	SusScore     int64  `json:"u,omitempty"`
-	LastToolHint int64  `json:"th,omitempty"` // Unix seconds; shared join-tip cooldown.
+	Name          string `json:"-"`
+	Level         int    `json:"l,omitempty"`
+	LevelRevision uint64 `json:"lr,omitempty"`
+	BanRevision   uint64 `json:"br,omitempty"` // Last revision affecting the native ban list.
+	BanRetained   bool   `json:"bt,omitempty"` // Deleting a profile can leave its native ban in force.
+	ID            string `json:"i,omitempty"`
+	BanReason     string `json:"b,omitempty"`
+	Creation      int64  `json:"c,omitempty"`
+	LastSeen      int64  `json:"s,omitempty"`
+	Minutes       int64  `json:"m,omitempty"`
+	SusScore      int64  `json:"u,omitempty"`
+	LastToolHint  int64  `json:"th,omitempty"` // Unix seconds; shared join-tip cooldown.
 
 	/* Not on disk */
 	AlreadyBanned bool  `json:"-"`
 	SpamScore     int64 `json:"-"`
 }
+
+func (p PlayerData) Banned() bool { return p.Level == -1 || p.BanRetained }
 
 // PassData represents a temporary registration code for Discord linkage.
 type PassData struct {

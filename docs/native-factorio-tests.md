@@ -58,6 +58,11 @@ reaped on failure. Existing server files and settings are not modified.
   drills stay auditable without suspicion or alerts; their cancellations must
   not reduce the ordinary structure incident. The live drill remains scored.
 
+- **Ban synchronization:** two live headless maps with one temporary player
+  database. A stale promotion and delayed sync replies preserve committed
+  moderation. Native RCON and ChatWire moderator unbans reach both native ban
+  lists. Imported community bans retain their reasons and Regular exemptions.
+
 The Lua assertions use `--test-scenario`, `--test-save`, `--test-arg` and
 `script.finish_test(true)`. A finite `--test-ticks` limit prevents runaway tests,
 but Factorio returns success when that limit is reached too. The Go runner

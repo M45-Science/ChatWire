@@ -165,7 +165,7 @@ func handleBan(input *handleData) bool {
 			trustname := input.noDatestampList[1]
 			fact.SetLastBan(trustname)
 
-			if strings.Contains(input.noDatestamp, "was banned by") {
+			if !fact.TaggedBanSyncEnabled() && strings.Contains(input.noDatestamp, "was banned by") {
 				if reason, ok := banReasonFromLine(input.noDatestamp); ok {
 					fact.PlayerSetBanReason(trustname, reason, false)
 				} else {
@@ -199,7 +199,7 @@ func handleUnBan(input *handleData) bool {
 			trustname := input.noDatestampList[1]
 			fact.SetLastBan("")
 
-			if strings.Contains(input.noDatestamp, "was unbanned by") {
+			if !fact.TaggedBanSyncEnabled() && strings.Contains(input.noDatestamp, "was unbanned by") {
 				if fact.PlayerLevelGet(trustname, true) < 0 {
 					fact.PlayerLevelSet(trustname, 0, false)
 				}

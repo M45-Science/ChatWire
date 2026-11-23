@@ -21,7 +21,7 @@ const (
 	playerDBFormatBinary = "binary"
 	playerDBFormatJSON   = "json"
 
-	playerDBBinaryVersion = uint16(2)
+	playerDBBinaryVersion = uint16(3)
 	playerDBCodecZstd     = byte(1)
 	playerDBHeaderSize    = 24
 
@@ -110,6 +110,9 @@ func decodePlayerDatabase(data []byte) (map[string]*glob.PlayerData, string, err
 		if player == nil {
 			return nil, playerDBFormatJSON, fmt.Errorf("decode JSON player database: player %q is null", name)
 		}
+		if player.BanRevision > player.LevelRevision || (player.BanRetained && player.Level > -254) {
+			return nil, playerDBFormatJSON, fmt.Errorf("decode JSON player database: invalid moderation state for %q", name)
+		}
 	}
 	return players, playerDBFormatJSON, nil
 }
@@ -151,6 +154,13 @@ func encodeBinaryPlayerDatabase(players map[string]*glob.PlayerData) ([]byte, er
 		payload = binary.AppendVarint(payload, player.Minutes)
 		payload = binary.AppendVarint(payload, player.SusScore)
 		payload = binary.AppendVarint(payload, player.LastToolHint)
+		payload = binary.AppendUvarint(payload, player.LevelRevision)
+		payload = binary.AppendUvarint(payload, player.BanRevision)
+		if player.BanRetained {
+			payload = append(payload, 1)
+		} else {
+			payload = append(payload, 0)
+		}
 		if len(payload) > maxPlayerDBPayload {
 			return nil, fmt.Errorf("player database payload exceeds %d bytes", maxPlayerDBPayload)
 		}
@@ -175,7 +185,7 @@ func decodeBinaryPlayerDatabase(data []byte) (map[string]*glob.PlayerData, error
 		return nil, errors.New("binary player database header is truncated")
 	}
 	version := binary.LittleEndian.Uint16(data[8:10])
-	if version != 1 && version != playerDBBinaryVersion {
+	if version < 1 || version > playerDBBinaryVersion {
 		return nil, fmt.Errorf("unsupported binary player database version %d", binary.LittleEndian.Uint16(data[8:10]))
 	}
 	if data[10] != playerDBCodecZstd {
@@ -329,15 +339,35 @@ func decodePlayerDBPayload(payload []byte, version uint16) (map[string]*glob.Pla
 				return nil, fmt.Errorf("decode player %q tool hint: %w", name, err)
 			}
 		}
+		var levelRevision, banRevision uint64
+		var banRetained bool
+		if version >= 3 {
+			levelRevision, err = reader.uvarint()
+			if err != nil {
+				return nil, fmt.Errorf("decode player %q level revision: %w", name, err)
+			}
+			banRevision, err = reader.uvarint()
+			if err != nil || banRevision > levelRevision {
+				return nil, fmt.Errorf("invalid ban revision for player %q", name)
+			}
+			retained, err := reader.uvarint()
+			if err != nil || retained > 1 || (retained == 1 && level > -254) {
+				return nil, fmt.Errorf("invalid retained ban flag for player %q", name)
+			}
+			banRetained = retained == 1
+		}
 		players[name] = &glob.PlayerData{
-			Level:        int(level),
-			ID:           id,
-			BanReason:    banReason,
-			Creation:     creation,
-			LastSeen:     lastSeen,
-			Minutes:      minutes,
-			SusScore:     susScore,
-			LastToolHint: lastToolHint,
+			Level:         int(level),
+			LevelRevision: levelRevision,
+			BanRevision:   banRevision,
+			BanRetained:   banRetained,
+			ID:            id,
+			BanReason:     banReason,
+			Creation:      creation,
+			LastSeen:      lastSeen,
+			Minutes:       minutes,
+			SusScore:      susScore,
+			LastToolHint:  lastToolHint,
 		}
 	}
 	if reader.off != len(payload) {

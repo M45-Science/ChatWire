@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"hash/crc32"
 	"reflect"
 	"testing"
 
@@ -17,6 +18,8 @@ func samplePlayerDatabase(count int) map[string]*glob.PlayerData {
 		name := fmt.Sprintf("player-%06d", i)
 		players[name] = &glob.PlayerData{
 			Level:         i%6 - 1,
+			LevelRevision: uint64(i) + 2,
+			BanRevision:   uint64(i) + 1,
 			ID:            fmt.Sprintf("100000000000%06d", i),
 			BanReason:     "repeated test ban reason",
 			Creation:      1_000_000 + int64(i),
@@ -70,6 +73,41 @@ func TestBinaryPlayerDatabaseRoundTripIsDeterministic(t *testing.T) {
 	}
 	if want := persistentPlayerData(players); !reflect.DeepEqual(got, want) {
 		t.Fatalf("round trip mismatch:\n got: %#v\nwant: %#v", got, want)
+	}
+}
+
+func TestReadBinaryPlayerDatabaseBeforeLevelRevisions(t *testing.T) {
+	data, err := encodeBinaryPlayerDatabase(map[string]*glob.PlayerData{
+		"alice": {Level: -1, BanReason: "ban", LastToolHint: 42, LevelRevision: 2, BanRevision: 1},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload, err := playerDBDecoder.DecodeAll(data[playerDBHeaderSize:], nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, version := range []uint16{1, 2} {
+		t.Run(fmt.Sprint(version), func(t *testing.T) {
+			// This fixture's hint and three revision fields each occupy one byte.
+			legacy := payload[:len(payload)-3]
+			var hint int64 = 42
+			if version == 1 {
+				legacy, hint = legacy[:len(legacy)-1], 0
+			}
+			header := append([]byte(nil), data[:playerDBHeaderSize]...)
+			binary.LittleEndian.PutUint16(header[8:10], version)
+			binary.LittleEndian.PutUint64(header[12:20], uint64(len(legacy)))
+			binary.LittleEndian.PutUint32(header[20:24], crc32.Checksum(legacy, playerDBCRC))
+			players, err := decodeBinaryPlayerDatabase(append(header, playerDBEncoder.EncodeAll(legacy, nil)...))
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := players["alice"]
+			if got == nil || got.Level != -1 || got.BanReason != "ban" || got.LastToolHint != hint || got.LevelRevision != 0 || got.BanRevision != 0 {
+				t.Fatalf("legacy record decoded as %+v", got)
+			}
+		})
 	}
 }
 

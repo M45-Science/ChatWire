@@ -63,7 +63,11 @@ func handleChatWire(input *handleData) bool {
 	case "response":
 		handleChatWireResponse(input.generation, envelope)
 	case "event":
-		handleChatWireEvent(envelope.Event, envelope.Data)
+		if envelope.Event == "native-moderation" {
+			handleNativeModeration(input.generation, envelope.Data)
+		} else {
+			handleChatWireEvent(envelope.Event, envelope.Data)
+		}
 	default:
 		cwlog.DoLogCW("Invalid SoftMod protocol message kind: %q", envelope.Kind)
 	}
@@ -80,6 +84,7 @@ func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 	case "hello":
 		var data struct {
 			Version string `json:"softmod_version"`
+			BanSync bool   `json:"ban_sync"`
 		}
 		if json.Unmarshal(envelope.Data, &data) != nil || data.Version == "" {
 			cwlog.DoLogCW("SoftMod hello response omitted its version")
@@ -87,6 +92,10 @@ func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 		}
 		firstHello := glob.SoftModVersion == constants.Unknown
 		glob.SoftModVersion = data.Version
+		if data.BanSync {
+			fact.EnableTaggedBanSync(generation)
+			fact.ReconcilePlayerBans()
+		}
 		fact.NotifySoftModDetected(generation)
 		if firstHello {
 			cwlog.DoLogCW("Softmod detected: " + data.Version)
@@ -97,6 +106,33 @@ func handleChatWireResponse(generation uint64, envelope chatWireEnvelope) {
 		handleChatWireStatus(envelope.Data)
 	case "online":
 		handleChatWireOnline(envelope.Data)
+	case "ban-state":
+		var data struct {
+			Name     string `json:"name"`
+			Revision string `json:"revision"`
+			Changed  bool   `json:"changed"`
+		}
+		if json.Unmarshal(envelope.Data, &data) == nil {
+			fact.ConfirmTaggedBan(generation, envelope.ID, data.Name, data.Revision, data.Changed)
+		}
+	}
+}
+
+func handleNativeModeration(generation uint64, raw json.RawMessage) {
+	if !fact.TaggedBanSyncGeneration(generation) {
+		return
+	}
+	var data struct {
+		Name     string  `json:"name"`
+		Banned   *bool   `json:"banned"`
+		Reason   string  `json:"reason"`
+		Revision *uint64 `json:"revision,string"`
+	}
+	if json.Unmarshal(raw, &data) != nil || data.Banned == nil || data.Revision == nil || data.Name == "" {
+		return
+	}
+	if err := fact.RecordNativeModeration(data.Name, *data.Banned, data.Reason, *data.Revision); err != nil {
+		cwlog.DoLogCW("Native moderation for %q: %v", data.Name, err)
 	}
 }
 
@@ -121,11 +157,12 @@ func handleChatWireEvent(event string, data json.RawMessage) {
 		handleChatWireOnline(data)
 	case "player-level":
 		var level struct {
-			Name  string `json:"name"`
-			Level int    `json:"level"`
+			Name     string  `json:"name"`
+			Level    int     `json:"level"`
+			Revision *uint64 `json:"revision,string"`
 		}
 		if json.Unmarshal(data, &level) == nil && level.Name != "" {
-			fact.PlayerLevelSetFromGame(level.Name, level.Level)
+			fact.PlayerLevelSetFromGameAtRevision(level.Name, level.Level, level.Revision)
 		}
 	case "registration":
 		var registration struct {

@@ -136,7 +136,11 @@ func handlePlayerRegister(input *handleData) bool {
 					}
 
 					if codegood {
-						fact.PlayerSetID(pname, pid, plevel)
+						if err := fact.RegisterPlayer(pname, pid, plevel); err != nil {
+							cwlog.DoLogCW("Register player %q: %v", pname, err)
+							fact.FactWhisper(pname, "[SYSTEM] Registration could not be saved. Please request a new code and try again.")
+							continue
+						}
 
 						guild := disc.Guild
 						if guild != nil && disc.DS != nil {

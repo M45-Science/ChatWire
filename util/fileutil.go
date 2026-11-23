@@ -86,15 +86,32 @@ func WriteBytesAtomic(path string, data []byte, perm os.FileMode) error {
 	WriteJSONLock.Lock()
 	defer WriteJSONLock.Unlock()
 
-	tmpName := TempFilePrefix + filepath.Base(path) + ".tmp"
-	tempPath := filepath.Join(filepath.Dir(path), tmpName)
-
-	if err := os.WriteFile(tempPath, data, perm); err != nil {
+	dirPath := filepath.Dir(path)
+	dir, err := os.Open(dirPath)
+	if err != nil {
 		return err
 	}
-	if err := os.Rename(tempPath, path); err != nil {
-		_ = os.Remove(tempPath)
+	defer dir.Close()
+	temp, err := os.CreateTemp(dirPath, TempFilePrefix+filepath.Base(path)+"-*")
+	if err != nil {
 		return err
 	}
-	return nil
+	defer os.Remove(temp.Name())
+	defer temp.Close()
+	if err := temp.Chmod(perm); err != nil {
+		return err
+	}
+	if _, err := temp.Write(data); err != nil {
+		return err
+	}
+	if err := temp.Sync(); err != nil {
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Rename(temp.Name(), path); err != nil {
+		return err
+	}
+	return dir.Sync()
 }

@@ -129,8 +129,8 @@ func WriteBanBy(name, reason, banBy string) {
 	tNow := time.Now()
 	banTimeFormat := "01-02-2006"
 
-	outString := fmt.Sprintf("%v %v -- %v %v %v", name, reason, banBy, tNow.Format(banTimeFormat), cfg.GetGameLogURL())
-	doBan(name, outString)
+	reason = fmt.Sprintf("%v -- %v %v %v", reason, banBy, tNow.Format(banTimeFormat), cfg.GetGameLogURL())
+	applyAutomaticBan(name, strings.TrimSpace(reason))
 }
 
 func WriteBan(name, reason string) {
@@ -444,13 +444,21 @@ func WriteFact(format string, args ...interface{}) {
 }
 
 func writeFactorioLine(input string, maxLength int) {
+	writeFactorioLineForGeneration(input, maxLength, nil)
+}
+
+func writeFactorioLineForGeneration(input string, maxLength int, target *uint64) bool {
 	buf := sclean.UnicodeCleanup(input)
 	if len(buf) > maxLength || len(buf) <= 1 {
-		return
+		return false
 	}
 
 	PipeLock.Lock()
 	gpipe, generation := Pipe, pipeGeneration
+	if target != nil && (gpipe == nil || generation != *target) {
+		PipeLock.Unlock()
+		return false
+	}
 	var err error
 	if gpipe != nil {
 		_, err = io.WriteString(gpipe, buf+"\n")
@@ -470,6 +478,7 @@ func writeFactorioLine(input string, maxLength int) {
 		// The controller handles this generation's failed pipe. A late write
 		// failure must not cancel whichever process happens to be current now.
 	}
+	return err == nil
 }
 
 func classifyFactorioPipeError(err error) string {
@@ -568,12 +577,7 @@ func autoPromote(pname string, bootMode bool, doBan bool, previousLevel int, has
 				playerName = " **(Banned)**"
 
 				if doBan {
-					name := strings.ToLower(pname)
-					glob.PlayerListLock.Lock()
-					if glob.PlayerList[name] != nil {
-						WriteBan(name, glob.PlayerList[name].BanReason)
-					}
-					glob.PlayerListLock.Unlock()
+					EnforceStoredBan(pname)
 				}
 
 			} else if plevel == 1 {
@@ -635,6 +639,18 @@ func applyPlayerLevelInGame(pname string, previousLevel, level int) {
 	}
 	// Do not erase a new player's accumulated promotion score on every join.
 	if level == 0 && previousLevel == 0 {
+		return
+	}
+	if generation, tagged := taggedBanSyncGeneration(); tagged {
+		glob.PlayerListLock.RLock()
+		player := glob.PlayerList[strings.ToLower(pname)]
+		if player == nil || player.Level != level {
+			glob.PlayerListLock.RUnlock()
+			return
+		}
+		revision := player.LevelRevision
+		glob.PlayerListLock.RUnlock()
+		writeSoftModCommandForGeneration("player-level", desiredRank{Name: pname, Level: level, Revision: revision}, &generation)
 		return
 	}
 	WriteSoftModCommand("player-level", map[string]any{"name": pname, "level": level})

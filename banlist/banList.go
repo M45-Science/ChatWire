@@ -52,35 +52,27 @@ func CheckBanList(name string, doWarn bool) bool {
 		if strings.EqualFold(ban.UserName, pname) {
 			warn := "Warning: [FCL] ban found for '" + pname + "': " + ban.Reason
 
-			if fact.PlayerLevelGet(ban.UserName, true) < 2 {
-				if cfg.Global.Options.FCLWarnOnly {
-					if doWarn {
-						fact.CMS(cfg.Local.Channel.ChatChannel, warn)
-					}
-				} else {
-					fact.WriteBan(pname, "[FCL] "+ban.Reason)
+			if !cfg.Global.Options.FCLWarnOnly {
+				applied, err := fact.ApplyCommunityBan(pname, "[FCL] "+ban.Reason)
+				if err != nil {
+					cwlog.DoLogCW("Community ban for %q could not be saved: %v", pname, err)
+				}
+				if applied {
 					return true
 				}
-			} else if cfg.Global.Options.FCLWarnRegulars {
-				if doWarn {
+			}
+			if doWarn {
+				regular := fact.PlayerLevelGet(pname, true) >= 2
+				if (regular && cfg.Global.Options.FCLWarnRegulars) || (!regular && cfg.Global.Options.FCLWarnOnly) {
 					fact.CMS(cfg.Local.Channel.ChatChannel, warn)
 				}
 			}
 
-			return false
+			break
 		}
 	}
 
-	if fact.PlayerLevelGet(pname, false) == -1 {
-		glob.PlayerListLock.Lock()
-		if glob.PlayerList[pname] != nil {
-			fact.WriteBan(pname, glob.PlayerList[pname].BanReason)
-		}
-		glob.PlayerListLock.Unlock()
-		return true
-	}
-
-	return false
+	return fact.PlayerLevelGet(pname, false) < 0 && fact.EnforceStoredBan(pname)
 }
 
 // WatchBanFile monitors the ban file for changes and reloads it when modified.

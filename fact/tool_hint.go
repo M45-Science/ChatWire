@@ -40,11 +40,10 @@ func ClaimToolHint(name string, now time.Time) (bool, error) {
 	local := glob.PlayerList[name]
 	player := players[name]
 	if player == nil {
-		if local == nil {
+		if local == nil || local.LevelRevision != 0 {
 			return false, nil
 		}
-		copy := *local
-		player = &copy
+		player = &glob.PlayerData{Creation: local.Creation, LastSeen: local.LastSeen}
 		players[name] = player
 	}
 	if local != nil && local.LastToolHint > player.LastToolHint {

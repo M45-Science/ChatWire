@@ -27,6 +27,10 @@ type softModRequest struct {
 // WriteSoftModCommand sends one typed request through the SoftMod's sole
 // machine-only command. The returned ID is echoed by the response.
 func WriteSoftModCommand(command string, data any) string {
+	return writeSoftModCommandForGeneration(command, data, nil)
+}
+
+func writeSoftModCommandForGeneration(command string, data any, generation *uint64) string {
 	id := fmt.Sprintf("cw-%d", softModRequestSequence.Add(1))
 	request := softModRequest{
 		Version: SoftModProtocolVersion,
@@ -43,7 +47,9 @@ func WriteSoftModCommand(command string, data any) string {
 		return ""
 	}
 	// Machine messages may carry a 10 KiB quickbar plus the protocol envelope.
-	writeFactorioLine("/chatwire "+encoded, 32*1024)
+	if !writeFactorioLineForGeneration("/chatwire "+encoded, 32*1024, generation) && generation != nil {
+		return ""
+	}
 	return id
 }
 

@@ -1,6 +1,8 @@
 package fact
 
 import (
+	"errors"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -106,6 +108,18 @@ func playerRecordChangePending(pname string) bool {
 	return pending
 }
 
+func discardPlayerRecordChange(name string) {
+	playerChanges.Lock()
+	defer playerChanges.Unlock()
+	versions := playerChanges.versions[name]
+	if versions.stats == 0 {
+		delete(playerChanges.versions, name)
+		return
+	}
+	versions.record = 0
+	playerChanges.versions[name] = versions
+}
+
 func signalPlayerListDirty() {
 	glob.PlayerListDirtyLock.Lock()
 	glob.PlayerListDirty = true
@@ -181,44 +195,20 @@ func PlayerSetBanReason(pname string, reason string, doban bool) bool {
 	return false
 }
 
-/* Get playerID (Discord), add to db if not found */
-func PlayerSetID(pname string, id string, level int) bool {
-
-	if id == "" || pname == "" || len(pname) > constants.MaxNameLength {
-		return false
+// RegisterPlayer persists the Discord linkage and its rank before granting roles.
+func RegisterPlayer(name, discordID string, level int) error {
+	name = strings.ToLower(strings.TrimSpace(name))
+	if discordID == "" || !validUnbannedLevel(level) {
+		return errors.New("valid Discord ID and player level required")
 	}
-
-	pname = strings.ToLower(pname)
-
-	glob.PlayerListLock.Lock()
-	defer glob.PlayerListLock.Unlock()
-
-	if glob.PlayerList[pname] != nil {
-		glob.PlayerList[pname].ID = id
-		syncPlayerAdminAccess(pname, glob.PlayerList[pname].Level, level)
-		WhitelistPlayer(pname, level)
-		glob.PlayerList[pname].Level = level
-		glob.PlayerList[pname].LastSeen = compactNow()
-
-		SetPlayerListDirty(pname)
-		return true
+	expected := playerLevelRevision(name)
+	_, _, err := commitPlayerLevel(name, playerLevelChange{
+		level: level, discordID: discordID, expected: &expected, source: playerRegistration,
+	})
+	if errors.Is(err, errPlayerLevelConflict) {
+		LoadPlayers(false, false, false)
 	}
-
-	/* Not in list, add them */
-	newplayer := glob.PlayerData{
-
-		Name:     pname,
-		Level:    level,
-		ID:       id,
-		LastSeen: compactNow(),
-		Creation: compactNow(),
-	}
-	glob.PlayerList[pname] = &newplayer
-
-	SetPlayerListDirty(pname)
-	syncPlayerAdminAccess(pname, 0, level)
-	WhitelistPlayer(pname, level)
-	return false
+	return err
 }
 
 /* Saw player (low priority) */
@@ -240,17 +230,23 @@ func UpdateSeen(pname string) {
 
 /* Set player level, add to db if not found */
 func PlayerLevelSet(pname string, level int, modifyOnly bool) bool {
-	return playerLevelSet(pname, level, modifyOnly, true)
+	return playerLevelSet(pname, level, modifyOnly, true, nil)
 }
 
-// PlayerLevelSetFromGame records an in-game level change. SoftMod emits the
-// same message for both a real promotion and a ChatWire-requested assignment,
-// so matching levels must be ignored to avoid echo writes across servers.
+// PlayerLevelSetFromGame records an in-game rank change. Moderation has its own
+// event, and legacy SoftMod may still echo an unchanged rank assignment.
 func PlayerLevelSetFromGame(pname string, level int) bool {
-	return playerLevelSet(pname, level, false, false)
+	return PlayerLevelSetFromGameAtRevision(pname, level, nil)
 }
 
-func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bool {
+func PlayerLevelSetFromGameAtRevision(pname string, level int, expected *uint64) bool {
+	if !validUnbannedLevel(level) {
+		return false
+	}
+	return playerLevelSet(pname, level, false, false, expected)
+}
+
+func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool, expected *uint64) bool {
 	if pname == "" || len(pname) > constants.MaxNameLength {
 		return false
 	}
@@ -261,6 +257,10 @@ func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bo
 	defer glob.PlayerListLock.Unlock()
 
 	if glob.PlayerList[pname] != nil {
+		if (!touchUnchanged && glob.PlayerList[pname].Level < 0) ||
+			(expected != nil && *expected != glob.PlayerList[pname].LevelRevision) {
+			return false
+		}
 		if glob.PlayerList[pname].Level != level {
 			glob.PlayerList[pname].LastSeen = compactNow()
 			syncPlayerAdminAccess(pname, glob.PlayerList[pname].Level, level)
@@ -279,7 +279,7 @@ func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bo
 		return true
 	}
 
-	if modifyOnly {
+	if modifyOnly || (expected != nil && *expected != 0) {
 		return false
 	}
 
@@ -303,7 +303,7 @@ func playerLevelSet(pname string, level int, modifyOnly, touchUnchanged bool) bo
 /*************************************************
  * Expects locked db, only used for LoadPlayers()
  *************************************************/
-func addPlayer(iname string, level int, id string, creation int64, seen int64, reason string, susScore int64, mins int64, doBan bool) bool {
+func addPlayer(iname string, level int, id string, creation int64, seen int64, reason string, susScore int64, mins int64, doBan, doUnban bool) bool {
 	if iname == "" || len(iname) > constants.MaxNameLength {
 		return false
 	}
@@ -318,7 +318,7 @@ func addPlayer(iname string, level int, id string, creation int64, seen int64, r
 		} else if level == -1 && glob.PlayerList[pname].Level >= 0 && doBan { //Banned
 			WriteBan(pname, reason)
 			didBan = true
-		} else if level >= 0 && glob.PlayerList[pname].Level == -1 { //Unbanned
+		} else if level >= 0 && glob.PlayerList[pname].Level == -1 && doUnban { //Unbanned
 			WriteUnban(pname)
 		}
 
@@ -447,7 +447,8 @@ func completePlayerChanges(changes map[string]playerChange) {
 	}
 }
 
-func mergePlayerChanges(players map[string]*glob.PlayerData, changes map[string]playerChange) {
+func mergePlayerChanges(players map[string]*glob.PlayerData, changes map[string]playerChange) map[string]bool {
+	conflicts := make(map[string]bool)
 	for pname, change := range changes {
 		player := change.player
 		previous := players[pname]
@@ -461,20 +462,46 @@ func mergePlayerChanges(players map[string]*glob.PlayerData, changes map[string]
 			continue
 		}
 		if player == nil {
-			delete(players, pname)
+			if previous == nil || previous.LevelRevision == 0 {
+				delete(players, pname)
+			}
 			continue
 		}
-		if previous != nil && previous.LastToolHint > player.LastToolHint {
-			copy := *player
-			copy.LastToolHint = previous.LastToolHint
-			player = &copy
+		if previous == nil {
+			previous = &glob.PlayerData{}
 		}
-		players[pname] = player
+		next := *player
+		if !advanceLevelRevision(previous, &next) {
+			conflicts[pname] = true
+			continue
+		}
+		next.LastToolHint = max(previous.LastToolHint, next.LastToolHint)
+		players[pname] = &next
 	}
+	return conflicts
+}
+
+func advanceLevelRevision(previous, next *glob.PlayerData) bool {
+	if next.LevelRevision != previous.LevelRevision {
+		return false
+	}
+	next.BanRevision = previous.BanRevision
+	next.BanRetained = next.Level <= -254 && previous.Banned()
+	if next.Level == previous.Level && next.BanReason == previous.BanReason && next.ID == previous.ID {
+		return true
+	}
+	if previous.LevelRevision == math.MaxUint64 {
+		return false
+	}
+	next.LevelRevision++
+	if next.Banned() != previous.Banned() || next.Banned() && next.BanReason != previous.BanReason {
+		next.BanRevision = next.LevelRevision
+	}
+	return true
 }
 
 /* Load database */
-func LoadPlayers(bootMode, minimize, clearBans bool) {
+func LoadPlayers(bootMode, minimize, clearBans bool) bool {
 	glob.PlayerListWriteLock.Lock()
 	defer glob.PlayerListWriteLock.Unlock()
 
@@ -484,7 +511,7 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 	filedata, err := os.ReadFile(dbPath)
 	if err != nil {
 		cwlog.DoLogCW("Couldn't read db file, path: %v", dbPath)
-		return
+		return false
 	}
 
 	if filedata != nil {
@@ -493,11 +520,12 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 		tempData, _, err = decodePlayerDatabase(filedata)
 		if err != nil {
 			cwlog.DoLogCW("LoadPlayers: " + err.Error())
-			return
+			return false
 		}
 
 		banCount := 0
 		doBan := true
+		legacySync := !bootMode && !minimize && !clearBans && !TaggedBanSyncEnabled()
 		changedNames := make(map[string]struct{})
 		levelChanges := make(map[string]int)
 		//Add name back in, makes db file smaller
@@ -505,11 +533,18 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 		var removed int
 
 		for pname := range tempData {
-			if !minimize && !clearBans && playerRecordChangePending(pname) {
-				continue
+			stored := tempData[pname]
+			if !minimize && !clearBans {
+				rememberBanState(pname, stored, false)
 			}
 			previousLevel := 0
 			previousPlayer := glob.PlayerList[pname]
+			if !minimize && !clearBans && playerRecordChangePending(pname) {
+				if stored.LevelRevision == 0 || (previousPlayer != nil && stored.LevelRevision <= previousPlayer.LevelRevision) {
+					continue
+				}
+				discardPlayerRecordChange(pname)
+			}
 			if previousPlayer != nil {
 				previousLevel = previousPlayer.Level
 			}
@@ -517,6 +552,11 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			if clearBans {
 				if tempData[pname].Level < 0 {
 					removed++
+					if stored.LevelRevision > 0 || stored.Level == -1 {
+						glob.PlayerList[pname] = &glob.PlayerData{Name: pname, LevelRevision: stored.LevelRevision, BanRevision: stored.BanRevision}
+						changedNames[pname] = struct{}{}
+						continue
+					}
 					delete(tempData, pname)
 					delete(glob.PlayerList, pname)
 					changedNames[pname] = struct{}{}
@@ -526,7 +566,7 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			//DB cleaning
 			if minimize {
 				//Get rid of new/deleted
-				if tempData[pname].Level == 0 || tempData[pname].Level == -255 {
+				if (tempData[pname].Level == 0 || tempData[pname].Level == -255) && stored.LevelRevision == 0 {
 					removed++
 					delete(tempData, pname)
 					delete(glob.PlayerList, pname)
@@ -564,13 +604,15 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 			if !bootMode && !minimize && !clearBans && (previousPlayer == nil || previousLevel != tempData[pname].Level) {
 				levelChanges[pname] = previousLevel
 			}
-			if bootMode {
-				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, false)
-			} else {
-				didBan = addPlayer(pname, tempData[pname].Level, tempData[pname].ID, tempData[pname].Creation, tempData[pname].LastSeen, tempData[pname].BanReason, tempData[pname].SusScore, tempData[pname].Minutes, doBan)
-			}
-			if loaded := glob.PlayerList[strings.ToLower(pname)]; loaded != nil && tempData[pname].LastToolHint > loaded.LastToolHint {
-				loaded.LastToolHint = tempData[pname].LastToolHint
+			didBan = addPlayer(pname, stored.Level, stored.ID, stored.Creation, stored.LastSeen, stored.BanReason, stored.SusScore, stored.Minutes, legacySync && doBan, legacySync)
+			if loaded := glob.PlayerList[strings.ToLower(pname)]; loaded != nil {
+				loaded.LevelRevision, loaded.BanRevision, loaded.BanRetained = stored.LevelRevision, stored.BanRevision, stored.BanRetained
+				loaded.BanReason = stored.BanReason
+				loaded.AlreadyBanned = stored.Banned()
+				if stored.Level >= 0 {
+					loaded.ID = stored.ID
+				}
+				loaded.LastToolHint = max(loaded.LastToolHint, stored.LastToolHint)
 			}
 			if didBan {
 				banCount++
@@ -586,7 +628,9 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 		for pname := range changedNames {
 			SetPlayerListDirty(pname)
 		}
+		ReconcilePlayerBans()
 	}
+	return true
 }
 
 /* Save database */
@@ -626,7 +670,7 @@ func WritePlayers() {
 			return
 		}
 	}
-	mergePlayerChanges(players, changes)
+	conflicts := mergePlayerChanges(players, changes)
 
 	data, err := encodePlayerDatabase(players, cfg.Global.Paths.DataFiles.DBFormat)
 	if err != nil {
@@ -639,5 +683,39 @@ func WritePlayers() {
 		signalPlayerListDirty()
 		return
 	}
+	glob.PlayerListLock.Lock()
+	var rankAcks []desiredRank
+	var rankRepairs []desiredRank
+	for name, change := range changes {
+		current, saved := glob.PlayerList[name], players[name]
+		if change.versions.record == 0 || current == nil || saved == nil {
+			continue
+		}
+		if conflicts[name] {
+			playerChanges.Lock()
+			unchanged := playerChanges.versions[name].record == change.versions.record
+			playerChanges.Unlock()
+			if !unchanged {
+				continue
+			}
+			if current.Level != saved.Level {
+				rankRepairs = append(rankRepairs, desiredRank{Name: name, Level: saved.Level, Revision: saved.LevelRevision})
+			}
+			applyCommittedPlayerLevel(name, current, saved)
+		} else {
+			if current.LevelRevision != saved.LevelRevision && saved.Level >= 0 {
+				rankAcks = append(rankAcks, desiredRank{Name: name, Level: saved.Level, Revision: saved.LevelRevision})
+			}
+			current.LevelRevision, current.BanRevision, current.BanRetained = saved.LevelRevision, saved.BanRevision, saved.BanRetained
+		}
+		rememberBanState(name, saved, false)
+	}
 	completePlayerChanges(changes)
+	glob.PlayerListLock.Unlock()
+	for _, rank := range rankAcks {
+		acknowledgePlayerRank(rank)
+	}
+	for _, rank := range rankRepairs {
+		syncOnlinePlayerLevel(rank.Name, -1, rank.Level)
+	}
 }

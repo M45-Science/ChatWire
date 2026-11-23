@@ -235,7 +235,7 @@ func TestWhitelistPlayerIncludesModeratorsAndRemovesIneligiblePlayers(t *testing
 }
 
 func TestOfflineModeratorAdminAccessSyncsOnPrivateServer(t *testing.T) {
-	isolatePlayerChanges(t)
+	configurePlayerDBTest(t, `{}`)
 	pipe := installPlayerLevelCapturePipe(t)
 	oldLocal, oldBooted, oldRunning, oldPlayers := cfg.Local, FactorioBooted, FactIsRunning, glob.PlayerList
 	t.Cleanup(func() {
@@ -247,10 +247,12 @@ func TestOfflineModeratorAdminAccessSyncsOnPrivateServer(t *testing.T) {
 	PlayerLevelSet("alice", 255, false)
 	PlayerLevelSet("alice", 255, false)
 	PlayerLevelSet("alice", 3, false)
-	PlayerSetID("newmod", "123", 255)
+	if err := RegisterPlayer("newmod", "123", 255); err != nil {
+		t.Fatal(err)
+	}
 	glob.PlayerListLock.Lock()
-	addPlayer("remote", 255, "", 0, 0, "", 0, 0, false)
-	addPlayer("remote", -1, "", 0, 0, "", 0, 0, false)
+	addPlayer("remote", 255, "", 0, 0, "", 0, 0, false, false)
+	addPlayer("remote", -1, "", 0, 0, "", 0, 0, false, false)
 	glob.PlayerListLock.Unlock()
 	want := "/promote alice\n/whitelist add alice\n/demote alice\n/promote newmod\n/whitelist add newmod\n/promote remote\n/whitelist add remote\n/demote remote\n"
 	if got := pipe.String(); got != want {

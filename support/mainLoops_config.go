@@ -1,27 +1,31 @@
 package support
 
 import (
+	"os"
 	"time"
 
 	"ChatWire/cfg"
 	"ChatWire/fact"
 	"ChatWire/glob"
-	"ChatWire/watcher"
 )
 
 func startDBFileWatcher() {
-	/************************************
-	 * Database file modification watching
-	 ************************************/
 	go func() {
+		ctx := glob.RuntimeContext()
 		filePath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-		reload := newDebounce(time.Second, func() {
-			//cwlog.DoLogCW("Database file modified, loading.")
-			fact.LoadPlayers(false, false, false)
-		})
-		watcher.Watch(filePath, 5*time.Second, glob.RuntimeContext(), func() {
-			time.Sleep(time.Second)
-			reload.trigger()
-		})
+		var loaded os.FileInfo
+		for waitForContext(ctx, 2*time.Second) {
+			current, err := os.Stat(filePath)
+			if err == nil && (loaded == nil || !os.SameFile(current, loaded) ||
+				current.Size() != loaded.Size() || !current.ModTime().Equal(loaded.ModTime())) {
+				// Keep the stat from before the read so a concurrent replacement
+				// during the reload is detected on the next poll.
+				if fact.LoadPlayers(false, false, false) {
+					loaded = current
+				}
+			}
+			fact.RetryNativeModeration()
+			fact.ReconcilePlayerBans()
+		}
 	}()
 }
