@@ -20,9 +20,19 @@ var (
 	playerChanges     = struct {
 		sync.Mutex
 		next     uint64
-		versions map[string]uint64
-	}{versions: make(map[string]uint64)}
+		versions map[string]playerChangeVersions
+	}{versions: make(map[string]playerChangeVersions)}
 )
+
+type playerChangeVersions struct {
+	record uint64
+	stats  uint64
+}
+
+type playerChange struct {
+	player   *glob.PlayerData
+	versions playerChangeVersions
+}
 
 const playerDBLockTimeout = 5 * time.Second
 
@@ -72,22 +82,28 @@ func setPlayerListUpdated() {
 	glob.PlayerListUpdatedLock.Unlock()
 }
 
-func markPlayerDirty(pname string) {
+func markPlayerDirty(pname string, statsOnly bool) {
 	pname = strings.ToLower(strings.TrimSpace(pname))
 	if pname == "" {
 		return
 	}
 	playerChanges.Lock()
 	playerChanges.next++
-	playerChanges.versions[pname] = playerChanges.next
+	versions := playerChanges.versions[pname]
+	if statsOnly {
+		versions.stats = playerChanges.next
+	} else {
+		versions.record = playerChanges.next
+	}
+	playerChanges.versions[pname] = versions
 	playerChanges.Unlock()
 }
 
-func playerChangePending(pname string) bool {
+func playerRecordChangePending(pname string) bool {
 	playerChanges.Lock()
-	_, ok := playerChanges.versions[strings.ToLower(pname)]
+	pending := playerChanges.versions[strings.ToLower(pname)].record != 0
 	playerChanges.Unlock()
-	return ok
+	return pending
 }
 
 func signalPlayerListDirty() {
@@ -102,14 +118,14 @@ func signalPlayerListDirty() {
 
 /* Mark a player record as dirty. */
 func SetPlayerListDirty(pname string) {
-	markPlayerDirty(pname)
+	markPlayerDirty(pname, false)
 	signalPlayerListDirty()
 }
 
 // SetPlayerStatsDirty marks player stats as updated (LastSeen / Minutes).
 // These changes are saved on a slower cadence than full DB changes.
 func SetPlayerStatsDirty(pname string) {
-	markPlayerDirty(pname)
+	markPlayerDirty(pname, true)
 	glob.PlayerStatsDirtyLock.Lock()
 	glob.PlayerStatsDirty = true
 	glob.PlayerStatsDirtyLock.Unlock()
@@ -394,44 +410,61 @@ func PlayerLevelGet(pname string, modifyOnly bool) int {
 	return 0
 }
 
-func snapshotPlayerChanges() (map[string]*glob.PlayerData, map[string]uint64) {
-	changes := make(map[string]*glob.PlayerData)
-	versions := make(map[string]uint64)
-
+func snapshotPlayerChanges() map[string]playerChange {
 	glob.PlayerListLock.RLock()
 	playerChanges.Lock()
-	for pname, version := range playerChanges.versions {
-		versions[pname] = version
+	changes := make(map[string]playerChange, len(playerChanges.versions))
+	for pname, versions := range playerChanges.versions {
+		change := playerChange{versions: versions}
 		if player := glob.PlayerList[pname]; player != nil {
 			copy := *player
-			changes[pname] = &copy
-		} else {
-			changes[pname] = nil
+			change.player = &copy
 		}
+		changes[pname] = change
 	}
 	playerChanges.Unlock()
 	glob.PlayerListLock.RUnlock()
 
-	return changes, versions
+	return changes
 }
 
-func completePlayerChanges(versions map[string]uint64) {
+func completePlayerChanges(changes map[string]playerChange) {
 	playerChanges.Lock()
 	defer playerChanges.Unlock()
-	for pname, version := range versions {
-		if playerChanges.versions[pname] == version {
+	for pname, change := range changes {
+		pending := playerChanges.versions[pname]
+		if pending.record == change.versions.record {
+			pending.record = 0
+		}
+		if pending.stats == change.versions.stats {
+			pending.stats = 0
+		}
+		if pending == (playerChangeVersions{}) {
 			delete(playerChanges.versions, pname)
+		} else {
+			playerChanges.versions[pname] = pending
 		}
 	}
 }
 
-func mergePlayerChanges(players, changes map[string]*glob.PlayerData) {
-	for pname, player := range changes {
+func mergePlayerChanges(players map[string]*glob.PlayerData, changes map[string]playerChange) {
+	for pname, change := range changes {
+		player := change.player
+		previous := players[pname]
+		if change.versions.record == 0 {
+			// Playtime and last-seen updates must preserve bans and deletions
+			// already written by another instance.
+			if player != nil && previous != nil && previous.Level >= 0 {
+				previous.LastSeen = max(previous.LastSeen, player.LastSeen)
+				previous.Minutes = max(previous.Minutes, player.Minutes)
+			}
+			continue
+		}
 		if player == nil {
 			delete(players, pname)
 			continue
 		}
-		if previous := players[pname]; previous != nil && previous.LastToolHint > player.LastToolHint {
+		if previous != nil && previous.LastToolHint > player.LastToolHint {
 			copy := *player
 			copy.LastToolHint = previous.LastToolHint
 			player = &copy
@@ -472,7 +505,7 @@ func LoadPlayers(bootMode, minimize, clearBans bool) {
 		var removed int
 
 		for pname := range tempData {
-			if !bootMode && !minimize && !clearBans && playerChangePending(pname) {
+			if !minimize && !clearBans && playerRecordChangePending(pname) {
 				continue
 			}
 			previousLevel := 0
@@ -562,7 +595,7 @@ func WritePlayers() {
 	defer glob.PlayerListWriteLock.Unlock()
 
 	finalPath := cfg.Global.Paths.Folders.ServersRoot + cfg.Global.Paths.DataFiles.DBFile
-	changes, versions := snapshotPlayerChanges()
+	changes := snapshotPlayerChanges()
 	if len(changes) == 0 {
 		return
 	}
@@ -606,5 +639,5 @@ func WritePlayers() {
 		signalPlayerListDirty()
 		return
 	}
-	completePlayerChanges(versions)
+	completePlayerChanges(changes)
 }

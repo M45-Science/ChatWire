@@ -105,7 +105,7 @@ func TestPlayerLevelSetFromGameIgnoresAcknowledgement(t *testing.T) {
 	if !PlayerLevelSetFromGame("Alice", 2) {
 		t.Fatal("existing player was not found")
 	}
-	if playerChangePending("alice") {
+	if playerRecordChangePending("alice") {
 		t.Fatal("same-level SoftMod acknowledgement marked the player dirty")
 	}
 	if got := glob.PlayerList["alice"].LastSeen; got != 123 {
@@ -127,7 +127,7 @@ func TestPlayerLevelSetFromGamePersistsRealPromotion(t *testing.T) {
 	if got := glob.PlayerList["alice"].Level; got != 2 {
 		t.Fatalf("player level = %d, want 2", got)
 	}
-	if !playerChangePending("alice") {
+	if !playerRecordChangePending("alice") {
 		t.Fatal("real SoftMod promotion was not marked dirty")
 	}
 }
